@@ -1,0 +1,17 @@
+//
+//
+#ifndef VOLCANO_PHYSICS_COMMON_H
+#define VOLCANO_PHYSICS_COMMON_H
+
+#include <Volcano/Common.h>
+
+#if defined(VOLCANO_PHYSICS)
+#   define VOLCANO_PHYSICS_API Q_DECL_EXPORT
+#else
+#   define VOLCANO_PHYSICS_API Q_DECL_IMPORT
+#endif
+
+#define VOLCANO_PHYSICS_BEGIN VOLCANO_BEGIN namespace Physics {
+#define VOLCANO_PHYSICS_END } VOLCANO_END
+
+#endif // VOLCANO_PHYSICS_COMMON_H
