@@ -26,13 +26,29 @@ bool Context::init(void)
     return true;
 }
 
-void Context::update(float elapsed)
+bool Context::beginFrame(void)
 {
+    return true;
 }
 
-void Context::render(void)
+void Context::endFrame(void)
 {
     Q_ASSERT(m_gl != nullptr);
+}
+
+void Context::setViewport(int x, int y, int width, int height)
+{
+
+}
+
+void Context::setViewMatrix(const QMatrix4x4 &v)
+{
+
+}
+
+void Context::setProjectMatrix(const QMatrix4x4 &v)
+{
+
 }
 
 VOLCANO_OPENGLRENDERER_END

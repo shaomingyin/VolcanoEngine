@@ -1,13 +1,5 @@
 
-add_subdirectory(BulletPhysics BulletPhysics)
-add_subdirectory(OpenGLRenderer OpenGLRenderer)
-
-if(VOLCANO_EDITOR)
-    add_subdirectory(Editor Editor)
-endif()
-
-
-target_sources(Kernel
+target_sources(Base
     PUBLIC
         Camera.h
 		Common.h

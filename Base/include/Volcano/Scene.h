@@ -26,7 +26,6 @@ public:
     public:
         Scene *scene(void);
         virtual void update(float elapsed) = 0;
-        virtual void render(void) = 0;
 
     private:
         Scene *m_scene;

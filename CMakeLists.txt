@@ -2,46 +2,73 @@ cmake_minimum_required(VERSION 3.13)
 
 project(VolcanoEngine VERSION 0.1.0)
 
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/out/bin")
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/out/lib")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/out/lib")
+
+set(CMAKE_USE_RELATIVE_PATHS ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Base
+
 include_directories(
-    ${CMAKE_CURRENT_SOURCE_DIR}/include
-    ${CMAKE_CURRENT_BINARY_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/Base/include
+    ${CMAKE_CURRENT_BINARY_DIR}/Base/include
     )
 
-set(VOLCANO_DEBUG ON CACHE BOOL "Enable debug functions")
-set(VOLCANO_EDITOR ON CACHE BOOL "Enable editor")
+add_subdirectory(Base Base)
 
-find_package(Qt5Core REQUIRED)
-find_package(Qt5Gui REQUIRED)
-find_package(Qt5Widgets REQUIRED)
-find_package(Qt5Test REQUIRED)
-find_package(Qt5Concurrent REQUIRED)
+# BulletPhysics
 
-add_library(Kernel SHARED)
-target_compile_definitions(Kernel PRIVATE VOLCANO_KERNEL)
-target_link_libraries(Kernel Qt5::Core Qt5::Gui)
-set_target_properties(Kernel PROPERTIES OUTPUT_NAME "VolcanoKernel")
+include_directories(
+    ${CMAKE_CURRENT_SOURCE_DIR}/BulletPhysics/include
+    ${CMAKE_CURRENT_BINARY_DIR}/BulletPhysics/include
+    )
 
-add_library(BulletPhysics SHARED)
-target_compile_definitions(BulletPhysics PRIVATE VOLCANO_PHYSICS)
-target_link_libraries(BulletPhysics Kernel Qt5Core)
-set_target_properties(BulletPhysics PROPERTIES OUTPUT_NAME "VolcanoBulletPhysics")
+add_subdirectory(BulletPhysics BulletPhysics)
 
-add_library(OpenGLRenderer SHARED)
-target_compile_definitions(OpenGLRenderer PRIVATE VOLCANO_OPENGLRENDERER)
-target_link_libraries(OpenGLRenderer Kernel Qt5Core)
-set_target_properties(OpenGLRenderer PROPERTIES OUTPUT_NAME "VolcanoOpenGLRenderer")
+# OpenGLRenderer
 
-add_library(Editor SHARED)
-target_compile_definitions(Editor PRIVATE VOLCANO_EDITOR)
-target_link_libraries(Editor BulletPhysics OpenGLRenderer Kernel Qt5::Widgets)
-set_target_properties(Editor PROPERTIES OUTPUT_NAME "VolcanoEditor")
+include_directories(
+    ${CMAKE_CURRENT_SOURCE_DIR}/OpenGLRenderer/include
+    ${CMAKE_CURRENT_BINARY_DIR}/OpenGLRenderer/include
+    )
 
-add_subdirectory(include include)
-add_subdirectory(src src)
+add_subdirectory(OpenGLRenderer OpenGLRenderer)
+
+# VulkanRenderer
+
+include_directories(
+    ${CMAKE_CURRENT_SOURCE_DIR}/VulkanRenderer/include
+    ${CMAKE_CURRENT_BINARY_DIR}/VulkanRenderer/include
+    )
+
+add_subdirectory(VulkanRenderer VulkanRenderer)
+
+# Editor
+
+include_directories(
+    ${CMAKE_CURRENT_SOURCE_DIR}/Editor/include
+    ${CMAKE_CURRENT_BINARY_DIR}/Editor/include
+    )
+
+add_subdirectory(Editor Editor)
+
+# Templates
+
+include_directories(
+    ${CMAKE_CURRENT_SOURCE_DIR}/Templates/include
+    ${CMAKE_CURRENT_BINARY_DIR}/Templates/include
+    )
+
+add_subdirectory(Templates Templates)
+
+# Others
+
+add_subdirectory(Demo Demo)
+add_subdirectory(Tools Tools)
+add_subdirectory(Documents Documents)

@@ -8,7 +8,7 @@
 
 #include <Volcano/Config.h>
 
-#if defined(VOLCANO_CORE)
+#if defined(VOLCANO_BASE)
 #   define VOLCANO_API Q_DECL_EXPORT
 #else
 #   define VOLCANO_API Q_DECL_IMPORT

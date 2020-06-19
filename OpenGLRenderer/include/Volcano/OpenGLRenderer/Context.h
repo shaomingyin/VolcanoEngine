@@ -20,8 +20,13 @@ public:
 
 public:
     bool init(void);
-    void update(float elapsed) override;
-    void render(void) override;
+
+protected:
+    bool beginFrame(void) override;
+    void endFrame(void) override;
+    void setViewport(int x, int y, int width, int height) override;
+    void setViewMatrix(const QMatrix4x4 &v) override;
+    void setProjectMatrix(const QMatrix4x4 &v) override;
 
 private:
     OpenGLFunctions *m_gl;

@@ -22,7 +22,14 @@ public:
 
 public:
     void update(float elapsed) override;
-    void render(void) override;
+    void render(void);
+
+protected:
+    virtual bool beginFrame(void) = 0;
+    virtual void endFrame(void) = 0;
+    virtual void setViewport(int x, int y, int width, int height) = 0;
+    virtual void setViewMatrix(const QMatrix4x4 &v) = 0;
+    virtual void setProjectMatrix(const QMatrix4x4 &v) = 0;
 };
 
 VOLCANO_END

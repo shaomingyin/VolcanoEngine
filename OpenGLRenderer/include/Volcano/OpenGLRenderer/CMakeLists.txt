@@ -8,3 +8,8 @@ target_sources(OpenGLRenderer
 	PRIVATE
 		Config.h.in
 	)
+
+configure_file(
+	Config.h.in
+	Config.h
+	)
