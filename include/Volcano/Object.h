@@ -3,6 +3,7 @@
 #ifndef VOLCANO_OBJECT_H
 #define VOLCANO_OBJECT_H
 
+#include <QList>
 #include <QObject>
 #include <QString>
 #include <QVector3D>
@@ -12,6 +13,9 @@
 #include <Volcano/Common.h>
 
 VOLCANO_BEGIN
+
+class Object;
+typedef QList<Object *> ObjectList;
 
 class VOLCANO_API Object: public QObject
 {
@@ -23,7 +27,7 @@ class VOLCANO_API Object: public QObject
     Q_PROPERTY(QQuaternion rotation READ rotation WRITE setRotation NOTIFY rotationChanged)
 
 public:
-    Object(QObject *parent = nullptr);
+    Q_INVOKABLE Object(QObject *parent = nullptr);
     virtual ~Object(void);
 
 public:
@@ -64,11 +68,13 @@ private:
 
 VOLCANO_INLINE bool Object::enable(void) const
 {
+    qDebug() << "object is enable";
     return (m_flags & FlagEnable);
 }
 
 VOLCANO_INLINE void Object::setEnable(bool v)
 {
+    qDebug() << "object enable" <<v;
     if (enable() != v)
     {
         if (v)
@@ -81,11 +87,13 @@ VOLCANO_INLINE void Object::setEnable(bool v)
 
 VOLCANO_INLINE bool Object::visible(void) const
 {
+    qDebug() << "object is visible";
     return (m_flags & FlagVisible);
 }
 
 VOLCANO_INLINE void Object::setVisible(bool v)
 {
+    qDebug() << "object vis" <<v;
     if (visible() != v)
     {
         if (v)

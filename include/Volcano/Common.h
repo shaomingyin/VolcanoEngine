@@ -9,7 +9,7 @@
 
 #include <Volcano/Config.h>
 
-#if defined(VOLCANO_BASE)
+#if defined(VOLCANO)
 #   define VOLCANO_API Q_DECL_EXPORT
 #else
 #   define VOLCANO_API /*Q_DECL_IMPORT*/

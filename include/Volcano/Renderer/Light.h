@@ -13,7 +13,7 @@ class VOLCANO_API Light: public Object
     Q_OBJECT
 
 public:
-    Light(Object *parent = nullptr);
+    Light(QObject *parent = nullptr);
     virtual ~Light(void);
 
 private:

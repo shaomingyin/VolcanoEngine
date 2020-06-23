@@ -7,6 +7,7 @@ VOLCANO_BEGIN
 Scene::Scene(QObject *parent):
     Object(parent)
 {
+    qDebug() << "scene constructed";
 }
 
 Scene::~Scene(void)

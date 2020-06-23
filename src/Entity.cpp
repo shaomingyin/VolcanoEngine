@@ -4,7 +4,7 @@
 
 VOLCANO_BEGIN
 
-Entity::Entity(Object *parent):
+Entity::Entity(QObject *parent):
     Object(parent)
 {
 }

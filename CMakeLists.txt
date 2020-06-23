@@ -54,6 +54,17 @@ endif()
 add_subdirectory(include include)
 add_subdirectory(src src)
 
+get_target_property(VOLCANO_SOURCES Volcano SOURCES)
+foreach(SOURCE ${VOLCANO_SOURCES})
+    message(">>> ${SOURCE}")
+    string(REPLACE ${CMAKE_CURRENT_SOURCE_DIR} "" RELPATH ${SOURCE})
+    message(">>> ${RELPATH}")
+    list(APPEND VOLCANO_SOURCES_RPATH ${RELPATH})
+endforeach()
+message(">>> ${VOLCANO_SOURCES_RPATH}")
+source_group(TREE "/" FILES ${VOLCANO_SOURCES_RPATH})
+source_group(\\mocs REGULAR_EXPRESSION "mocs_.*\\.cpp")
+
 # Others
 
 add_subdirectory(tools tools)

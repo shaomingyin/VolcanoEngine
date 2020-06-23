@@ -15,6 +15,7 @@ Mesh::~Mesh(void)
 
 void Mesh::setSource(const QUrl &v)
 {
+    qDebug() << "source" << v;
     if (m_source == v)
         return;
 

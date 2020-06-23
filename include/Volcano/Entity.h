@@ -13,7 +13,7 @@ class VOLCANO_API Entity: public Object
     Q_OBJECT
 
 public:
-    Entity(Object *parent = nullptr);
+    Entity(QObject *parent = nullptr);
     virtual ~Entity(void);
 
 private:

@@ -24,7 +24,7 @@ class VOLCANO_API Camera: public Object
     Q_PROPERTY(QVector3D up READ up WRITE setUp NOTIFY upChanged)
 
 public:
-    Camera(Object *parent = nullptr);
+    Camera(QObject *parent = nullptr);
     virtual ~Camera(void);
 
 public:

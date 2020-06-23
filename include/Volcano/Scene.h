@@ -8,8 +8,6 @@
 #include <QVector3D>
 #include <QScopedPointer>
 
-#include <btBulletDynamicsCommon.h>
-
 #include <Volcano/Common.h>
 #include <Volcano/Object.h>
 #include <Volcano/Entity.h>
@@ -21,7 +19,7 @@ class VOLCANO_API Scene: public Object
     Q_OBJECT
 
 public:
-    Scene(QObject *parent = nullptr);
+    Q_INVOKABLE Scene(QObject *parent = nullptr);
     ~Scene(void) override;
 
 public:

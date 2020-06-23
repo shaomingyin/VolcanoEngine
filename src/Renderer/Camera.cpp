@@ -4,7 +4,7 @@
 
 VOLCANO_RENDERER_BEGIN
 
-Camera::Camera(Object *parent):
+Camera::Camera(QObject *parent):
     Object(parent)
 {
 }

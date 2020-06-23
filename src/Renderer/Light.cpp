@@ -4,7 +4,7 @@
 
 VOLCANO_RENDERER_BEGIN
 
-Light::Light(Object *parent):
+Light::Light(QObject *parent):
     Object(parent)
 {
 }

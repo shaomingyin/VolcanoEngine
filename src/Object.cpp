@@ -10,6 +10,7 @@ Object::Object(QObject *parent):
     QObject(parent),
     m_flags(FlagEnable | FlagVisible)
 {
+    qDebug() << __func__;
 }
 
 Object::~Object(void)
