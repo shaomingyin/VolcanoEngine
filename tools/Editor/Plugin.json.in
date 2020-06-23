@@ -1,0 +1,10 @@
+{
+    "Name" : "VolcanoEditor",
+    "Version" : "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}",
+    "CompatVersion" : "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}",
+    "Vendor" : "Volcano",
+    "Copyright" : "(C) shaomingyin@outlook.com",
+    "License" : "Put your license information here",
+    "Description" : "Put a short description of your plugin here",
+    "Url" : "http://www.mycompany.com"
+}

@@ -1,0 +1,17 @@
+//
+//
+#ifndef VOLCANO_EDITOR_COMMON_H
+#define VOLCANO_EDITOR_COMMON_H
+
+#include <Volcano/Common.h>
+
+#if defined(VOLCANO_EDITOR)
+#   define VOLCANO_EDITOR_API Q_DECL_EXPORT
+#else
+#   define VOLCANO_EDITOR_API Q_DECL_IMPORT
+#endif
+
+#define VOLCANO_EDITOR_BEGIN VOLCANO_BEGIN namespace Editor {
+#define VOLCANO_EDITOR_END } VOLCANO_END
+
+#endif // VOLCANO_EDITOR_COMMON_H
