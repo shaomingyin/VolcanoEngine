@@ -13,62 +13,48 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Base
+find_package(Qt5Core REQUIRED)
+find_package(Qt5Gui REQUIRED)
+find_package(Qt5Concurrent REQUIRED)
+find_package(Qt5Qml REQUIRED)
+find_package(Qt5QuickControls2 REQUIRED)
+
+# libVolcano
+
+set(VOLCANO_DEBUG ON CACHE BOOL "Enable debug functions")
+set(VOLCANO_EDITOR ON CACHE BOOL "Enable editor")
 
 include_directories(
-    ${CMAKE_CURRENT_SOURCE_DIR}/Base/include
-    ${CMAKE_CURRENT_BINARY_DIR}/Base/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_BINARY_DIR}/include
     )
 
-add_subdirectory(Base Base)
+add_library(Volcano SHARED)
 
-# BulletPhysics
+target_link_libraries(Volcano
+	Qt5::Core
+	Qt5::Gui
+	Qt5::Concurrent
+    Qt5::Qml
+	)
 
-include_directories(
-    ${CMAKE_CURRENT_SOURCE_DIR}/BulletPhysics/include
-    ${CMAKE_CURRENT_BINARY_DIR}/BulletPhysics/include
-    )
+target_compile_definitions(Volcano
+	PRIVATE
+		VOLCANO
+	)
 
-add_subdirectory(BulletPhysics BulletPhysics)
+include(FindBullet)
+if(BULLET_FOUND)
+    target_include_directories(Volcano PUBLIC ${BULLET_INCLUDE_DIRS})
+    target_link_libraries(Volcano ${BULLET_LIBRARIES})
+else()
+    message(FATAL_ERROR "BulletPhysics not found.")
+endif()
 
-# OpenGLRenderer
-
-include_directories(
-    ${CMAKE_CURRENT_SOURCE_DIR}/OpenGLRenderer/include
-    ${CMAKE_CURRENT_BINARY_DIR}/OpenGLRenderer/include
-    )
-
-add_subdirectory(OpenGLRenderer OpenGLRenderer)
-
-# VulkanRenderer
-
-include_directories(
-    ${CMAKE_CURRENT_SOURCE_DIR}/VulkanRenderer/include
-    ${CMAKE_CURRENT_BINARY_DIR}/VulkanRenderer/include
-    )
-
-add_subdirectory(VulkanRenderer VulkanRenderer)
-
-# Editor
-
-include_directories(
-    ${CMAKE_CURRENT_SOURCE_DIR}/Editor/include
-    ${CMAKE_CURRENT_BINARY_DIR}/Editor/include
-    )
-
-add_subdirectory(Editor Editor)
-
-# Templates
-
-include_directories(
-    ${CMAKE_CURRENT_SOURCE_DIR}/Templates/include
-    ${CMAKE_CURRENT_BINARY_DIR}/Templates/include
-    )
-
-add_subdirectory(Templates Templates)
+add_subdirectory(include include)
+add_subdirectory(src src)
 
 # Others
 
-add_subdirectory(Demo Demo)
-add_subdirectory(Tools Tools)
-add_subdirectory(Documents Documents)
+add_subdirectory(tools tools)
+add_subdirectory(docs docs)
