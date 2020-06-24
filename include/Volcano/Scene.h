@@ -9,12 +9,12 @@
 #include <QScopedPointer>
 
 #include <Volcano/Common.h>
-#include <Volcano/Object.h>
+#include <Volcano/Node.h>
 #include <Volcano/Entity.h>
 
 VOLCANO_BEGIN
 
-class VOLCANO_API Scene: public Object
+class VOLCANO_API Scene: public Node
 {
     Q_OBJECT
 

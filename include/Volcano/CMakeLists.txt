@@ -1,13 +1,15 @@
 
-add_subdirectory(Renderer Renderer)
-
 target_sources(Volcano
     PUBLIC
+        Camera.h
 		Common.h
         Entity.h
-        Object.h
+        Light.h
+        Mesh.h
+        Node.h
         Renderer.h
         Scene.h
+        Viewport.h
     PRIVATE
         Config.h.in
 	)

@@ -1,7 +1,7 @@
 //
 //
-#ifndef VOLCANO_OBJECT_H
-#define VOLCANO_OBJECT_H
+#ifndef VOLCANO_NODE_H
+#define VOLCANO_NODE_H
 
 #include <QList>
 #include <QObject>
@@ -9,15 +9,13 @@
 #include <QVector3D>
 #include <QQuaternion>
 #include <QMatrix4x4>
+#include <QQmlListProperty>
 
 #include <Volcano/Common.h>
 
 VOLCANO_BEGIN
 
-class Object;
-typedef QList<Object *> ObjectList;
-
-class VOLCANO_API Object: public QObject
+class VOLCANO_API Node: public QObject
 {
     Q_OBJECT
     Q_PROPERTY(bool enable READ enable WRITE setEnable NOTIFY enableChanged)
@@ -25,10 +23,25 @@ class VOLCANO_API Object: public QObject
     Q_PROPERTY(QVector3D position READ position WRITE setPosition NOTIFY positionChanged)
     Q_PROPERTY(QVector3D scale READ scale WRITE setScale NOTIFY scaleChanged)
     Q_PROPERTY(QQuaternion rotation READ rotation WRITE setRotation NOTIFY rotationChanged)
+    Q_PROPERTY(Node *parent READ parentNode NOTIFY parentNodeChanged)
+    Q_PROPERTY(QQmlListProperty<Volcano::Node> children READ subNodesProperty)
+    Q_CLASSINFO("DefaultProperty", "children")
 
 public:
-    Q_INVOKABLE Object(QObject *parent = nullptr);
-    virtual ~Object(void);
+    enum State
+    {
+        StateReady = 0,
+        StateLoading,
+        StateError
+    };
+    Q_ENUMS(State)
+
+    Q_PROPERTY(State state READ state NOTIFY stateChanged)
+    Q_PROPERTY(qreal progress READ progress NOTIFY progressChanged)
+
+public:
+    Node(QObject *parent = nullptr);
+    virtual ~Node(void);
 
 public:
     bool enable(void) const;
@@ -41,8 +54,13 @@ public:
     void setScale(const QVector3D &v);
     const QQuaternion &rotation(void) const;
     void setRotation(const QQuaternion &v);
+    Node *parentNode(void);
+    QQmlListProperty<Node> subNodesProperty(void);
+    const QList<Node *> &subNodes(void) const;
     const QMatrix4x4 &transform(void);
     QMatrix4x4 globalTransform(void);
+    State state(void) const;
+    qreal progress(void) const;
 
 signals:
     void enableChanged(bool v);
@@ -50,6 +68,22 @@ signals:
     void positionChanged(const QVector3D &v);
     void scaleChanged(const QVector3D &v);
     void rotationChanged(const QQuaternion &v);
+    void parentNodeChanged(Node *p);
+    void stateChanged(State v);
+    void progressChanged(qreal v);
+
+protected:
+    void setState(State v);
+    void setProgress(qreal v);
+    void setParentNode(Node *node);
+    static void addSubNode(QQmlListProperty<Node> *property, Node *value);
+    static int subNodeCount(QQmlListProperty<Node> *property);
+    static Node *subNode(QQmlListProperty<Node> *property, int index);
+    static void clearSubNodes(QQmlListProperty<Node> *property);
+#if 0
+    static void replaceSubNode(QQmlListProperty<Node> *property, int index, Node *value);
+    static void removeLastSubNode(QQmlListProperty<Node> *property);
+#endif
 
 private:
     enum
@@ -60,21 +94,23 @@ private:
     };
 
     int m_flags;
+    State m_state;
+    qreal m_progress;
     QVector3D m_position;
     QVector3D m_scale;
     QQuaternion m_rotation;
     QMatrix4x4 m_transform;
+    Node *m_parentNode;
+    QList<Node *> m_subNodes;
 };
 
-VOLCANO_INLINE bool Object::enable(void) const
+VOLCANO_INLINE bool Node::enable(void) const
 {
-    qDebug() << "object is enable";
     return (m_flags & FlagEnable);
 }
 
-VOLCANO_INLINE void Object::setEnable(bool v)
+VOLCANO_INLINE void Node::setEnable(bool v)
 {
-    qDebug() << "object enable" <<v;
     if (enable() != v)
     {
         if (v)
@@ -85,15 +121,13 @@ VOLCANO_INLINE void Object::setEnable(bool v)
     }
 }
 
-VOLCANO_INLINE bool Object::visible(void) const
+VOLCANO_INLINE bool Node::visible(void) const
 {
-    qDebug() << "object is visible";
     return (m_flags & FlagVisible);
 }
 
-VOLCANO_INLINE void Object::setVisible(bool v)
+VOLCANO_INLINE void Node::setVisible(bool v)
 {
-    qDebug() << "object vis" <<v;
     if (visible() != v)
     {
         if (v)
@@ -105,12 +139,12 @@ VOLCANO_INLINE void Object::setVisible(bool v)
     }
 }
 
-VOLCANO_INLINE const QVector3D &Object::position(void) const
+VOLCANO_INLINE const QVector3D &Node::position(void) const
 {
     return m_position;
 }
 
-VOLCANO_INLINE void Object::setPosition(const QVector3D &v)
+VOLCANO_INLINE void Node::setPosition(const QVector3D &v)
 {
     if (m_position != v)
     {
@@ -120,12 +154,12 @@ VOLCANO_INLINE void Object::setPosition(const QVector3D &v)
     }
 }
 
-VOLCANO_INLINE const QVector3D &Object::scale(void) const
+VOLCANO_INLINE const QVector3D &Node::scale(void) const
 {
     return m_scale;
 }
 
-VOLCANO_INLINE void Object::setScale(const QVector3D &v)
+VOLCANO_INLINE void Node::setScale(const QVector3D &v)
 {
     if (m_scale != v)
     {
@@ -135,12 +169,12 @@ VOLCANO_INLINE void Object::setScale(const QVector3D &v)
     }
 }
 
-VOLCANO_INLINE const QQuaternion &Object::rotation(void) const
+VOLCANO_INLINE const QQuaternion &Node::rotation(void) const
 {
     return m_rotation;
 }
 
-VOLCANO_INLINE void Object::setRotation(const QQuaternion &v)
+VOLCANO_INLINE void Node::setRotation(const QQuaternion &v)
 {
     if (m_rotation != v)
     {
@@ -150,7 +184,17 @@ VOLCANO_INLINE void Object::setRotation(const QQuaternion &v)
     }
 }
 
-VOLCANO_INLINE const QMatrix4x4 &Object::transform(void)
+VOLCANO_INLINE Node *Node::parentNode(void)
+{
+    return m_parentNode;
+}
+
+VOLCANO_INLINE const QList<Node *> &Node::subNodes(void) const
+{
+    return m_subNodes;
+}
+
+VOLCANO_INLINE const QMatrix4x4 &Node::transform(void)
 {
     if (m_flags & FlagDirty)
     {
@@ -163,6 +207,20 @@ VOLCANO_INLINE const QMatrix4x4 &Object::transform(void)
     return m_transform;
 }
 
+VOLCANO_INLINE Node::State Node::state(void) const
+{
+    return m_state;
+}
+
+VOLCANO_INLINE qreal Node::progress(void) const
+{
+    if (m_state == StateLoading)
+        return m_progress;
+    if (m_state == StateReady)
+        return 1.0;
+    return 0.0;
+}
+
 VOLCANO_END
 
-#endif // VOLCANO_OBJECT_H
+#endif // VOLCANO_NODE_H

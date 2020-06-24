@@ -4,11 +4,11 @@
 #define VOLCANO_ENTITY_H
 
 #include <Volcano/Common.h>
-#include <Volcano/Object.h>
+#include <Volcano/Node.h>
 
 VOLCANO_BEGIN
 
-class VOLCANO_API Entity: public Object
+class VOLCANO_API Entity: public Node
 {
     Q_OBJECT
 

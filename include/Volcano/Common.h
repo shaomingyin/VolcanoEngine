@@ -22,6 +22,14 @@
 
 VOLCANO_BEGIN
 
+struct Vertex {
+    struct { float x, y, z; } position;
+    struct { float x, y, z; } normal;
+    struct { float u, v; } texCoord;
+};
+
+typedef quint16 VertexIndex;
+
 template <typename T>
 void registerType(const char *uri, const char *qmlName)
 {
