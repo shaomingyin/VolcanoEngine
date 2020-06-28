@@ -1,8 +1,8 @@
 //
 //
-#include <Volcano/Light.h>
+#include <Volcano/Renderer/Light.h>
 
-VOLCANO_BEGIN
+VOLCANO_RENDERER_BEGIN
 
 Light::Light(QObject *parent):
     Node(parent)
@@ -15,4 +15,4 @@ Light::~Light(void)
 {
 }
 
-VOLCANO_END
+VOLCANO_RENDERER_END

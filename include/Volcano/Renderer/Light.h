@@ -1,12 +1,12 @@
 //
 //
-#ifndef VOLCANO_LIGHT_H
-#define VOLCANO_LIGHT_H
+#ifndef VOLCANO_RENDERER_LIGHT_H
+#define VOLCANO_RENDERER_LIGHT_H
 
 #include <Volcano/Node.h>
-#include <Volcano/Common.h>
+#include <Volcano/Renderer/Common.h>
 
-VOLCANO_BEGIN
+VOLCANO_RENDERER_BEGIN
 
 class VOLCANO_API Light: public Node
 {
@@ -20,6 +20,6 @@ private:
     // mesh resource
 };
 
-VOLCANO_END
+VOLCANO_RENDERER_END
 
-#endif // VOLCANO_LIGHT_H
+#endif // VOLCANO_RENDERER_LIGHT_H

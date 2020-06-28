@@ -1,11 +1,11 @@
 
+add_subdirectory(Renderer Renderer)
+
 target_sources(Volcano
     PUBLIC
         Camera.h
 		Common.h
         Entity.h
-        Light.h
-        Mesh.h
         Node.h
         Renderer.h
         Scene.h

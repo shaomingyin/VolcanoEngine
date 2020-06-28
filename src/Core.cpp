@@ -23,10 +23,11 @@ VOLCANO_API bool init(void)
     registerType<Node>("Volcano", "Node");
     registerType<Entity>("Volcano", "Entity");
     registerType<Scene>("Volcano", "Scene");
-    registerType<Mesh>("Volcano", "Mesh");
-    registerType<Light>("Volcano", "Light");
     registerType<Camera>("Volcano", "Camera");
     registerType<Viewport>("Volcano", "Viewport");
+
+    registerType<Renderer::Light>("Volcano.Renderer", "Light");
+    registerType<Renderer::Mesh>("Volcano.Renderer", "Mesh");
 
     return true;
 }

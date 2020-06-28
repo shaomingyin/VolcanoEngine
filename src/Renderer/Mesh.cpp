@@ -1,8 +1,8 @@
 //
 //
-#include <Volcano/Mesh.h>
+#include <Volcano/Renderer/Mesh.h>
 
-VOLCANO_BEGIN
+VOLCANO_RENDERER_BEGIN
 
 Mesh::Mesh(QObject *parent):
     Node(parent)
@@ -30,4 +30,4 @@ void Mesh::setSource(const QUrl &v)
     sourceChanged(v);
 }
 
-VOLCANO_END
+VOLCANO_RENDERER_END

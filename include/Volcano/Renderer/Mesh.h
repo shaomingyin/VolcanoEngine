@@ -1,14 +1,14 @@
 //
 //
-#ifndef VOLCANO_MESH_H
-#define VOLCANO_MESH_H
+#ifndef VOLCANO_RENDERER_MESH_H
+#define VOLCANO_RENDERER_MESH_H
 
 #include <QUrl>
 
 #include <Volcano/Node.h>
-#include <Volcano/Common.h>
+#include <Volcano/Renderer/Common.h>
 
-VOLCANO_BEGIN
+VOLCANO_RENDERER_BEGIN
 
 class VOLCANO_API Mesh: public Node
 {
@@ -35,6 +35,6 @@ VOLCANO_INLINE const QUrl &Mesh::source(void) const
     return m_source;
 }
 
-VOLCANO_END
+VOLCANO_RENDERER_END
 
-#endif // VOLCANO_MESH_H
+#endif // VOLCANO_RENDERER_MESH_H

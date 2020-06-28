@@ -8,8 +8,6 @@
 #include <Volcano/Entity.h>
 #include <Volcano/Scene.h>
 #include <Volcano/Renderer.h>
-#include <Volcano/Mesh.h>
-#include <Volcano/Light.h>
 #include <Volcano/Camera.h>
 #include <Volcano/Viewport.h>
 
