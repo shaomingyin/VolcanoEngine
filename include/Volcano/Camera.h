@@ -13,7 +13,7 @@
 
 VOLCANO_BEGIN
 
-class VOLCANO_API Camera: public Node
+class Camera: public Node
 {
     Q_OBJECT
     Q_PROPERTY(float fov READ fov WRITE setFov NOTIFY fovChanged)

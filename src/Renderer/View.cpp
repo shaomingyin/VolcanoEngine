@@ -4,7 +4,8 @@
 
 VOLCANO_RENDERER_BEGIN
 
-View::View(void)
+View::View(void):
+    m_clear(true)
 {
 }
 
@@ -12,7 +13,7 @@ View::~View(void)
 {
 }
 
-void View::clear(void)
+void View::reset(void)
 {
 }
 

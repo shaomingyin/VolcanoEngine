@@ -14,7 +14,7 @@
 
 VOLCANO_BEGIN
 
-class VOLCANO_API Scene: public Node
+class Scene: public Node
 {
     Q_OBJECT
 

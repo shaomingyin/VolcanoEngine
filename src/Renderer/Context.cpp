@@ -38,6 +38,12 @@ bool Context::init(void)
 void Context::render(View &view)
 {
     Q_ASSERT(c_current == this);
+
+    if (view.clear()) {
+        const QColor &color = view.clearColor();
+        m_gl->glClearColor(color.redF(), color.greenF(), color.blueF(), color.alphaF());
+        m_gl->glClear(GL_COLOR_BUFFER_BIT);
+    }
 }
 
 VOLCANO_RENDERER_END

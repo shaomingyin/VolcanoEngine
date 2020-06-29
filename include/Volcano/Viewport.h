@@ -11,7 +11,7 @@
 
 VOLCANO_BEGIN
 
-class VOLCANO_API Viewport: public QQuickFramebufferObject
+class Viewport: public QQuickFramebufferObject
 {
     Q_OBJECT
     Q_PROPERTY(Node *target READ target WRITE setTarget NOTIFY targetChanged)

@@ -8,7 +8,7 @@
 
 VOLCANO_BEGIN
 
-class VOLCANO_API Entity: public Node
+class Entity: public Node
 {
     Q_OBJECT
 

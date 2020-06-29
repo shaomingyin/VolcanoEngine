@@ -28,6 +28,7 @@ private:
 ViewportRenderer::ViewportRenderer(void):
     m_root(nullptr)
 {
+    m_view.setClear(true);
 }
 
 ViewportRenderer::~ViewportRenderer(void)
@@ -51,9 +52,11 @@ void ViewportRenderer::synchronize(QQuickFramebufferObject *obj)
     if (Q_UNLIKELY(m_root != viewport->target()))
         load(viewport->target());
 
-    m_view.clear();
-    m_view.setViewport(QRect(viewport->x(), viewport->y(), viewport->width(), viewport->height()));
+    m_view.reset();
     m_view.setViewMatrix(viewport->camera()->viewMatrix());
+
+    //QMatrix4x4 m;
+    //m.Perspective(viewport->camera()->fov(), )
     //m_view.setProjectMatrix(viewport->camera()->)
 }
 

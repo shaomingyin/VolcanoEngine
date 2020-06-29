@@ -4,11 +4,11 @@ add_subdirectory(Renderer Renderer)
 target_sources(Volcano
     PRIVATE
         Camera.cpp
-        Core.cpp
+        Editor.cpp
         Entity.cpp
+        Launcher.cpp
+        Main.cpp
         Node.cpp
-        Renderer.cpp
-        Resources.qrc
         Scene.cpp
         Viewport.cpp
     )

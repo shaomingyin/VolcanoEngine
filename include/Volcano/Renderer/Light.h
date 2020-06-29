@@ -8,7 +8,7 @@
 
 VOLCANO_RENDERER_BEGIN
 
-class VOLCANO_API Light: public Node
+class Light: public Node
 {
     Q_OBJECT
 

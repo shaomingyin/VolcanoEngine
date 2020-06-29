@@ -15,7 +15,7 @@
 
 VOLCANO_BEGIN
 
-class VOLCANO_API Node: public QObject
+class Node: public QObject
 {
     Q_OBJECT
     Q_PROPERTY(bool enable READ enable WRITE setEnable NOTIFY enableChanged)
@@ -30,8 +30,8 @@ class VOLCANO_API Node: public QObject
 public:
     enum State
     {
-        StateReady = 0,
-        StateLoading,
+        StateLoading = 0,
+        StateReady,
         StateError
     };
     Q_ENUMS(State)

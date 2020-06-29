@@ -10,7 +10,7 @@
 
 VOLCANO_RENDERER_BEGIN
 
-class VOLCANO_API Mesh: public Node
+class Mesh: public Node
 {
     Q_OBJECT
     Q_PROPERTY(QUrl source READ source WRITE setSource NOTIFY sourceChanged)

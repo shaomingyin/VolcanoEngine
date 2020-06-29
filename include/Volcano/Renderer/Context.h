@@ -20,7 +20,7 @@ typedef QOpenGLFunctions_3_3_Core OpenGLFunctions;
 typedef QSharedPointer<QOpenGLShaderProgram> OpenGLShaderProgramPtr;
 typedef QVector<OpenGLShaderProgramPtr> OpenGLShaderProgramArray;
 
-class VOLCANO_API Context: public QObject
+class Context: public QObject
 {
     Q_OBJECT
 

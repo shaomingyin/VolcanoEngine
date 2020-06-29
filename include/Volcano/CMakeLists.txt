@@ -5,7 +5,9 @@ target_sources(Volcano
     PUBLIC
         Camera.h
 		Common.h
+        Editor.h
         Entity.h
+        Launcher.h
         Node.h
         Renderer.h
         Scene.h
