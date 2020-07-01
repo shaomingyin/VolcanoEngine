@@ -1,4 +1,9 @@
 
+add_subdirectory(GL GL)
+add_subdirectory(glm glm)
+add_subdirectory(KHR KHR)
+add_subdirectory(Volcano Volcano)
+
 target_sources(Volcano
 	PUBLIC
 		GL.hpp
