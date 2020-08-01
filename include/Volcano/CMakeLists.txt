@@ -1,19 +1,27 @@
 
-add_subdirectory(Graphics Graphics)
-add_subdirectory(Physics Physics)
-add_subdirectory(Sound Sound)
-
 target_sources(Volcano
-    PUBLIC
+    PRIVATE
         Camera.hpp
         Common.hpp
-        Entity.hpp
-        Event.hpp
-        Graphics.hpp
-        Node.hpp
-        Physics.hpp
-        Scene.hpp
-        Sound.hpp
-    PRIVATE
         Config.hpp.in
+        DirectionalLight.hpp
+        Entity.hpp
+        Light.hpp
+        Mesh.hpp
+        Node.hpp
+        OpenGLBuffer.hpp
+        OpenGLHeap.hpp
+        OpenGLMemory.hpp
+        OpenGLMesh.hpp
+        OpenGLRenderer.hpp
+        PointLight.hpp
+        Scene.hpp
+        SpotLight.hpp
+        View.hpp
+        Viewport.hpp
+    )
+
+configure_file(
+    Config.hpp.in
+    Config.hpp
     )

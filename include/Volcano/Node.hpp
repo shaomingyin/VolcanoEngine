@@ -3,37 +3,57 @@
 #ifndef VOLCANO_NODE_HPP
 #define VOLCANO_NODE_HPP
 
+#include <QVector>
+#include <QObject>
+#include <QQmlListProperty>
+
 #include <Volcano/Common.hpp>
 
 VOLCANO_BEGIN
 
-class Node {
+class Node: public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(Node *parentNode READ parentNode WRITE setParentNode NOTIFY parentChanged)
+    Q_PROPERTY(QQmlListProperty<Volcano::Node> subNodes READ subNodes)
+    Q_CLASSINFO("DefaultProperty", "subNodes")
+
 public:
 	Node(Node *parent = nullptr);
-	virtual ~Node(void);
+    ~Node(void) override;
 
 public:
 	bool enabled(void) const;
 	void setEnabled(bool v);
 	bool visibled(void) const;
 	void setVisibled(bool v);
-	Node *parent(void);
-	void setParent(Node *newParent);
-	Node *firstChild(void);
-	Node *prevSibling(void);
-	Node *nextSibling(void);
+    Node *parentNode(void);
+    void setParentNode(Node *parent);
+    QQmlListProperty<Volcano::Node> subNodes(void);
+
+signals:
+    void parentChanged(Node *parent);
 
 private:
-	enum {
+    static void addSubNode(QQmlListProperty<Volcano::Node> *nodes, Node *node);
+    static int subNodeCount(QQmlListProperty<Volcano::Node> *nodes);
+    static Node *subNode(QQmlListProperty<Volcano::Node> *nodes, int index);
+    static void clearSubNode(QQmlListProperty<Volcano::Node> *nodes);
+    static void replaceSubNode(QQmlListProperty<Volcano::Node> *nodes, int index, Node *node);
+    static void removeLastSubNode(QQmlListProperty<Volcano::Node> *nodes);
+
+private:
+    typedef QVector<Node *> Nodes;
+
+    enum
+    {
 		FlagEnabled = 0x1,
 		FlagVisibled = 0x2
 	};
 
 	int m_flags;
-	Node *m_parent;
-	Node *m_firstChild;
-	Node *m_prevSibling;
-	Node *m_nextSibling;
+    Node *m_parentNode;
+    Nodes m_subNodes;
 };
 
 VOLCANO_INLINE bool Node::enabled(void) const
@@ -62,24 +82,18 @@ VOLCANO_INLINE void Node::setVisibled(bool v)
 		m_flags &= ~FlagVisibled;
 }
 
-VOLCANO_INLINE Node *Node::parent(void)
+VOLCANO_INLINE Node *Node::parentNode(void)
 {
-	return m_parent;
+    return m_parentNode;
 }
 
-VOLCANO_INLINE Node *Node::firstChild(void)
+VOLCANO_INLINE void Node::setParentNode(Node *parent)
 {
-	return m_firstChild;
-}
-
-VOLCANO_INLINE Node *Node::prevSibling(void)
-{
-	return m_prevSibling;
-}
-
-VOLCANO_INLINE Node *Node::nextSibling(void)
-{
-	return m_nextSibling;
+    if (m_parentNode != parent)
+    {
+        m_parentNode = parent;
+        parentChanged(parent);
+    }
 }
 
 VOLCANO_END

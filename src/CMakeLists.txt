@@ -1,5 +1,21 @@
 
-add_subdirectory(GL GL)
-add_subdirectory(nanovg nanovg)
-add_subdirectory(pugixml pugixml)
-add_subdirectory(Volcano Volcano)
+target_sources(Volcano
+	PRIVATE
+		Camera.cpp
+		DirectionalLight.cpp
+		Entity.cpp
+		Light.cpp
+		Main.cpp
+		Mesh.cpp
+		Node.cpp
+		OpenGLBuffer.cpp
+		OpenGLHeap.cpp
+		OpenGLMemory.cpp
+		OpenGLMesh.cpp
+        OpenGLRenderer.cpp
+		PointLight.cpp
+		Scene.cpp
+		SpotLight.cpp
+		View.cpp
+		Viewport.cpp
+	)

@@ -3,21 +3,11 @@
 #ifndef VOLCANO_COMMON_HPP
 #define VOLCANO_COMMON_HPP
 
-#include <cstdint>
-#include <cassert>
-
-#define GLM_FORCE_INLINE
-#define GLM_FORCE_CXX17
-#include <glm/glm.hpp>
-#include <glm/ext.hpp>
+#include <QtGlobal>
+#include <QDebug>
+#include <QVector3D>
 
 #include <Volcano/Config.h>
-
-#ifdef VOLCANO_DEBUG
-#	define VOLCANO_ASSERT(expr) assert(expr)
-#else
-#	define VOLCANO_ASSERT(expr)
-#endif
 
 #define VOLCANO_INLINE inline
 
@@ -25,6 +15,14 @@
 #define VOLCANO_END }
 
 VOLCANO_BEGIN
+
+struct Vertex {
+    QVector3D position;
+    QVector3D normal;
+    QVector3D texCoord;
+};
+
+typedef quint32 VertexIndex;
 
 VOLCANO_END
 
