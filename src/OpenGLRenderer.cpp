@@ -28,11 +28,11 @@ bool OpenGLRenderer::init(void)
     return true;
 }
 
-void OpenGLRenderer::beginFrame(void)
+void OpenGLRenderer::reset(int width, int height)
 {
 }
 
-void OpenGLRenderer::endFrame(void)
+void OpenGLRenderer::render(void)
 {
     Q_ASSERT(m_gl != nullptr);
 

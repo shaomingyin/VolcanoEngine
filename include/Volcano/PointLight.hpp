@@ -8,7 +8,7 @@
 
 VOLCANO_BEGIN
 
-class PointLight: public Light
+class VOLCANO_API PointLight: public Light
 {
     Q_OBJECT
 

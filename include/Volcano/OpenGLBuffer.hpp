@@ -7,7 +7,7 @@
 
 VOLCANO_BEGIN
 
-class OpenGLBuffer
+class VOLCANO_API OpenGLBuffer
 {
 public:
     OpenGLBuffer(void);

@@ -2,10 +2,10 @@
 target_sources(Volcano
 	PRIVATE
 		Camera.cpp
+		Core.cpp
 		DirectionalLight.cpp
 		Entity.cpp
 		Light.cpp
-		Main.cpp
 		Mesh.cpp
 		Node.cpp
 		OpenGLBuffer.cpp

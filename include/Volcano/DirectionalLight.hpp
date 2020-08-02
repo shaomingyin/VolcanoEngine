@@ -10,7 +10,7 @@
 
 VOLCANO_BEGIN
 
-class DirectionalLight: public Light
+class VOLCANO_API DirectionalLight: public Light
 {
     Q_OBJECT
 

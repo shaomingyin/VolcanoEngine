@@ -121,7 +121,7 @@ OpenGLBuffer *OpenGLHeap::allocBuffer(int size)
 void OpenGLHeap::freeBuffer(OpenGLHeapBuffer *buf)
 {
     Q_ASSERT(buf != NULL);
-    Q_ASSERT(buf->m_heap == this);
+    Q_ASSERT(buf->m_heap == &m_heap);
     Q_ASSERT(buf->m_size > 0);
     Q_ASSERT(m_bufferList.contains(buf));
 

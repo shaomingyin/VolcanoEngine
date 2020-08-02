@@ -12,11 +12,11 @@
 
 VOLCANO_BEGIN
 
-class Camera : public Node {
+class VOLCANO_API Camera : public Node {
     Q_OBJECT
     Q_PROPERTY(QRectF rect READ rect WRITE setRect NOTIFY rectChanged)
-    Q_PROPERTY(float near READ near WRITE setNear NOTIFY nearChanged)
-    Q_PROPERTY(float far READ far WRITE setFar NOTIFY farChanged)
+    Q_PROPERTY(float nearPlane READ nearPlane WRITE setNearPlane NOTIFY nearPlaneChanged)
+    Q_PROPERTY(float farPlane READ farPlane WRITE setFarPlane NOTIFY farPlaneChanged)
     Q_PROPERTY(float fov READ fov WRITE setFov NOTIFY fovChanged)
     Q_PROPERTY(QVector3D position READ position WRITE setPosition NOTIFY positionChanged)
     Q_PROPERTY(QVector3D direction READ direction WRITE setDirection NOTIFY directionChanged)
@@ -29,10 +29,10 @@ public:
 public:
     const QRectF &rect(void) const;
     void setRect(const QRectF &v);
-    float near(void) const;
-    void setNear(float v);
-	float far(void) const;
-    void setFar(float v);
+    float nearPlane(void) const;
+    void setNearPlane(float v);
+    float farPlane(void) const;
+    void setFarPlane(float v);
     float fov(void) const;
     void setFov(float v);
     const QVector3D &position(void) const;
@@ -47,8 +47,8 @@ public:
 
 signals:
     void rectChanged(void);
-    void nearChanged(void);
-    void farChanged(void);
+    void nearPlaneChanged(void);
+    void farPlaneChanged(void);
     void fovChanged(void);
     void positionChanged(void);
     void directionChanged(void);
@@ -56,8 +56,8 @@ signals:
 
 private:
     QRectF m_rect;
-	float m_near;
-	float m_far;
+    float m_nearPlane;
+    float m_farPlane;
     float m_fov;
     QVector3D m_position;
     QVector3D m_direction;
@@ -78,31 +78,31 @@ VOLCANO_INLINE void Camera::setRect(const QRectF &v)
     }
 }
 
-VOLCANO_INLINE float Camera::near(void) const
+VOLCANO_INLINE float Camera::nearPlane(void) const
 {
-	return m_near;
+    return m_nearPlane;
 }
 
-VOLCANO_INLINE void Camera::setNear(float v)
+VOLCANO_INLINE void Camera::setNearPlane(float v)
 {
-    if (m_near != v)
+    if (m_nearPlane != v)
     {
-        m_near = v;
-        nearChanged();
+        m_nearPlane = v;
+        nearPlaneChanged();
     }
 }
 
-VOLCANO_INLINE float Camera::far(void) const
+VOLCANO_INLINE float Camera::farPlane(void) const
 {
-	return m_far;
+    return m_farPlane;
 }
 
-VOLCANO_INLINE void Camera::setFar(float v)
+VOLCANO_INLINE void Camera::setFarPlane(float v)
 {
-    if (m_far != v)
+    if (m_farPlane != v)
     {
-        m_far = v;
-        farChanged();
+        m_farPlane = v;
+        farPlaneChanged();
     }
 }
 
@@ -177,7 +177,7 @@ VOLCANO_INLINE void Camera::calcViewMatrix(QMatrix4x4 &v) const
 VOLCANO_INLINE void Camera::calcProjectMatrix(QMatrix4x4 &v) const
 {
     if (m_fov > 0.01f)
-        v.perspective(m_fov, m_rect.width() / m_rect.height(), m_near, m_far);
+        v.perspective(m_fov, m_rect.width() / m_rect.height(), m_nearPlane, m_farPlane);
     else
         v.ortho(m_rect);
 }

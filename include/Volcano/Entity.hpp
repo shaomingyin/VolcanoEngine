@@ -12,7 +12,7 @@
 
 VOLCANO_BEGIN
 
-class Entity: public Node
+class VOLCANO_API Entity: public Node
 {
     Q_OBJECT
     Q_PROPERTY(QVector3D position READ position WRITE setPosition NOTIFY positionChanged)

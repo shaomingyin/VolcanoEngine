@@ -11,7 +11,7 @@
 
 VOLCANO_BEGIN
 
-class Node: public QObject
+class VOLCANO_API Node: public QObject
 {
     Q_OBJECT
     Q_PROPERTY(Node *parentNode READ parentNode WRITE setParentNode NOTIFY parentChanged)

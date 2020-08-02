@@ -1,8 +1,10 @@
 
 target_sources(Volcano
+    PUBLIC
+        Common.hpp
+
     PRIVATE
         Camera.hpp
-        Common.hpp
         Config.hpp.in
         DirectionalLight.hpp
         Entity.hpp

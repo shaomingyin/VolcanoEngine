@@ -9,7 +9,7 @@
 
 VOLCANO_BEGIN
 
-class OpenGLRenderer
+class VOLCANO_API OpenGLRenderer
 {
 public:
     OpenGLRenderer(void);
@@ -17,13 +17,15 @@ public:
 
 public:
     bool init(void);
-    void beginFrame(void);
-    void endFrame(void);
+    void reset(int width, int height);
+    void render(void);
 
 private:
     typedef QOpenGLFunctions_3_3_Core OpenGLFunctions;
 
     OpenGLFunctions *m_gl;
+    int m_width;
+    int m_height;
 };
 
 VOLCANO_END

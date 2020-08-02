@@ -3,39 +3,39 @@
 #ifndef VOLCANO_MESH_HPP
 #define VOLCANO_MESH_HPP
 
-#include <QString>
+#include <QUrl>
 
 #include <Volcano/Common.hpp>
 #include <Volcano/Node.hpp>
 
 VOLCANO_BEGIN
 
-class Mesh: public Node
+class VOLCANO_API Mesh: public Node
 {
     Q_OBJECT
-    Q_PROPERTY(QString source READ source WRITE setSource NOTIFY sourceChanged)
+    Q_PROPERTY(QUrl source READ source WRITE setSource NOTIFY sourceChanged)
 
 public:
     Mesh(Node *parent = nullptr);
     ~Mesh(void) override;
 
 public:
-    const QString &source(void) const;
-    void setSource(const QString &v);
+    const QUrl &source(void) const;
+    void setSource(const QUrl &v);
 
 signals:
     void sourceChanged(void);
 
 private:
-    QString m_source;
+    QUrl m_source;
 };
 
-VOLCANO_INLINE const QString &Mesh::source(void) const
+VOLCANO_INLINE const QUrl &Mesh::source(void) const
 {
     return m_source;
 }
 
-VOLCANO_INLINE void Mesh::setSource(const QString &v)
+VOLCANO_INLINE void Mesh::setSource(const QUrl &v)
 {
     if (m_source != v)
     {

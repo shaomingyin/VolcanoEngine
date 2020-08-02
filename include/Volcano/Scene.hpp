@@ -8,7 +8,7 @@
 
 VOLCANO_BEGIN
 
-class Scene: public Node {
+class VOLCANO_API Scene: public Node {
 public:
 	Scene(Node *parent = nullptr);
 	~Scene(void) override;

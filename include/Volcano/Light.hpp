@@ -10,7 +10,7 @@
 
 VOLCANO_BEGIN
 
-class Light: public Node
+class VOLCANO_API Light: public Node
 {
     Q_OBJECT
     Q_PROPERTY(QColor color READ color WRITE setColor NOTIFY colorChanged)

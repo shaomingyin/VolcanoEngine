@@ -8,7 +8,7 @@
 
 VOLCANO_BEGIN
 
-class OpenGLMesh
+class VOLCANO_API OpenGLMesh
 {
 public:
     OpenGLMesh(OpenGLMemory &memory);

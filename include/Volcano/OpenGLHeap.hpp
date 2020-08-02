@@ -13,7 +13,7 @@ VOLCANO_BEGIN
 
 class OpenGLHeapBuffer;
 
-class OpenGLHeap
+class VOLCANO_API OpenGLHeap
 {
 public:
     OpenGLHeap(QOpenGLBuffer::Type type, QOpenGLBuffer::UsagePattern usage);

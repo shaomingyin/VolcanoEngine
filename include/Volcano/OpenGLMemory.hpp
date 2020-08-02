@@ -11,7 +11,7 @@
 
 VOLCANO_BEGIN
 
-class OpenGLMemory
+class VOLCANO_API OpenGLMemory
 {
 public:
     OpenGLMemory(void);
