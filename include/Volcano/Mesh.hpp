@@ -35,15 +35,6 @@ VOLCANO_INLINE const QUrl &Mesh::source(void) const
     return m_source;
 }
 
-VOLCANO_INLINE void Mesh::setSource(const QUrl &v)
-{
-    if (m_source != v)
-    {
-        m_source = v;
-        sourceChanged();
-    }
-}
-
 VOLCANO_END
 
 #endif // VOLCANO_MESH_HPP

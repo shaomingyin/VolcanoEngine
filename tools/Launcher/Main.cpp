@@ -26,7 +26,6 @@ int main(int argc, char *argv[])
     QUrl url;
     const QStringList urls = parser.positionalArguments();
 
-    qDebug() << "url size" <<urls.size();
     if (urls.size() < 1)
         url = QUrl::fromLocalFile(QDir::currentPath() + "/index.qml");
     else if (urls.size() == 1)
@@ -34,13 +33,17 @@ int main(int argc, char *argv[])
     else
         return EXIT_FAILURE;
 
-    qDebug() << "URL: " << url.toString();
+    qInfo() << "URL:" << url.toString();
 
     Volcano::init();
+
+    qDebug() << "Create Qml engine...";
 
     QScopedPointer<QQmlApplicationEngine> engine(new QQmlApplicationEngine(url));
     if (!engine)
         return EXIT_FAILURE;
+
+    qDebug() << "Running...";
 
     return app.exec();
 }

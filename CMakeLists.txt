@@ -13,6 +13,7 @@ set(CMAKE_AUTOMOC ON)
 
 find_package(Qt5Core REQUIRED)
 find_package(Qt5Concurrent REQUIRED)
+find_package(Qt5Network REQUIRED)
 find_package(Qt5Gui REQUIRED)
 find_package(Qt5Qml REQUIRED)
 find_package(Qt5Quick REQUIRED)
@@ -42,6 +43,7 @@ target_compile_definitions(Volcano PRIVATE VOLCANO)
 target_link_libraries(Volcano
 	Qt5::Core
     Qt5::Concurrent
+    Qt5::Network
 	Qt5::Gui
 	Qt5::Qml
     Qt5::Quick

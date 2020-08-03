@@ -13,4 +13,8 @@ Scene::~Scene(void)
 {
 }
 
+void buildView(View &view, Camera &camera)
+{
+}
+
 VOLCANO_END

@@ -1,5 +1,6 @@
 //
 //
+#include <QSurfaceFormat>
 #include <QQmlEngine>
 
 #include <Volcano/Node.hpp>
@@ -32,6 +33,27 @@ void registerUncreatableType(const char *typeName)
 
 VOLCANO_API bool init(void)
 {
+    qDebug() << "Initializing default OpenGL surface format...";
+
+    QSurfaceFormat format;
+
+    format.setVersion(3, 3);
+    format.setProfile(QSurfaceFormat::CoreProfile);
+    format.setSwapBehavior(QSurfaceFormat::DoubleBuffer);
+    format.setRedBufferSize(8);
+    format.setGreenBufferSize(8);
+    format.setBlueBufferSize(8);
+    format.setAlphaBufferSize(8);
+    format.setDepthBufferSize(24);
+
+#ifdef VOLCANO_DEBUG
+    format.setOption(QSurfaceFormat::DebugContext, 1);
+#endif
+
+    QSurfaceFormat::setDefaultFormat(format);
+
+    qDebug() << "Registering Volcano QML types...";
+
     registerUncreatableType<Volcano::Node>("Node");
     registerUncreatableType<Volcano::Light>("Light");
 

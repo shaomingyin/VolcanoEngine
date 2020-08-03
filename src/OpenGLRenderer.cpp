@@ -23,7 +23,9 @@ bool OpenGLRenderer::init(void)
     if (m_gl == nullptr)
         return false;
 
-    m_gl->glClearColor(0.3f, 0.8f, 0.3f, 0.0f);
+    qInfo() << "OpenGL:" << (const char *)m_gl->glGetString(GL_VERSION);
+
+    m_gl->glClearColor(0.3f, 0.3f, 0.3f, 0.0f);
 
     return true;
 }

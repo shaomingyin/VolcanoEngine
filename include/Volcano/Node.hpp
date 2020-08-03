@@ -14,7 +14,7 @@ VOLCANO_BEGIN
 class VOLCANO_API Node: public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(Node *parentNode READ parentNode WRITE setParentNode NOTIFY parentChanged)
+    Q_PROPERTY(Node *parentNode READ parentNode NOTIFY parentChanged)
     Q_PROPERTY(QQmlListProperty<Volcano::Node> subNodes READ subNodes)
     Q_CLASSINFO("DefaultProperty", "subNodes")
 
@@ -28,13 +28,13 @@ public:
 	bool visibled(void) const;
 	void setVisibled(bool v);
     Node *parentNode(void);
-    void setParentNode(Node *parent);
     QQmlListProperty<Volcano::Node> subNodes(void);
 
 signals:
     void parentChanged(Node *parent);
 
 private:
+    void setParentNode(Node *parent);
     static void addSubNode(QQmlListProperty<Volcano::Node> *nodes, Node *node);
     static int subNodeCount(QQmlListProperty<Volcano::Node> *nodes);
     static Node *subNode(QQmlListProperty<Volcano::Node> *nodes, int index);

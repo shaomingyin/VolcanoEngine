@@ -7,7 +7,7 @@
 #include <QDebug>
 #include <QVector3D>
 
-#include <Volcano/Config.h>
+#include <Volcano/Config.hpp>
 
 #define VOLCANO_INLINE inline
 

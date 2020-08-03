@@ -1,5 +1,8 @@
 //
 //
+#include <QQmlEngine>
+#include <QQmlContext>
+
 #include <Volcano/Node.hpp>
 
 VOLCANO_BEGIN
@@ -8,7 +11,6 @@ Node::Node(Node *parent):
     QObject(parent),
 	m_flags(FlagEnabled | FlagVisibled)
 {
-    qDebug() << "node ctor";
 }
 
 Node::~Node(void)

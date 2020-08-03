@@ -13,4 +13,15 @@ Mesh::~Mesh(void)
 {
 }
 
+void Mesh::setSource(const QUrl &v)
+{
+    if (m_source == v)
+        return;
+
+    m_source = v;
+    sourceChanged();
+
+
+}
+
 VOLCANO_END

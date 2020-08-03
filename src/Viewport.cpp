@@ -25,6 +25,8 @@ private:
     const Viewport *m_viewport;
     OpenGLMemory *m_memory;
     OpenGLRenderer *m_renderer;
+    View m_view[2];
+    int m_renderingViewSlot;
 };
 
 ViewportRenderer::ViewportRenderer(const Viewport *viewport):
@@ -58,6 +60,7 @@ void ViewportRenderer::synchronize(QQuickFramebufferObject *)
     m_renderer->reset(m_viewport->width(), m_viewport->height());
 
     // TODO Build visible set to 'm_renderer' from 'm_viewport'.
+    //m_viewport->scene()->buildView
 }
 
 bool ViewportRenderer::tryInit(void)
@@ -83,6 +86,8 @@ bool ViewportRenderer::tryInit(void)
         m_renderer = nullptr;
         return false;
     }
+
+    m_renderingViewSlot = 0;
 
     return true;
 }
