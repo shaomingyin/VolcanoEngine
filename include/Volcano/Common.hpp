@@ -4,6 +4,8 @@
 #define VOLCANO_COMMON_HPP
 
 #include <QtGlobal>
+#include <QtConcurrent>
+
 #include <QDebug>
 #include <QVector3D>
 
