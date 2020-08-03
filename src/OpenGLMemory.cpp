@@ -17,37 +17,37 @@ bool OpenGLMemory::init(void)
     return true;
 }
 
-OpenGLBuffer *OpenGLMemory::allocStaticVertexBuffer(int count)
+QIODevice *OpenGLMemory::allocStaticVertexBuffer(int count)
 {
     return allocBuffer(m_staticVertexHeapList,
         QOpenGLBuffer::VertexBuffer, QOpenGLBuffer::StaticDraw,
         sizeof(Vertex) * count);
 }
 
-OpenGLBuffer *OpenGLMemory::allocStaticVertexIndexBuffer(int count)
+QIODevice *OpenGLMemory::allocStaticVertexIndexBuffer(int count)
 {
     return allocBuffer(m_staticVertexIndexHeapList,
         QOpenGLBuffer::IndexBuffer, QOpenGLBuffer::StaticDraw,
         sizeof(VertexIndex) * count);
 }
 
-OpenGLBuffer *OpenGLMemory::allocDynamicVertexBuffer(int count)
+QIODevice *OpenGLMemory::allocDynamicVertexBuffer(int count)
 {
     return allocBuffer(m_dynamicVertexHeapList,
         QOpenGLBuffer::VertexBuffer, QOpenGLBuffer::DynamicDraw,
         sizeof(Vertex) * count);
 }
 
-OpenGLBuffer *OpenGLMemory::allocDynamicVertexIndexBuffer(int count)
+QIODevice *OpenGLMemory::allocDynamicVertexIndexBuffer(int count)
 {
     return allocBuffer(m_dynamicVertexHeapList,
         QOpenGLBuffer::IndexBuffer, QOpenGLBuffer::DynamicDraw,
         sizeof(VertexIndex) * count);
 }
 
-OpenGLBuffer *OpenGLMemory::allocBuffer(OpenGLHeapList &heapList, QOpenGLBuffer::Type type, QOpenGLBuffer::UsagePattern usage, int size)
+QIODevice *OpenGLMemory::allocBuffer(OpenGLHeapList &heapList, QOpenGLBuffer::Type type, QOpenGLBuffer::UsagePattern usage, int size)
 {
-    OpenGLBuffer *buf;
+    QIODevice *buf;
 
     for (auto it(heapList.begin()); it != heapList.end(); ++it)
     {

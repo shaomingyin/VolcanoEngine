@@ -4,14 +4,14 @@
 #define VOLCANO_OPENGLHEAP_HPP
 
 #include <QList>
+#include <QIODevice>
 #include <QOpenGLBuffer>
 
 #include <Volcano/Common.hpp>
-#include <Volcano/OpenGLBuffer.hpp>
 
 VOLCANO_BEGIN
 
-class OpenGLHeapBuffer;
+class OpenGLBuffer;
 
 class VOLCANO_API OpenGLHeap
 {
@@ -21,13 +21,13 @@ public:
 
 public:
     bool init(void);
-    OpenGLBuffer *allocBuffer(int size);
+    QIODevice *allocBuffer(int size);
 
 private:
-    void freeBuffer(OpenGLHeapBuffer *buf);
+    void freeBuffer(OpenGLBuffer *buf);
 
 private:
-    typedef QList<OpenGLHeapBuffer *> OpenGLBufferList;
+    typedef QList<OpenGLBuffer *> OpenGLBufferList;
 
     QOpenGLBuffer m_heap;
     OpenGLBufferList m_bufferList;

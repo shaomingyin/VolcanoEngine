@@ -11,7 +11,6 @@ target_sources(Volcano
         Light.hpp
         Mesh.hpp
         Node.hpp
-        OpenGLBuffer.hpp
         OpenGLHeap.hpp
         OpenGLMemory.hpp
         OpenGLMesh.hpp

@@ -8,7 +8,6 @@ target_sources(Volcano
 		Light.cpp
 		Mesh.cpp
 		Node.cpp
-		OpenGLBuffer.cpp
 		OpenGLHeap.cpp
 		OpenGLMemory.cpp
 		OpenGLMesh.cpp

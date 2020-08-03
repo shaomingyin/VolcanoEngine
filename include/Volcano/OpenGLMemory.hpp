@@ -4,9 +4,9 @@
 #define VOLCANO_OPENGLMEMORY_HPP
 
 #include <QList>
+#include <QIODevice>
 
 #include <Volcano/Common.hpp>
-#include <Volcano/OpenGLBuffer.hpp>
 #include <Volcano/OpenGLHeap.hpp>
 
 VOLCANO_BEGIN
@@ -19,14 +19,14 @@ public:
 
 public:
     bool init(void);
-    OpenGLBuffer *allocStaticVertexBuffer(int count);
-    OpenGLBuffer *allocStaticVertexIndexBuffer(int count);
-    OpenGLBuffer *allocDynamicVertexBuffer(int count);
-    OpenGLBuffer *allocDynamicVertexIndexBuffer(int count);
+    QIODevice *allocStaticVertexBuffer(int count);
+    QIODevice *allocStaticVertexIndexBuffer(int count);
+    QIODevice *allocDynamicVertexBuffer(int count);
+    QIODevice *allocDynamicVertexIndexBuffer(int count);
 
 private:
     typedef QList<OpenGLHeap *> OpenGLHeapList;
-    OpenGLBuffer *allocBuffer(OpenGLHeapList &heapList, QOpenGLBuffer::Type type, QOpenGLBuffer::UsagePattern usage, int size);
+    QIODevice *allocBuffer(OpenGLHeapList &heapList, QOpenGLBuffer::Type type, QOpenGLBuffer::UsagePattern usage, int size);
 
 private:
     OpenGLHeapList m_staticVertexHeapList;

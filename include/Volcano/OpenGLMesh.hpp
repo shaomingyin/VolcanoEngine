@@ -19,8 +19,8 @@ public:
 
 private:
     OpenGLMemory &m_memory;
-    OpenGLBuffer *m_vertexBuffer;
-    OpenGLBuffer *m_vertexIndexBuffer;
+    QIODevice *m_vertexBuffer;
+    QIODevice *m_vertexIndexBuffer;
 };
 
 VOLCANO_END
