@@ -3,37 +3,28 @@
 #ifndef VOLCANO_MESH_HPP
 #define VOLCANO_MESH_HPP
 
-#include <QUrl>
+#include <QIODevice>
 
 #include <Volcano/Common.hpp>
-#include <Volcano/Node.hpp>
+#include <Volcano/OpenGLResource.hpp>
 
 VOLCANO_BEGIN
 
-class VOLCANO_API Mesh: public Node
+class VOLCANO_API Mesh: public OpenGLResource
 {
     Q_OBJECT
-    Q_PROPERTY(QUrl source READ source WRITE setSource NOTIFY sourceChanged)
 
 public:
     Mesh(Node *parent = nullptr);
     ~Mesh(void) override;
 
 public:
-    const QUrl &source(void) const;
-    void setSource(const QUrl &v);
-
-signals:
-    void sourceChanged(void);
+    bool initGL(void) override;
 
 private:
-    QUrl m_source;
+    QIODevice *m_vertexBuffer;
+    QIODevice *m_vertexIndexBuffer;
 };
-
-VOLCANO_INLINE const QUrl &Mesh::source(void) const
-{
-    return m_source;
-}
 
 VOLCANO_END
 

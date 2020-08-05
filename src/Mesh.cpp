@@ -5,7 +5,7 @@
 VOLCANO_BEGIN
 
 Mesh::Mesh(Node *parent):
-    Node(parent)
+    OpenGLResource(parent)
 {
 }
 
@@ -13,15 +13,13 @@ Mesh::~Mesh(void)
 {
 }
 
-void Mesh::setSource(const QUrl &v)
+bool Mesh::initGL(void)
 {
-    if (m_source == v)
-        return;
-
-    m_source = v;
-    sourceChanged();
+    Q_ASSERT(state() == StateFree || state() == StateDirty);
 
 
+
+    return true;
 }
 
 VOLCANO_END

@@ -3,15 +3,19 @@
 #ifndef VOLCANO_COMMON_HPP
 #define VOLCANO_COMMON_HPP
 
+#include <Volcano/Config.hpp>
+
+#define VOLCANO_INLINE inline
+
+#ifndef VOLCANO_DEBUG
+#   define QT_NO_DEBUG_OUTPUT
+#endif
+
 #include <QtGlobal>
 #include <QtConcurrent>
 
 #include <QDebug>
 #include <QVector3D>
-
-#include <Volcano/Config.hpp>
-
-#define VOLCANO_INLINE inline
 
 #ifdef VOLCANO
 #   define VOLCANO_API Q_DECL_EXPORT

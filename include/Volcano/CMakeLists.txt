@@ -15,7 +15,9 @@ target_sources(Volcano
         OpenGLMemory.hpp
         OpenGLMesh.hpp
         OpenGLRenderer.hpp
+        OpenGLResource.hpp
         PointLight.hpp
+        Resource.hpp
         Scene.hpp
         SpotLight.hpp
         View.hpp

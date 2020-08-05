@@ -10,7 +10,10 @@
 
 VOLCANO_BEGIN
 
-class VOLCANO_API Scene: public Node {
+class VOLCANO_API Scene: public Node
+{
+    Q_OBJECT
+
 public:
 	Scene(Node *parent = nullptr);
 	~Scene(void) override;

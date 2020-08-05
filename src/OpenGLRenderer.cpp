@@ -25,8 +25,6 @@ bool OpenGLRenderer::init(void)
 
     qInfo() << "OpenGL:" << (const char *)m_gl->glGetString(GL_VERSION);
 
-    m_gl->glClearColor(0.3f, 0.3f, 0.3f, 0.0f);
-
     return true;
 }
 
@@ -38,6 +36,7 @@ void OpenGLRenderer::render(void)
 {
     Q_ASSERT(m_gl != nullptr);
 
+    m_gl->glClearColor(0.3f, 0.3f, 0.3f, 0.0f);
     m_gl->glClear(GL_COLOR_BUFFER_BIT);
 }
 

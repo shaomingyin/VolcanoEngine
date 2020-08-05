@@ -12,7 +12,9 @@ target_sources(Volcano
 		OpenGLMemory.cpp
 		OpenGLMesh.cpp
         OpenGLRenderer.cpp
+		OpenGLResource.cpp
 		PointLight.cpp
+		Resource.cpp
 		Scene.cpp
 		SpotLight.cpp
 		View.cpp

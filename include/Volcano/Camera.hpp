@@ -12,7 +12,8 @@
 
 VOLCANO_BEGIN
 
-class VOLCANO_API Camera : public Node {
+class VOLCANO_API Camera : public Node
+{
     Q_OBJECT
     Q_PROPERTY(QRectF rect READ rect WRITE setRect NOTIFY rectChanged)
     Q_PROPERTY(float nearPlane READ nearPlane WRITE setNearPlane NOTIFY nearPlaneChanged)

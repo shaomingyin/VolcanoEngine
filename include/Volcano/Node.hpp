@@ -19,6 +19,9 @@ class VOLCANO_API Node: public QObject
     Q_CLASSINFO("DefaultProperty", "subNodes")
 
 public:
+    typedef QVector<Node *> Nodes;
+
+public:
 	Node(Node *parent = nullptr);
     ~Node(void) override;
 
@@ -29,6 +32,7 @@ public:
 	void setVisibled(bool v);
     Node *parentNode(void);
     QQmlListProperty<Volcano::Node> subNodes(void);
+    const Nodes &subNodesRO(void) const;
 
 signals:
     void parentChanged(Node *parent);
@@ -43,8 +47,6 @@ private:
     static void removeLastSubNode(QQmlListProperty<Volcano::Node> *nodes);
 
 private:
-    typedef QVector<Node *> Nodes;
-
     enum
     {
 		FlagEnabled = 0x1,
@@ -94,6 +96,11 @@ VOLCANO_INLINE void Node::setParentNode(Node *parent)
         m_parentNode = parent;
         parentChanged(parent);
     }
+}
+
+VOLCANO_INLINE const Node::Nodes &Node::subNodesRO(void) const
+{
+    return m_subNodes;
 }
 
 VOLCANO_END
