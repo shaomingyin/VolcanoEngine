@@ -2,8 +2,6 @@
 //
 #include <QQuickWindow>
 
-#include <Volcano/OpenGLRenderer.hpp>
-#include <Volcano/OpenGLMemory.hpp>
 #include <Volcano/Camera.hpp>
 #include <Volcano/DirectionalLight.hpp>
 #include <Volcano/Entity.hpp>
@@ -13,6 +11,9 @@
 #include <Volcano/SpotLight.hpp>
 #include <Volcano/View.hpp>
 #include <Volcano/Viewport.hpp>
+
+#include <Volcano/Graphics/Renderer.hpp>
+#include <Volcano/Graphics/Memory.hpp>
 
 VOLCANO_BEGIN
 
@@ -42,8 +43,8 @@ private:
 
 private:
     const Viewport *m_viewport;
-    OpenGLMemory *m_memory;
-    OpenGLRenderer *m_renderer;
+    Graphics::Memory *m_memory;
+    Graphics::Renderer *m_renderer;
     View m_view[2];
     int m_renderingViewSlot;
 };
@@ -87,7 +88,7 @@ void ViewportRenderer::synchronize(QQuickFramebufferObject *)
     if (Q_UNLIKELY(camera == nullptr))
         return;
 
-    // TODO Setup view matrix to renderer.
+    // TODO Setup view matrix from camera.
     // m_renderer->
 
     processNode(m_viewport->targetRO(), m_viewport->recursive());
@@ -98,7 +99,7 @@ bool ViewportRenderer::tryInit(void)
     if (Q_LIKELY(m_renderer != nullptr))
         return true;
 
-    m_renderer = new OpenGLRenderer();
+    m_renderer = new Graphics::Renderer();
     if (m_renderer == nullptr)
         return false;
 
@@ -109,7 +110,7 @@ bool ViewportRenderer::tryInit(void)
         return false;
     }
 
-    m_memory = new OpenGLMemory();
+    m_memory = new Graphics::Memory();
     if (m_memory == nullptr)
     {
         delete m_renderer;
@@ -138,14 +139,6 @@ void ViewportRenderer::processNode(const Node *node, bool recursive)
 
 bool ViewportRenderer::processOneNode(const Node *node)
 {
-    const Camera *camera = qobject_cast<const Camera *>(node);
-    if (camera != nullptr)
-        return processCamera(camera);
-
-    const DirectionalLight *dirLight = qobject_cast<const DirectionalLight *>(node);
-    if (dirLight != nullptr)
-        return processDirectionLight(dirLight);
-
     const Entity *entity = qobject_cast<const Entity *>(node);
     if (entity != nullptr)
         return processEntity(entity);
@@ -154,17 +147,26 @@ bool ViewportRenderer::processOneNode(const Node *node)
     if (mesh != nullptr)
         return processMesh(mesh);
 
+    const DirectionalLight *dirLight = qobject_cast<const DirectionalLight *>(node);
+
+    if (dirLight != nullptr)
+        return processDirectionLight(dirLight);
+
     const PointLight *pointLight = qobject_cast<const PointLight *>(node);
     if (pointLight != nullptr)
         return processPointLight(pointLight);
+
+    const SpotLight *spotLight = qobject_cast<const SpotLight *>(node);
+    if (spotLight != nullptr)
+        return processSpotLight(spotLight);
 
     const Scene *scene = qobject_cast<const Scene *>(node);
     if (scene != nullptr)
         return processScene(scene);
 
-    const SpotLight *spotLight = qobject_cast<const SpotLight *>(node);
-    if (spotLight != nullptr)
-        return processSpotLight(spotLight);
+    const Camera *camera = qobject_cast<const Camera *>(node);
+    if (camera != nullptr)
+        return processCamera(camera);
 
     return false;
 }

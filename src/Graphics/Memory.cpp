@@ -1,53 +1,53 @@
 //
 //
-#include <Volcano/OpenGLMemory.hpp>
+#include <Volcano/Graphics/Memory.hpp>
 
-VOLCANO_BEGIN
+VOLCANO_GRAPHICS_BEGIN
 
-OpenGLMemory::OpenGLMemory(void)
+Memory::Memory(void)
 {
 }
 
-OpenGLMemory::~OpenGLMemory(void)
+Memory::~Memory(void)
 {
 }
 
-bool OpenGLMemory::init(void)
+bool Memory::init(void)
 {
     return true;
 }
 
-QIODevice *OpenGLMemory::allocStaticVertexBuffer(int count)
+Buffer *Memory::allocStaticVertexBuffer(int count)
 {
     return allocBuffer(m_staticVertexHeapList,
         QOpenGLBuffer::VertexBuffer, QOpenGLBuffer::StaticDraw,
         sizeof(Vertex) * count);
 }
 
-QIODevice *OpenGLMemory::allocStaticVertexIndexBuffer(int count)
+Buffer *Memory::allocStaticVertexIndexBuffer(int count)
 {
     return allocBuffer(m_staticVertexIndexHeapList,
         QOpenGLBuffer::IndexBuffer, QOpenGLBuffer::StaticDraw,
         sizeof(VertexIndex) * count);
 }
 
-QIODevice *OpenGLMemory::allocDynamicVertexBuffer(int count)
+Buffer *Memory::allocDynamicVertexBuffer(int count)
 {
     return allocBuffer(m_dynamicVertexHeapList,
         QOpenGLBuffer::VertexBuffer, QOpenGLBuffer::DynamicDraw,
         sizeof(Vertex) * count);
 }
 
-QIODevice *OpenGLMemory::allocDynamicVertexIndexBuffer(int count)
+Buffer *Memory::allocDynamicVertexIndexBuffer(int count)
 {
     return allocBuffer(m_dynamicVertexHeapList,
         QOpenGLBuffer::IndexBuffer, QOpenGLBuffer::DynamicDraw,
         sizeof(VertexIndex) * count);
 }
 
-QIODevice *OpenGLMemory::allocBuffer(OpenGLHeapList &heapList, QOpenGLBuffer::Type type, QOpenGLBuffer::UsagePattern usage, int size)
+Buffer *Memory::allocBuffer(HeapList &heapList, QOpenGLBuffer::Type type, QOpenGLBuffer::UsagePattern usage, int size)
 {
-    QIODevice *buf;
+    Buffer *buf;
 
     for (auto it(heapList.begin()); it != heapList.end(); ++it)
     {
@@ -56,7 +56,7 @@ QIODevice *OpenGLMemory::allocBuffer(OpenGLHeapList &heapList, QOpenGLBuffer::Ty
             return buf;
     }
 
-    OpenGLHeap *heap = new OpenGLHeap(type, usage);
+    Heap *heap = new Heap(type, usage);
     if (heap == nullptr)
         return nullptr;
 
@@ -66,4 +66,4 @@ QIODevice *OpenGLMemory::allocBuffer(OpenGLHeapList &heapList, QOpenGLBuffer::Ty
     return buf;
 }
 
-VOLCANO_END
+VOLCANO_GRAPHICS_END

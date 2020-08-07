@@ -2,27 +2,27 @@
 //
 #include <functional>
 
+#include <Volcano/Graphics/Heap.hpp>
+
+#define VOLCANO_GRAPHICS_HEAP_SIZE_ORDER 26
+#define VOLCANO_GRAPHICS_HEAP_SIZE (1 << VOLCANO_GRAPHICS_HEAP_SIZE_ORDER)
+
+VOLCANO_GRAPHICS_BEGIN
+
 using namespace std::placeholders;
 
-#include <Volcano/OpenGLHeap.hpp>
+// HeapBuffer
 
-#define VOLCANO_OPENGLHEAP_SIZE_ORDER 26
-#define VOLCANO_OPENGLHEAP_SIZE (1 << VOLCANO_OPENGLHEAP_SIZE_ORDER)
-
-VOLCANO_BEGIN
-
-// OpenGLBuffer
-
-class OpenGLBuffer: public QIODevice
+class HeapBuffer: public Buffer
 {
-    friend class OpenGLHeap;
+    friend class Heap;
 
 public:
-    typedef std::function<void (OpenGLBuffer *)> FreeFunction;
+    typedef std::function<void (HeapBuffer *)> FreeFunction;
 
 public:
-    OpenGLBuffer(QOpenGLBuffer *heap, int offset, int size, FreeFunction freeFunction);
-    ~OpenGLBuffer(void) override;
+    HeapBuffer(QOpenGLBuffer *heap, int offset, int size, FreeFunction freeFunction);
+    ~HeapBuffer(void) override;
 
 public:
     bool atEnd(void) const override;
@@ -46,7 +46,7 @@ private:
     FreeFunction m_freeFunction;
 };
 
-OpenGLBuffer::OpenGLBuffer(QOpenGLBuffer *heap, int offset, int size, FreeFunction freeFunction):
+HeapBuffer::HeapBuffer(QOpenGLBuffer *heap, int offset, int size, FreeFunction freeFunction):
     m_heap(heap),
     m_offset(offset),
     m_size(size),
@@ -54,58 +54,61 @@ OpenGLBuffer::OpenGLBuffer(QOpenGLBuffer *heap, int offset, int size, FreeFuncti
     m_freeFunction(freeFunction)
 {
     Q_ASSERT(m_heap != nullptr);
-    Q_ASSERT(0 <= offset && offset < VOLCANO_OPENGLHEAP_SIZE);
-    Q_ASSERT(0 < size && size <= VOLCANO_OPENGLHEAP_SIZE);
+    Q_ASSERT(0 <= offset && offset < VOLCANO_GRAPHICS_HEAP_SIZE);
+    Q_ASSERT(0 < size && size <= VOLCANO_GRAPHICS_HEAP_SIZE);
 }
 
-OpenGLBuffer::~OpenGLBuffer(void)
+HeapBuffer::~HeapBuffer(void)
 {
     m_freeFunction(this);
 }
 
-bool OpenGLBuffer::atEnd(void) const
+bool HeapBuffer::atEnd(void) const
 {
     return (m_pos == m_size);
 }
 
-void OpenGLBuffer::close(void)
+void HeapBuffer::close(void)
 {
     Q_ASSERT(m_pos >= 0);
 
     m_pos = -1;
 
-    QIODevice::close();
+    Buffer::close();
 }
 
-bool OpenGLBuffer::isSequential(void) const
+bool HeapBuffer::isSequential(void) const
 {
     return false;
 }
 
-bool OpenGLBuffer::open(OpenMode mode)
+bool HeapBuffer::open(OpenMode mode)
 {
     Q_ASSERT(m_pos < 0);
+    Q_ASSERT(m_heap != nullptr);
 
-    if (!QIODevice::open(mode))
+    if (!Buffer::open(mode))
         return false;
+
+    //m_heap->
 
     m_pos = 0;
 
     return true;
 }
 
-qint64 OpenGLBuffer::pos(void) const
+qint64 HeapBuffer::pos(void) const
 {
     return m_pos;
 }
 
-bool OpenGLBuffer::reset(void)
+bool HeapBuffer::reset(void)
 {
     m_pos = 0;
     return true;
 }
 
-bool OpenGLBuffer::seek(qint64 pos)
+bool HeapBuffer::seek(qint64 pos)
 {
     if (pos < 0 || pos > m_size)
         return false;
@@ -115,12 +118,12 @@ bool OpenGLBuffer::seek(qint64 pos)
     return true;
 }
 
-qint64 OpenGLBuffer::size(void) const
+qint64 HeapBuffer::size(void) const
 {
     return m_size;
 }
 
-qint64 OpenGLBuffer::readData(char *data, qint64 maxlen)
+qint64 HeapBuffer::readData(char *data, qint64 maxlen)
 {
     Q_ASSERT(m_pos >= 0);
 
@@ -134,7 +137,7 @@ qint64 OpenGLBuffer::readData(char *data, qint64 maxlen)
     return len;
 }
 
-qint64 OpenGLBuffer::writeData(const char *data, qint64 maxSize)
+qint64 HeapBuffer::writeData(const char *data, qint64 maxSize)
 {
     Q_ASSERT(m_pos >= 0);
 
@@ -148,32 +151,32 @@ qint64 OpenGLBuffer::writeData(const char *data, qint64 maxSize)
     return len;
 }
 
-// OpenGLHeap
+// Heap
 
-OpenGLHeap::OpenGLHeap(QOpenGLBuffer::Type type, QOpenGLBuffer::UsagePattern usage):
+Heap::Heap(QOpenGLBuffer::Type type, QOpenGLBuffer::UsagePattern usage):
     m_heap(type)
 {
     m_heap.setUsagePattern(usage);
 }
 
-OpenGLHeap::~OpenGLHeap(void)
+Heap::~Heap(void)
 {
 }
 
-bool OpenGLHeap::init(void)
+bool Heap::init(void)
 {
     Q_ASSERT(!m_heap.isCreated());
 
     if (!m_heap.create())
         return false;
 
-    m_heap.allocate(VOLCANO_OPENGLHEAP_SIZE);
-    m_freeSize = VOLCANO_OPENGLHEAP_SIZE;
+    m_heap.allocate(VOLCANO_GRAPHICS_HEAP_SIZE);
+    m_freeSize = VOLCANO_GRAPHICS_HEAP_SIZE;
 
     return true;
 }
 
-QIODevice *OpenGLHeap::allocBuffer(int size)
+Buffer *Heap::allocBuffer(int size)
 {
     Q_ASSERT(size > 0);
 
@@ -181,11 +184,11 @@ QIODevice *OpenGLHeap::allocBuffer(int size)
         return nullptr;
 
     int pos = 0;
-    OpenGLBuffer *buf;
-    OpenGLBuffer *used = nullptr;
-    OpenGLBufferList::iterator it;
+    HeapBuffer *buf;
+    HeapBuffer *used = nullptr;
+    HeapBufferList::iterator it;
 
-    for (it = m_bufferList.begin(); it != m_bufferList.end(); ++it)
+    for (it = m_heapBufferList.begin(); it != m_heapBufferList.end(); ++it)
     {
         used = *it;
         if ((used->m_offset - pos) >= size)
@@ -193,17 +196,17 @@ QIODevice *OpenGLHeap::allocBuffer(int size)
         pos = used->m_offset + used->m_size;
     }
 
-    if (it == m_bufferList.end())
+    if (it == m_heapBufferList.end())
     {
-        if (used != nullptr && size > (VOLCANO_OPENGLHEAP_SIZE - pos))
+        if (used != nullptr && size > (VOLCANO_GRAPHICS_HEAP_SIZE - pos))
             return nullptr;
-        buf = new OpenGLBuffer(&m_heap, pos, size, std::bind(&OpenGLHeap::freeBuffer, this, _1));
-        m_bufferList.append(buf);
+        buf = new HeapBuffer(&m_heap, pos, size, std::bind(&Heap::freeBuffer, this, _1));
+        m_heapBufferList.append(buf);
     }
     else
     {
-        buf = new OpenGLBuffer(&m_heap, pos, size, std::bind(&OpenGLHeap::freeBuffer, this, _1));
-        m_bufferList.insert(it, buf);
+        buf = new HeapBuffer(&m_heap, pos, size, std::bind(&Heap::freeBuffer, this, _1));
+        m_heapBufferList.insert(it, buf);
     }
 
     m_freeSize -= size;
@@ -211,15 +214,15 @@ QIODevice *OpenGLHeap::allocBuffer(int size)
     return buf;
 }
 
-void OpenGLHeap::freeBuffer(OpenGLBuffer *buf)
+void Heap::freeBuffer(HeapBuffer *buf)
 {
     Q_ASSERT(buf != NULL);
     Q_ASSERT(buf->m_heap == &m_heap);
     Q_ASSERT(buf->m_size > 0);
-    Q_ASSERT(m_bufferList.contains(buf));
+    Q_ASSERT(m_heapBufferList.contains(buf));
 
-    m_bufferList.removeOne(buf);
+    m_heapBufferList.removeOne(buf);
     delete buf;
 }
 
-VOLCANO_END
+VOLCANO_GRAPHICS_END

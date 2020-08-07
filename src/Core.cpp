@@ -3,17 +3,6 @@
 #include <QSurfaceFormat>
 #include <QQmlEngine>
 
-#include <Volcano/Node.hpp>
-#include <Volcano/Entity.hpp>
-#include <Volcano/Camera.hpp>
-#include <Volcano/Scene.hpp>
-#include <Volcano/Mesh.hpp>
-#include <Volcano/Light.hpp>
-#include <Volcano/DirectionalLight.hpp>
-#include <Volcano/PointLight.hpp>
-#include <Volcano/SpotLight.hpp>
-#include <Volcano/Viewport.hpp>
-
 #include <Volcano.hpp>
 
 VOLCANO_BEGIN

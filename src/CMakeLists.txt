@@ -6,13 +6,8 @@ target_sources(Volcano
 		DirectionalLight.cpp
 		Entity.cpp
 		Light.cpp
-		Mesh.cpp
 		Node.cpp
-		OpenGLHeap.cpp
-		OpenGLMemory.cpp
-		OpenGLMesh.cpp
-        OpenGLRenderer.cpp
-		OpenGLResource.cpp
+        Mesh.cpp
 		PointLight.cpp
 		Resource.cpp
 		Scene.cpp
@@ -20,3 +15,5 @@ target_sources(Volcano
 		View.cpp
 		Viewport.cpp
 	)
+
+add_subdirectory(Graphics Graphics)

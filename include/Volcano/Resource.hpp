@@ -37,12 +37,12 @@ public:
 
 public:
     const QUrl &source(void) const;
-    void setSource(const QUrl &v);
+    virtual void setSource(const QUrl &v);
     State state(void) const;
     qreal progress(void) const;
 
 signals:
-    void sourceChanged(void);
+    void sourceChanged(const QUrl &url);
     void stateChanged(void);
     void progressChanged(void);
 

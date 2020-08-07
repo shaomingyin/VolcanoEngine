@@ -15,7 +15,6 @@
 #include <QtConcurrent>
 
 #include <QDebug>
-#include <QVector3D>
 
 #ifdef VOLCANO
 #   define VOLCANO_API Q_DECL_EXPORT
@@ -27,14 +26,6 @@
 #define VOLCANO_END }
 
 VOLCANO_BEGIN
-
-struct Vertex {
-    QVector3D position;
-    QVector3D normal;
-    QVector3D texCoord;
-};
-
-typedef quint32 VertexIndex;
 
 VOLCANO_END
 

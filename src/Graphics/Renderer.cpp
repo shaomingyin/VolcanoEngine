@@ -2,20 +2,20 @@
 //
 #include <QOpenGLContext>
 
-#include <Volcano/OpenGLRenderer.hpp>
+#include <Volcano/Graphics/Renderer.hpp>
 
-VOLCANO_BEGIN
+VOLCANO_GRAPHICS_BEGIN
 
-OpenGLRenderer::OpenGLRenderer(void):
+Renderer::Renderer(void):
     m_gl(nullptr)
 {
 }
 
-OpenGLRenderer::~OpenGLRenderer(void)
+Renderer::~Renderer(void)
 {
 }
 
-bool OpenGLRenderer::init(void)
+bool Renderer::init(void)
 {
     Q_ASSERT(m_gl == nullptr);
 
@@ -28,11 +28,11 @@ bool OpenGLRenderer::init(void)
     return true;
 }
 
-void OpenGLRenderer::reset(int width, int height)
+void Renderer::reset(int width, int height)
 {
 }
 
-void OpenGLRenderer::render(void)
+void Renderer::render(void)
 {
     Q_ASSERT(m_gl != nullptr);
 
@@ -40,4 +40,4 @@ void OpenGLRenderer::render(void)
     m_gl->glClear(GL_COLOR_BUFFER_BIT);
 }
 
-VOLCANO_END
+VOLCANO_GRAPHICS_END

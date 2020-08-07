@@ -3,14 +3,14 @@
 #ifndef VOLCANO_MESH_HPP
 #define VOLCANO_MESH_HPP
 
-#include <QIODevice>
-
 #include <Volcano/Common.hpp>
-#include <Volcano/OpenGLResource.hpp>
+#include <Volcano/Resource.hpp>
+#include <Volcano/Graphics/Memory.hpp>
+#include <Volcano/Graphics/Buffer.hpp>
 
 VOLCANO_BEGIN
 
-class VOLCANO_API Mesh: public OpenGLResource
+class VOLCANO_API Mesh: public Resource
 {
     Q_OBJECT
 
@@ -19,11 +19,17 @@ public:
     ~Mesh(void) override;
 
 public:
-    bool initGL(void) override;
+    bool init(Graphics::Memory &gm);
+
+protected slots:
+    void onSourceChanged(const QUrl &url);
+
+protected:
+    void release(void);
 
 private:
-    QIODevice *m_vertexBuffer;
-    QIODevice *m_vertexIndexBuffer;
+    Graphics::Buffer *m_vertexBuffer;
+    Graphics::Buffer *m_vertexIndexBuffer;
 };
 
 VOLCANO_END

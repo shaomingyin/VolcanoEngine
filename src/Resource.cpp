@@ -4,7 +4,7 @@
 
 VOLCANO_BEGIN
 
-Resource::Cache Resource::c_cache(512);
+Resource::Cache Resource::c_cache(32);
 
 Resource::Resource(Node *parent):
     Node(parent),
@@ -22,11 +22,10 @@ void Resource::setSource(const QUrl &v)
     if (m_source == v)
         return;
 
-    m_source = v;
-    sourceChanged();
-
     setState(StateDirty);
     setProgress(0.0f);
+    m_source = v;
+    sourceChanged(v);
 }
 
 VOLCANO_END
