@@ -2,12 +2,12 @@
 //
 #include <functional>
 
-#include <Volcano/Graphics/Heap.hpp>
+#include <Volcano/OpenGL/Heap.hpp>
 
-#define VOLCANO_GRAPHICS_HEAP_SIZE_ORDER 26
-#define VOLCANO_GRAPHICS_HEAP_SIZE (1 << VOLCANO_GRAPHICS_HEAP_SIZE_ORDER)
+#define VOLCANO_OPENGL_HEAP_SIZE_ORDER 26
+#define VOLCANO_OPENGL_HEAP_SIZE (1 << VOLCANO_OPENGL_HEAP_SIZE_ORDER)
 
-VOLCANO_GRAPHICS_BEGIN
+VOLCANO_OPENGL_BEGIN
 
 using namespace std::placeholders;
 
@@ -54,8 +54,8 @@ HeapBuffer::HeapBuffer(QOpenGLBuffer *heap, int offset, int size, FreeFunction f
     m_freeFunction(freeFunction)
 {
     Q_ASSERT(m_heap != nullptr);
-    Q_ASSERT(0 <= offset && offset < VOLCANO_GRAPHICS_HEAP_SIZE);
-    Q_ASSERT(0 < size && size <= VOLCANO_GRAPHICS_HEAP_SIZE);
+    Q_ASSERT(0 <= offset && offset < VOLCANO_OPENGL_HEAP_SIZE);
+    Q_ASSERT(0 < size && size <= VOLCANO_OPENGL_HEAP_SIZE);
 }
 
 HeapBuffer::~HeapBuffer(void)
@@ -170,8 +170,8 @@ bool Heap::init(void)
     if (!m_heap.create())
         return false;
 
-    m_heap.allocate(VOLCANO_GRAPHICS_HEAP_SIZE);
-    m_freeSize = VOLCANO_GRAPHICS_HEAP_SIZE;
+    m_heap.allocate(VOLCANO_OPENGL_HEAP_SIZE);
+    m_freeSize = VOLCANO_OPENGL_HEAP_SIZE;
 
     return true;
 }
@@ -198,7 +198,7 @@ Buffer *Heap::allocBuffer(int size)
 
     if (it == m_heapBufferList.end())
     {
-        if (used != nullptr && size > (VOLCANO_GRAPHICS_HEAP_SIZE - pos))
+        if (used != nullptr && size > (VOLCANO_OPENGL_HEAP_SIZE - pos))
             return nullptr;
         buf = new HeapBuffer(&m_heap, pos, size, std::bind(&Heap::freeBuffer, this, _1));
         m_heapBufferList.append(buf);
@@ -225,4 +225,4 @@ void Heap::freeBuffer(HeapBuffer *buf)
     delete buf;
 }
 
-VOLCANO_GRAPHICS_END
+VOLCANO_OPENGL_END

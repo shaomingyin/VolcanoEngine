@@ -47,9 +47,12 @@ signals:
     void progressChanged(void);
 
 protected:
+    void onTick(float elapsed) override;
+    virtual void onSourceChanged(const QUrl &url) = 0;
     QUrl baseUrl(void) const;
     void setState(State v);
     void setProgress(qreal v);
+
 
 private:
     QUrl m_source;
@@ -98,7 +101,7 @@ VOLCANO_INLINE void Resource::setProgress(qreal v)
 
 VOLCANO_INLINE QUrl Resource::baseUrl(void) const
 {
-    return QQmlEngine::contextForObject(this)->engine()->baseUrl();
+    return qmlEngine(this)->baseUrl();
 }
 
 VOLCANO_END

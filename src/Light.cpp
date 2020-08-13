@@ -13,4 +13,8 @@ Light::~Light(void)
 {
 }
 
+void Light::onTick(float elapsed)
+{
+}
+
 VOLCANO_END

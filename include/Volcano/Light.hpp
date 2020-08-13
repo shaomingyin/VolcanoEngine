@@ -26,6 +26,9 @@ public:
 signals:
     void colorChanged(void);
 
+protected:
+    void onTick(float elapsed) override;
+
 private:
     QColor m_color;
 };

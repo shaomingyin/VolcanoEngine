@@ -1,8 +1,8 @@
 //
 //
-#include <Volcano/Graphics/Memory.hpp>
+#include <Volcano/OpenGL/Memory.hpp>
 
-VOLCANO_GRAPHICS_BEGIN
+VOLCANO_OPENGL_BEGIN
 
 Memory::Memory(void)
 {
@@ -66,4 +66,4 @@ Buffer *Memory::allocBuffer(HeapList &heapList, QOpenGLBuffer::Type type, QOpenG
     return buf;
 }
 
-VOLCANO_GRAPHICS_END
+VOLCANO_OPENGL_END

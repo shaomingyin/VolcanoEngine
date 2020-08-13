@@ -18,45 +18,60 @@ Node::~Node(void)
     setParentNode(nullptr);
 }
 
-QQmlListProperty<Volcano::Node> Node::subNodes(void)
+QQmlListProperty<Volcano::Node> Node::qmlSubNodes(void)
 {
     return QQmlListProperty<Volcano::Node>(this, this,
-             &Node::addSubNode,
-             &Node::subNodeCount,
-             &Node::subNode,
-             &Node::clearSubNode,
-             &Node::replaceSubNode,
-             &Node::removeLastSubNode);
+             &Node::qmlAddSubNode,
+             &Node::qmlSubNodeCount,
+             &Node::qmlSubNode,
+             &Node::qmlClearSubNode,
+             &Node::qmlReplaceSubNode,
+             &Node::qmlRemoveLastSubNode);
 }
 
-void Node::addSubNode(QQmlListProperty<Volcano::Node> *nodes, Node *node)
+void Node::tick(float elapsed, bool recursive)
+{
+    if (recursive)
+    {
+        for (auto it(m_subNodes.begin()); it != m_subNodes.end(); ++it)
+            (*it)->tick(elapsed, true);
+    }
+
+    onTick(elapsed);
+}
+
+void Node::onTick(float elapsed)
+{
+}
+
+void Node::qmlAddSubNode(QQmlListProperty<Volcano::Node> *nodes, Node *node)
 {
     Node *parent = reinterpret_cast<Node *>(nodes->data);
     parent->m_subNodes.append(node);
     node->setParentNode(parent);
 }
 
-int Node::subNodeCount(QQmlListProperty<Volcano::Node> *nodes)
+int Node::qmlSubNodeCount(QQmlListProperty<Volcano::Node> *nodes)
 {
     return reinterpret_cast<Node *>(nodes->data)->m_subNodes.size();
 }
 
-Node *Node::subNode(QQmlListProperty<Volcano::Node> *nodes, int index)
+Node *Node::qmlSubNode(QQmlListProperty<Volcano::Node> *nodes, int index)
 {
     return reinterpret_cast<Node *>(nodes->data)->m_subNodes.at(index);
 }
 
-void Node::clearSubNode(QQmlListProperty<Volcano::Node> *nodes)
+void Node::qmlClearSubNode(QQmlListProperty<Volcano::Node> *nodes)
 {
     reinterpret_cast<Node *>(nodes->data)->m_subNodes.clear();
 }
 
-void Node::replaceSubNode(QQmlListProperty<Volcano::Node> *nodes, int index, Node *node)
+void Node::qmlReplaceSubNode(QQmlListProperty<Volcano::Node> *nodes, int index, Node *node)
 {
     reinterpret_cast<Node *>(nodes->data)->m_subNodes[index] = node;
 }
 
-void Node::removeLastSubNode(QQmlListProperty<Volcano::Node> *nodes)
+void Node::qmlRemoveLastSubNode(QQmlListProperty<Volcano::Node> *nodes)
 {
     reinterpret_cast<Node *>(nodes->data)->m_subNodes.removeLast();
 }

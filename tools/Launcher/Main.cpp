@@ -1,14 +1,33 @@
 //
 //
+#include <functional>
+
 #include <QDir>
 #include <QUrl>
 #include <QString>
 #include <QScopedPointer>
 #include <QCommandLineParser>
+#include <QObject>
 #include <QGuiApplication>
-#include <QQmlApplicationEngine>
+#include <QQuickView>
 
 #include <Volcano.hpp>
+
+static void statusChanged(QQuickView *view, QQuickView::Status status)
+{
+    switch (status)
+    {
+    case QQuickView::Ready:
+        if (qobject_cast<Volcano::Game *>(view->rootObject()) == nullptr)
+            qGuiApp->exit(1);
+        break;
+    case QQuickView::Error:
+        qGuiApp->exit(1);
+        break;
+    default:
+        break;
+    }
+}
 
 int main(int argc, char *argv[])
 {
@@ -39,9 +58,14 @@ int main(int argc, char *argv[])
 
     qDebug() << "Create Qml engine...";
 
-    QScopedPointer<QQmlApplicationEngine> engine(new QQmlApplicationEngine(url));
-    if (!engine)
+    QScopedPointer<QQuickView> mainWindow(new QQuickView(url));
+    if (!mainWindow)
         return EXIT_FAILURE;
+
+    QObject::connect(mainWindow.data(), &QQuickView::statusChanged,
+        std::bind(&statusChanged, mainWindow.data(), std::placeholders::_1));
+
+    mainWindow->show();
 
     qDebug() << "Running...";
 

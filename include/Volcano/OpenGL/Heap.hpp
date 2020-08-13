@@ -1,15 +1,15 @@
 //
 //
-#ifndef VOLCANO_GRAPHICS_HEAP_HPP
-#define VOLCANO_GRAPHICS_HEAP_HPP
+#ifndef VOLCANO_OPENGL_HEAP_HPP
+#define VOLCANO_OPENGL_HEAP_HPP
 
 #include <QList>
 #include <QOpenGLBuffer>
 
-#include <Volcano/Graphics/Common.hpp>
-#include <Volcano/Graphics/Buffer.hpp>
+#include <Volcano/OpenGL/Common.hpp>
+#include <Volcano/OpenGL/Buffer.hpp>
 
-VOLCANO_GRAPHICS_BEGIN
+VOLCANO_OPENGL_BEGIN
 
 class HeapBuffer;
 
@@ -40,6 +40,6 @@ VOLCANO_INLINE int Heap::freeSize(void) const
     return m_freeSize;
 }
 
-VOLCANO_GRAPHICS_END
+VOLCANO_OPENGL_END
 
-#endif // VOLCANO_GRAPHICS_HEAP_HPP
+#endif // VOLCANO_OPENGL_HEAP_HPP

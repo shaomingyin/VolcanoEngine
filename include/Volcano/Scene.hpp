@@ -5,7 +5,6 @@
 
 #include <Volcano/Common.hpp>
 #include <Volcano/Node.hpp>
-#include <Volcano/View.hpp>
 #include <Volcano/Camera.hpp>
 
 VOLCANO_BEGIN
@@ -18,8 +17,8 @@ public:
 	Scene(Node *parent = nullptr);
 	~Scene(void) override;
 
-public:
-    void buildView(View &view, Camera &camera);
+protected:
+    void onTick(float elapsed) override;
 };
 
 VOLCANO_END

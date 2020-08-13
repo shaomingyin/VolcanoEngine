@@ -13,4 +13,9 @@ Entity::~Entity(void)
 {
 }
 
+void Entity::onTick(float elapsed)
+{
+
+}
+
 VOLCANO_END

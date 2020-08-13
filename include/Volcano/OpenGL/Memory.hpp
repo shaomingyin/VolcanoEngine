@@ -1,15 +1,15 @@
 //
 //
-#ifndef VOLCANO_GRAPHICS_MEMORY_HPP
-#define VOLCANO_GRAPHICS_MEMORY_HPP
+#ifndef VOLCANO_OPENGL_MEMORY_HPP
+#define VOLCANO_OPENGL_MEMORY_HPP
 
 #include <QList>
 
-#include <Volcano/Graphics/Common.hpp>
-#include <Volcano/Graphics/Buffer.hpp>
-#include <Volcano/Graphics/Heap.hpp>
+#include <Volcano/OpenGL/Common.hpp>
+#include <Volcano/OpenGL/Buffer.hpp>
+#include <Volcano/OpenGL/Heap.hpp>
 
-VOLCANO_GRAPHICS_BEGIN
+VOLCANO_OPENGL_BEGIN
 
 class VOLCANO_API Memory
 {
@@ -35,6 +35,6 @@ private:
     HeapList m_dynamicVertexIndexHeapList;
 };
 
-VOLCANO_GRAPHICS_END
+VOLCANO_OPENGL_END
 
-#endif // VOLCANO_GRAPHICS_MEMORY_HPP
+#endif // VOLCANO_OPENGL_MEMORY_HPP

@@ -13,4 +13,9 @@ Camera::~Camera(void)
 {
 }
 
+void Camera::onTick(float elapsed)
+{
+
+}
+
 VOLCANO_END

@@ -6,4 +6,5 @@ target_sources(Volcano
         Heap.hpp
         Memory.hpp
         Renderer.hpp
+        View.hpp
     )

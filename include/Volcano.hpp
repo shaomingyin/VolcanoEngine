@@ -7,7 +7,7 @@
 #include <Volcano/Camera.hpp>
 #include <Volcano/DirectionalLight.hpp>
 #include <Volcano/Entity.hpp>
-#include <Volcano/Graphics.hpp>
+#include <Volcano/Game.hpp>
 #include <Volcano/Light.hpp>
 #include <Volcano/Mesh.hpp>
 #include <Volcano/Node.hpp>
@@ -15,7 +15,6 @@
 #include <Volcano/Resource.hpp>
 #include <Volcano/Scene.hpp>
 #include <Volcano/SpotLight.hpp>
-#include <Volcano/View.hpp>
 #include <Volcano/Viewport.hpp>
 
 VOLCANO_BEGIN

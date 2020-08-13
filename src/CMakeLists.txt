@@ -5,6 +5,7 @@ target_sources(Volcano
 		Core.cpp
 		DirectionalLight.cpp
 		Entity.cpp
+        Game.cpp
 		Light.cpp
 		Node.cpp
         Mesh.cpp
@@ -12,8 +13,7 @@ target_sources(Volcano
 		Resource.cpp
 		Scene.cpp
 		SpotLight.cpp
-		View.cpp
 		Viewport.cpp
 	)
 
-add_subdirectory(Graphics Graphics)
+add_subdirectory(OpenGL OpenGL)

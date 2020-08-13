@@ -5,8 +5,7 @@
 
 #include <Volcano/Common.hpp>
 #include <Volcano/Resource.hpp>
-#include <Volcano/Graphics/Memory.hpp>
-#include <Volcano/Graphics/Buffer.hpp>
+#include <Volcano/OpenGL/Buffer.hpp>
 
 VOLCANO_BEGIN
 
@@ -18,18 +17,16 @@ public:
     Mesh(Node *parent = nullptr);
     ~Mesh(void) override;
 
-public:
-    bool init(Graphics::Memory &gm);
-
-protected slots:
-    void onSourceChanged(const QUrl &url);
-
 protected:
-    void release(void);
+    void onSourceChanged(const QUrl &url) override;
 
 private:
-    Graphics::Buffer *m_vertexBuffer;
-    Graphics::Buffer *m_vertexIndexBuffer;
+    void createBuffers(void);
+    void destroyBuffers(void);
+
+private:
+    OpenGL::Buffer *m_vertexBuffer;
+    OpenGL::Buffer *m_vertexIndexBuffer;
 };
 
 VOLCANO_END

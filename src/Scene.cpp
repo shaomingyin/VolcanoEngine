@@ -13,8 +13,9 @@ Scene::~Scene(void)
 {
 }
 
-void buildView(View &view, Camera &camera)
+void Scene::onTick(float elapsed)
 {
+
 }
 
 VOLCANO_END

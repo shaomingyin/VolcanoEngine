@@ -1,8 +1,8 @@
 //
 //
-#include <Volcano/Graphics/Buffer.hpp>
+#include <Volcano/OpenGL/Buffer.hpp>
 
-VOLCANO_GRAPHICS_BEGIN
+VOLCANO_OPENGL_BEGIN
 
 Buffer::Buffer(QObject *parent):
     QIODevice(parent)
@@ -13,4 +13,4 @@ Buffer::~Buffer(void)
 {
 }
 
-VOLCANO_GRAPHICS_END
+VOLCANO_OPENGL_END

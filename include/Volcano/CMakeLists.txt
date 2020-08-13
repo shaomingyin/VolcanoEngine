@@ -6,15 +6,15 @@ target_sources(Volcano
         Config.hpp.in
         DirectionalLight.hpp
         Entity.hpp
-        Graphics.hpp
+        Game.hpp
         Light.hpp
         Mesh.hpp
         Node.hpp
+        OpenGL.hpp
         PointLight.hpp
         Resource.hpp
         Scene.hpp
         SpotLight.hpp
-        View.hpp
         Viewport.hpp
     )
 
@@ -23,4 +23,4 @@ configure_file(
     Config.hpp
     )
 
-add_subdirectory(Graphics Graphics)
+add_subdirectory(OpenGL OpenGL)

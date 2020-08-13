@@ -14,8 +14,8 @@ VOLCANO_BEGIN
 class VOLCANO_API Node: public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(Node *parentNode READ parentNode NOTIFY parentChanged)
-    Q_PROPERTY(QQmlListProperty<Volcano::Node> subNodes READ subNodes)
+    Q_PROPERTY(Node *parent READ parentNode NOTIFY parentNodeChanged)
+    Q_PROPERTY(QQmlListProperty<Volcano::Node> subNodes READ qmlSubNodes)
     Q_CLASSINFO("DefaultProperty", "subNodes")
 
 public:
@@ -31,20 +31,24 @@ public:
 	bool visibled(void) const;
 	void setVisibled(bool v);
     Node *parentNode(void);
-    QQmlListProperty<Volcano::Node> subNodes(void);
-    const Nodes &subNodesRO(void) const;
+    QQmlListProperty<Volcano::Node> qmlSubNodes(void);
+    const Nodes &subNodes(void) const;
+    void tick(float elapsed, bool recursive = true);
 
 signals:
-    void parentChanged(Node *parent);
+    void parentNodeChanged(Node *parent);
+
+protected:
+    virtual void onTick(float elapsed);
 
 private:
     void setParentNode(Node *parent);
-    static void addSubNode(QQmlListProperty<Volcano::Node> *nodes, Node *node);
-    static int subNodeCount(QQmlListProperty<Volcano::Node> *nodes);
-    static Node *subNode(QQmlListProperty<Volcano::Node> *nodes, int index);
-    static void clearSubNode(QQmlListProperty<Volcano::Node> *nodes);
-    static void replaceSubNode(QQmlListProperty<Volcano::Node> *nodes, int index, Node *node);
-    static void removeLastSubNode(QQmlListProperty<Volcano::Node> *nodes);
+    static void qmlAddSubNode(QQmlListProperty<Volcano::Node> *nodes, Node *node);
+    static int qmlSubNodeCount(QQmlListProperty<Volcano::Node> *nodes);
+    static Node *qmlSubNode(QQmlListProperty<Volcano::Node> *nodes, int index);
+    static void qmlClearSubNode(QQmlListProperty<Volcano::Node> *nodes);
+    static void qmlReplaceSubNode(QQmlListProperty<Volcano::Node> *nodes, int index, Node *node);
+    static void qmlRemoveLastSubNode(QQmlListProperty<Volcano::Node> *nodes);
 
 private:
     enum
@@ -94,11 +98,11 @@ VOLCANO_INLINE void Node::setParentNode(Node *parent)
     if (m_parentNode != parent)
     {
         m_parentNode = parent;
-        parentChanged(parent);
+        parentNodeChanged(parent);
     }
 }
 
-VOLCANO_INLINE const Node::Nodes &Node::subNodesRO(void) const
+VOLCANO_INLINE const Node::Nodes &Node::subNodes(void) const
 {
     return m_subNodes;
 }

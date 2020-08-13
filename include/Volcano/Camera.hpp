@@ -55,6 +55,9 @@ signals:
     void directionChanged(void);
     void upChanged(void);
 
+protected:
+    void onTick(float elapsed) override;
+
 private:
     QRectF m_rect;
     float m_nearPlane;

@@ -46,14 +46,15 @@ VOLCANO_API bool init(void)
     registerUncreatableType<Volcano::Node>("Node");
     registerUncreatableType<Volcano::Light>("Light");
 
-    registerType<Volcano::Entity>("Entity");
-    registerType<Volcano::Camera>("Camera");
-    registerType<Volcano::Scene>("Scene");
-    registerType<Volcano::Mesh>("Mesh");
-    registerType<Volcano::DirectionalLight>("DirectionalLight");
-    registerType<Volcano::PointLight>("PointLight");
-    registerType<Volcano::SpotLight>("SpotLight");
-    registerType<Volcano::Viewport>("Viewport");
+    registerType<Game>("Game");
+    registerType<Entity>("Entity");
+    registerType<Camera>("Camera");
+    registerType<Scene>("Scene");
+    registerType<Mesh>("Mesh");
+    registerType<DirectionalLight>("DirectionalLight");
+    registerType<PointLight>("PointLight");
+    registerType<SpotLight>("SpotLight");
+    registerType<Viewport>("Viewport");
 
     return true;
 }
