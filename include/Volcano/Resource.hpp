@@ -47,12 +47,10 @@ signals:
     void progressChanged(void);
 
 protected:
-    void onTick(float elapsed) override;
     virtual void onSourceChanged(const QUrl &url) = 0;
     QUrl baseUrl(void) const;
     void setState(State v);
     void setProgress(qreal v);
-
 
 private:
     QUrl m_source;

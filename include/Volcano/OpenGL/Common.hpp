@@ -4,6 +4,7 @@
 #define VOLCANO_OPENGL_COMMON_HPP
 
 #include <QVector3D>
+#include <QOpenGLContext>
 #include <QOpenGLFunctions_3_3_Core>
 
 #include <Volcano/Common.hpp>

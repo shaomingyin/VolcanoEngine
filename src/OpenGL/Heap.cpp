@@ -19,9 +19,15 @@ class HeapBuffer: public Buffer
 
 public:
     typedef std::function<void (HeapBuffer *)> FreeFunction;
+    typedef std::function<void *(HeapBuffer *)> MapFunction;
+    typedef std::function<void (HeapBuffer *)> UnmapFunction;
+
+    FreeFunction freeFunction;
+    MapFunction mapFunction;
+    UnmapFunction unmapFunction;
 
 public:
-    HeapBuffer(QOpenGLBuffer *heap, int offset, int size, FreeFunction freeFunction);
+    HeapBuffer(QOpenGLBuffer *heap, int offset, int size);
     ~HeapBuffer(void) override;
 
 public:
@@ -33,6 +39,8 @@ public:
     bool reset(void) override;
     bool seek(qint64 pos) override;
     qint64 size(void) const override;
+    void *map(void) override;
+    void unmap(void) override;
 
 protected:
     qint64 readData(char *data, qint64 maxlen) override;
@@ -43,15 +51,17 @@ private:
     int m_offset;
     int m_size;
     int m_pos;
-    FreeFunction m_freeFunction;
+    void *m_map;
+    bool m_userMapping;
 };
 
-HeapBuffer::HeapBuffer(QOpenGLBuffer *heap, int offset, int size, FreeFunction freeFunction):
+HeapBuffer::HeapBuffer(QOpenGLBuffer *heap, int offset, int size):
     m_heap(heap),
     m_offset(offset),
     m_size(size),
     m_pos(-1),
-    m_freeFunction(freeFunction)
+    m_map(nullptr),
+    m_userMapping(false)
 {
     Q_ASSERT(m_heap != nullptr);
     Q_ASSERT(0 <= offset && offset < VOLCANO_OPENGL_HEAP_SIZE);
@@ -60,19 +70,26 @@ HeapBuffer::HeapBuffer(QOpenGLBuffer *heap, int offset, int size, FreeFunction f
 
 HeapBuffer::~HeapBuffer(void)
 {
-    m_freeFunction(this);
+    if (m_map != nullptr)
+        close();
+
+    freeFunction(this);
 }
 
 bool HeapBuffer::atEnd(void) const
 {
+    Q_ASSERT(m_map != nullptr);
+
     return (m_pos == m_size);
 }
 
 void HeapBuffer::close(void)
 {
-    Q_ASSERT(m_pos >= 0);
+    Q_ASSERT(m_map != nullptr);
+    Q_ASSERT(!m_userMapping);
 
-    m_pos = -1;
+    unmapFunction(this);
+    m_map = nullptr;
 
     Buffer::close();
 }
@@ -84,13 +101,17 @@ bool HeapBuffer::isSequential(void) const
 
 bool HeapBuffer::open(OpenMode mode)
 {
-    Q_ASSERT(m_pos < 0);
-    Q_ASSERT(m_heap != nullptr);
+    Q_ASSERT(m_map == nullptr);
 
     if (!Buffer::open(mode))
         return false;
 
-    //m_heap->
+    m_map = mapFunction(this);
+    if (m_map == nullptr)
+    {
+        Buffer::close();
+        return false;
+    }
 
     m_pos = 0;
 
@@ -99,17 +120,24 @@ bool HeapBuffer::open(OpenMode mode)
 
 qint64 HeapBuffer::pos(void) const
 {
+    Q_ASSERT(m_map != nullptr);
+
     return m_pos;
 }
 
 bool HeapBuffer::reset(void)
 {
+    Q_ASSERT(m_map != nullptr);
+
     m_pos = 0;
+
     return true;
 }
 
 bool HeapBuffer::seek(qint64 pos)
 {
+    Q_ASSERT(m_map != nullptr);
+
     if (pos < 0 || pos > m_size)
         return false;
 
@@ -123,30 +151,44 @@ qint64 HeapBuffer::size(void) const
     return m_size;
 }
 
+void *HeapBuffer::map(void)
+{
+    Q_ASSERT(m_map != nullptr);
+    Q_ASSERT(!m_userMapping);
+
+    m_userMapping = true;
+
+    return m_map;
+}
+
+void HeapBuffer::unmap(void)
+{
+    Q_ASSERT(m_map != nullptr);
+    Q_ASSERT(m_userMapping);
+
+    m_userMapping = false;
+}
+
 qint64 HeapBuffer::readData(char *data, qint64 maxlen)
 {
-    Q_ASSERT(m_pos >= 0);
+    Q_ASSERT(m_map != nullptr);
 
     qint64 len = m_size - m_pos;
     len = qMin(len, maxlen);
-    if (len > 0) {
-        m_heap->bind();
-        m_heap->read(m_offset + m_pos, data, len);
-    }
+    if (len > 0)
+        memcpy(((quint8 *)m_map) + m_pos, data, len);
 
     return len;
 }
 
 qint64 HeapBuffer::writeData(const char *data, qint64 maxSize)
 {
-    Q_ASSERT(m_pos >= 0);
+    Q_ASSERT(m_map != nullptr);
 
     qint64 len = m_size - m_pos;
     len = qMin(len, maxSize);
-    if (len > 0) {
-        m_heap->bind();
-        m_heap->write(m_offset + m_pos, data, len);
-    }
+    if (len > 0)
+        memcpy(((quint8 *)m_map) + m_pos, data, len);
 
     return len;
 }
@@ -154,13 +196,18 @@ qint64 HeapBuffer::writeData(const char *data, qint64 maxSize)
 // Heap
 
 Heap::Heap(QOpenGLBuffer::Type type, QOpenGLBuffer::UsagePattern usage):
-    m_heap(type)
+    m_heap(type),
+    m_freeSize(0),
+    m_map(nullptr),
+    m_mapCount(0)
 {
     m_heap.setUsagePattern(usage);
 }
 
 Heap::~Heap(void)
 {
+    Q_ASSERT(m_mapCount == 0);
+    Q_ASSERT(m_map == nullptr);
 }
 
 bool Heap::init(void)
@@ -200,13 +247,20 @@ Buffer *Heap::allocBuffer(int size)
     {
         if (used != nullptr && size > (VOLCANO_OPENGL_HEAP_SIZE - pos))
             return nullptr;
-        buf = new HeapBuffer(&m_heap, pos, size, std::bind(&Heap::freeBuffer, this, _1));
+        buf = new HeapBuffer(&m_heap, pos, size);
         m_heapBufferList.append(buf);
     }
     else
     {
-        buf = new HeapBuffer(&m_heap, pos, size, std::bind(&Heap::freeBuffer, this, _1));
+        buf = new HeapBuffer(&m_heap, pos, size);
         m_heapBufferList.insert(it, buf);
+    }
+
+    if (buf)
+    {
+        buf->freeFunction = std::bind(&Heap::freeBuffer, this, _1);
+        buf->mapFunction = std::bind(&Heap::mapBuffer, this, _1);
+        buf->unmapFunction = std::bind(&Heap::unmapBuffer, this, _1);
     }
 
     m_freeSize -= size;
@@ -216,13 +270,55 @@ Buffer *Heap::allocBuffer(int size)
 
 void Heap::freeBuffer(HeapBuffer *buf)
 {
-    Q_ASSERT(buf != NULL);
+    Q_ASSERT(buf != nullptr);
     Q_ASSERT(buf->m_heap == &m_heap);
-    Q_ASSERT(buf->m_size > 0);
+    Q_ASSERT(buf->m_map == nullptr);
     Q_ASSERT(m_heapBufferList.contains(buf));
 
     m_heapBufferList.removeOne(buf);
     delete buf;
+}
+
+void *Heap::mapBuffer(HeapBuffer *buf)
+{
+    Q_ASSERT(buf != nullptr);
+    Q_ASSERT(buf->m_heap == &m_heap);
+    Q_ASSERT(buf->m_map == nullptr);
+    Q_ASSERT(m_heapBufferList.contains(buf));
+
+    if (m_mapCount < 1)
+    {
+        Q_ASSERT(m_mapCount == 0);
+        Q_ASSERT(m_map == nullptr);
+
+        m_heap.bind();
+        m_map = m_heap.map(QOpenGLBuffer::ReadWrite);
+        if (m_map == nullptr)
+            return nullptr;
+    }
+
+    Q_ASSERT(m_mapCount >= 0);
+    m_mapCount += 1;
+
+    return (((quint8 *)m_map) + buf->m_offset);
+}
+
+void Heap::unmapBuffer(HeapBuffer *buf)
+{
+    Q_ASSERT(buf != nullptr);
+    Q_ASSERT(buf->m_heap == &m_heap);
+    Q_ASSERT(buf->m_map != nullptr);
+    Q_ASSERT(m_heapBufferList.contains(buf));
+    Q_ASSERT(m_mapCount > 0);
+    Q_ASSERT(m_map != nullptr);
+
+    m_mapCount -= 1;
+    if (m_mapCount > 0)
+        return;
+
+    m_heap.bind();
+    m_heap.unmap();
+    m_map = nullptr;
 }
 
 VOLCANO_OPENGL_END

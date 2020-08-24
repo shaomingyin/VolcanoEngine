@@ -28,9 +28,4 @@ void Resource::setSource(const QUrl &v)
     sourceChanged(v);
 }
 
-void Resource::onTick(float elapsed)
-{
-
-}
-
 VOLCANO_END

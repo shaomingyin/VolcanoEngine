@@ -16,6 +16,10 @@ class VOLCANO_API Buffer: public QIODevice
 public:
     Buffer(QObject *parent = nullptr);
     ~Buffer(void);
+
+public:
+    virtual void *map(void) = 0;
+    virtual void unmap(void) = 0;
 };
 
 VOLCANO_OPENGL_END

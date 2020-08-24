@@ -26,6 +26,8 @@ public:
 
 private:
     void freeBuffer(HeapBuffer *buf);
+    void *mapBuffer(HeapBuffer *buf);
+    void unmapBuffer(HeapBuffer *buf);
 
 private:
     typedef QList<HeapBuffer *> HeapBufferList;
@@ -33,6 +35,8 @@ private:
     QOpenGLBuffer m_heap;
     HeapBufferList m_heapBufferList;
     int m_freeSize;
+    void *m_map;
+    int m_mapCount;
 };
 
 VOLCANO_INLINE int Heap::freeSize(void) const

@@ -12,13 +12,12 @@
 
 VOLCANO_BEGIN
 
-class VOLCANO_API Camera : public Node
+class VOLCANO_API Camera: public Node
 {
     Q_OBJECT
     Q_PROPERTY(QRectF rect READ rect WRITE setRect NOTIFY rectChanged)
     Q_PROPERTY(float nearPlane READ nearPlane WRITE setNearPlane NOTIFY nearPlaneChanged)
     Q_PROPERTY(float farPlane READ farPlane WRITE setFarPlane NOTIFY farPlaneChanged)
-    Q_PROPERTY(float fov READ fov WRITE setFov NOTIFY fovChanged)
     Q_PROPERTY(QVector3D position READ position WRITE setPosition NOTIFY positionChanged)
     Q_PROPERTY(QVector3D direction READ direction WRITE setDirection NOTIFY directionChanged)
     Q_PROPERTY(QVector3D up READ up WRITE setUp NOTIFY upChanged)
@@ -34,8 +33,6 @@ public:
     void setNearPlane(float v);
     float farPlane(void) const;
     void setFarPlane(float v);
-    float fov(void) const;
-    void setFov(float v);
     const QVector3D &position(void) const;
     void setPosition(const QVector3D &v);
     const QVector3D &direction(void) const;
@@ -43,26 +40,19 @@ public:
     const QVector3D &up(void) const;
     void setUp(const QVector3D &v);
     void lookAt(const QVector3D &postion, const QVector3D &direction, const QVector3D &up);
-    void calcViewMatrix(QMatrix4x4 &v) const;
-    void calcProjectMatrix(QMatrix4x4 &v) const;
 
 signals:
     void rectChanged(void);
     void nearPlaneChanged(void);
     void farPlaneChanged(void);
-    void fovChanged(void);
     void positionChanged(void);
     void directionChanged(void);
     void upChanged(void);
 
 protected:
-    void onTick(float elapsed) override;
-
-private:
     QRectF m_rect;
     float m_nearPlane;
     float m_farPlane;
-    float m_fov;
     QVector3D m_position;
     QVector3D m_direction;
     QVector3D m_up;
@@ -107,20 +97,6 @@ VOLCANO_INLINE void Camera::setFarPlane(float v)
     {
         m_farPlane = v;
         farPlaneChanged();
-    }
-}
-
-VOLCANO_INLINE float Camera::fov(void) const
-{
-    return m_fov;
-}
-
-VOLCANO_INLINE void Camera::setFov(float v)
-{
-    if (m_fov != v)
-    {
-        m_fov = v;
-        fovChanged();
     }
 }
 
@@ -171,19 +147,6 @@ VOLCANO_INLINE void Camera::lookAt(const QVector3D &position, const QVector3D &d
     setPosition(position);
     setDirection(direction);
     setUp(up);
-}
-
-VOLCANO_INLINE void Camera::calcViewMatrix(QMatrix4x4 &v) const
-{
-    v.lookAt(m_position, m_position + m_direction, m_up);
-}
-
-VOLCANO_INLINE void Camera::calcProjectMatrix(QMatrix4x4 &v) const
-{
-    if (m_fov > 0.01f)
-        v.perspective(m_fov, m_rect.width() / m_rect.height(), m_nearPlane, m_farPlane);
-    else
-        v.ortho(m_rect);
 }
 
 VOLCANO_END

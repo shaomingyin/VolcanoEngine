@@ -37,7 +37,6 @@ signals:
     void rotationChanged(const QQuaternion &v);
 
 protected:
-    void onTick(float elapsed) override;
 
 private:
     QVector3D m_position;

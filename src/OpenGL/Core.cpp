@@ -1,7 +1,13 @@
 //
 //
+#include <functional>
+
 #include <QMap>
 #include <QOpenGLContext>
+#include <QThread>
+#include <QMutex>
+#include <QMutexLocker>
+#include <QObject>
 
 #include <Volcano/OpenGL.hpp>
 
@@ -12,20 +18,25 @@ typedef QMap<QOpenGLContext *, RendererPtr> RendererMap;
 
 static MemoryMap memoryMap;
 static RendererMap rendererMap;
+static QMutex m_mutex;
 
-static void memoryRemove(QOpenGLContext *context)
+static void removeMemory(QOpenGLContext *context)
 {
+    QMutexLocker locker(&m_mutex);
+
     memoryMap.remove(context);
 }
 
-MemoryPtr defaultMemory(void)
+VOLCANO_API MemoryPtr defaultMemory(void)
 {
     QOpenGLContext *context = QOpenGLContext::currentContext();
-    if (context == nullptr)
-        return MemoryPtr();
+    Q_ASSERT(context != nullptr);
+    Q_ASSERT(context->thread() == QThread::currentThread());
+
+    QMutexLocker locker(&m_mutex);
 
     if (memoryMap.contains(context))
-        return memoryMap[context];
+        return memoryMap.value(context);
 
     MemoryPtr memory(new Memory());
     if (!memory || !memory->init())
@@ -34,24 +45,28 @@ MemoryPtr defaultMemory(void)
     memoryMap[context] = memory;
 
     QObject::connect(context, &QOpenGLContext::aboutToBeDestroyed,
-        std::bind(&memoryRemove, context));
+        std::bind(&removeMemory, context));
 
     return memory;
 }
 
-static void rendererRemove(QOpenGLContext *context)
+static void removeRenderer(QOpenGLContext *context)
 {
+    QMutexLocker locker(&m_mutex);
+
     rendererMap.remove(context);
 }
 
-RendererPtr defaultRenderer(void)
+VOLCANO_API RendererPtr defaultRenderer(void)
 {
     QOpenGLContext *context = QOpenGLContext::currentContext();
-    if (context == nullptr)
-        return RendererPtr();
+    Q_ASSERT(context != nullptr);
+    Q_ASSERT(context->thread() == QThread::currentThread());
+
+    QMutexLocker locker(&m_mutex);
 
     if (rendererMap.contains(context))
-        return rendererMap[context];
+        return rendererMap.value(context);
 
     RendererPtr renderer(new Renderer());
     if (!renderer || !renderer->init())
@@ -60,7 +75,7 @@ RendererPtr defaultRenderer(void)
     rendererMap[context] = renderer;
 
     QObject::connect(context, &QOpenGLContext::aboutToBeDestroyed,
-        std::bind(&rendererRemove, context));
+        std::bind(&removeRenderer, context));
 
     return renderer;
 }

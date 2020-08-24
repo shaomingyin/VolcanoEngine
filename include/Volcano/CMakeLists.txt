@@ -6,16 +6,19 @@ target_sources(Volcano
         Config.hpp.in
         DirectionalLight.hpp
         Entity.hpp
-        Game.hpp
         Light.hpp
-        Mesh.hpp
+        Model.hpp
         Node.hpp
         OpenGL.hpp
+        OrthoCamera.hpp
+        PerpectiveCamera.hpp
         PointLight.hpp
         Resource.hpp
         Scene.hpp
         SpotLight.hpp
         Viewport.hpp
+        World.hpp
+        WorldAmbient.hpp
     )
 
 configure_file(

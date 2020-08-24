@@ -3,7 +3,6 @@
 #ifndef VOLCANO_OPENGL_HPP
 #define VOLCANO_OPENGL_HPP
 
-#include <QQuickWindow>
 #include <QSharedPointer>
 
 #include <Volcano/OpenGL/Common.hpp>
@@ -18,8 +17,8 @@ VOLCANO_OPENGL_BEGIN
 typedef QSharedPointer<Memory> MemoryPtr;
 typedef QSharedPointer<Renderer> RendererPtr;
 
-MemoryPtr defaultMemory(void);
-RendererPtr defaultRenderer(void);
+VOLCANO_API MemoryPtr defaultMemory(void);
+VOLCANO_API RendererPtr defaultRenderer(void);
 
 VOLCANO_OPENGL_END
 

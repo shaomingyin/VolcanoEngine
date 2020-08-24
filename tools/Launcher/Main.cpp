@@ -1,33 +1,14 @@
 //
 //
-#include <functional>
-
 #include <QDir>
 #include <QUrl>
 #include <QString>
-#include <QScopedPointer>
 #include <QCommandLineParser>
 #include <QObject>
 #include <QGuiApplication>
-#include <QQuickView>
+#include <QWindow>
 
-#include <Volcano.hpp>
-
-static void statusChanged(QQuickView *view, QQuickView::Status status)
-{
-    switch (status)
-    {
-    case QQuickView::Ready:
-        if (qobject_cast<Volcano::Game *>(view->rootObject()) == nullptr)
-            qGuiApp->exit(1);
-        break;
-    case QQuickView::Error:
-        qGuiApp->exit(1);
-        break;
-    default:
-        break;
-    }
-}
+#include "MainWindow.hpp"
 
 int main(int argc, char *argv[])
 {
@@ -35,6 +16,7 @@ int main(int argc, char *argv[])
 
     QGuiApplication::setApplicationName("VolcanoLauncher");
     QGuiApplication::setApplicationVersion(QString("%1.%2").arg(VOLCANO_VERSION_MAJOR).arg(VOLCANO_VERSION_MINOR));
+    QGuiApplication::setQuitOnLastWindowClosed(true);
 
     QCommandLineParser parser;
     parser.addHelpOption();
@@ -56,18 +38,25 @@ int main(int argc, char *argv[])
 
     Volcano::init();
 
-    qDebug() << "Create Qml engine...";
+    qDebug() << "Creating main window...";
 
-    QScopedPointer<QQuickView> mainWindow(new QQuickView(url));
-    if (!mainWindow)
+    MainWindow *mainWindow(new MainWindow());
+    if (mainWindow == nullptr)
         return EXIT_FAILURE;
 
-    QObject::connect(mainWindow.data(), &QQuickView::statusChanged,
-        std::bind(&statusChanged, mainWindow.data(), std::placeholders::_1));
+    if (!mainWindow->init() || !mainWindow->load(url))
+    {
+        delete mainWindow;
+        return EXIT_FAILURE;
+    }
 
+    mainWindow->resize(800, 600);
     mainWindow->show();
 
     qDebug() << "Running...";
 
-    return app.exec();
+    int ret = app.exec();
+    delete mainWindow;
+
+    return ret;
 }

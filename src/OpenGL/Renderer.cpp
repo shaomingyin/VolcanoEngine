@@ -20,16 +20,21 @@ bool Renderer::init(void)
     QOpenGLContext *context = QOpenGLContext::currentContext();
     Q_ASSERT(context != nullptr);
 
-    m_gl = context->versionFunctions<Functions>();
-    if (m_gl == nullptr)
+    Functions *gl = context->versionFunctions<Functions>();
+    if (gl == nullptr)
         return false;
 
-    qInfo() << "OpenGL:" << (const char *)m_gl->glGetString(GL_VERSION);
+    qInfo() << "OpenGL:" << (const char *)gl->glGetString(GL_VERSION);
+
+    if (!initPrograms())
+        return false;
+
+    m_gl = gl;
 
     return true;
 }
 
-void Renderer::render(const View &view)
+void Renderer::render(const View &view, Target &target)
 {
     Q_ASSERT(m_gl != nullptr);
 
@@ -41,10 +46,9 @@ void Renderer::render(const View &view)
     }
 }
 
-void Renderer::onSizeChanged(void)
+bool Renderer::initPrograms(void)
 {
-    Q_ASSERT(m_gl != nullptr);
+    return true;
 }
-
 
 VOLCANO_OPENGL_END
