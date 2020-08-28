@@ -4,7 +4,7 @@
 
 VOLCANO_BEGIN
 
-DirectionalLight::DirectionalLight(Node *parent):
+DirectionalLight::DirectionalLight(QObject *parent):
     Light(parent)
 {
 }

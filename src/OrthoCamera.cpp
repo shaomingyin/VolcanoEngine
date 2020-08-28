@@ -4,7 +4,7 @@
 
 VOLCANO_BEGIN
 
-OrthoCamera::OrthoCamera(Node *parent):
+OrthoCamera::OrthoCamera(QObject *parent):
     Camera(parent)
 {
 }

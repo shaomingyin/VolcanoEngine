@@ -9,11 +9,11 @@
 #include <QQmlContext>
 
 #include <Volcano/Common.hpp>
-#include <Volcano/Node.hpp>
+#include <Volcano/Component.hpp>
 
 VOLCANO_BEGIN
 
-class Resource: public Node
+class Resource: public Component
 {
     Q_OBJECT
     Q_PROPERTY(QUrl source READ source WRITE setSource NOTIFY sourceChanged)
@@ -32,7 +32,7 @@ public:
     Q_ENUM(State)
 
 public:
-    Resource(Node *parent = nullptr);
+    Resource(QObject *parent = nullptr);
     ~Resource(void) override;
 
 public:

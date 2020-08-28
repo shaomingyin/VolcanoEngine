@@ -16,12 +16,10 @@ class VOLCANO_API Model: public Resource
     Q_OBJECT
 
 public:
-    Model(Node *parent = nullptr);
+    Model(QObject *parent = nullptr);
     ~Model(void) override;
 
 protected:
-    void onUpdate(float elapsed) override;
-    void onDraw(OpenGL::View &view) override;
     void onSourceChanged(const QUrl &url) override;
 
 private:

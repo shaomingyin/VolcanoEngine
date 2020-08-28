@@ -13,7 +13,7 @@ class VOLCANO_API PerpectiveCamera: public Camera
     Q_PROPERTY(qreal fov READ fov WRITE setFov NOTIFY fovChanged)
 
 public:
-    PerpectiveCamera(Node *parent = nullptr);
+    PerpectiveCamera(QObject *parent = nullptr);
     ~PerpectiveCamera(void) override;
 
 public:

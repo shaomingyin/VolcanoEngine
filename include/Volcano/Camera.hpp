@@ -8,11 +8,11 @@
 #include <QMatrix4x4>
 
 #include <Volcano/Common.hpp>
-#include <Volcano/Node.hpp>
+#include <Volcano/Entity.hpp>
 
 VOLCANO_BEGIN
 
-class VOLCANO_API Camera: public Node
+class VOLCANO_API Camera: public Entity
 {
     Q_OBJECT
     Q_PROPERTY(QRectF rect READ rect WRITE setRect NOTIFY rectChanged)
@@ -23,7 +23,7 @@ class VOLCANO_API Camera: public Node
     Q_PROPERTY(QVector3D up READ up WRITE setUp NOTIFY upChanged)
 
 public:
-	Camera(Node *parent = nullptr);
+    Camera(QObject *parent = nullptr);
 	~Camera(void) override;
 
 public:
@@ -39,7 +39,6 @@ public:
     void setDirection(const QVector3D &v);
     const QVector3D &up(void) const;
     void setUp(const QVector3D &v);
-    void lookAt(const QVector3D &postion, const QVector3D &direction, const QVector3D &up);
 
 signals:
     void rectChanged(void);
@@ -140,13 +139,6 @@ VOLCANO_INLINE void Camera::setUp(const QVector3D &v)
         m_up = v;
         upChanged();
     }
-}
-
-VOLCANO_INLINE void Camera::lookAt(const QVector3D &position, const QVector3D &direction, const QVector3D &up)
-{
-    setPosition(position);
-    setDirection(direction);
-    setUp(up);
 }
 
 VOLCANO_END

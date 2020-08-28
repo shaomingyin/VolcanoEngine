@@ -7,7 +7,7 @@
 
 VOLCANO_BEGIN
 
-Model::Model(Node *parent):
+Model::Model(QObject *parent):
     Resource(parent)
 {
 }
@@ -15,14 +15,6 @@ Model::Model(Node *parent):
 Model::~Model(void)
 {
     release();
-}
-
-void Model::onUpdate(float elapsed)
-{
-}
-
-void Model::onDraw(OpenGL::View &view)
-{
 }
 
 void Model::onSourceChanged(const QUrl &url)

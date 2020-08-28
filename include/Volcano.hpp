@@ -17,14 +17,6 @@
 #include <Volcano/Resource.hpp>
 #include <Volcano/Scene.hpp>
 #include <Volcano/SpotLight.hpp>
-#include <Volcano/Viewport.hpp>
 #include <Volcano/World.hpp>
-#include <Volcano/WorldAmbient.hpp>
-
-VOLCANO_BEGIN
-
-VOLCANO_API bool init(void);
-
-VOLCANO_END
 
 #endif // VOLCANO_HPP

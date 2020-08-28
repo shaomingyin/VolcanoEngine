@@ -15,7 +15,7 @@ class VOLCANO_API DirectionalLight: public Light
     Q_OBJECT
 
 public:
-    DirectionalLight(Node *parent = nullptr);
+    DirectionalLight(QObject *parent = nullptr);
     ~DirectionalLight(void) override;
 };
 

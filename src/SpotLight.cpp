@@ -4,7 +4,7 @@
 
 VOLCANO_BEGIN
 
-SpotLight::SpotLight(Node *parent):
+SpotLight::SpotLight(QObject *parent):
     Light(parent)
 {
 }

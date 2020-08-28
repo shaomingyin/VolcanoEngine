@@ -12,7 +12,7 @@ class VOLCANO_API OrthoCamera: public Camera
     Q_OBJECT
 
 public:
-    OrthoCamera(Node *parent = nullptr);
+    OrthoCamera(QObject *parent = nullptr);
     ~OrthoCamera(void) override;
 };
 

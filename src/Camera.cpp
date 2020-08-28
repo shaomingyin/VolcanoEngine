@@ -4,8 +4,8 @@
 
 VOLCANO_BEGIN
 
-Camera::Camera(Node *parent) :
-	Node(parent)
+Camera::Camera(QObject *parent):
+    Entity(parent)
 {
 }
 

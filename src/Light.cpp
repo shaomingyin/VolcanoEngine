@@ -4,8 +4,8 @@
 
 VOLCANO_BEGIN
 
-Light::Light(Node *parent):
-    Node(parent)
+Light::Light(QObject *parent):
+    Entity(parent)
 {
 }
 

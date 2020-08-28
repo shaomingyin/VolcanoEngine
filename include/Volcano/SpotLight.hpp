@@ -13,7 +13,7 @@ class VOLCANO_API SpotLight: public Light
     Q_OBJECT
 
 public:
-    SpotLight(Node *parent = nullptr);
+    SpotLight(QObject *parent = nullptr);
     ~SpotLight(void) override;
 };
 

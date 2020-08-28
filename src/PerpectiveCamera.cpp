@@ -4,7 +4,7 @@
 
 VOLCANO_BEGIN
 
-PerpectiveCamera::PerpectiveCamera(Node *parent):
+PerpectiveCamera::PerpectiveCamera(QObject *parent):
     Camera(parent),
     m_fov(90.0f)
 {
