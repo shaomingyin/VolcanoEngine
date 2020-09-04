@@ -15,9 +15,6 @@ find_package(Qt5Core REQUIRED)
 find_package(Qt5Concurrent REQUIRED)
 find_package(Qt5Network REQUIRED)
 find_package(Qt5Gui REQUIRED)
-find_package(Qt5Qml REQUIRED)
-find_package(Qt5Quick REQUIRED)
-find_package(Qt5QuickControls2 REQUIRED)
 
 set(VOLCANO_DEBUG ON CACHE BOOL "Enable debug functions")
 
@@ -45,9 +42,6 @@ target_link_libraries(Volcano
     Qt5::Concurrent
     Qt5::Network
 	Qt5::Gui
-	Qt5::Qml
-    Qt5::Quick
-	Qt5::QuickControls2
 	)
 
 add_subdirectory(test test)

@@ -2,20 +2,13 @@
 target_sources(Volcano
     PUBLIC
         Common.hpp
-        Component.hpp
-        Camera.hpp
         Config.hpp.in
-        DirectionalLight.hpp
-        Entity.hpp
-        Light.hpp
-        Model.hpp
-        OpenGL.hpp
-        OrthoCamera.hpp
-        PerpectiveCamera.hpp
-        PointLight.hpp
+        Drivers.hpp
+        Gui.hpp
+        Module.hpp
         Resource.hpp
-        SpotLight.hpp
-        World.hpp
+        Scene.hpp
+        VM.hpp
     )
 
 configure_file(
@@ -23,4 +16,6 @@ configure_file(
     Config.hpp
     )
 
-add_subdirectory(OpenGL OpenGL)
+add_subdirectory(Drivers Drivers)
+add_subdirectory(Gui Gui)
+add_subdirectory(Scene Scene)

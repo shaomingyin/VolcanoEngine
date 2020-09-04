@@ -1,18 +1,11 @@
 
 target_sources(Volcano
 	PRIVATE
-		Camera.cpp
-        Component.cpp
-		DirectionalLight.cpp
-		Entity.cpp
-		Light.cpp
-        Model.cpp
-        OrthoCamera.cpp
-        PerpectiveCamera.cpp
-		PointLight.cpp
+		Module.cpp
 		Resource.cpp
-		SpotLight.cpp
-        World.cpp
+		VM.cpp
 	)
 
-add_subdirectory(OpenGL OpenGL)
+add_subdirectory(Drivers Drivers)
+add_subdirectory(Gui Gui)
+add_subdirectory(Scene Scene)

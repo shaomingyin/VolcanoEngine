@@ -13,9 +13,9 @@ int main(int argc, char *argv[])
     QApplication::setApplicationName("VolcanoEditor");
     QApplication::setApplicationVersion(QString("%1.%2").arg(VOLCANO_VERSION_MAJOR).arg(VOLCANO_VERSION_MINOR));
 
-    Volcano::init();
-
     QMainWindow mainWindow;
+    mainWindow.resize(800, 600);
+    mainWindow.show();
 
     return app.exec();
 }

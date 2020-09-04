@@ -36,19 +36,11 @@ int main(int argc, char *argv[])
 
     qInfo() << "URL:" << url.toString();
 
-    Volcano::init();
-
     qDebug() << "Creating main window...";
 
     MainWindow *mainWindow(new MainWindow());
     if (mainWindow == nullptr)
         return EXIT_FAILURE;
-
-    if (!mainWindow->init() || !mainWindow->load(url))
-    {
-        delete mainWindow;
-        return EXIT_FAILURE;
-    }
 
     mainWindow->resize(800, 600);
     mainWindow->show();

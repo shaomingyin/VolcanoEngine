@@ -1,0 +1,11 @@
+//
+//
+#ifndef VOLCANO_DRIVERS_COMMON_HPP
+#define VOLCANO_DRIVERS_COMMON_HPP
+
+#include <Volcano/Common.hpp>
+
+#define VOLCANO_DRIVERS_BEGIN VOLCANO_BEGIN namespace Drivers {
+#define VOLCANO_DRIVERS_END } VOLCANO_END
+
+#endif // VOLCANO_DRIVERS_COMMON_HPP

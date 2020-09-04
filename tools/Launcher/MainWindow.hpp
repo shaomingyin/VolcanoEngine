@@ -7,51 +7,32 @@
 #include <QTimerEvent>
 #include <QElapsedTimer>
 #include <QScreen>
-#include <QWindow>
+#include <QOpenGLWindow>
 #include <QOpenGLContext>
-#include <QQmlEngine>
-#include <QQmlComponent>
-#include <QQuickRenderControl>
 
 #include <Volcano.hpp>
 
-class MainWindow: public QWindow
+class MainWindow: public QOpenGLWindow
 {
     Q_OBJECT
 
 public:
-    MainWindow(QScreen *screen = nullptr);
+    MainWindow(void);
     ~MainWindow(void) override;
 
 public:
-    bool init(void);
-    bool load(const QUrl &url);
-    Volcano::World *world(void);
 
 protected:
-    void timerEvent(QTimerEvent *evt) override;
-
-private slots:
-    void startup(void);
-
-private:
-    void frame(float elapsed);
+    void initializeGL(void) override;
+    void paintGL(void) override;
+    void paintOverGL(void) override;
+    void paintUnderGL(void) override;
+    void resizeGL(int w, int h) override;
 
 private:
-    QOpenGLContext *m_glContext;
-    QQmlEngine m_qmlEngine;
-    QQmlComponent *m_qmlComponent;
-    Volcano::OpenGL::Renderer *m_renderer;
-    Volcano::OpenGL::View m_view;
-    Volcano::OpenGL::Target m_target;
-    Volcano::World *m_world;
-    int m_frameTimer;
-    QElapsedTimer m_elapsedTimer;
+    Volcano::VM m_vm;
+    Volcano::Drivers::Graphics::Renderer *m_renderer;
+    Volcano::Drivers::Graphics::Target m_target;
 };
-
-VOLCANO_INLINE Volcano::World *MainWindow::world(void)
-{
-    return m_world;
-}
 
 #endif // VOLCANO_LAUNCHER_MAINWINDOW_HPP
