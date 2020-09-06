@@ -16,7 +16,7 @@ VOLCANO_SCENE_BEGIN
 
 typedef QList<Entity *> EntityList;
 
-class World: public QObject
+class VOLCANO_API World: public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QVector3D gravity READ gravity WRITE setGravity NOTIFY gravityChanged)

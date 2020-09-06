@@ -19,7 +19,7 @@
 #ifdef VOLCANO
 #   define VOLCANO_API Q_DECL_EXPORT
 #else
-#   define VOLCANO_API Q_DECL_IMPORT
+#   define VOLCANO_API //Q_DECL_IMPORT
 #endif
 
 #define VOLCANO_BEGIN namespace Volcano {

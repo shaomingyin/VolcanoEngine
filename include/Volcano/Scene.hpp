@@ -1,7 +1,7 @@
 //
 //
-#ifndef VOLCANO_DRIVERS_HPP
-#define VOLCANO_DRIVERS_HPP
+#ifndef VOLCANO_SCENE_HPP
+#define VOLCANO_SCENE_HPP
 
 #include <Volcano/Scene/Common.hpp>
 #include <Volcano/Scene/Camera.hpp>
@@ -16,4 +16,4 @@
 #include <Volcano/Scene/SpotLight.hpp>
 #include <Volcano/Scene/World.hpp>
 
-#endif // VOLCANO_DRIVERS_HPP
+#endif // VOLCANO_SCENE_HPP
