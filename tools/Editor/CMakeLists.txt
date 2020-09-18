@@ -1,16 +1,11 @@
 
 find_package(Qt5Widgets REQUIRED)
+link_libraries(Qt5::Widgets)
 
 add_executable(VolcanoEditor
-    Main.cpp
-    )
+	Main.cpp
+	MainWindow.cpp
+	MainWindow.hpp
+	)
 
-add_dependencies(VolcanoEditor VolcanoLauncher Volcano)
-
-target_link_libraries(VolcanoEditor
-    Volcano
-    Qt5::Widgets
-    )
-
-get_target_property(VOLCANO_EDITOR_SOURCES VolcanoEditor SOURCES)
-source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${VOLCANO_EDITOR_SOURCES})
+add_dependencies(VolcanoEditor Volcano)

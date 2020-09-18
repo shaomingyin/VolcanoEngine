@@ -1,25 +1,22 @@
 
 target_sources(Volcano
-    PUBLIC
+	PUBLIC
+        Camera.hpp
         Common.hpp
-        Config.hpp.in
-        Driver.hpp
-        Drivers.hpp
-        FileSystem.hpp
-        Gui.hpp
-        Module.hpp
-        Resource.hpp
-        Scene.hpp
-        VM.hpp
-        ZipArchive.hpp
-        ZipFileSystem.hpp
-    )
+        Component.hpp
+		DirectionalLight.hpp
+		Entity.hpp
+		Light.hpp
+		Material.hpp
+		Model.hpp
+		Object.hpp
+        OrthoCamera.hpp
+        PerpectiveCamera.hpp
+		Picture.hpp
+		PointLight.hpp
+		Resource.hpp
+		SpotLight.hpp
+		World.hpp
+	)
 
-configure_file(
-    Config.hpp.in
-    Config.hpp
-    )
-
-add_subdirectory(Drivers Drivers)
-add_subdirectory(Gui Gui)
-add_subdirectory(Scene Scene)
+add_subdirectory(Details Details)

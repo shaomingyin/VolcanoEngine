@@ -15,6 +15,17 @@ find_package(Qt5Core REQUIRED)
 find_package(Qt5Concurrent REQUIRED)
 find_package(Qt5Network REQUIRED)
 find_package(Qt5Gui REQUIRED)
+find_package(Qt5Qml REQUIRED)
+find_package(Qt5QuickControls2 REQUIRED)
+
+link_libraries(
+    Qt5::Core
+    Qt5::Concurrent
+    Qt5::Network
+    Qt5::Gui
+    Qt5::Qml
+    Qt5::QuickControls2
+    )
 
 set(VOLCANO_DEBUG ON CACHE BOOL "Enable debug functions")
 
@@ -36,13 +47,6 @@ get_target_property(VOLCANO_SOURCES Volcano SOURCES)
 source_group(TREE ${CMAKE_SOURCE_DIR} FILES ${VOLCANO_SOURCES})
 
 target_compile_definitions(Volcano PRIVATE VOLCANO)
-
-target_link_libraries(Volcano
-	Qt5::Core
-    Qt5::Concurrent
-    Qt5::Network
-	Qt5::Gui
-	)
 
 add_subdirectory(test test)
 add_subdirectory(tools tools)
