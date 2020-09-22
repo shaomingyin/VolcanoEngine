@@ -5,7 +5,7 @@
 VOLCANO_BEGIN
 
 Entity::Entity(QObject *parent):
-    Object(parent)
+    QObject(parent)
 {
 }
 

@@ -1,22 +1,28 @@
 
 target_sources(Volcano
 	PUBLIC
-        Camera.hpp
-        Common.hpp
-        Component.hpp
+		Camera.hpp
+		Common.hpp
+		Component.hpp
 		DirectionalLight.hpp
 		Entity.hpp
 		Light.hpp
-		Material.hpp
 		Model.hpp
-		Object.hpp
-        OrthoCamera.hpp
-        PerpectiveCamera.hpp
-		Picture.hpp
+		OrthoCamera.hpp
+		PerpectiveCamera.hpp
 		PointLight.hpp
 		Resource.hpp
+		Snapshot.hpp
 		SpotLight.hpp
+        View.hpp
 		World.hpp
+    PRIVATE
+        Config.hpp.in
 	)
 
-add_subdirectory(Details Details)
+configure_file(
+    Config.hpp.in
+    Config.hpp
+    )
+
+add_subdirectory(OpenGL OpenGL)

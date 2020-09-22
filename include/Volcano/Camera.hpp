@@ -6,13 +6,13 @@
 #include <QRectF>
 #include <QVector3D>
 #include <QMatrix4x4>
+#include <QObject>
 
 #include <Volcano/Common.hpp>
-#include <Volcano/Object.hpp>
 
 VOLCANO_BEGIN
 
-class VOLCANO_API Camera: public Object
+class VOLCANO_API Camera: public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QRectF rect READ rect WRITE setRect NOTIFY rectChanged)

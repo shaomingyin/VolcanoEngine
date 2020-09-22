@@ -3,12 +3,13 @@
 #ifndef VOLCANO_COMPONENT_HPP
 #define VOLCANO_COMPONENT_HPP
 
+#include <QObject>
+
 #include <Volcano/Common.hpp>
-#include <Volcano/Object.hpp>
 
 VOLCANO_BEGIN
 
-class Component: public Object
+class VOLCANO_API Component: public QObject
 {
     Q_OBJECT
 

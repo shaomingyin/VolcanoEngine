@@ -3,18 +3,23 @@
 #ifndef VOLCANO_COMMON_HPP
 #define VOLCANO_COMMON_HPP
 
-#include <Volcano/Details/Common.hpp>
+#include <Volcano/Config.hpp>
 
-#define VOLCANO_INLINE VOLCANO_DETAILS_INLINE
+#define VOLCANO_INLINE inline
 
-#define VOLCANO_API VOLCANO_DETAILS_API
+#ifndef VOLCANO_DEBUG
+#   define QT_NO_DEBUG_OUTPUT
+#endif
 
-#define VOLCANO_VERSION_MAJOR VOLCANO_DETAILS_VERSION_MAJOR
-#define VOLCANO_VERSION_MINOR VOLCANO_DETAILS_VERSION_MINOR
-#define VOLCANO_VERSION_PATCH VOLCANO_DETAILS_VERSION_PATCH
+#include <QtGlobal>
+#include <QtConcurrent>
 
-#ifdef VOLCANO_DETAILS_DEBUG
-#   define VOLCANO_DEBUG
+#include <QDebug>
+
+#ifdef VOLCANO
+#   define VOLCANO_API Q_DECL_EXPORT
+#else
+#   define VOLCANO_API //Q_DECL_IMPORT
 #endif
 
 #define VOLCANO_BEGIN namespace Volcano {

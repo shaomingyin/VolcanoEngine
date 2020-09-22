@@ -6,16 +6,14 @@ target_sources(Volcano
 		DirectionalLight.cpp
 		Entity.cpp
 		Light.cpp
-		Material.cpp
-		Model.cpp
-		Object.cpp
         OrthoCamera.cpp
         PerpectiveCamera.cpp
-		Picture.cpp
 		PointLight.cpp
 		Resource.cpp
+		Snapshot.cpp
 		SpotLight.cpp
+        View.cpp
 		World.cpp
 	)
 
-add_subdirectory(Details Details)
+add_subdirectory(OpenGL OpenGL)

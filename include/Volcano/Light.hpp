@@ -4,13 +4,13 @@
 #define VOLCANO_LIGHT_HPP
 
 #include <QColor>
+#include <QObject>
 
 #include <Volcano/Common.hpp>
-#include <Volcano/Object.hpp>
 
 VOLCANO_BEGIN
 
-class VOLCANO_API Light: public Object
+class VOLCANO_API Light: public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QColor color READ color WRITE setColor NOTIFY colorChanged)

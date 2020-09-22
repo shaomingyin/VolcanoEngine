@@ -5,7 +5,7 @@
 VOLCANO_BEGIN
 
 Camera::Camera(QObject *parent):
-    Object(parent)
+    QObject(parent)
 {
 }
 

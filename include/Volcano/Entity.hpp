@@ -7,16 +7,16 @@
 #include <QVector3D>
 #include <QQuaternion>
 #include <QMatrix4x4>
+#include <QObject>
 
 #include <Volcano/Common.hpp>
-#include <Volcano/Object.hpp>
 #include <Volcano/Component.hpp>
 
 VOLCANO_BEGIN
 
 typedef QList<Component *> ComponentList;
 
-class VOLCANO_API Entity: public Object
+class VOLCANO_API Entity: public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged)

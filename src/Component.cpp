@@ -5,7 +5,7 @@
 VOLCANO_BEGIN
 
 Component::Component(QObject *parent):
-    Object(parent)
+    QObject(parent)
 {
 }
 
