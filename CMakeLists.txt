@@ -4,10 +4,12 @@ project(VolcanoEngine VERSION 0.1.0)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
+set(CMAKE_MODULE_PATH "${CMAKE_HOME_DIRECTORY}/cmake")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/out)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/out)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/out)
+
+# Qt
 
 set(CMAKE_AUTOMOC ON)
 
@@ -26,6 +28,26 @@ link_libraries(
     Qt5::Qml
     Qt5::QuickControls2
     )
+
+# BulletPhysics
+
+include(FindBullet)
+if(BULLET_FOUND)
+    include_directories(${BULLET_INCLUDE_DIRS})
+    link_libraries(${BULLET_LIBRARIES})
+else()
+    message(FATAL_ERROR "BulletPHysics not found.")
+endif()
+
+# Assimp
+
+include(FindAssimp)
+if(ASSIMP_FOUND)
+    include_directories(${ASSIMP_FOUND})
+    link_libraries(${ASSIMP_LIBRARIES})
+else()
+    message(FATAL_ERROR "Assimp not found.")
+endif()
 
 set(VOLCANO_DEBUG ON CACHE BOOL "Enable debug functions")
 

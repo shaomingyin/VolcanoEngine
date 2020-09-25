@@ -1,21 +1,19 @@
 //
 //
-#include <functional>
+#include <Volcano/Graphics/Heap.hpp>
 
-#include <Volcano/OpenGL/Heap.hpp>
-
-VOLCANO_OPENGL_BEGIN
+VOLCANO_GRAPHICS_BEGIN
 
 using namespace std::placeholders;
 
 Heap::Heap(QOpenGLBuffer::Type type, QOpenGLBuffer::UsagePattern usage):
-    m_heap(type),
+    m_glBuffer(type),
     m_size(0),
     m_freeSize(0),
     m_map(nullptr),
     m_mapCount(0)
 {
-    m_heap.setUsagePattern(usage);
+    m_glBuffer.setUsagePattern(usage);
 }
 
 Heap::~Heap(void)
@@ -27,12 +25,12 @@ Heap::~Heap(void)
 bool Heap::init(int size)
 {
     Q_ASSERT(size > 0);
-    Q_ASSERT(!m_heap.isCreated());
+    Q_ASSERT(!m_glBuffer.isCreated());
 
-    if (!m_heap.create())
+    if (!m_glBuffer.create())
         return false;
 
-    m_heap.allocate(size);
+    m_glBuffer.allocate(size);
     m_size = size;
     m_freeSize = size;
 
@@ -42,7 +40,7 @@ bool Heap::init(int size)
 Buffer *Heap::allocBuffer(int size)
 {
     Q_ASSERT(size > 0);
-    Q_ASSERT(m_heap.isCreated());
+    Q_ASSERT(m_glBuffer.isCreated());
 
     Q_ASSERT(size > 0);
     Q_ASSERT(size <= m_size);
@@ -54,6 +52,7 @@ Buffer *Heap::allocBuffer(int size)
     Buffer *used;
     int pos = 0;
 
+    // First fit.
     for (it = m_bufferList.begin(); it != m_bufferList.end(); ++it)
     {
         used = *it;
@@ -62,7 +61,7 @@ Buffer *Heap::allocBuffer(int size)
         pos = used->offset() + used->size();
     }
 
-    Buffer *buf = new Buffer(pos, size);
+    Buffer *buf = new Buffer(*this, pos, size);
     if (buf == nullptr)
         return nullptr;
 
@@ -84,20 +83,30 @@ Buffer *Heap::allocBuffer(int size)
 
 void Heap::freeBuffer(Buffer *buf)
 {
+    Q_ASSERT(&buf->heap() == this);
     Q_ASSERT(m_bufferList.contains(buf));
 
     m_bufferList.removeOne(buf);
 }
 
+void Heap::bindBuffer(Buffer *buf)
+{
+    Q_ASSERT(&buf->heap() == this);
+    Q_ASSERT(m_bufferList.contains(buf));
+
+    m_glBuffer.bind();
+}
+
 void *Heap::mapBuffer(Buffer *buf, QOpenGLBuffer::Access access)
 {
+    Q_ASSERT(&buf->heap() == this);
     Q_ASSERT(m_bufferList.contains(buf));
 
     if (m_map == nullptr)
     {
         Q_ASSERT(m_mapCount == 0);
-        m_heap.bind();
-        m_map = m_heap.map(access);
+        m_glBuffer.bind();
+        m_map = m_glBuffer.map(access);
         if (m_map == nullptr)
             return nullptr;
     }
@@ -109,6 +118,7 @@ void *Heap::mapBuffer(Buffer *buf, QOpenGLBuffer::Access access)
 
 void Heap::unmapBuffer(Buffer *buf)
 {
+    Q_ASSERT(&buf->heap() == this);
     Q_ASSERT(m_bufferList.contains(buf));
     Q_ASSERT(m_map != nullptr);
     Q_ASSERT(m_mapCount > 0);
@@ -117,9 +127,9 @@ void Heap::unmapBuffer(Buffer *buf)
     if (m_mapCount > 0)
         return;
 
-    m_heap.bind();
-    m_heap.unmap();
+    m_glBuffer.bind();
+    m_glBuffer.unmap();
     m_map = nullptr;
 }
 
-VOLCANO_OPENGL_END
+VOLCANO_GRAPHICS_END

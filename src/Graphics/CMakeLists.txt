@@ -8,4 +8,5 @@ target_sources(Volcano
 		Memory.cpp
 		Mesh.cpp
 		Renderer.cpp
+        Target.cpp
 	)

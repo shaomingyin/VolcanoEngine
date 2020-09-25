@@ -1,11 +1,12 @@
 //
 //
-#include <Volcano/OpenGL/Buffer.hpp>
+#include <Volcano/Graphics/Buffer.hpp>
 
-VOLCANO_OPENGL_BEGIN
+VOLCANO_GRAPHICS_BEGIN
 
-Buffer::Buffer(int offset, int size, QObject *parent):
+Buffer::Buffer(Heap &heap, int offset, int size, QObject *parent):
     QIODevice(parent),
+    m_heap(heap),
     m_offset(offset),
     m_size(size),
     m_pos(0),
@@ -133,4 +134,4 @@ qint64 Buffer::writeData(const char *data, qint64 maxSize)
     return len;
 }
 
-VOLCANO_OPENGL_END
+VOLCANO_GRAPHICS_END

@@ -9,4 +9,5 @@ target_sources(Volcano
 		Memory.hpp
 		Mesh.hpp
 		Renderer.hpp
+        Target.hpp
 	)

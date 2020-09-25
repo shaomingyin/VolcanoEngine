@@ -1,10 +1,8 @@
 //
 //
-#include <Volcano/OpenGL/Context.hpp>
+#include <Volcano/Graphics/Context.hpp>
 
-VOLCANO_OPENGL_BEGIN
-
-Context *Context::c_current = nullptr;
+VOLCANO_GRAPHICS_BEGIN
 
 Context::Context(void)
 {
@@ -22,4 +20,4 @@ bool Context::init(void)
     return true;
 }
 
-VOLCANO_OPENGL_END
+VOLCANO_GRAPHICS_END

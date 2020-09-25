@@ -1,16 +1,16 @@
 //
 //
-#ifndef VOLCANO_OPENGL_MEMORY_HPP
-#define VOLCANO_OPENGL_MEMORY_HPP
+#ifndef VOLCANO_GRAPHICS_MEMORY_HPP
+#define VOLCANO_GRAPHICS_MEMORY_HPP
 
 #include <QList>
 #include <QSharedPointer>
 
-#include <Volcano/OpenGL/Common.hpp>
-#include <Volcano/OpenGL/Heap.hpp>
-#include <Volcano/OpenGL/Buffer.hpp>
+#include <Volcano/Graphics/Common.hpp>
+#include <Volcano/Graphics/Heap.hpp>
+#include <Volcano/Graphics/Buffer.hpp>
 
-VOLCANO_OPENGL_BEGIN
+VOLCANO_GRAPHICS_BEGIN
 
 class VOLCANO_API Memory
 {
@@ -62,6 +62,6 @@ VOLCANO_INLINE Buffer *Memory::allocDynamicVertexIndexBuffer(int size)
                QOpenGLBuffer::IndexBuffer, QOpenGLBuffer::DynamicDraw);
 }
 
-VOLCANO_OPENGL_END
+VOLCANO_GRAPHICS_END
 
-#endif // VOLCANO_OPENGL_MEMORY_HPP
+#endif // VOLCANO_GRAPHICS_MEMORY_HPP

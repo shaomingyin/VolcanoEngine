@@ -8,10 +8,11 @@ target_sources(Volcano
 		Entity.hpp
 		Light.hpp
 		Model.hpp
+        Module.hpp
 		OrthoCamera.hpp
 		PerpectiveCamera.hpp
 		PointLight.hpp
-		Resource.hpp
+        ResourceManager.hpp
 		Snapshot.hpp
 		SpotLight.hpp
         View.hpp
@@ -25,4 +26,4 @@ configure_file(
     Config.hpp
     )
 
-add_subdirectory(OpenGL OpenGL)
+add_subdirectory(Graphics Graphics)

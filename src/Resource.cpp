@@ -1,15 +1,16 @@
 //
 //
-#ifndef VOLCANO_RESOURCE_HPP
-#define VOLCANO_RESOURCE_HPP
-
-#include <QUrl>
-#include <QCache>
-
-#include <Volcano/Common.hpp>
+#include <Volcano/Resource.hpp>
 
 VOLCANO_BEGIN
 
-VOLCANO_END
+Resource::Resource(QObject *parent):
+    QNetworkReply(parent)
+{
+}
 
-#endif // VOLCANO_RESOURCE_HPP
+Resource::~Resource(void)
+{
+}
+
+VOLCANO_END

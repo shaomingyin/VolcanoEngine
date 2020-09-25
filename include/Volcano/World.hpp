@@ -7,14 +7,21 @@
 #include <QVector3D>
 #include <QObject>
 
+#define register
+#include <btBulletDynamicsCommon.h>
+#undef register
+
 #include <Volcano/Common.hpp>
 #include <Volcano/Camera.hpp>
 #include <Volcano/Entity.hpp>
 #include <Volcano/Light.hpp>
+#include <Volcano/Snapshot.hpp>
 
 VOLCANO_BEGIN
 
+typedef QList<Light *> LightList;
 typedef QList<Entity *> EntityList;
+typedef QList<Camera *> CameraList;
 
 class VOLCANO_API World: public QObject
 {
@@ -23,15 +30,24 @@ class VOLCANO_API World: public QObject
     Q_PROPERTY(Light *ambientLight READ ambientLight)
 
 public:
+    enum
+    {
+        InitPhysics = 0x1
+    };
+
+public:
     World(QObject *parent = nullptr);
     ~World(void) override;
 
 public:
+    bool init(int flags);
     const QVector3D &gravity(void) const;
     void setGravity(const QVector3D &r);
     Light *ambientLight(void);
     void addEntity(Entity *p);
     void removeEntity(Entity *p);
+    virtual void stepSimulation(float elapsed);
+    virtual void buildSnapshot(Snapshot &r);
 
 signals:
     void gravityChanged(const QVector3D &r);
@@ -39,11 +55,17 @@ signals:
     void entityRemoved(Entity *p);
 
 protected:
+    void buildView(View &r);
+
+protected:
+    LightList m_lightList;
     EntityList m_entityList;
+    CameraList m_cameraList;
 
 private:
-    QVector3D m_gravity;
     Light m_ambientLight;
+    QVector3D m_gravity;
+    btDynamicsWorld *m_btWorld;
 };
 
 VOLCANO_INLINE const QVector3D &World::gravity(void) const

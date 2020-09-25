@@ -1,8 +1,8 @@
 //
 //
-#include <Volcano/OpenGL/Memory.hpp>
+#include <Volcano/Graphics/Memory.hpp>
 
-VOLCANO_OPENGL_BEGIN
+VOLCANO_GRAPHICS_BEGIN
 
 static const int heapOrder = 26;
 static const int heapSize = 1 << heapOrder;
@@ -38,4 +38,4 @@ Buffer *Memory::allocBuffer(int size, HeapPtrList &list, QOpenGLBuffer::Type typ
     return heap->allocBuffer(size);
 }
 
-VOLCANO_OPENGL_END
+VOLCANO_GRAPHICS_END

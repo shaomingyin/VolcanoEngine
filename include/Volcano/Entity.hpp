@@ -42,6 +42,7 @@ public:
     void setScale(const QVector3D &r);
     const QQuaternion &rotation(void) const;
     void setRotation(const QQuaternion &r);
+    const ComponentList &componentList(void) const;
     void addComponent(Component *p);
     void removeComponent(Component *p);
     virtual void update(float elapsed);
@@ -108,6 +109,11 @@ VOLCANO_INLINE void Entity::setVisible(bool v)
         m_visible = v;
         visibleChanged(v);
     }
+}
+
+VOLCANO_INLINE const ComponentList &Entity::componentList(void) const
+{
+    return m_componentList;
 }
 
 VOLCANO_INLINE void Entity::addComponent(Component *p)
