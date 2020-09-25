@@ -5,7 +5,6 @@
 
 #include <Volcano/Common.hpp>
 
-
 VOLCANO_BEGIN
 
 struct VOLCANO_API Module
@@ -16,7 +15,7 @@ struct VOLCANO_API Module
 
 VOLCANO_END
 
-#define VOLCANO_MODULE_IID "Volcano.Module/" #VOLCANO_VERSION_MAJOR "." #VOLCANO_VERSION_MINOR
+#define VOLCANO_MODULE_IID "Volcano.Module/0.1"
 
 Q_DECLARE_INTERFACE(Volcano::Module, VOLCANO_MODULE_IID)
 

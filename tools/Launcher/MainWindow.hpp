@@ -6,16 +6,15 @@
 #include <QWindow>
 #include <QOpenGLWindow>
 
-#include <Volcano/World.hpp>
-#include <Volcano/Graphics/Context.hpp>
-#include <Volcano/Graphics/Target.hpp>
+#include <Volcano/Game/World.hpp>
+//#include <Volcano/Graphics/Target.hpp>
 
 class MainWindow: public QOpenGLWindow
 {
     Q_OBJECT
 
 public:
-    MainWindow(Volcano::World &w, QWindow *parent = nullptr);
+    MainWindow(Volcano::Game::World &w, QWindow *parent = nullptr);
     ~MainWindow(void) override;
 
 protected:
@@ -24,10 +23,10 @@ protected:
     void resizeGL(int w, int h) override;
 
 private:
-    Volcano::World &m_world;
-    Volcano::Snapshot m_snapshot;
-    Volcano::Graphics::Context m_gc;
-    Volcano::Graphics::Target m_target;
+    Volcano::Game::World &m_world;
+    //Volcano::Snapshot m_snapshot;
+    //Volcano::Graphics::Context m_gc;
+    //Volcano::Graphics::Target m_target;
 };
 
 #endif // MAINWINDOW_HPP
