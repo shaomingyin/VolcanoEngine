@@ -10,29 +10,20 @@
 
 VOLCANO_GRAPHICS_OPENGL_BEGIN
 
-class VOLCANO_API Target
+class VOLCANO_API Target: public Graphics::Target
 {
 public:
     Target(void);
-    virtual ~Target(void);
+    Target(int width, int height);
+    ~Target(void) override;
 
 public:
-    const QSize &size(void) const;
-    void resize(const QSize &r);
+    bool init(void);
+    void shutdown(void);
 
-private:
-    QSize m_size;
+protected:
+    void onSizeChanged(void) override;
 };
-
-VOLCANO_INLINE const QSize &Target::size(void) const
-{
-    return m_size;
-}
-
-VOLCANO_INLINE void Target::resize(const QSize &r)
-{
-    m_size = r;
-}
 
 VOLCANO_GRAPHICS_OPENGL_END
 

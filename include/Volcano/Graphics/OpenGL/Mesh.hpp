@@ -10,15 +10,8 @@
 
 VOLCANO_GRAPHICS_OPENGL_BEGIN
 
-class VOLCANO_API Mesh
+class VOLCANO_API Mesh: public Graphics::Mesh
 {
-public:
-    enum Type
-    {
-        TypeStatic = 0,
-        TypeDynamic
-    };
-
 public:
     Mesh(Memory &memory);
     virtual ~Mesh(void);

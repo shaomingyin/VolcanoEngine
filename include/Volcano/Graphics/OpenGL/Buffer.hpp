@@ -15,7 +15,7 @@ VOLCANO_GRAPHICS_OPENGL_BEGIN
 
 class Heap;
 
-class VOLCANO_API Buffer: public Volcano::Graphics::Buffer
+class VOLCANO_API Buffer: public Graphics::Buffer
 {
     friend class Heap;
 

@@ -15,6 +15,7 @@
 #include <QtConcurrent>
 
 #include <QDebug>
+#include <QQmlEngine>
 
 #ifdef VOLCANO
 #   define VOLCANO_API Q_DECL_EXPORT
@@ -24,5 +25,22 @@
 
 #define VOLCANO_BEGIN namespace Volcano {
 #define VOLCANO_END }
+
+VOLCANO_BEGIN
+
+template <typename T>
+static void registerType(const char *qmlName)
+{
+    qmlRegisterType<T>("Volcano", VOLCANO_VERSION_MAJOR, VOLCANO_VERSION_MINOR, qmlName);
+}
+
+template <typename T>
+static void registerUncreatableType(const char *qmlName)
+{
+    qmlRegisterUncreatableType<T>("Volcano", VOLCANO_VERSION_MAJOR, VOLCANO_VERSION_MINOR, qmlName,
+        QString("Cannot create instance of 'Volcano.%1").arg(qmlName));
+}
+
+VOLCANO_END
 
 #endif // VOLCANO_COMMON_HPP

@@ -8,6 +8,11 @@ Target::Target(void)
 {
 }
 
+Target::Target(int width, int height):
+    m_size(width, height)
+{
+}
+
 Target::~Target(void)
 {
 }

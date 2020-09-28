@@ -34,6 +34,40 @@ bool Renderer::init(void)
     return true;
 }
 
+Mesh *Renderer::createMesh(int vertexCount, int vertexIndexCount, Mesh::Type type)
+{
+    Mesh *p = new Mesh(m_memory);
+    if (p == nullptr)
+        return nullptr;
+
+    if (!p->init(vertexCount, vertexIndexCount, type))
+    {
+        delete p;
+        return nullptr;
+    }
+
+    return p;
+}
+
+Target *Renderer::createTarget(int width, int height)
+{
+    Target *p = new Target(width, height);
+    if (p == nullptr)
+        return nullptr;
+
+    return nullptr;
+}
+
+void Renderer::beginFrame(void)
+{
+
+}
+
+void Renderer::endFrame(void)
+{
+
+}
+
 bool Renderer::initPrograms(void)
 {
     if (m_program.programId() < 1)

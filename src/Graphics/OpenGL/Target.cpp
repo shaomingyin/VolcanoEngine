@@ -8,7 +8,25 @@ Target::Target(void)
 {
 }
 
+Target::Target(int width, int height):
+    Graphics::Target(width, height)
+{
+}
+
 Target::~Target(void)
+{
+}
+
+bool Target::init(void)
+{
+    return true;
+}
+
+void Target::shutdown(void)
+{
+}
+
+void Target::onSizeChanged(void)
 {
 }
 

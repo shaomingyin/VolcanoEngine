@@ -10,10 +10,8 @@ target_sources(Volcano
         OrthoCamera.cpp
         PerpectiveCamera.cpp
         PointLight.cpp
+        Scene.cpp
         SpotLight.cpp
         VM.cpp
         World.cpp
     )
-
-add_subdirectory(Client Client)
-add_subdirectory(Server Server)

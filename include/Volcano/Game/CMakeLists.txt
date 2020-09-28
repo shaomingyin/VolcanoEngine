@@ -11,10 +11,8 @@ target_sources(Volcano
         OrthoCamera.hpp
         PerpectiveCamera.hpp
         PointLight.hpp
+        Scene.hpp
         SpotLight.hpp
         VM.hpp
         World.hpp
     )
-
-add_subdirectory(Client Client)
-add_subdirectory(Server Server)

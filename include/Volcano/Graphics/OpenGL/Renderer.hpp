@@ -8,11 +8,12 @@
 #include <Volcano/Graphics/Renderer.hpp>
 #include <Volcano/Graphics/OpenGL/Common.hpp>
 #include <Volcano/Graphics/OpenGL/Target.hpp>
+#include <Volcano/Graphics/OpenGL/Memory.hpp>
 #include <Volcano/Graphics/OpenGL/Mesh.hpp>
 
 VOLCANO_GRAPHICS_OPENGL_BEGIN
 
-class VOLCANO_API Renderer: public Volcano::Graphics::Renderer
+class VOLCANO_API Renderer: public Graphics::Renderer
 {
 public:
     Renderer(void);
@@ -20,8 +21,10 @@ public:
 
 public:
     bool init(void) override;
-    void setTarget(Target &r);
-    //void render(const Snapshot &r);
+    Mesh *createMesh(int vertexCount, int vertexIndexCount, Mesh::Type type) override;
+    Target *createTarget(int width, int height) override;
+    void beginFrame(void) override;
+    void endFrame(void) override;
 
 private:
     bool initPrograms(void);
@@ -29,13 +32,8 @@ private:
 private:
     QOpenGLShaderProgram m_program;
     Functions *m_gl;
-    Target *m_target;
+    Memory m_memory;
 };
-
-VOLCANO_INLINE void Renderer::setTarget(Target &r)
-{
-    m_target = &r;
-}
 
 VOLCANO_GRAPHICS_OPENGL_END
 

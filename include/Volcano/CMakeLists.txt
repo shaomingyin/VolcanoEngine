@@ -2,7 +2,6 @@
 target_sources(Volcano
 	PUBLIC
         Common.hpp
-        Module.hpp
         ResourceManager.hpp
     PRIVATE
         Config.hpp.in

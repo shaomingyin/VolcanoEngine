@@ -5,7 +5,7 @@
 VOLCANO_GRAPHICS_OPENGL_BEGIN
 
 Buffer::Buffer(Heap &heap, int offset, int size, QObject *parent):
-    Volcano::Graphics::Buffer(parent),
+    Graphics::Buffer(parent),
     m_heap(heap),
     m_offset(offset),
     m_size(size),
