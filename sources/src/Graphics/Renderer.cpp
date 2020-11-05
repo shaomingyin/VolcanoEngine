@@ -7,12 +7,17 @@
 VOLCANO_GRAPHICS_BEGIN
 
 Renderer::Renderer(void):
-    m_gl(nullptr)
+    m_gl(nullptr),
+    m_fb(nullptr)
 {
 }
 
 Renderer::~Renderer(void)
 {
+    if (m_fb != nullptr)
+    {
+        // TODO
+    }
 }
 
 bool Renderer::init(const QSize size)
@@ -26,8 +31,8 @@ bool Renderer::init(const QSize size)
     if (gl == nullptr)
         return false;
 
-    if (!initPrograms())
-        return false;
+    //if (!initPrograms())
+    //    return false;
 
     resize(size);
 
@@ -36,12 +41,26 @@ bool Renderer::init(const QSize size)
     return true;
 }
 
+void Renderer::shutdown(void)
+{
+    Q_ASSERT(m_gl != nullptr);
+
+    // TODO
+}
+
 void Renderer::resize(const QSize &size)
 {
     if (m_size == size)
         return;
 
+    if (m_fb != nullptr)
+    {
+
+    }
+
     // TODO
+
+    m_size = size;
 }
 
 void Renderer::render(const View &view)
@@ -50,6 +69,8 @@ void Renderer::render(const View &view)
 
     if (Q_UNLIKELY(m_size.isEmpty()))
         return;
+
+    m_gl->glClear(GL_COLOR_BUFFER_BIT);
 }
 
 bool Renderer::initPrograms(void)

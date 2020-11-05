@@ -22,6 +22,7 @@ public:
 public:
     bool init(const QSize size);
     bool init(int width, int height);
+    void shutdown(void);
     bool isInit(void) const;
     const QSize &size(void) const;
     void resize(const QSize &size);
@@ -35,7 +36,7 @@ private:
     OpenGLFunctions *m_gl;
     QOpenGLShaderProgram m_program;
     QSize m_size;
-    QOpenGLFramebufferObject m_fb;
+    QOpenGLFramebufferObject *m_fb;
     Memory m_memory;
 };
 

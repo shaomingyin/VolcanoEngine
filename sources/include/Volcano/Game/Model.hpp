@@ -27,7 +27,7 @@ signals:
     void sourceChanged(const QUrl &r);
 
 protected:
-    virtual void startLoading(void) = 0;
+    // virtual void startLoading(void);
 
 private:
     QUrl m_source;

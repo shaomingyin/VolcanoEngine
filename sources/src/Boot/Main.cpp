@@ -1,11 +1,12 @@
 //
 //
-#include <QDir>
-#include <QUrl>
+#include <cstring>
+
 #include <QString>
 #include <QStringList>
 #include <QScopedPointer>
 #include <QCommandLineParser>
+#include <QCommandLineOption>
 #include <QCoreApplication>
 
 #include <Volcano/Game/Camera.hpp>
@@ -19,7 +20,9 @@
 #include <Volcano/Game/SpotLight.hpp>
 #include <Volcano/Game/World.hpp>
 
-#include <Volcano/Launcher/Application.hpp>
+#include <Volcano/Player/Main.hpp>
+#include <Volcano/Editor/Main.hpp>
+#include <Volcano/Server/Main.hpp>
 
 #include <Volcano/Boot/Common.hpp>
 
@@ -27,7 +30,24 @@ VOLCANO_BOOT_BEGIN
 
 static void printHelp(void)
 {
+    qInfo("Usage:");
+    qInfo("  Volcano <mode> [parameters...]\n");
+    qInfo("Modes:");
+    qInfo("  launch <game path>");
+    qInfo("    Launch a game in 'game path' to play.\n");
+    qInfo("  edit <game path>");
+    qInfo("    Edit a game in 'game path'.\n");
+    qInfo("  serve <game path>");
+    qInfo("    Start a game server for game in 'game path.'\n");
+    qInfo("  help");
+    qInfo("    Print this informations.\n");
+    qInfo("  version");
+    qInfo("    Print version.");
+}
 
+static void printVersion(void)
+{
+    qInfo("%d.%d.%d", VOLCANO_VERSION_MAJOR, VOLCANO_VERSION_MINOR, VOLCANO_VERSION_PATCH);
 }
 
 static int main(int argc, char *argv[])
@@ -38,51 +58,35 @@ static int main(int argc, char *argv[])
         return EXIT_FAILURE;
     }
 
-    QStringList args;
-    QString mode(argv[1]);
+    int subArgc = argc - 1;
+    char **subArgv = (char **)malloc(sizeof(char *) * subArgc);
 
-    args << argv[0];
+    subArgv[0] = strdup(argv[0]);
 
-    for (int i = 2; i < argc; ++i)
-        args << argv[i];
+    for (int i = 1; i < subArgc; ++i)
+        subArgv[i] = strdup(argv[i + 1]);
 
-    QScopedPointer<QCoreApplication> app;
+    int ret = EXIT_FAILURE;
 
-    if (mode == "launch")
-        app.reset(new Launcher::Application(args))
+    if (strcmp(argv[1], "play") == 0)
+        ret = Player::main(subArgc, subArgv);
+    else if (strcmp(argv[1], "edit") == 0)
+        ret = Editor::main(subArgc, subArgv);
+    else if (strcmp(argv[1], "serve") == 0)
+        ret = Server::main(subArgc, subArgv);
+    else if (strcmp(argv[1], "help") == 0)
+        printHelp();
+    else if (strcmp(argv[1], "version") == 0)
+        printVersion();
+    else
+        qFatal("Unknown subcommand '%s'.", argv[1]);
 
-    QGuiApplication app(argc, argv);
+    for (int i = 0; i < subArgc; ++i)
+        free(subArgv[i]);
 
-    QGuiApplication::setApplicationName("VolcanoLauncher");
-    QGuiApplication::setApplicationVersion(QString("%1.%2.%3").arg(VOLCANO_VERSION_MAJOR).arg(VOLCANO_VERSION_MINOR));
+    free(subArgv);
 
-    parser.process(app);
-
-    QUrl url = QUrl::fromLocalFile(QDir::currentPath() + "/index.qml");
-
-    const QStringList &sourceList = parser.positionalArguments();
-    if (!sourceList.empty())
-    {
-        if (sourceList.count() != 1)
-            return EXIT_FAILURE;
-        url = QUrl::fromUserInput(sourceList[0]);
-    }
-
-    if (!url.isValid())
-        return EXIT_FAILURE;
-
-
-#if 0
-    QScopedPointer<MainWindow> mainWindow(new MainWindow());
-    if (!mainWindow)
-        return EXIT_FAILURE;
-
-    mainWindow->create();
-    mainWindow->resize(800, 600);
-    mainWindow->show();
-#endif
-
-    return app.exec();
+    return ret;
 }
 
 VOLCANO_BOOT_END

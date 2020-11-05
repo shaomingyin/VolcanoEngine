@@ -1,0 +1,11 @@
+//
+//
+#ifndef VOLCANO_PLAYER_COMMON_HPP
+#define VOLCANO_PLAYER_COMMON_HPP
+
+#include <Volcano/Common.hpp>
+
+#define VOLCANO_PLAYER_BEGIN VOLCANO_BEGIN namespace Player {
+#define VOLCANO_PLAYER_END } VOLCANO_END
+
+#endif // VOLCANO_PLAYER_COMMON_HPP

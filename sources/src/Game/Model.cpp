@@ -19,7 +19,7 @@ void Model::setSource(const QUrl &r)
         return;
 
     m_source = r;
-    startLoading();
+    //startLoading();
 
     sourceChanged(r);
 }

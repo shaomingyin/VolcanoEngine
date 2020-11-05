@@ -8,13 +8,12 @@
 #include <QQuaternion>
 #include <QMatrix4x4>
 #include <QObject>
+#include <QQmlListProperty>
 
 #include <Volcano/Game/Common.hpp>
 #include <Volcano/Game/Component.hpp>
 
 VOLCANO_GAME_BEGIN
-
-typedef QList<Component *> ComponentList;
 
 class Entity: public QObject
 {
@@ -24,6 +23,9 @@ class Entity: public QObject
     Q_PROPERTY(bool visible READ visible WRITE setVisible NOTIFY visibleChanged)
     Q_PROPERTY(QVector3D position READ position WRITE setPosition NOTIFY positionChanged)
     Q_PROPERTY(QVector3D scale READ scale WRITE setScale NOTIFY scaleChanged)
+    Q_PROPERTY(QQuaternion rotation READ rotation WRITE setRotation NOTIFY rotationChanged)
+    Q_PROPERTY(QQmlListProperty<Volcano::Game::Component> components READ qmlComponents)
+    Q_CLASSINFO("DefaultProperty", "components")
 
 public:
     Entity(QObject *parent = nullptr);
@@ -42,9 +44,7 @@ public:
     void setScale(const QVector3D &r);
     const QQuaternion &rotation(void) const;
     void setRotation(const QQuaternion &r);
-    const ComponentList &componentList(void) const;
-    void addComponent(Component *p);
-    void removeComponent(Component *p);
+    QQmlListProperty<Component> qmlComponents(void);
     virtual void update(float elapsed);
 
 signals:
@@ -54,11 +54,20 @@ signals:
     void positionChanged(const QVector3D &r);
     void scaleChanged(const QVector3D &r);
     void rotationChanged(const QQuaternion &r);
-    void componentAdded(Component *p);
-    void componentRemoved(Component *p);
 
-protected:
-    ComponentList m_componentList;
+private:
+    void appendComponent(Component *comp);
+    static void qmlAppendComponent(QQmlListProperty<Component> *list, Component *comp);
+    int componentCount(void) const;
+    static int qmlComponentCount(QQmlListProperty<Component> *list);
+    Component *componentAt(int i);
+    static Component *qmlComponentAt(QQmlListProperty<Component> *list, int i);
+    void clearComponents(void);
+    static void qmlClearComponents(QQmlListProperty<Component> *list);
+    void replaceComponent(int i, Component *comp);
+    static void qmlReplaceComponent(QQmlListProperty<Component> *list, int i, Component *comp);
+    void removeLastComponent(void);
+    static void qmlRemoveLastComponent(QQmlListProperty<Component> *list);
 
 private:
     QString m_name;
@@ -67,6 +76,7 @@ private:
     QVector3D m_position;
     QVector3D m_scale;
     QQuaternion m_rotation;
+    QList<Component *> m_componentList;
 };
 
 VOLCANO_INLINE const QString &Entity::name(void) const
@@ -111,28 +121,9 @@ VOLCANO_INLINE void Entity::setVisible(bool v)
     }
 }
 
-VOLCANO_INLINE const ComponentList &Entity::componentList(void) const
-{
-    return m_componentList;
-}
-
-VOLCANO_INLINE void Entity::addComponent(Component *p)
-{
-    Q_ASSERT(!m_componentList.contains(p));
-    m_componentList.append(p);
-    componentAdded(p);
-}
-
-VOLCANO_INLINE void Entity::removeComponent(Component *p)
-{
-    Q_ASSERT(m_componentList.contains(p));
-    m_componentList.removeAll(p);
-    componentRemoved(p);
-}
-
 VOLCANO_INLINE const QVector3D &Entity::position(void) const
 {
-	return m_position;
+    return m_position;
 }
 
 VOLCANO_INLINE void Entity::setPosition(const QVector3D &r)
@@ -146,7 +137,7 @@ VOLCANO_INLINE void Entity::setPosition(const QVector3D &r)
 
 VOLCANO_INLINE const QVector3D &Entity::scale(void) const
 {
-	return m_scale;
+    return m_scale;
 }
 
 VOLCANO_INLINE void Entity::setScale(const QVector3D &r)
@@ -160,7 +151,7 @@ VOLCANO_INLINE void Entity::setScale(const QVector3D &r)
 
 VOLCANO_INLINE const QQuaternion &Entity::rotation(void) const
 {
-	return m_rotation;
+    return m_rotation;
 }
 
 VOLCANO_INLINE void Entity::setRotation(const QQuaternion &r)
