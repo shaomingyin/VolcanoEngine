@@ -32,8 +32,7 @@ int main(int argc, char *argv[])
             return EXIT_FAILURE;
         }
 
-        QDir path(args[0]);
-        url = QUrl::fromUserInput(path.canonicalPath());
+        url = QUrl::fromUserInput(args[0]);
     }
     else
     {
@@ -48,8 +47,9 @@ int main(int argc, char *argv[])
 
     Game::registerTypes();
 
-    MainWindow mainWindow(url);
+    MainWindow mainWindow;
 
+    mainWindow.init(url);
     mainWindow.resize(800, 600);
     mainWindow.show();
 

@@ -12,6 +12,7 @@
 #include <Volcano/Game/Common.hpp>
 #include <Volcano/Game/Camera.hpp>
 #include <Volcano/Game/Entity.hpp>
+#include <Volcano/Game/Light.hpp>
 
 VOLCANO_GAME_BEGIN
 
@@ -21,6 +22,7 @@ class World: public QObject
     Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged)
     Q_PROPERTY(Camera *mainCamera READ mainCamera WRITE setMainCamera NOTIFY mainCameraChanged)
     Q_PROPERTY(QVector3D gravity READ gravity WRITE setGravity NOTIFY gravityChanged)
+    Q_PROPERTY(Light *ambientLight READ ambientLight)
     Q_PROPERTY(QQmlListProperty<Volcano::Game::Entity> entities READ qmlEntities)
     Q_CLASSINFO("DefaultProperty", "entities")
 
@@ -33,11 +35,12 @@ public:
     void setName(const QString &v);
     Camera *mainCamera(void);
     void setMainCamera(Camera *cam);
-    const QVector3D &gravity(void) const;
+    QVector3D gravity(void) const;
     void setGravity(const QVector3D &v);
+    Light *ambientLight(void);
     QQmlListProperty<Entity> qmlEntities(void);
     void update(float elapsed);
-    void buildView(Graphics::View &v);
+    void addToView(Graphics::View &v);
 
 signals:
     void nameChanged(const QString &name);
@@ -62,6 +65,7 @@ private:
     QString m_name;
     Camera *m_mainCamera;
     QVector3D m_gravity;
+    Light m_ambientLight;
     QList<Entity *> m_entities;
 };
 

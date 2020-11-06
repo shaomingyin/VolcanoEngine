@@ -43,8 +43,9 @@ void World::setMainCamera(Camera *cam)
     }
 }
 
-const QVector3D &World::gravity(void) const
+QVector3D World::gravity(void) const
 {
+    qDebug() << m_gravity;
     return m_gravity;
 }
 
@@ -55,6 +56,11 @@ void World::setGravity(const QVector3D &v)
         m_gravity = v;
         gravityChanged(v);
     }
+}
+
+Light *World::ambientLight(void)
+{
+    return &m_ambientLight;
 }
 
 QQmlListProperty<Entity> World::qmlEntities(void)
@@ -72,7 +78,7 @@ void World::update(float elapsed)
 {
 }
 
-void World::buildView(Graphics::View &v)
+void World::addToView(Graphics::View &v)
 {
     if (Q_UNLIKELY(m_mainCamera == nullptr))
         return;

@@ -12,7 +12,14 @@ class View
 public:
     View(void);
     virtual ~View(void);
+
+public:
+    void reset(void);
 };
+
+VOLCANO_INLINE void View::reset(void)
+{
+}
 
 VOLCANO_GRAPHICS_END
 
