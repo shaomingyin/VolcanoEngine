@@ -1,0 +1,11 @@
+/*
+ *
+ */
+#ifndef MICROPROFILE_CONFIG_H
+#define MICROPROFILE_CONFIG_H
+
+#include <GL/gl3w.h>
+
+#define MICROPROFILE_GPU_TIMERS_GL 1
+
+#endif /* MICROPROFILE_CONFIG_H */
