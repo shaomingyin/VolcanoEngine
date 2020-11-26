@@ -3,10 +3,11 @@
 #ifndef VOLCANO_VM_COMMON_HPP
 #define VOLCANO_VM_COMMON_HPP
 
-#include <Volcano/Common.hpp>
-#include <Volcano/Lua.hpp>
+#include <lua.hpp>
 
-#define VOLCANO_VM_BEGIN VOLCANO_BEGIN namespace Game {
+#include <Volcano/Common.hpp>
+
+#define VOLCANO_VM_BEGIN VOLCANO_BEGIN namespace VM {
 #define VOLCANO_VM_END } VOLCANO_END
 
 #endif // VOLCANO_VM_COMMON_HPP

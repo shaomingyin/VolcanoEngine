@@ -12,7 +12,7 @@
 
 VOLCANO_BEGIN
 
-class ZipReader {
+class ZipReader: public Noncopyable {
 public:
     typedef mz_zip_archive_file_stat Stat;
 

@@ -2,15 +2,8 @@
 //
 #include <Volcano/Common.h>
 
-extern "C" uv_loop_t *uv_current_loop(void)
+extern "C" void uv_close_sync(uv_handle_t *handle)
 {
-    thread_local static uv_loop_t loop;
-    thread_local static uv_loop_t *p = nullptr;
-
-    if (p == nullptr) {
-        uv_loop_init(&loop);
-        p = &loop;
-    }
-
-    return p;
+    uv_close(handle, [](uv_handle_t *handle) { uv_stop(handle->loop); });
+    uv_run(handle->loop, UV_RUN_DEFAULT);
 }

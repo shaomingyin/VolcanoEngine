@@ -1,22 +1,58 @@
 //
 //
+#include <Volcano/ScopeGuard.hpp>
 #include <Volcano/VM/Kernel.hpp>
 
 VOLCANO_VM_BEGIN
 
-Kernel::Kernel(Object *parent):
-    Object(parent),
-    m_trapAsync([this](void) { handleTraps(); })
+///////////////////////////////////////////////////////////////////////////////
+// Main thread
+///////////////////////////////////////////////////////////////////////////////
+
+Kernel::Kernel(uv_loop_t *loop):
+    m_loop(loop),
+    m_started(false),
+    m_eventFirst(0),
+    m_eventLast(0)
 {
+    VOLCANO_ASSERT(m_loop != nullptr);
+
+    uv_async_init(m_loop, &m_trapAsync, [](uv_async_t *async) {
+        auto kernel = reinterpret_cast<Kernel *>(async->data);
+        kernel->handleTraps();
+    });
+
+    m_trapAsync.data = this;
 }
 
 Kernel::~Kernel(void)
 {
+    if (m_started)
+        stop();
+    else if (m_thread.joinable())
+        m_thread.join();
+
+    uv_close_sync(&m_trapAsync);
 }
 
 bool Kernel::start(const std::string &rootPath, const std::string &initPath)
 {
-    if (!m_fs.init(rootPath))
+    m_eventFirst = 0;
+    m_eventLast = 0;
+
+    m_rootPath = rootPath;
+    m_initPath = initPath;
+
+    if (!init())
+        return false;
+
+    std::promise<bool> initPromise;
+    auto initFuture = initPromise.get_future();
+
+    m_thread = std::thread(&Kernel::threadMain, this, &initPromise);
+
+    m_started = initFuture.get();
+    if (!m_started)
         return false;
 
     return true;
@@ -24,10 +60,63 @@ bool Kernel::start(const std::string &rootPath, const std::string &initPath)
 
 void Kernel::stop(void)
 {
-    VOLCANO_ASSERT(std::this_thread::get_id() != threadId());
+    VOLCANO_ASSERT(m_started);
 
-    Object::postQuit(threadId());
+    uv_async_send(&m_quitAsync);
+    m_thread.join();
+
+    shutdown();
+
+    m_started = false;
 }
+
+void Kernel::postEvent(const SDL_Event &evt)
+{
+    if (evt.type != SDL_WINDOWEVENT) {
+        m_eventQueue[m_eventLast & EVENT_QUEUE_MASK] = evt;
+        m_eventLast += 1;
+    }
+}
+
+void Kernel::handleTraps(void)
+{
+    VolcanoListNode *node;
+    Task *task;
+    bool handled = false;
+
+    for (;;) {
+        m_taskListMutex.lock();
+        node = volcanoListRemoveHead(&m_taskListTrapped);
+        m_taskListMutex.unlock();
+
+        if (node != volcanoListKnot(&m_taskListTrapped)) {
+            task = VOLCANO_MEMBEROF(node, Task, node);
+            task->trapResult = task->trapFunc(taskToLua(task));
+            handled = true;
+        } else
+            break;
+
+        m_taskListMutex.lock();
+        volcanoListAppend(&m_taskListReady, &task->node);
+        m_taskListMutex.unlock();
+    }
+
+    if (handled)
+        uv_async_send(&m_kickAsync);
+}
+
+bool Kernel::init(void)
+{
+    return true;
+}
+
+void Kernel::shutdown(void)
+{
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// VM thread
+///////////////////////////////////////////////////////////////////////////////
 
 void Kernel::taskAdded(lua_State *L, lua_State *L1)
 {
@@ -44,7 +133,11 @@ void Kernel::taskAdded(lua_State *L, lua_State *L1)
 
     volcanoListReset(&task->waitList);
     volcanoListNodeReset(&task->node);
-    volcanoListAppend(&fromTask(task)->m_taskListReady, &task->node);
+
+    auto kernel = fromTask(task);
+    kernel->m_taskListMutex.lock();
+    volcanoListAppend(&kernel->m_taskListReady, &task->node);
+    kernel->m_taskListMutex.unlock();
 }
 
 void Kernel::taskRemoved(lua_State *L, lua_State *L1)
@@ -53,9 +146,13 @@ void Kernel::taskRemoved(lua_State *L, lua_State *L1)
 
     Task *task = taskFromLua(L1);
 
-    uv_timer_stop(&task->sleepTimer);
-    uvSyncClose(&task->sleepTimer);
+    uv_close_sync(&task->sleepTimer);
+    task->loop = nullptr;
+
+    auto kernel = fromTask(task);
+    kernel->m_taskListMutex.lock();
     volcanoListNodeUnlink(&task->node);
+    kernel->m_taskListMutex.unlock();
 }
 
 void Kernel::taskResume(lua_State *L, int n)
@@ -70,64 +167,129 @@ void Kernel::taskYield(lua_State *L, int n)
     VOLCANO_UNUSED(n);
 }
 
-bool Kernel::onEvent(const SDL_Event &evt)
+void Kernel::threadMain(std::promise<bool> *initPromise)
 {
-    return Object::onEvent(evt);
-}
+    VOLCANO_SCOPE_TRACE(tmain);
 
-Duration Kernel::onUpdate(void)
-{
-    return Object::onUpdate();
-}
+    VOLCANO_ASSERT(initPromise != nullptr);
 
-void Kernel::run(uv_loop_t *loop)
-{
     volcanoListReset(&m_taskListReady);
     volcanoListReset(&m_taskListTrapped);
 
     lua_State *L = luaL_newstate();
     if (L == nullptr) {
-        setInitResult(false);
+        initPromise->set_value(false);
         return;
     }
 
     lua_pushcfunction(L, [](lua_State *L) -> int {
-        auto k = reinterpret_cast<Kernel *>(lua_touserdata(L, 1));
-        uv_loop_t *loop = reinterpret_cast<uv_loop_t *>(lua_touserdata(L, 2));
-        k->kmain(L, loop);
+        auto kernel = reinterpret_cast<Kernel *>(lua_touserdata(L, 1));
+        auto initPromise = reinterpret_cast<std::promise<bool> *>(lua_touserdata(L, 2));
+        kernel->luaMain(L, *initPromise);
         return 0;
     });
 
     lua_pushlightuserdata(L, this);
-    lua_pushlightuserdata(L, loop);
-    lua_pcall(L, 2, 0, 0);
-    lua_close(L);
-}
+    lua_pushlightuserdata(L, initPromise);
 
-void Kernel::kmain(lua_State *L, uv_loop_t *loop)
-{
-    luaL_openlibs(L);
-
-    initExports(L);
-
-    auto main = taskFromLua(L);
-    main->kernel = this;
-    main->loop = loop;
-
-    if (!loadInitrc(L)) {
-        setInitResult(false);
+    int ret = lua_pcall(L, 2, 0, 0);
+    if (ret != LUA_OK) {
+        initPromise->set_value(false);
         return;
     }
 
+    lua_close(L);
+}
+
+void Kernel::luaMain(lua_State *L, std::promise<bool> &initPromise)
+{
+    VOLCANO_SCOPE_TRACE(pmain);
+
+    uv_loop_t loop;
+
+    if (uv_loop_init(&loop) < 0) {
+        initPromise.set_value(false);
+        return;
+    }
+
+    VOLCANO_SCOPE_EXIT(r1) {
+        uv_loop_close(&loop);
+    };
+
+    if (!m_fs.init(m_rootPath)) {
+        initPromise.set_value(false);
+        return;
+    }
+
+    VOLCANO_SCOPE_EXIT(r2) {
+        m_fs.shutdown();
+    };
+
+    auto main = taskFromLua(L);
+    main->data = this;
+    main->loop = &loop;
+
+    luaL_openlibs(L);
+
+    Registration reg(L);
+    auto ns = reg.table("Volcano");
+    initExports(ns);
+
+    if (!loadInitrc(L)) {
+        initPromise.set_value(false);
+        return;
+    }
+
+    uv_async_init(&loop, &m_quitAsync, [](uv_async_t *async) {
+        uv_stop(async->loop);
+    });
+
+    VOLCANO_SCOPE_EXIT(r3) {
+        uv_close_sync(&m_quitAsync);
+    };
+
+    uv_async_init(&loop, &m_kickAsync, [](uv_async_t *async) {
+        VOLCANO_UNUSED(async);
+    });
+
+    VOLCANO_SCOPE_EXIT(r4) {
+        uv_close_sync(&m_kickAsync);
+    };
+
+    uv_timer_t frameTimer;
+    uv_timer_init(&loop, &frameTimer);
+    uv_timer_start(&frameTimer, [](uv_timer_t *timer) {
+        auto kernel = reinterpret_cast<Kernel *>(timer->data);
+        auto now = uv_now(timer->loop);
+        auto elapsed = now - kernel->m_lastFrameTime;
+        kernel->frame(float(elapsed) / 1000.0f);
+        kernel->m_lastFrameTime = now;
+    }, 0, 16);
+    frameTimer.data = this;
+
+    VOLCANO_SCOPE_EXIT(r5) {
+        uv_close_sync(&frameTimer);
+    };
+
     uv_prepare_t schedulePreparer;
-    uv_prepare_init(loop, &schedulePreparer);
-    uv_prepare_start(&schedulePreparer, &Kernel::schedule);
+    uv_prepare_init(&loop, &schedulePreparer);
+    uv_prepare_start(&schedulePreparer, [](uv_prepare_t *prepare) {
+        auto L = reinterpret_cast<lua_State *>(prepare->data);
+        auto kernel = fromLua(L);
+        kernel->schedule(L);
+    });
     schedulePreparer.data = L;
 
-    Core::run(loop);
+    VOLCANO_SCOPE_EXIT(r6) {
+        uv_close_sync(&schedulePreparer);
+    };
 
-    uv_prepare_stop(&schedulePreparer);
-    uvSyncClose(&schedulePreparer);
+    uv_update_time(&loop);
+    m_lastFrameTime = uv_now(&loop);
+
+    initPromise.set_value(true);
+
+    uv_run(&loop, UV_RUN_DEFAULT);
 }
 
 bool Kernel::loadInitrc(lua_State *L)
@@ -135,84 +297,38 @@ bool Kernel::loadInitrc(lua_State *L)
     return true;
 }
 
-void Kernel::schedule(uv_prepare_t *p)
+void Kernel::schedule(lua_State *L)
 {
     VolcanoListNode *node;
     Task *task;
     lua_State *T;
     int ret;
     int nresults;
-    lua_State *L = reinterpret_cast<lua_State *>(p->data);
-    Kernel *k = fromLua(L);
 
     for (;;) {
-        k->m_taskListLock.lock();
-        node = volcanoListRemoveHead(&k->m_taskListReady);
-        k->m_taskListLock.unlock();
-        if (node == volcanoListKnot(&k->m_taskListReady))
+        m_taskListMutex.lock();
+        node = volcanoListRemoveHead(&m_taskListReady);
+        m_taskListMutex.unlock();
+
+        if (node == volcanoListKnot(&m_taskListReady))
             break;
+
         task = VOLCANO_MEMBEROF(node, Task, node);
         T = taskToLua(task);
+
         ret = lua_resume(T, L, 0, &nresults);
         if (ret != LUA_YIELD) {
-            k->m_taskListLock.lock();
-            volcanoListMove(&k->m_taskListReady, &task->waitList);
-            k->m_taskListLock.unlock();
+            m_taskListMutex.lock();
+            volcanoListMove(&m_taskListReady, &task->waitList);
+            m_taskListMutex.unlock();
         }
     }
 
-    k->m_taskListLock.lock();
-    if (!volcanoListIsEmpty(&k->m_taskListTrapped)) {
-        k->m_taskListLock.unlock();
-        uv_async_send(&k->m_trapAsync);
-    } else
-        k->m_taskListLock.unlock();
-}
-
-void Kernel::handleTraps(uv_async_t *p)
-{
-    auto k = reinterpret_cast<Kernel *>(p->data);
-    VolcanoListNode *node;
-    Task *task;
-    bool handled = false;
-
-    for (;;) {
-        k->m_taskListLock.lock();
-        node = volcanoListRemoveHead(&k->m_taskListTrapped);
-        k->m_taskListLock.unlock();
-
-        if (node != volcanoListKnot(&k->m_taskListTrapped)) {
-            task = VOLCANO_MEMBEROF(node, Task, node);
-            task->trapResult = task->trapFunc(taskToLua(task));
-            handled = true;
-        } else
-            break;
-
-        k->m_taskListLock.lock();
-        volcanoListAppend(&k->m_taskListReady, &task->node);
-        k->m_taskListLock.unlock();
-    }
-
-    if (handled)
-        k->kick();
-}
-
-int Kernel::trapDone(lua_State *L, int status, lua_KContext ctx)
-{
-    VOLCANO_UNUSED(status);
-    VOLCANO_UNUSED(ctx);
-
-    Task *task = taskFromLua(L);
-    VOLCANO_ASSERT(task->trapFunc != nullptr);
-
-    int ret = task->trapResult;
-    if (ret < 0)
-        luaL_error(L, "trap %p error %d", task->trapFunc, ret);
-
-    task->trapFunc = nullptr;
-    task->trapResult = 0;
-
-    return ret;
+    m_taskListMutex.lock();
+    bool trapListEmpty = volcanoListIsEmpty(&m_taskListTrapped);
+    m_taskListMutex.unlock();
+    if (!trapListEmpty)
+        uv_async_send(&m_trapAsync);
 }
 
 int Kernel::doTrap(lua_State *L, lua_CFunction func)
@@ -222,20 +338,176 @@ int Kernel::doTrap(lua_State *L, lua_CFunction func)
     Task *task = taskFromLua(L);
     VOLCANO_ASSERT(task->trapFunc == nullptr);
 
-    Kernel *k = fromTask(task);
-    VOLCANO_ASSERT(std::this_thread::get_id() == k->thread().get_id());
+    Kernel *kernel = fromTask(task);
+    VOLCANO_ASSERT(std::this_thread::get_id() == kernel->thread().get_id());
 
     task->trapFunc = func;
     task->trapResult = TRAP_ERROR_NOT_SET;
 
-    k->m_taskListLock.lock();
-    volcanoListAppend(&k->m_taskListTrapped, &task->node);
-    k->m_taskListLock.unlock();
+    kernel->m_taskListMutex.lock();
+    volcanoListAppend(&kernel->m_taskListTrapped, &task->node);
+    kernel->m_taskListMutex.unlock();
 
-    return lua_yieldk(L, 0, 0, &Kernel::trapDone);
+    return lua_yieldk(L, 0, 0, [](lua_State *L, int status, lua_KContext ctx) -> int {
+        VOLCANO_UNUSED(status);
+        VOLCANO_UNUSED(ctx);
+
+        Task *task = taskFromLua(L);
+        VOLCANO_ASSERT(task->trapFunc != nullptr);
+
+        int ret = task->trapResult;
+        if (ret < 0)
+          luaL_error(L, "trap %p error %d", task->trapFunc, ret);
+
+        task->trapFunc = nullptr;
+        task->trapResult = 0;
+
+        return ret;
+    });
+}
+
+void Kernel::frame(float elapsed)
+{
+    while (m_eventFirst < m_eventLast) {
+        handleEvent(m_eventQueue[m_eventFirst & EVENT_QUEUE_MASK]);
+        m_eventFirst += 1;
+    }
+
+    m_world.update(elapsed);
+}
+
+void Kernel::handleEvent(const SDL_Event &evt)
+{
+    m_world.handleEvent(evt);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// VM exports (in VM thread)
+///////////////////////////////////////////////////////////////////////////////
+
+void Kernel::initExports(Registration &reg)
+{
+    reg.def("Task", &Kernel::sysTaskNew);
+    reg.def("current", &Kernel::sysCurrent);
+    reg.def("wait", &Kernel::sysWait);
+    reg.def("sleep", &Kernel::sysSleep);
+}
+
+int Kernel::sysTaskNew(lua_State *L)
+{
+    lua_State *T = lua_newthread(L);
+    int top = lua_gettop(L);
+    if (top != 1)
+        luaL_error(L, "one parameter.");
+
+    int type = lua_type(L, 1);
+    switch (type) {
+    case LUA_TSTRING:
+        luaL_loadstring(T, lua_tostring(L, 1));
+        break;
+    case LUA_TFUNCTION:
+        lua_xmove(L, T, 1);
+        break;
+    default:
+        luaL_error(L, "invalid paramter type.");
+        break;
+    }
+
+    return 1;
+}
+
+int Kernel::sysCurrent(lua_State *L)
+{
+    lua_pushthread(L);
+    return 1;
+}
+
+int Kernel::sysSleep(lua_State *L)
+{
+    int ms = (int)luaL_checkinteger(L, 1);
+    Task *task = taskFromLua(L);
+    Kernel *kernel = fromTask(task);
+
+    kernel->m_taskListMutex.lock();
+    volcanoListNodeUnlink(&task->node);
+
+    if (ms < 1) {
+        volcanoListAppend(&kernel->m_taskListReady, &task->node);
+        kernel->m_taskListMutex.unlock();
+    } else {
+        kernel->m_taskListMutex.unlock();
+        uv_timer_start(&task->sleepTimer, [](uv_timer_t *timer) {
+            auto task = reinterpret_cast<Task *>(timer->data);
+            auto kernel = fromTask(task);
+            kernel->m_taskListMutex.lock();
+            volcanoListNodeUnlink(&task->node);
+            volcanoListAppend(&kernel->m_taskListReady, &task->node);
+            kernel->m_taskListMutex.unlock();
+        }, ms, 0);
+    }
+
+    return lua_yield(L, 0);
+}
+
+int Kernel::sysWait(lua_State *L)
+{
+    lua_State *T = nullptr;
+    unsigned int timeout = 0;
+
+    switch (lua_gettop(L)) {
+    case 2:
+        timeout = luaL_checkinteger(L, 2);
+        luaL_argcheck(L, timeout >= 0, 2, "invalid timeout.");
+    case 1:
+        luaL_checktype(L, 1, LUA_TTHREAD);
+        T = lua_tothread(L, 1);
+        break;
+    default:
+        luaL_error(L, "too many parameters.");
+        break;
+    }
+
+    Task *curr = taskFromLua(L);
+    Task *task = taskFromLua(T);
+
+    if (timeout > 0) {
+        uv_timer_start(&curr->sleepTimer, [](uv_timer_t *timer) {
+            auto task = reinterpret_cast<Task *>(timer->data);
+            auto kernel = fromTask(task);
+            task->sysResult = SYS_TIMEOUT;
+            kernel->m_taskListMutex.lock();
+            volcanoListNodeUnlink(&task->node);
+            volcanoListAppend(&kernel->m_taskListReady, &task->node);
+            kernel->m_taskListMutex.unlock();
+        }, timeout, 0);
+    }
+
+    task->sysResult = SYS_OK;
+
+    auto kernel = fromTask(task);
+    kernel->m_taskListMutex.lock();
+    volcanoListNodeUnlink(&task->node);
+    volcanoListAppend(&task->waitList, &curr->node);
+    kernel->m_taskListMutex.unlock();
+
+    return lua_yieldk(L, 0, 0, [](lua_State *L, int status, lua_KContext ctx) {
+        VOLCANO_UNUSED(status);
+        VOLCANO_UNUSED(ctx);
+
+        auto task = taskFromLua(L);
+        uv_timer_stop(&task->sleepTimer);
+        int ret = task->sysResult;
+        task->sysResult = SYS_OK;
+
+        return ret;
+    });
 }
 
 VOLCANO_VM_END
+
+///////////////////////////////////////////////////////////////////////////////
+// Lua VM Hooks (called in VM thread)
+///////////////////////////////////////////////////////////////////////////////
 
 extern "C" void volcanoVMTaskAdded(lua_State *L, lua_State *L1)
 {

@@ -71,6 +71,12 @@
 #define VOLCANO_STRIZE(x) VOLCANO_STRIZE_IMPL(x)
 #define VOLCANO_STRIZE_IMPL(x) #x
 
+#ifdef __COUNTER__
+#   define VOLCANO_AUTONAME(str) VOLCANO_CONCAT(str, __COUNTER__)
+#else
+#   define VOLCANO_AUTONAME(str) VOLCANO_CONCAT(str, __LINE__)
+#endif
+
 #define VOLCANO_PMOVB(p, offset) \
     (((unsigned char *)(p)) + (offset))
 
@@ -94,7 +100,7 @@
 
 VOLCANO_BEGIN_C_DECLS
 
-uv_loop_t *uv_current_loop(void);
+void uv_close_sync(uv_handle_t *handle);
 
 VOLCANO_END_C_DECLS
 

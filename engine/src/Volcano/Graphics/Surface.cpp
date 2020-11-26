@@ -12,6 +12,11 @@ Surface::~Surface(void)
 {
 }
 
+bool Surface::isValid(void)
+{
+    return false;
+}
+
 void Surface::resize(int width, int height)
 {
     m_size.set(width, height);

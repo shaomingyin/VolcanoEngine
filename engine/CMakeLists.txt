@@ -42,24 +42,47 @@ if(${CMAKE_CXX_COMPILER_ID} STREQUAL GNU)
     target_link_libraries(engine stdc++fs)
 endif()
 
+if(UNIX)
+    target_link_libraries(engine dl m)
+endif()
+
 target_compile_definitions(engine PRIVATE
     DEBUG_DRAW_EXPLICIT_CONTEXT
     MICROPROFILE_USE_CONFIG
     )
 
-conan_cmake_run(
-    REQUIRES
-        assimp/5.0.1
-        bullet3/2.89
-        sdl2/2.0.12@bincrafters/stable
-    BASIC_SETUP
-    CMAKE_TARGETS
-    BUILD_TYPE "Release"
-    BUILD missing
-    )
+# libuv
+include(FindUV)
+if(UV_FOUND)
+    target_include_directories(engine PRIVATE ${UV_INCLUDE_DIRS})
+    target_link_libraries(engine ${UV_LIBRARIES})
+else()
+    message(FATAL_ERROR "libuv not found.")
+endif()
 
-target_link_libraries(engine
-    CONAN_PKG::assimp
-    CONAN_PKG::bullet3
-    CONAN_PKG::sdl2
-    )
+# SDL2
+include(FindSDL2)
+if(SDL2_FOUND)
+    target_include_directories(engine PRIVATE ${SDL2_INCLUDE_DIR})
+    target_link_libraries(engine ${SDL2_LIBRARY})
+else()
+    message(FATAL_ERROR "SDL2 not found.")
+endif()
+
+# BulletPhysics
+include(FindBullet)
+if(BULLET_FOUND)
+    target_include_directories(engine PRIVATE ${BULLET_INCLUDE_DIRS})
+    target_link_libraries(engine ${BULLET_LIBRARIES})
+else()
+    message(FATAL_ERROR "BulletPhysics not found.")
+endif()
+
+# Assimp
+include(FindAssimp)
+if(ASSIMP_FOUND)
+    target_include_directories(engine PRIVATE ${ASSIMP_INCLUDE_DIR})
+    target_link_libraries(engine ${ASSIMP_LIBRARIES})
+else()
+    message(FATAL_ERROR "Assimp not found.")
+endif()

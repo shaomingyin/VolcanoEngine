@@ -16,6 +16,8 @@ public:
     ~DebugDrawRenderer(void);
 
 public:
+    bool init(void);
+    void shutdown(void);
     void drawPointList(const dd::DrawVertex * points, int count, bool depthEnabled) override;
     void drawLineList(const dd::DrawVertex * lines, int count, bool depthEnabled) override;
     void drawGlyphList(const dd::DrawVertex * glyphs, int count, dd::GlyphTextureHandle glyphTex) override;

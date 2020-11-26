@@ -1,5 +1,6 @@
 //
 //
+#include <Volcano/ScopeGuard.hpp>
 #include <Volcano/Graphics/Renderer.hpp>
 
 #define NANOVG_GL3_IMPLEMENTATION
@@ -27,23 +28,36 @@ bool Renderer::init(Surface *target)
     if (!target->begin())
 		return false;
 
-    m_vg = nvgCreateGL3(0);
-    if (m_vg == nullptr) {
+    VOLCANO_SCOPE_EXIT(r1) {
         target->end();
-        return false;
-    }
+    };
 
-    if (!dd::initialize(&m_dd, &m_ddRenderer)) {
+    m_vg = nvgCreateGL3(0);
+    if (m_vg == nullptr)
+        return false;
+
+    VOLCANO_SCOPE_EXIT(r2) {
         nvgDeleteGL3(m_vg);
         m_vg = nullptr;
-        target->end();
-        return false;
-    }
+    };
 
-    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+#if 0
+    if (!m_ddRenderer.init())
+        return false;
+
+    VOLCANO_SCOPE_EXIT(r3) { m_ddRenderer.shutdown(); };
+
+    if (!dd::initialize(&m_dd, &m_ddRenderer))
+        return false;
+#endif
+
+    glClearColor(0.3f, 0.3f, 0.3f, 0.0f);
+
+    r1.dismiss();
+    r2.dismiss();
+    //r3.dismiss();
 
     target->end();
-
     m_target = target;
 
 	return true;
@@ -55,8 +69,10 @@ void Renderer::shutdown(void)
         m_target->begin();
 
         // TODO
-
+#if 0
         dd::shutdown(m_dd);
+        m_ddRenderer.shutdown();
+#endif
 
         if (m_vg != nullptr) {
             nvgDeleteGL3(m_vg);
@@ -82,8 +98,10 @@ void Renderer::render(const View &v)
     // m_program.use();
     // setup view matrix uniform.
 
+#if 0
     m_ddRenderer.resize(m_target->size());
     dd::flush(m_dd, int64_t(v.elapsed() * 1000.0f));
+#endif
 
 	m_target->end();
 }

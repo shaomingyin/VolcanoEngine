@@ -90,7 +90,7 @@ void Window::shutdown(void)
 
 bool Window::handleEvent(const SDL_WindowEvent &evt)
 {
-	VOLCANO_ASSERT(m_handle != nullptr);
+    VOLCANO_ASSERT(m_handle != nullptr);
 
 	if (evt.windowID != m_id)
         return false;
@@ -116,6 +116,11 @@ bool Window::handleEvent(const SDL_WindowEvent &evt)
 	}
 
     return ret;
+}
+
+bool Window::isValid(void)
+{
+    return (m_handle != nullptr);
 }
 
 void Window::resize(int width, int height)

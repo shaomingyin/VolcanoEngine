@@ -15,7 +15,6 @@
 #include <glm/ext.hpp>
 
 #include <Volcano/Common.h>
-#include <Volcano/Looper.h>
 
 #ifdef max
 #    undef max
@@ -27,6 +26,8 @@
 
 #include <rttr/type>
 #include <rttr/registration>
+
+#include <sigslot/signal.hpp>
 
 #define VOLCANO_BEGIN namespace Volcano {
 #define VOLCANO_END }
@@ -43,35 +44,48 @@ using Microseconds = std::chrono::microseconds;
 using Milliseconds = std::chrono::milliseconds;
 using Callback = std::function<void (void)>;
 
+template <typename... T>
+using signal = sigslot::signal_st<T...>;
+
+static inline void uv_close_sync(uv_async_t *async)
+{
+    uv_close_sync(reinterpret_cast<uv_handle_t *>(async));
+}
+
+static inline void uv_close_sync(uv_prepare_t *prepare)
+{
+    uv_close_sync(reinterpret_cast<uv_handle_t *>(prepare));
+}
+
+static inline void uv_close_sync(uv_timer_t *timer)
+{
+    uv_close_sync(reinterpret_cast<uv_handle_t *>(timer));
+}
+
+template <typename FN>
+class ScopedExit final {
+public:
+    ScopedExit(FN fn):
+        m_fn(fn)
+    {
+    }
+
+    ~ScopedExit(void)
+    {
+        if (m_fn)
+            m_fn();
+    }
+
+private:
+    FN m_fn;
+};
+
 class Noncopyable {
 public:
     inline Noncopyable(void) { }
     Noncopyable(const Noncopyable &) = delete;
     Noncopyable &operator=(const Noncopyable &) = delete;
 };
-
-static inline void uvSyncClose(uv_handle_t *p)
-{
-    int done = 0;
-    p->data = &done;
-    uv_close(p, [](uv_handle_t *p) { *reinterpret_cast<int *>(p->data) = 1; });
-    while (!done) { uv_run(p->loop, UV_RUN_ONCE); }
-}
-
-static inline void uvSyncClose(uv_timer_t *p)
-{
-    uvSyncClose(reinterpret_cast<uv_handle_t *>(p));
-}
-
-static inline void uvSyncClose(uv_async_t *p)
-{
-    uvSyncClose(reinterpret_cast<uv_handle_t *>(p));
-}
-
-static inline void uvSyncClose(uv_prepare_t *p)
-{
-    uvSyncClose(reinterpret_cast<uv_handle_t *>(p));
-}
 
 static inline bool isWritablePath(const std::string &path)
 {

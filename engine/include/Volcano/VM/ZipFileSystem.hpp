@@ -23,6 +23,7 @@ public:
 public:
     bool isWritable(void) override;
     bool init(const std::string &native_path) override;
+    void shutdown(void) override;
     Type type(const std::string &path) override;
     bool enumDir(const std::string &path, StringList &result) override;
     bool makeDir(const std::string &path) override;
@@ -31,11 +32,11 @@ public:
 
 protected:
     struct Node {
+        Node(void): firstChild(-1), nextSibling(-1) { }
+
         std::string name;
         int firstChild;
         int nextSibling;
-
-        Node(void): firstChild(-1), nextSibling(-1) { }
     };
 
     bool populateNode(const ZipReader::Stat &st);

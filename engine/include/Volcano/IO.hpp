@@ -7,7 +7,7 @@
 
 VOLCANO_BEGIN
 
-class IO {
+class IO: public Noncopyable {
 public:
     enum {
         FLAG_READ = 0x1,

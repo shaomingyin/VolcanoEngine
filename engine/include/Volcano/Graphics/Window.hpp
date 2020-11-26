@@ -21,6 +21,7 @@ public:
 	bool visible(void) const;
 	void show(void);
 	void hide(void);
+    bool isValid(void) override;
 	void resize(int width, int height) override;
 	bool begin(void) override;
 	void end(void) override;

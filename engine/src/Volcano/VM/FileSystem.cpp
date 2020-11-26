@@ -17,6 +17,8 @@ FileSystem::~FileSystem(void)
 
 bool FileSystem::isWritable(void)
 {
+    VOLCANO_ASSERT(!m_nativePath.empty());
+
     return true;
 }
 
@@ -35,8 +37,17 @@ bool FileSystem::init(const std::string &nativePath)
     return true;
 }
 
+void FileSystem::shutdown(void)
+{
+    VOLCANO_ASSERT(!m_nativePath.empty());
+
+    m_nativePath.clear();
+}
+
 FileSystem::Type FileSystem::type(const std::string &path)
 {
+    VOLCANO_ASSERT(!m_nativePath.empty());
+
     if (!checkPath(path))
         return TYPE_INVALID;
 
@@ -51,6 +62,8 @@ FileSystem::Type FileSystem::type(const std::string &path)
 
 bool FileSystem::enumDir(const std::string &path, StringList &result)
 {
+    VOLCANO_ASSERT(!m_nativePath.empty());
+
     if (!checkPath(path))
         return false;
 
@@ -68,6 +81,8 @@ bool FileSystem::enumDir(const std::string &path, StringList &result)
 
 bool FileSystem::makeDir(const std::string &path)
 {
+    VOLCANO_ASSERT(!m_nativePath.empty());
+
     if (!checkPath(path))
         return false;
 
@@ -76,6 +91,8 @@ bool FileSystem::makeDir(const std::string &path)
 
 IO *FileSystem::openFile(const std::string &path, int ioFlags)
 {
+    VOLCANO_ASSERT(!m_nativePath.empty());
+
     if (!checkPath(path))
         return nullptr;
 
@@ -93,6 +110,8 @@ IO *FileSystem::openFile(const std::string &path, int ioFlags)
 
 bool FileSystem::remove(const std::string &path)
 {
+    VOLCANO_ASSERT(!m_nativePath.empty());
+
     if (!checkPath(path))
         return false;
 

@@ -8,4 +8,7 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/out)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/out)
 
 add_subdirectory(documents document)
-add_subdirectory(sources sources)
+add_subdirectory(engine engine)
+add_subdirectory(framework framework)
+add_subdirectory(samples samples)
+add_subdirectory(test test)

@@ -164,7 +164,7 @@ bool ZipFileSystem::init(const std::string &nativePath)
     if (n < 1)
         return true;
 
-    m_tree.reserve(n);
+    m_tree.resize(n);
 
     for (int i = 0; i < n; ++i) {
         ZipReader::Stat st;
@@ -178,6 +178,12 @@ bool ZipFileSystem::init(const std::string &nativePath)
     setNativePath(nativePath);
 
     return true;
+}
+
+void ZipFileSystem::shutdown(void)
+{
+    m_reader.reset();
+    m_tree.clear();
 }
 
 FileSystem::Type ZipFileSystem::type(const std::string &path)

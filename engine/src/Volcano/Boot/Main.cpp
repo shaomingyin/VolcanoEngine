@@ -12,60 +12,34 @@
 #define SDL_MAIN_HANDLED
 #include <SDL.h>
 
-#include <Volcano/VM/Kernel.hpp>
+#include <Volcano/ScopeGuard.hpp>
+#include <Volcano/Boot/Engine.hpp>
 
-struct SDLInitializer {
-    int result;
-    SDLInitializer(Uint32 flags): result(SDL_Init(flags)) { }
-    ~SDLInitializer(void) { if (result == 0) SDL_Quit(); }
-    operator bool(void) const { return (result == 0); }
-};
+VOLCANO_BOOT_BEGIN
 
-static Volcano::VM::Kernel *vm;
-
-static void pollEvents(uv_timer_t *p)
+static void pollEvents(uv_timer_t *timer)
 {
     SDL_Event evt;
+    auto engine = reinterpret_cast<Engine *>(timer->data);
+    VOLCANO_ASSERT(engine != nullptr);
 
     while (SDL_PollEvent(&evt)) {
-        if (evt.type == SDL_QUIT) {
-            if (vm != nullptr)
-                vm->stop();
-            uv_stop(p->loop);
-        } else {
-            if (vm != nullptr)
-                vm->postEvent(evt);
-        }
+        if (VOLCANO_LIKELY(evt.type != SDL_QUIT))
+            engine->postEvent(evt);
+        else
+            uv_stop(timer->loop);
     }
-}
-
-static void printHelp(void)
-{
-    VOLCANO_LOGI("usage:");
-    VOLCANO_LOGI("  sge [options] <root directory>");
-    VOLCANO_LOGI(" ");
-    VOLCANO_LOGI("options:");
-    VOLCANO_LOGI("  --init=<filename>");
-    VOLCANO_LOGI("    specified the initrc, default is '/init.lua'.");
-    VOLCANO_LOGI(" ");
-    VOLCANO_LOGI("  --debug");
-    VOLCANO_LOGI("    set log level to debug.");
-    VOLCANO_LOGI(" ");
-    VOLCANO_LOGI("  -v, --version");
-    VOLCANO_LOGI("    show version.");
-    VOLCANO_LOGI(" ");
-    VOLCANO_LOGI("  -h, --help");
-    VOLCANO_LOGI("    show this message.");
 }
 
 static void logOutput(void *data, int, SDL_LogPriority priority, const char *message)
 {
     FILE *fp = stdout;
     const char *prefix = "";
+    auto engine = *reinterpret_cast<Engine **>(data);
 
-    if (vm != nullptr) {
-        if (std::this_thread::get_id() == vm->thread().get_id())
-            prefix = "vm: ";
+    if (engine != nullptr) {
+        if (std::this_thread::get_id() == engine->thread().get_id())
+            prefix = "VM: ";
     }
 
     if (priority == SDL_LOG_PRIORITY_ERROR ||
@@ -76,9 +50,29 @@ static void logOutput(void *data, int, SDL_LogPriority priority, const char *mes
     fprintf(fp, "%s%s\n", prefix, message);
 }
 
+static void printHelp(void)
+{
+    VOLCANO_LOGI("Usage:");
+    VOLCANO_LOGI("  sge [options] <root directory>");
+    VOLCANO_LOGI(" ");
+    VOLCANO_LOGI("options:");
+    VOLCANO_LOGI("  --init=<filename>");
+    VOLCANO_LOGI("    Specified the initrc, default is '/init.lua'.");
+    VOLCANO_LOGI(" ");
+    VOLCANO_LOGI("  --debug");
+    VOLCANO_LOGI("    Set log level to debug.");
+    VOLCANO_LOGI(" ");
+    VOLCANO_LOGI("  -v, --version");
+    VOLCANO_LOGI("    Show version.");
+    VOLCANO_LOGI(" ");
+    VOLCANO_LOGI("  -h, --help");
+    VOLCANO_LOGI("    Show this message.");
+}
+
 int main(int argc, char *argv[])
 {
-    SDL_LogSetOutputFunction(logOutput, nullptr);
+    Engine *engine = nullptr;
+    SDL_LogSetOutputFunction(logOutput, &engine);
 
 #ifdef VOLCANO_DEBUG
     SDL_LogSetPriority(VOLCANO_LOG_CATEGORY, SDL_LOG_PRIORITY_DEBUG);
@@ -106,39 +100,50 @@ int main(int argc, char *argv[])
     std::string root = std::filesystem::current_path().string();
     if (cmdLine.size() > 1) {
         if (cmdLine.size() != 2) {
-            VOLCANO_LOGE("too many roots.");
+            VOLCANO_LOGE("Too many roots.");
             return EXIT_FAILURE;
         }
         root = std::filesystem::canonical(cmdLine(1).str()).string();
         if (!std::filesystem::is_directory(root)) {
-            VOLCANO_LOGE("root must be a directory.");
+            VOLCANO_LOGE("Root must be a directory.");
             return EXIT_FAILURE;
         }
     }
 
-    SDLInitializer sdl(SDL_INIT_EVERYTHING);
-    if (!sdl) {
-        VOLCANO_LOGE("failed to init SDL.");
+    int ret = SDL_Init(SDL_INIT_EVERYTHING);
+    if (ret < 0) {
+        VOLCANO_LOGE("Failed to init SDL.");
         return EXIT_FAILURE;
     }
 
-    std::unique_ptr<Volcano::VM::Kernel> p(new Volcano::VM::Kernel(uv_default_loop()));
+    VOLCANO_SCOPE_EXIT(r1) {
+        SDL_Quit();
+    };
+
+    std::unique_ptr<Engine> p(new Engine(uv_default_loop()));
+    engine = p.get();
     if (!p || !p->start(root, init)) {
-        VOLCANO_LOGE("failed to start vm.");
+        VOLCANO_LOGE("Failed to start VM.");
         return EXIT_FAILURE;
     }
 
-    vm = p.get();
+    uv_timer_t pollEventsTimer;
+    uv_timer_init(uv_default_loop(), &pollEventsTimer);
+    uv_timer_start(&pollEventsTimer, &pollEvents, 0, 15);
+    pollEventsTimer.data = engine;
 
-    uv_timer_t poll_events_timer;
-    uv_timer_init(uv_default_loop(), &poll_events_timer);
-    uv_timer_start(&poll_events_timer, &pollEvents, 0, 15);
+    VOLCANO_SCOPE_EXIT(r2) {
+        uv_close_sync(&pollEventsTimer);
+    };
 
     uv_run(uv_default_loop(), UV_RUN_DEFAULT);
 
-    uv_timer_stop(&poll_events_timer);
-
-    vm = nullptr;
-
     return EXIT_SUCCESS;
+}
+
+VOLCANO_BOOT_END
+
+int main(int argc, char *argv[])
+{
+    return Volcano::Boot::main(argc, argv);
 }

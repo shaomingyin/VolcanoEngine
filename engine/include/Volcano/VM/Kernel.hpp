@@ -3,25 +3,34 @@
 #ifndef VOLCANO_VM_KERNEL_HPP
 #define VOLCANO_VM_KERNEL_HPP
 
+#include <string>
+#include <thread>
+#include <future>
+
 #include <Volcano/List.h>
-#include <Volcano/Object.hpp>
-#include <Volcano/Async.hpp>
-#include <Volcano/Timer.hpp>
+#include <Volcano/SpinLock.hpp>
+#include <Volcano/Graphics/View.hpp>
 #include <Volcano/VM/Common.hpp>
 #include <Volcano/VM/RootFileSystem.hpp>
+#include <Volcano/VM/World.hpp>
+#include <Volcano/VM/Registration.hpp>
 
 VOLCANO_VM_BEGIN
 
 using Task = VolcanoVMTask;
 
-class Kernel: public Object {
+class Kernel: public Noncopyable {
 public:
-    Kernel(Object *parent);
+    Kernel(uv_loop_t *loop);
     virtual ~Kernel(void);
 
 public:
     bool start(const std::string &rootPath, const std::string &initPath);
     void stop(void);
+    virtual void postEvent(const SDL_Event &evt);
+    uv_loop_t *loop(void);
+    const std::thread &thread(void) const;
+    World &world(void);
 
 public: // for lua
     static void taskAdded(lua_State *L, lua_State *L1);
@@ -30,26 +39,10 @@ public: // for lua
     static void taskYield(lua_State *L, int n);
 
 protected:
-    bool onEvent(const SDL_Event &evt) override;
-    Duration onUpdate(void) override;
-
-private:
     enum {
         SYS_OK = 0,
         SYS_INVALID_PARAM,
         SYS_TIMEOUT
-    };
-
-    enum {
-        TRAP_TYPE_INVALID = -1,
-        TRAP_TYPE_DIRECTIONAL_LIGHT_NEW = 0,
-        TRAP_TYPE_POINT_LIGHT_NEW,
-        TRAP_TYPE_SPOT_LIGHT_NEW,
-        TRAP_TYPE_LIGHT_DESTROY,
-        TRAP_TYPE_STATIC_MESH_NEW,
-        TRAP_TYPE_DYNAMIC_MESH_NEW,
-        TRAP_TYPE_MESH_DESTROY,
-        TRAP_TYPE_MAX
     };
 
     enum {
@@ -62,36 +55,68 @@ private:
     static Kernel *fromTask(Task *task);
     static Kernel *fromLua(lua_State *L);
 
-    void kmain(lua_State *L, uv_loop_t *loop);
-    void initExports(lua_State *L);
-    bool loadInitrc(lua_State *L);
-    static void schedule(uv_prepare_t *p);
-    void handleTraps(void);
-    static int trapDone(lua_State *L, int status, lua_KContext ctx);
     static int doTrap(lua_State *L, lua_CFunction func);
 
-private:
-    static int sysCurrent(lua_State *L);
-    static int sysTaskNew(lua_State *L);
-    static int sysSleep(lua_State *L);
-    static void sysSleepDone(uv_timer_t *p);
-    static int sysWait(lua_State *L);
-    static void sysWaitTimeout(uv_timer_t *p);
-    static int sysWaitDone(lua_State *L, int status, lua_KContext ctx);
-    static int sysDirectionalLightNew(lua_State *L);
-    static int sysPointLightNew(lua_State *L);
-    static int sysSpotLightNew(lua_State *L);
-    static int sysLightDestroy(lua_State *L);
-    static int sysStaticMeshNew(lua_State *L);
-    static int sysDynamicMeshNew(lua_State *L);
-    static int sysMeshDestroy(lua_State *L);
+    virtual bool init(void);
+    virtual void shutdown(void);
+    virtual void initExports(Registration &reg);
+    virtual void frame(float elapsed);
+    virtual void handleEvent(const SDL_Event &evt);
 
 private:
+    void threadMain(std::promise<bool> *initResult);
+    void luaMain(lua_State *L, std::promise<bool> &initPromise);
+    bool loadInitrc(lua_State *L);
+    void schedule(lua_State *L);
+    void handleTraps(void);
+
+private:
+    static int sysTaskNew(lua_State *L);
+    static int sysCurrent(lua_State *L);
+    static int sysSleep(lua_State *L);
+    static int sysWait(lua_State *L);
+
+private:
+    static const int EVENT_QUEUE_ORDER = 6;
+    static const int EVENT_QUEUE_SIZE = 1 << EVENT_QUEUE_ORDER;
+    static const int EVENT_QUEUE_MASK = EVENT_QUEUE_SIZE - 1;
+
+private:
+    uv_loop_t *m_loop;
+    bool m_started;
+    std::thread m_thread;
+    uv_async_t m_trapAsync;
+    uv_async_t m_quitAsync;
+    uv_async_t m_kickAsync;
+    std::string m_rootPath;
+    std::string m_initPath;
+    SDL_Event m_eventQueue[EVENT_QUEUE_SIZE];
+    uint64_t m_eventFirst;
+    uint64_t m_eventLast;
     RootFileSystem m_fs;
+    World m_world;
+    std::mutex m_taskListMutex;
     VolcanoList m_taskListReady;
     VolcanoList m_taskListTrapped;
-    Async m_trapAsync;
+    int64_t m_lastFrameTime;
 };
+
+VOLCANO_INLINE uv_loop_t *Kernel::loop(void)
+{
+    return m_loop;
+}
+
+VOLCANO_INLINE const std::thread &Kernel::thread(void) const
+{
+    return m_thread;
+}
+
+VOLCANO_INLINE World &Kernel::world(void)
+{
+    VOLCANO_ASSERT(std::this_thread::get_id() == m_thread.get_id());
+
+    return m_world;
+}
 
 VOLCANO_INLINE Task *Kernel::taskFromLua(lua_State *L)
 {

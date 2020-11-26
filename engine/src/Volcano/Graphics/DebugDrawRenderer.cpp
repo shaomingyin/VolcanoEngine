@@ -92,6 +92,14 @@ DebugDrawRenderer::DebugDrawRenderer(void):
     m_textVAO(0),
     m_textVBO(0)
 {
+}
+
+DebugDrawRenderer::~DebugDrawRenderer(void)
+{
+}
+
+bool DebugDrawRenderer::init(void)
+{
     // Default OpenGL states:
     glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
@@ -102,9 +110,11 @@ DebugDrawRenderer::DebugDrawRenderer(void):
 
     setupShaderPrograms();
     setupVertexBuffers();
+
+    return true;
 }
 
-DebugDrawRenderer::~DebugDrawRenderer(void)
+void DebugDrawRenderer::shutdown(void)
 {
     glDeleteProgram(m_linePointProgram);
     glDeleteProgram(m_textProgram);

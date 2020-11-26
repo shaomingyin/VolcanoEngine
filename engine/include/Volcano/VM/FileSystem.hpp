@@ -11,7 +11,7 @@
 
 VOLCANO_VM_BEGIN
 
-class FileSystem {
+class FileSystem: public Noncopyable {
 public:
     enum Type {
         TYPE_INVALID = 0,
@@ -26,6 +26,7 @@ public:
 public:
     virtual bool isWritable(void);
     virtual bool init(const std::string &native_path);
+    virtual void shutdown(void);
     const std::filesystem::path &nativePath(void) const;
     virtual Type type(const std::string &path);
     bool exists(const std::string &path);

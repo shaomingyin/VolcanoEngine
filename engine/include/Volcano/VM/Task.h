@@ -4,8 +4,9 @@
 #ifndef VOLCANO_VM_TASK_H
 #define VOLCANO_VM_TASK_H
 
+#include <uv.h>
+
 #include <Volcano/List.h>
-#include <Volcano/Looper.h>
 
 #ifdef LUA_EXTRASPACE
 #    undef LUA_EXTRASPACE
@@ -33,8 +34,8 @@ extern "C" {
 
 typedef struct {
     VolcanoListNode node;
-    VolcanoLooperContext *looper;
-    VolcanoLooperTimer sleepTimer;
+    uv_loop_t *loop;
+    uv_timer_t sleepTimer;
     int sysResult;
     VolcanoList waitList;
     lua_CFunction trapFunc;
@@ -57,5 +58,7 @@ void volcanoVMTaskYield(lua_State *L, int n);
 #define luai_userstatefree(L, L1) volcanoVMTaskRemoved(L, L1)
 #define luai_userstateresume(L, n) volcanoVMTaskResume(L, n)
 #define luai_userstateyield(L, n) volcanoVMTaskYield(L, n)
+
+#define LUA_PROGNAME "volcano"
 
 #endif /* VOLCANO_VM_TASK_H */

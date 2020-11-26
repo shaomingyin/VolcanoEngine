@@ -14,6 +14,7 @@ public:
     virtual ~Surface(void);
 
 public:
+    virtual bool isValid(void);
     const SizeI &size(void) const;
 	int width(void) const;
 	int height(void) const;
