@@ -21,11 +21,13 @@ protected:
     void initExports(VM::Registration &reg) override;
     void frame(float elapsed) override;
     void handleEvent(const SDL_Event &evt) override;
+    VM::Mesh *createMesh(void) override;
 
 private:
     uv_async_t m_renderAsync;
-    Graphics::Window m_window;
-    Graphics::Renderer m_renderer;
+    Graphics::Window m_graphicsWindow;
+    Graphics::Renderer m_graphicsRenderer;
+    Graphics::Memory m_graphicsMemory;
     Graphics::View m_viewFlip[2];
     int m_viewRendering;
     SpinLock m_viewLock;

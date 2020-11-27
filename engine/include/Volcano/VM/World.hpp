@@ -5,7 +5,9 @@
 
 #include <vector>
 
+#define register
 #include <btBulletDynamicsCommon.h>
+#undef register
 
 #include <Volcano/Graphics/View.hpp>
 #include <Volcano/VM/Common.hpp>
@@ -30,7 +32,7 @@ public:
     void applyToView(Graphics::View &view);
 
 private:
-    btSimpleDynamicsWorld m_dynamicWorld;
+    btSimpleDynamicsWorld *m_dynamicWorld;
     Cameras m_cameras;
     Entities m_entities;
 };

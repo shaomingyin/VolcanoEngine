@@ -5,19 +5,12 @@
 
 VOLCANO_VM_BEGIN
 
-///////////////////////////////////////////////////////////////////////////////
-// Main thread
-///////////////////////////////////////////////////////////////////////////////
-
 Kernel::Kernel(uv_loop_t *loop):
-    m_loop(loop),
-    m_started(false),
-    m_eventFirst(0),
-    m_eventLast(0)
+    KernelBase(loop)
 {
-    VOLCANO_ASSERT(m_loop != nullptr);
+    VOLCANO_ASSERT(loop != nullptr);
 
-    uv_async_init(m_loop, &m_trapAsync, [](uv_async_t *async) {
+    uv_async_init(loop, &m_trapAsync, [](uv_async_t *async) {
         auto kernel = reinterpret_cast<Kernel *>(async->data);
         kernel->handleTraps();
     });
@@ -27,55 +20,7 @@ Kernel::Kernel(uv_loop_t *loop):
 
 Kernel::~Kernel(void)
 {
-    if (m_started)
-        stop();
-    else if (m_thread.joinable())
-        m_thread.join();
-
     uv_close_sync(&m_trapAsync);
-}
-
-bool Kernel::start(const std::string &rootPath, const std::string &initPath)
-{
-    m_eventFirst = 0;
-    m_eventLast = 0;
-
-    m_rootPath = rootPath;
-    m_initPath = initPath;
-
-    if (!init())
-        return false;
-
-    std::promise<bool> initPromise;
-    auto initFuture = initPromise.get_future();
-
-    m_thread = std::thread(&Kernel::threadMain, this, &initPromise);
-
-    m_started = initFuture.get();
-    if (!m_started)
-        return false;
-
-    return true;
-}
-
-void Kernel::stop(void)
-{
-    VOLCANO_ASSERT(m_started);
-
-    uv_async_send(&m_quitAsync);
-    m_thread.join();
-
-    shutdown();
-
-    m_started = false;
-}
-
-void Kernel::postEvent(const SDL_Event &evt)
-{
-    if (evt.type != SDL_WINDOWEVENT) {
-        m_eventQueue[m_eventLast & EVENT_QUEUE_MASK] = evt;
-        m_eventLast += 1;
-    }
 }
 
 void Kernel::handleTraps(void)

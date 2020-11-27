@@ -8,29 +8,18 @@
 #include <future>
 
 #include <Volcano/List.h>
-#include <Volcano/SpinLock.hpp>
-#include <Volcano/Graphics/View.hpp>
 #include <Volcano/VM/Common.hpp>
-#include <Volcano/VM/RootFileSystem.hpp>
-#include <Volcano/VM/World.hpp>
 #include <Volcano/VM/Registration.hpp>
+#include <Volcano/VM/KernelBase.hpp>
 
 VOLCANO_VM_BEGIN
 
 using Task = VolcanoVMTask;
 
-class Kernel: public Noncopyable {
+class Kernel: public KernelBase {
 public:
     Kernel(uv_loop_t *loop);
-    virtual ~Kernel(void);
-
-public:
-    bool start(const std::string &rootPath, const std::string &initPath);
-    void stop(void);
-    virtual void postEvent(const SDL_Event &evt);
-    uv_loop_t *loop(void);
-    const std::thread &thread(void) const;
-    World &world(void);
+    ~Kernel(void) override;
 
 public: // for lua
     static void taskAdded(lua_State *L, lua_State *L1);
@@ -57,14 +46,14 @@ protected:
 
     static int doTrap(lua_State *L, lua_CFunction func);
 
-    virtual bool init(void);
-    virtual void shutdown(void);
+    bool init(void) override;
+    void shutdown(void) override;
+    void run(uv_loop_t *loop) override;
+    void frame(float elapsed) override;
+    void handleEvent(const SDL_Event &evt) override;
     virtual void initExports(Registration &reg);
-    virtual void frame(float elapsed);
-    virtual void handleEvent(const SDL_Event &evt);
 
 private:
-    void threadMain(std::promise<bool> *initResult);
     void luaMain(lua_State *L, std::promise<bool> &initPromise);
     bool loadInitrc(lua_State *L);
     void schedule(lua_State *L);
@@ -77,46 +66,12 @@ private:
     static int sysWait(lua_State *L);
 
 private:
-    static const int EVENT_QUEUE_ORDER = 6;
-    static const int EVENT_QUEUE_SIZE = 1 << EVENT_QUEUE_ORDER;
-    static const int EVENT_QUEUE_MASK = EVENT_QUEUE_SIZE - 1;
-
-private:
-    uv_loop_t *m_loop;
-    bool m_started;
-    std::thread m_thread;
     uv_async_t m_trapAsync;
-    uv_async_t m_quitAsync;
-    uv_async_t m_kickAsync;
-    std::string m_rootPath;
-    std::string m_initPath;
-    SDL_Event m_eventQueue[EVENT_QUEUE_SIZE];
-    uint64_t m_eventFirst;
-    uint64_t m_eventLast;
-    RootFileSystem m_fs;
-    World m_world;
     std::mutex m_taskListMutex;
     VolcanoList m_taskListReady;
     VolcanoList m_taskListTrapped;
     int64_t m_lastFrameTime;
 };
-
-VOLCANO_INLINE uv_loop_t *Kernel::loop(void)
-{
-    return m_loop;
-}
-
-VOLCANO_INLINE const std::thread &Kernel::thread(void) const
-{
-    return m_thread;
-}
-
-VOLCANO_INLINE World &Kernel::world(void)
-{
-    VOLCANO_ASSERT(std::this_thread::get_id() == m_thread.get_id());
-
-    return m_world;
-}
 
 VOLCANO_INLINE Task *Kernel::taskFromLua(lua_State *L)
 {
