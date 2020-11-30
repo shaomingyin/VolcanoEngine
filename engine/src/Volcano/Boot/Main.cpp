@@ -13,19 +13,20 @@
 #include <SDL.h>
 
 #include <Volcano/ScopeGuard.hpp>
-#include <Volcano/Boot/Engine.hpp>
+#include <Volcano/VM/Kernel.hpp>
+#include <Volcano/Boot/Common.hpp>
 
 VOLCANO_BOOT_BEGIN
 
 static void pollEvents(uv_timer_t *timer)
 {
     SDL_Event evt;
-    auto engine = reinterpret_cast<Engine *>(timer->data);
-    VOLCANO_ASSERT(engine != nullptr);
+    auto kernel = reinterpret_cast<VM::Kernel *>(timer->data);
+    VOLCANO_ASSERT(kernel != nullptr);
 
     while (SDL_PollEvent(&evt)) {
         if (VOLCANO_LIKELY(evt.type != SDL_QUIT))
-            engine->postEvent(evt);
+            kernel->postEvent(evt);
         else
             uv_stop(timer->loop);
     }
@@ -35,10 +36,10 @@ static void logOutput(void *data, int, SDL_LogPriority priority, const char *mes
 {
     FILE *fp = stdout;
     const char *prefix = "";
-    auto engine = *reinterpret_cast<Engine **>(data);
+    auto kernel = *reinterpret_cast<VM::Kernel **>(data);
 
-    if (engine != nullptr) {
-        if (std::this_thread::get_id() == engine->thread().get_id())
+    if (kernel != nullptr) {
+        if (std::this_thread::get_id() == kernel->thread().get_id())
             prefix = "VM: ";
     }
 
@@ -71,8 +72,8 @@ static void printHelp(void)
 
 int main(int argc, char *argv[])
 {
-    Engine *engine = nullptr;
-    SDL_LogSetOutputFunction(logOutput, &engine);
+    VM::Kernel *kernel = nullptr;
+    SDL_LogSetOutputFunction(logOutput, &kernel);
 
 #ifdef VOLCANO_DEBUG
     SDL_LogSetPriority(VOLCANO_LOG_CATEGORY, SDL_LOG_PRIORITY_DEBUG);
@@ -120,8 +121,8 @@ int main(int argc, char *argv[])
         SDL_Quit();
     };
 
-    std::unique_ptr<Engine> p(new Engine(uv_default_loop()));
-    engine = p.get();
+    std::unique_ptr<VM::Kernel> p(new VM::Kernel(uv_default_loop()));
+    kernel = p.get();
     if (!p || !p->start(root, init)) {
         VOLCANO_LOGE("Failed to start VM.");
         return EXIT_FAILURE;
@@ -130,7 +131,7 @@ int main(int argc, char *argv[])
     uv_timer_t pollEventsTimer;
     uv_timer_init(uv_default_loop(), &pollEventsTimer);
     uv_timer_start(&pollEventsTimer, &pollEvents, 0, 15);
-    pollEventsTimer.data = engine;
+    pollEventsTimer.data = kernel;
 
     VOLCANO_SCOPE_EXIT(r2) {
         uv_close_sync(&pollEventsTimer);

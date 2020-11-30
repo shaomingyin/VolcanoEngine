@@ -131,21 +131,19 @@ void Window::resize(int width, int height)
     Surface::resize(width, height);
 }
 
-bool Window::begin(void)
+bool Window::activate(void)
 {
 	VOLCANO_ASSERT(m_handle != nullptr);
     VOLCANO_ASSERT(m_glContext != nullptr);
 
-    if (!Surface::begin())
+    if (width() < 1 || height() < 1)
         return false;
 
-    if (width() < 1 || height() < 1) {
-        Surface::end();
-		return false;
-    }
+    if (!Surface::activate())
+        return false;
 
     if (SDL_GL_MakeCurrent(m_handle, m_glContext) < 0) {
-        Surface::end();
+        Surface::deactivate();
 		return false;
     }
 
@@ -154,7 +152,7 @@ bool Window::begin(void)
     return true;
 }
 
-void Window::end(void)
+void Window::deactivate(void)
 {
 	VOLCANO_ASSERT(m_handle != nullptr);
     VOLCANO_ASSERT(m_glContext != nullptr);
@@ -163,7 +161,7 @@ void Window::end(void)
 
 	gl3wProcs = nullptr;
 	SDL_GL_SwapWindow(m_handle);
-    Surface::end();
+    Surface::deactivate();
 }
 
 VOLCANO_GRAPHICS_END

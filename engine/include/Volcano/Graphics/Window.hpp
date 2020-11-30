@@ -23,8 +23,8 @@ public:
 	void hide(void);
     bool isValid(void) override;
 	void resize(int width, int height) override;
-	bool begin(void) override;
-	void end(void) override;
+    bool activate(void) override;
+    void deactivate(void) override;
 
 private:
 	SDL_Window *m_handle;

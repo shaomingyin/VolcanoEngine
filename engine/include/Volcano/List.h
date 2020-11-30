@@ -8,6 +8,8 @@
 
 VOLCANO_BEGIN_C_DECLS
 
+// VolcanoListNode
+
 typedef struct VolcanoListNodeTag {
     struct VolcanoListNodeTag *prev;
     struct VolcanoListNodeTag *next;
@@ -68,6 +70,8 @@ VOLCANO_INLINE static VolcanoListNode *volcanoListNodeNext(VolcanoListNode *node
 
     return node->next;
 }
+
+// VolcanoList
 
 typedef struct {
     VolcanoListNode knot;

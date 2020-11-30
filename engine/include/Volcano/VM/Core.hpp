@@ -1,48 +1,47 @@
 //
 //
-#ifndef VOLCANO_VM_KERNELBASE_HPP
-#define VOLCANO_VM_KERNELBASE_HPP
+#ifndef VOLCANO_VM_CORE_HPP
+#define VOLCANO_VM_CORE_HPP
 
 #include <string>
 #include <thread>
 #include <future>
 
 #include <Volcano/SpinLock.hpp>
+#include <Volcano/Graphics/Memory.hpp>
 #include <Volcano/Graphics/View.hpp>
+#include <Volcano/Graphics/Mesh.hpp>
+#include <Volcano/Graphics/Window.hpp>
+#include <Volcano/Graphics/Renderer.hpp>
 #include <Volcano/VM/Common.hpp>
 #include <Volcano/VM/RootFileSystem.hpp>
 #include <Volcano/VM/World.hpp>
 
 VOLCANO_VM_BEGIN
 
-class KernelBase: public Noncopyable {
+class Core: public Noncopyable {
 public:
-    KernelBase(uv_loop_t *loop);
-    virtual ~KernelBase(void);
+    Core(uv_loop_t *loop);
+    virtual ~Core(void);
 
 public:
-    bool start(const std::string &rootPath, const std::string &initPath);
-    void stop(void);
+    virtual bool start(const std::string &rootPath, const std::string &initPath);
+    virtual void stop(void);
     virtual void postEvent(const SDL_Event &evt);
     uv_loop_t *loop(void);
     const std::thread &thread(void) const;
     World &world(void);
 
 protected:
+    // Called in main thread.
     void kick(void);
 
-    // Called in main thread.
-    virtual bool init(void);
-    virtual void shutdown(void);
-    virtual Mesh *createMesh(void) = 0;
-
     // Called in vm thread.
-    virtual void run(uv_loop_t *loop);
-    virtual void frame(float elapsed);
-    virtual void handleEvent(const SDL_Event &evt);
+    virtual void run(uv_loop_t *loop, std::promise<bool> *initPromise);
 
 private:
-    void threadMain(std::promise<bool> *initResult);
+    void main(std::promise<bool> *initResult);
+    void frame(float elapsed);
 
 private:
     static const int EVENT_QUEUE_ORDER = 6;
@@ -52,6 +51,13 @@ private:
 private:
     uv_loop_t *m_loop;
     bool m_started;
+    uv_async_t m_renderAsync;
+    Graphics::Memory m_graphicsMemory;
+    Graphics::Renderer m_graphicsRenderer;
+    Graphics::Window m_graphicsWindow;
+    Graphics::View m_viewFlip[2];
+    int m_viewRendering;
+    SpinLock m_viewLock;
     std::thread m_thread;
     uv_async_t m_quitAsync;
     uv_async_t m_kickAsync;
@@ -65,25 +71,31 @@ private:
     int64_t m_lastFrameTime;
 };
 
-VOLCANO_INLINE uv_loop_t *KernelBase::loop(void)
+VOLCANO_INLINE uv_loop_t *Core::loop(void)
 {
     return m_loop;
 }
 
-VOLCANO_INLINE const std::thread &KernelBase::thread(void) const
+VOLCANO_INLINE const std::thread &Core::thread(void) const
 {
     return m_thread;
 }
 
-VOLCANO_INLINE World &KernelBase::world(void)
+VOLCANO_INLINE World &Core::world(void)
 {
     VOLCANO_ASSERT(std::this_thread::get_id() == m_thread.get_id());
 
     return m_world;
 }
 
-VOLCANO_INLINE void KernelBase::kick(void);
+VOLCANO_INLINE void Core::kick(void)
+{
+    VOLCANO_ASSERT(m_started);
+    VOLCANO_ASSERT(std::this_thread::get_id() != m_thread.get_id());
+
+    uv_async_send(&m_kickAsync);
+}
 
 VOLCANO_VM_END
 
-#endif // VOLCANO_VM_KERNELBASE_HPP
+#endif // VOLCANO_VM_CORE_HPP

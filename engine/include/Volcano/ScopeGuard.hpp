@@ -42,12 +42,6 @@ private:
     bool m_active;
 };
 
-template<class FN>
-inline ScopeGuard<FN> scopeGuard(FN fn)
-{
-    return ScopeGuard<FN>(std::move(fn));
-}
-
 namespace Detail {
     enum class ScopeGuardOnExit { };
     template<typename FN>

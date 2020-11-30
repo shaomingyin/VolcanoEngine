@@ -20,11 +20,13 @@ public:
 	int height(void) const;
     void resize(const SizeI &r);
 	virtual void resize(int width, int height);
-	virtual bool begin(void);
-	virtual void end(void);
+    virtual bool activate(void);
+    virtual void deactivate(void);
+    bool isActivated(void) const;
 
 private:
     SizeI m_size;
+    bool m_activated;
 };
 
 VOLCANO_INLINE const SizeI &Surface::size(void) const
@@ -45,6 +47,11 @@ VOLCANO_INLINE int Surface::height(void) const
 VOLCANO_INLINE void Surface::resize(const SizeI &r)
 {
     resize(r.width(), r.height());
+}
+
+VOLCANO_INLINE bool Surface::isActivated(void) const
+{
+    return m_activated;
 }
 
 VOLCANO_GRAPHICS_END

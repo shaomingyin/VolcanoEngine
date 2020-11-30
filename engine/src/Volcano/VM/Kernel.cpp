@@ -6,7 +6,7 @@
 VOLCANO_VM_BEGIN
 
 Kernel::Kernel(uv_loop_t *loop):
-    KernelBase(loop)
+    Core(loop)
 {
     VOLCANO_ASSERT(loop != nullptr);
 
@@ -47,16 +47,7 @@ void Kernel::handleTraps(void)
     }
 
     if (handled)
-        uv_async_send(&m_kickAsync);
-}
-
-bool Kernel::init(void)
-{
-    return true;
-}
-
-void Kernel::shutdown(void)
-{
+        kick();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -112,10 +103,9 @@ void Kernel::taskYield(lua_State *L, int n)
     VOLCANO_UNUSED(n);
 }
 
-void Kernel::threadMain(std::promise<bool> *initPromise)
+void Kernel::run(uv_loop_t *loop, std::promise<bool> *initPromise)
 {
-    VOLCANO_SCOPE_TRACE(tmain);
-
+    VOLCANO_ASSERT(loop != nullptr);
     VOLCANO_ASSERT(initPromise != nullptr);
 
     volcanoListReset(&m_taskListReady);
@@ -129,15 +119,17 @@ void Kernel::threadMain(std::promise<bool> *initPromise)
 
     lua_pushcfunction(L, [](lua_State *L) -> int {
         auto kernel = reinterpret_cast<Kernel *>(lua_touserdata(L, 1));
-        auto initPromise = reinterpret_cast<std::promise<bool> *>(lua_touserdata(L, 2));
-        kernel->luaMain(L, *initPromise);
+        auto loop = reinterpret_cast<uv_loop_t *>(lua_touserdata(L, 2));
+        auto initPromise = reinterpret_cast<std::promise<bool> *>(lua_touserdata(L, 3));
+        kernel->luaRun(L, loop, initPromise);
         return 0;
     });
 
     lua_pushlightuserdata(L, this);
+    lua_pushlightuserdata(L, loop);
     lua_pushlightuserdata(L, initPromise);
 
-    int ret = lua_pcall(L, 2, 0, 0);
+    int ret = lua_pcall(L, 3, 0, 0);
     if (ret != LUA_OK) {
         initPromise->set_value(false);
         return;
@@ -146,33 +138,15 @@ void Kernel::threadMain(std::promise<bool> *initPromise)
     lua_close(L);
 }
 
-void Kernel::luaMain(lua_State *L, std::promise<bool> &initPromise)
+void Kernel::luaRun(lua_State *L, uv_loop_t *loop, std::promise<bool> *initPromise)
 {
-    VOLCANO_SCOPE_TRACE(pmain);
-
-    uv_loop_t loop;
-
-    if (uv_loop_init(&loop) < 0) {
-        initPromise.set_value(false);
-        return;
-    }
-
-    VOLCANO_SCOPE_EXIT(r1) {
-        uv_loop_close(&loop);
-    };
-
-    if (!m_fs.init(m_rootPath)) {
-        initPromise.set_value(false);
-        return;
-    }
-
-    VOLCANO_SCOPE_EXIT(r2) {
-        m_fs.shutdown();
-    };
+    VOLCANO_ASSERT(L != nullptr);
+    VOLCANO_ASSERT(loop != nullptr);
+    VOLCANO_ASSERT(initPromise != nullptr);
 
     auto main = taskFromLua(L);
     main->data = this;
-    main->loop = &loop;
+    main->loop = loop;
 
     luaL_openlibs(L);
 
@@ -181,43 +155,12 @@ void Kernel::luaMain(lua_State *L, std::promise<bool> &initPromise)
     initExports(ns);
 
     if (!loadInitrc(L)) {
-        initPromise.set_value(false);
+        initPromise->set_value(false);
         return;
     }
 
-    uv_async_init(&loop, &m_quitAsync, [](uv_async_t *async) {
-        uv_stop(async->loop);
-    });
-
-    VOLCANO_SCOPE_EXIT(r3) {
-        uv_close_sync(&m_quitAsync);
-    };
-
-    uv_async_init(&loop, &m_kickAsync, [](uv_async_t *async) {
-        VOLCANO_UNUSED(async);
-    });
-
-    VOLCANO_SCOPE_EXIT(r4) {
-        uv_close_sync(&m_kickAsync);
-    };
-
-    uv_timer_t frameTimer;
-    uv_timer_init(&loop, &frameTimer);
-    uv_timer_start(&frameTimer, [](uv_timer_t *timer) {
-        auto kernel = reinterpret_cast<Kernel *>(timer->data);
-        auto now = uv_now(timer->loop);
-        auto elapsed = now - kernel->m_lastFrameTime;
-        kernel->frame(float(elapsed) / 1000.0f);
-        kernel->m_lastFrameTime = now;
-    }, 0, 16);
-    frameTimer.data = this;
-
-    VOLCANO_SCOPE_EXIT(r5) {
-        uv_close_sync(&frameTimer);
-    };
-
     uv_prepare_t schedulePreparer;
-    uv_prepare_init(&loop, &schedulePreparer);
+    uv_prepare_init(loop, &schedulePreparer);
     uv_prepare_start(&schedulePreparer, [](uv_prepare_t *prepare) {
         auto L = reinterpret_cast<lua_State *>(prepare->data);
         auto kernel = fromLua(L);
@@ -225,16 +168,9 @@ void Kernel::luaMain(lua_State *L, std::promise<bool> &initPromise)
     });
     schedulePreparer.data = L;
 
-    VOLCANO_SCOPE_EXIT(r6) {
-        uv_close_sync(&schedulePreparer);
-    };
+    Core::run(loop, initPromise);
 
-    uv_update_time(&loop);
-    m_lastFrameTime = uv_now(&loop);
-
-    initPromise.set_value(true);
-
-    uv_run(&loop, UV_RUN_DEFAULT);
+    uv_close_sync(&schedulePreparer);
 }
 
 bool Kernel::loadInitrc(lua_State *L)
@@ -309,21 +245,6 @@ int Kernel::doTrap(lua_State *L, lua_CFunction func)
 
         return ret;
     });
-}
-
-void Kernel::frame(float elapsed)
-{
-    while (m_eventFirst < m_eventLast) {
-        handleEvent(m_eventQueue[m_eventFirst & EVENT_QUEUE_MASK]);
-        m_eventFirst += 1;
-    }
-
-    m_world.update(elapsed);
-}
-
-void Kernel::handleEvent(const SDL_Event &evt)
-{
-    m_world.handleEvent(evt);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

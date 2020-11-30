@@ -10,13 +10,13 @@
 #include <Volcano/List.h>
 #include <Volcano/VM/Common.hpp>
 #include <Volcano/VM/Registration.hpp>
-#include <Volcano/VM/KernelBase.hpp>
+#include <Volcano/VM/Core.hpp>
 
 VOLCANO_VM_BEGIN
 
 using Task = VolcanoVMTask;
 
-class Kernel: public KernelBase {
+class Kernel: public Core {
 public:
     Kernel(uv_loop_t *loop);
     ~Kernel(void) override;
@@ -46,15 +46,11 @@ protected:
 
     static int doTrap(lua_State *L, lua_CFunction func);
 
-    bool init(void) override;
-    void shutdown(void) override;
-    void run(uv_loop_t *loop) override;
-    void frame(float elapsed) override;
-    void handleEvent(const SDL_Event &evt) override;
+    void run(uv_loop_t *loop, std::promise<bool> *initPromise) override;
     virtual void initExports(Registration &reg);
 
 private:
-    void luaMain(lua_State *L, std::promise<bool> &initPromise);
+    void luaRun(lua_State *L, uv_loop_t *loop, std::promise<bool> *initPromise);
     bool loadInitrc(lua_State *L);
     void schedule(lua_State *L);
     void handleTraps(void);
@@ -70,7 +66,6 @@ private:
     std::mutex m_taskListMutex;
     VolcanoList m_taskListReady;
     VolcanoList m_taskListTrapped;
-    int64_t m_lastFrameTime;
 };
 
 VOLCANO_INLINE Task *Kernel::taskFromLua(lua_State *L)

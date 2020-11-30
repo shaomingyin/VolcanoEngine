@@ -26,15 +26,21 @@ public:
     bool init(Surface *target);
 	void shutdown(void);
     void render(const View &v);
+    Surface *target(void);
 
 private:
     Surface *m_target;
-    NVGcontext *m_vg;
-    dd::ContextHandle m_dd;
+    NVGcontext *m_nvg;
+    dd::ContextHandle m_ddContext;
     DebugDrawRenderer m_ddRenderer;
     GL::Program m_program;
     Light m_ambientLight;
 };
+
+VOLCANO_INLINE Surface *Renderer::target(void)
+{
+    return m_target;
+}
 
 VOLCANO_GRAPHICS_END
 
