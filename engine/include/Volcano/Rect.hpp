@@ -34,7 +34,7 @@ public:
     {
     }
 
-    VOLCANO_INLINE Rect(int left, int top, int right, int bottom):
+    VOLCANO_INLINE Rect(T left, T top, T right, T bottom):
         m_left(left),
         m_top(top),
         m_right(right),
@@ -249,7 +249,7 @@ private:
     T m_right;
     T m_bottom;
 
-    static_assert(std::is_integral<T>::value || std::is_floating_point<T>::value);
+    // static_assert(std::is_integral<T>::value || std::is_floating_point<T>::value);
 };
 
 using RectI = Rect<int>;

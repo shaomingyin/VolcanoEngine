@@ -68,7 +68,7 @@ private:
     T m_x;
     T m_y;
 
-    static_assert(std::is_integral<T>::value || std::is_floating_point<T>::value);
+    // static_assert(std::is_integral<T>::value || std::is_floating_point<T>::value);
 };
 
 using PointI = Point<int>;

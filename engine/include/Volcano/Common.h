@@ -9,15 +9,13 @@
 #include <Volcano/Config.h>
 
 #ifdef VOLCANO_DEBUG
-#    define SDL_ASSERT_LEVEL 2
-#    include <SDL_assert.h>
-#    define VOLCANO_ASSERT(expr) SDL_assert(expr)
+#   ifndef VOLCANO_ASSERT
+#       include <assert.h>
+#       define VOLCANO_ASSERT(expr) assert(expr)
+#   endif
 #else
 #    define VOLCANO_ASSERT(expr) do { } while (0)
 #endif
-
-#include <uv.h>
-#include <SDL.h>
 
 #ifdef __cplusplus
 #    define VOLCANO_BEGIN_C_DECLS extern "C" {
@@ -88,20 +86,8 @@
 
 #define VOLCANO_LOG_CATEGORY SDL_LOG_CATEGORY_APPLICATION
 
-#define VOLCANO_LOGE(fmt, ...) SDL_LogMessage(VOLCANO_LOG_CATEGORY, SDL_LOG_PRIORITY_ERROR, fmt, ##__VA_ARGS__)
-#define VOLCANO_LOGW(fmt, ...) SDL_LogMessage(VOLCANO_LOG_CATEGORY, SDL_LOG_PRIORITY_WARN, fmt, ##__VA_ARGS__)
-#define VOLCANO_LOGI(fmt, ...) SDL_LogMessage(VOLCANO_LOG_CATEGORY, SDL_LOG_PRIORITY_INFO, fmt, ##__VA_ARGS__)
-
-#ifdef VOLCANO_DEBUG
-#    define VOLCANO_LOGD(fmt, ...) SDL_LogMessage(VOLCANO_LOG_CATEGORY, SDL_LOG_PRIORITY_DEBUG, fmt, ##__VA_ARGS__)
-#else
-#    define VOLCANO_LOGD(fmt, ...)
-#endif
-
 VOLCANO_BEGIN_C_DECLS
-
-void uv_close_sync(uv_handle_t *handle);
 
 VOLCANO_END_C_DECLS
 
-#endif /* VOLCANO_H */
+#endif /* VOLCANO_COMMON_H */

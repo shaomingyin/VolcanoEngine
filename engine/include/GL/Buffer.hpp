@@ -95,7 +95,7 @@ GL_INLINE void Buffer::setData(GLsizeiptr length, const void *data)
 GL_INLINE void Buffer::setSubData(GLintptr offset, GLsizeiptr length, const void *data)
 {
     GL_ASSERT(isBound());
-    GL_ASSERT(0 <= offset & offset < m_size);
+    GL_ASSERT(0 <= offset && offset < m_size);
     GL_ASSERT(length > 0);
     GL_ASSERT((offset + length) < m_size);
 

@@ -9,7 +9,7 @@
 
 VOLCANO_BEGIN
 
-class SpinLock final: public Noncopyable {
+class SpinLock final {
 public:
     SpinLock(void);
 
@@ -20,6 +20,9 @@ public:
 
 private:
     std::atomic_flag m_flag;
+
+    VOLCANO_DISABLE_COPY(SpinLock);
+    VOLCANO_DISABLE_MOVE(SpinLock);
 };
 
 VOLCANO_INLINE SpinLock::SpinLock(void)
