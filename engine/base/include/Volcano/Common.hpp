@@ -42,7 +42,7 @@
 #define VOLCANO_MEMBEROF(p, struct_type, member_name) \
     ((struct_type *)VOLCANO_PMOVB(p, -VOLCANO_OFFSETOF(struct_type, member_name)))
 
-#ifdef VOLCANO
+#ifdef VOLCANO_BASE
 #   define VOLCANO_API Q_DECL_EXPORT
 #else
 #   define VOLCANO_API //Q_DECL_IMPORT
@@ -50,5 +50,11 @@
 
 #define VOLCANO_BEGIN namespace Volcano {
 #define VOLCANO_END }
+
+VOLCANO_BEGIN
+
+VOLCANO_API int foobar(void);
+
+VOLCANO_END
 
 #endif // VOLCANO_COMMON_HPP

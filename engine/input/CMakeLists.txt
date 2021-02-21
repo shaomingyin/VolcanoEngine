@@ -1,16 +1,15 @@
 
-add_volcano_executable(server
+add_volcano_shared_library(input
     OUTPUT_NAME
-        Server
+        Input
     DEPENDENCIES
-        resources
         base
     PUBLIC_LINK_LIBRARIES
         base
-    PRIVATE_INCLUDE_DIRECTORIES
+    PUBLIC_INCLUDE_DIRECTORIES
         ${CMAKE_CURRENT_SOURCE_DIR}/include
         ${CMAKE_CURRENT_BINARY_DIR}/include
     PRIVATE_SOURCES
-        include/Volcano/Server/Common.hpp
-        src/Volcano/Server/Main.cpp
+        include/Volcano/Input/Common.hpp
+        src/Volcano/Input/Common.cpp
     )

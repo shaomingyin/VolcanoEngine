@@ -1,14 +1,10 @@
 
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
-set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTORCC ON)
-
-find_package(Qt6 COMPONENTS Core REQUIRED)
-link_libraries(Qt6::Core)
-
 add_subdirectory(base base)
-add_subdirectory(editor editor)
+add_subdirectory(game game)
+add_subdirectory(graphics graphics)
+add_subdirectory(input input)
+add_subdirectory(sound sound)
+add_subdirectory(resources resources)
 add_subdirectory(launcher launcher)
 add_subdirectory(server server)
+add_subdirectory(editor editor)

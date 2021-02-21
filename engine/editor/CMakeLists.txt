@@ -1,25 +1,19 @@
 
-find_package(Qt6 COMPONENTS Widgets REQUIRED)
-
-add_executable(editor)
-
-add_dependencies(editor launcher base)
-set_target_properties(editor PROPERTIES OUTPUT_NAME "VolcanoEditor")
-
-target_include_directories(editor
-    PRIVATE
+add_volcano_executable(editor
+    OUTPUT_NAME
+        Editor
+    DEPENDENCIES
+        resources
+        launcher
+        base
+    PRIVATE_LINK_LIBRARIES
+        base
+    PUBLIC_QT_MODULES
+        Widgets
+    PRIVATE_INCLUDE_DIRECTORIES
         ${CMAKE_CURRENT_SOURCE_DIR}/include
         ${CMAKE_CURRENT_BINARY_DIR}/include
-    )
-
-target_link_libraries(editor
-    PRIVATE
-        base
-        Qt6::Widgets
-    )
-
-target_sources(editor
-    PRIVATE
+    PRIVATE_SOURCES
         include/Volcano/Editor/Common.hpp
         include/Volcano/Editor/MainWindow.hpp
         include/Volcano/Editor/OutputView.hpp
@@ -37,6 +31,3 @@ target_sources(editor
         src/Volcano/Editor/ResourceView.cpp
         src/Volcano/Editor/SceneView.cpp
     )
-
-get_target_property(EDITOR_SOURCES editor SOURCES)
-source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${EDITOR_SOURCES})
