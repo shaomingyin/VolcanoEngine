@@ -3,12 +3,12 @@ add_volcano_executable(launcher
     OUTPUT_NAME
         Launcher
     DEPENDENCIES
+        ui
         resources
-        graphics
         game
         base
     PUBLIC_LINK_LIBRARIES
-        graphics
+        ui
         game
         base
     PRIVATE_QT_MODULES

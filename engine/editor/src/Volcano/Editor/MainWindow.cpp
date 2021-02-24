@@ -19,6 +19,8 @@ MainWindow::~MainWindow(void)
 
 bool MainWindow::init(void)
 {
+    m_mdiArea.addSubWindow(&m_worldView);
+
     setCentralWidget(&m_mdiArea);
 
     QSettings settings;

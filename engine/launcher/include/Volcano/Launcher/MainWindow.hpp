@@ -5,8 +5,8 @@
 
 #include <QOpenGLWindow>
 
-#include <Volcano/Graphics/Memory.hpp>
-#include <Volcano/Graphics/Renderer.hpp>
+#include <Volcano/UI/Graphics/Memory.hpp>
+#include <Volcano/UI/Graphics/Renderer.hpp>
 #include <Volcano/Launcher/Common.hpp>
 
 VOLCANO_LAUNCHER_BEGIN
@@ -28,8 +28,8 @@ protected:
     void resizeGL(int w, int h) override;
 
 private:
-    Graphics::Memory *m_graphicsMemory;
-    Graphics::Renderer *m_graphicsRenderer;
+    UI::Graphics::Memory *m_graphicsMemory;
+    UI::Graphics::Renderer *m_graphicsRenderer;
 };
 
 VOLCANO_LAUNCHER_END

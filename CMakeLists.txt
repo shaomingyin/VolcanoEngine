@@ -23,7 +23,7 @@ set(CMAKE_AUTORCC ON)
 find_package(Qt6 COMPONENTS Core REQUIRED)
 link_libraries(Qt6::Core)
 
-include(Volcano)
+include(VolcanoUtils)
 
 add_subdirectory(documents document)
 add_subdirectory(engine engine)

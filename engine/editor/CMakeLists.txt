@@ -3,12 +3,17 @@ add_volcano_executable(editor
     OUTPUT_NAME
         Editor
     DEPENDENCIES
-        resources
         launcher
+        ui
+        resources
+        game
         base
     PRIVATE_LINK_LIBRARIES
+        ui
+        game
         base
     PUBLIC_QT_MODULES
+        OpenGLWidgets
         Widgets
     PRIVATE_INCLUDE_DIRECTORIES
         ${CMAKE_CURRENT_SOURCE_DIR}/include
@@ -21,7 +26,7 @@ add_volcano_executable(editor
         include/Volcano/Editor/ProjectView.hpp
         include/Volcano/Editor/PropertyView.hpp
         include/Volcano/Editor/ResourceView.hpp
-        include/Volcano/Editor/SceneView.hpp
+        include/Volcano/Editor/WorldView.hpp
         src/Volcano/Editor/Main.cpp
         src/Volcano/Editor/MainWindow.cpp
         src/Volcano/Editor/OutputView.cpp
@@ -29,5 +34,5 @@ add_volcano_executable(editor
         src/Volcano/Editor/ProjectView.cpp
         src/Volcano/Editor/PropertyView.cpp
         src/Volcano/Editor/ResourceView.cpp
-        src/Volcano/Editor/SceneView.cpp
+        src/Volcano/Editor/WorldView.cpp
     )

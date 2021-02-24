@@ -1,0 +1,11 @@
+//
+//
+#ifndef VOLCANO_UI_INPUT_COMMON_HPP
+#define VOLCANO_UI_INPUT_COMMON_HPP
+
+#include <Volcano/UI/Common.hpp>
+
+#define VOLCANO_UI_INPUT_BEGIN VOLCANO_UI_BEGIN namespace Input {
+#define VOLCANO_UI_INPUT_END } VOLCANO_UI_END
+
+#endif // VOLCANO_UI_INPUT_COMMON_HPP

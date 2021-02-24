@@ -4,8 +4,10 @@ add_volcano_executable(server
         Server
     DEPENDENCIES
         resources
+        game
         base
     PUBLIC_LINK_LIBRARIES
+        game
         base
     PRIVATE_INCLUDE_DIRECTORIES
         ${CMAKE_CURRENT_SOURCE_DIR}/include

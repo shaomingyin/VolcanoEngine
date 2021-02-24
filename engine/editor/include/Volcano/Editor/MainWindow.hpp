@@ -7,6 +7,7 @@
 #include <QMdiArea>
 
 #include <Volcano/Editor/Common.hpp>
+#include <Volcano/Editor/WorldView.hpp>
 
 VOLCANO_EDITOR_BEGIN
 
@@ -23,6 +24,7 @@ public:
 
 private:
     QMdiArea m_mdiArea;
+    WorldView m_worldView;
 };
 
 VOLCANO_EDITOR_END

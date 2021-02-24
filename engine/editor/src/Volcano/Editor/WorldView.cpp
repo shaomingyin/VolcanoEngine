@@ -1,35 +1,27 @@
 //
 //
-#include <QSettings>
+#include <QWindow>
 #include <QScopeGuard>
 
-#include <Volcano/Launcher/MainWindow.hpp>
+#include <Volcano/Editor/WorldView.hpp>
 
-VOLCANO_LAUNCHER_BEGIN
+VOLCANO_EDITOR_BEGIN
 
-MainWindow::MainWindow(void):
+WorldView::WorldView(QWidget *parent):
+    QOpenGLWidget(parent),
     m_graphicsMemory(nullptr),
     m_graphicsRenderer(nullptr)
 {
+    QSurfaceFormat format;
+    UI::Graphics::makeSurfaceFormat(format);
+    setFormat(format);
 }
 
-MainWindow::~MainWindow(void)
+WorldView::~WorldView(void)
 {
-    if (m_graphicsRenderer != nullptr) {
-        // TODO
-    }
-
-    if (m_graphicsMemory != nullptr) {
-
-    }
 }
 
-bool MainWindow::init(void)
-{
-    return true;
-}
-
-void MainWindow::initializeGL(void)
+void WorldView::initializeGL(void)
 {
     if (m_graphicsRenderer != nullptr)
         return;
@@ -43,7 +35,7 @@ void MainWindow::initializeGL(void)
         m_graphicsRenderer = nullptr;
     });
 
-    if (!m_graphicsRenderer->init(this))
+    if (!m_graphicsRenderer->init(context()->surface()))
         return;
 
     if (m_graphicsMemory != nullptr)
@@ -62,7 +54,7 @@ void MainWindow::initializeGL(void)
     graphicsMemoryGuard.dismiss();
 }
 
-void MainWindow::paintGL(void)
+void WorldView::paintGL(void)
 {
     if (m_graphicsRenderer != nullptr) {
         m_graphicsRenderer->beginFrame();
@@ -70,8 +62,8 @@ void MainWindow::paintGL(void)
     }
 }
 
-void MainWindow::resizeGL(int w, int h)
+void WorldView::resizeGL(int w, int h)
 {
 }
 
-VOLCANO_LAUNCHER_END
+VOLCANO_EDITOR_END
