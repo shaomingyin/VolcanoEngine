@@ -1,0 +1,11 @@
+//
+//
+#ifndef VOLCANO_NETWORK_COMMON_HPP
+#define VOLCANO_NETWORK_COMMON_HPP
+
+#include <Volcano/Common.hpp>
+
+#define VOLCANO_NETWORK_BEGIN VOLCANO_BEGIN namespace Network {
+#define VOLCANO_NETWORK_END } VOLCANO_END
+
+#endif // VOLCANO_NETWORK_COMMON_HPP

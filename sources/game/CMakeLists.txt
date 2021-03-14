@@ -1,0 +1,40 @@
+
+# bullet physics
+
+volcano_library(game
+    OUTPUT_NAME
+        Game
+    DEPENDENCIES
+        base
+    PUBLIC_LINK_LIBRARIES
+        base
+    PUBLIC_INCLUDE_DIRECTORIES
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+        ${CMAKE_CURRENT_BINARY_DIR}/include
+    PRIVATE_SOURCES
+        include/Volcano/Game/Camera.hpp
+        include/Volcano/Game/Common.hpp
+        include/Volcano/Game/Component.hpp
+        include/Volcano/Game/Context.hpp
+        include/Volcano/Game/DirectionalLight.hpp
+        include/Volcano/Game/Entity.hpp
+        include/Volcano/Game/Light.hpp
+        include/Volcano/Game/Model.hpp
+        include/Volcano/Game/PerpectiveCamera.hpp
+        include/Volcano/Game/PointLight.hpp
+        include/Volcano/Game/Scene.hpp
+        include/Volcano/Game/SpotLight.hpp
+        include/Volcano/Game/World.hpp
+        src/Volcano/Game/Camera.cpp
+        src/Volcano/Game/Common.cpp
+        src/Volcano/Game/Component.cpp
+        src/Volcano/Game/Context.cpp
+        src/Volcano/Game/DirectionalLight.cpp
+        src/Volcano/Game/Entity.cpp
+        src/Volcano/Game/Light.cpp
+        src/Volcano/Game/Model.cpp
+        src/Volcano/Game/PointLight.cpp
+        src/Volcano/Game/Scene.cpp
+        src/Volcano/Game/SpotLight.cpp
+        src/Volcano/Game/World.cpp
+    )

@@ -1,0 +1,19 @@
+
+volcano_library(network
+    OUTPUT_NAME
+        Network
+    DEPENDENCIES
+        game
+        base
+    PUBLIC_LINK_LIBRARIES
+        game
+        base
+    PUBLIC_INCLUDE_DIRECTORIES
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+        ${CMAKE_CURRENT_BINARY_DIR}/include
+    PRIVATE_SOURCES
+        include/Volcano/Network/Common.hpp
+        src/Volcano/Network/Common.cpp
+    CONFIGURE_FILES
+        include/Volcano/Network/Config.hpp.in
+    )

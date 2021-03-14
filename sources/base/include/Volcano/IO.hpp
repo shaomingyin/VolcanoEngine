@@ -1,0 +1,71 @@
+//
+//
+#ifndef VOLCANO_IO_HPP
+#define VOLCANO_IO_HPP
+
+#include <Volcano/Common.hpp>
+
+VOLCANO_BEGIN
+
+class IO {
+public:
+    enum {
+        FlagSeekable = 0x1,
+        FlagReadable = 0x2,
+        FlagWritable = 0x4,
+        FlagMappable = 0x8
+    };
+
+    enum {
+        ModeRead = 0x1,
+        ModeWrite = 0x2,
+        ModeAppend = 0x4,
+        ModeCreate = 0x8,
+        ModeTruncate = 0x10
+    };
+
+    enum class SeekMode {
+        Set = 0,
+        Cur,
+        End
+    };
+
+public:
+    IO(void);
+    virtual ~IO(void);
+
+public:
+    int flags(void);
+    int64_t size(void);
+    bool open(int mode);
+    void close(void);
+    bool isOpen(void) const;
+    int mode(void) const;
+    bool isEof(void);
+    int64_t tell(void);
+    int64_t seek(int64_t offset, SeekMode seekMode = SeekMode::Set);
+    int64_t read(void *buf, int64_t len);
+    int64_t write(const void *buf, int64_t len);
+    void *map(void);
+    void unmap(void);
+
+protected:
+    virtual int deviceFlags(void) = 0;
+    virtual int64_t deviceSize(void) = 0;
+    virtual bool openDevice(int mode) = 0;
+    virtual void closeDevice(void) = 0;
+    virtual int64_t devicePos(void) = 0;
+    virtual bool setDevicePos(int64_t pos) = 0;
+    virtual int64_t readDevice(void *buf, int64_t len) = 0;
+    virtual int64_t writeDevice(const void *buf, int64_t len) = 0;
+    virtual void *mapDevice(void) = 0;
+    virtual void unmapDevice(void) = 0;
+
+private:
+    int m_mode;
+    void *m_map;
+};
+
+VOLCANO_END
+
+#endif // VOLCANO_IO_HPP
