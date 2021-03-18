@@ -4,15 +4,17 @@ set(CMAKE_AUTORCC ON)
 
 find_package(Qt5 REQUIRED Core Gui Widgets)
 
-volcano_executable(editor
-    OUTPUT_NAME
-        Editor
-    DEPENDENCIES
-        ui
-        network
-        game
-        base
-    PUBLIC_LINK_LIBRARIES
+add_executable(editor)
+
+add_dependencies(editor
+    ui
+    network
+    game
+    base
+    )
+
+target_link_libraries(editor
+    PUBLIC
         ui
         network
         game
@@ -20,11 +22,18 @@ volcano_executable(editor
         Qt5::Core
         Qt5::Gui
         Qt5::Widgets
-    PRIVATE_INCLUDE_DIRECTORIES
+    )
+
+target_include_directories(editor
+    PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/include
         ${CMAKE_CURRENT_BINARY_DIR}/include
-    PRIVATE_SOURCES
+    )
+
+target_sources(editor
+    PRIVATE
         include/Volcano/Editor/Common.hpp
+        include/Volcano/Editor/Config.hpp.in
         include/Volcano/Editor/MainWindow.hpp
         include/Volcano/Editor/OutputView.hpp
         include/Volcano/Editor/Project.hpp
@@ -40,8 +49,12 @@ volcano_executable(editor
         src/Volcano/Editor/PropertyView.cpp
         src/Volcano/Editor/ResourceView.cpp
         src/Volcano/Editor/WorldView.cpp
-    CONFIGURE_FILES
-        include/Volcano/Editor/Config.hpp.in
     )
 
-source_group(\\mocs REGULAR_EXPRESSION "mocs_.*\\.cpp")
+configure_file(
+    include/Volcano/Editor/Config.hpp.in
+    include/Volcano/Editor/Config.hpp
+    )
+
+volcano_target_post_setup(editor)
+

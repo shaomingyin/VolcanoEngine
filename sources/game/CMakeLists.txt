@@ -1,17 +1,23 @@
 
-# bullet physics
+add_library(game STATIC)
 
-volcano_library(game
-    OUTPUT_NAME
-        Game
-    DEPENDENCIES
+add_dependencies(game
+    base
+    )
+
+target_link_libraries(game
+    PUBLIC
         base
-    PUBLIC_LINK_LIBRARIES
-        base
-    PUBLIC_INCLUDE_DIRECTORIES
+    )
+
+target_include_directories(game
+    PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/include
         ${CMAKE_CURRENT_BINARY_DIR}/include
-    PRIVATE_SOURCES
+    )
+
+target_sources(game
+    PRIVATE
         include/Volcano/Game/Camera.hpp
         include/Volcano/Game/Common.hpp
         include/Volcano/Game/Component.hpp
@@ -38,3 +44,6 @@ volcano_library(game
         src/Volcano/Game/SpotLight.cpp
         src/Volcano/Game/World.cpp
     )
+
+volcano_target_post_setup(game)
+

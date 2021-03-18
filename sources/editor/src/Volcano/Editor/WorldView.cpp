@@ -1,8 +1,8 @@
 //
 //
 #include <QWindow>
-#include <QScopeGuard>
 
+#include <Volcano/ScopeGuard.hpp>
 #include <Volcano/Editor/WorldView.hpp>
 
 VOLCANO_EDITOR_BEGIN

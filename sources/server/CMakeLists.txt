@@ -1,26 +1,39 @@
 
-include(FindUV)
-if(NOT UV_FOUND)
-    message(FATAL_ERROR "libuv not found.")
-endif()
+add_executable(server)
 
-volcano_executable(server
-    OUTPUT_NAME
-        Server
-    DEPENDENCIES
+add_dependencies(server
+    network
+    game
+    base
+    )
+
+target_link_libraries(server
+    PRIVATE
         network
         game
         base
-    PUBLIC_LINK_LIBRARIES
-        network
-        game
-        base
-        ${UV_LIBRARIES}
-    PRIVATE_INCLUDE_DIRECTORIES
+    )
+
+target_include_directories(server
+    PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/include
         ${CMAKE_CURRENT_BINARY_DIR}/include
-        ${UV_INCLUDE_DIRS}
-    PRIVATE_SOURCES
+    )
+
+target_sources(server
+    PRIVATE
         include/Volcano/Server/Common.hpp
         src/Volcano/Server/Main.cpp
     )
+
+# libuv
+include(FindUV)
+if(UV_FOUND)
+    target_include_directories(server PUBLIC ${UV_INCLUDE_DIRS})
+    target_link_libraries(server PUBLIC ${UV_LIBRARIES})
+else()
+    message(FATAL_ERROR "libuv not found.")
+endif()
+
+volcano_target_post_setup(server)
+

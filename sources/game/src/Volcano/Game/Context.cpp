@@ -1,7 +1,5 @@
 //
 //
-#include <filesystem>
-
 #include <Volcano/ScopeGuard.hpp>
 #include <Volcano/Game/Context.hpp>
 
@@ -17,9 +15,6 @@ Context::~Context(void)
 
 bool Context::init(std::string_view rootDir)
 {
-    if (!std::filesystem::is_directory(rootDir))
-        return false;
-
     m_rootDir = rootDir;
 
     return true;

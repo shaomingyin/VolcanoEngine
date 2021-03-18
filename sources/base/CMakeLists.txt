@@ -1,8 +1,16 @@
 
-include(FindPhysFS)
-if(NOT PHYSFS_FOUND)
-    message(FATAL_ERROR "PhysFS not found.")
-endif()
+add_library(base STATIC)
+
+target_compile_definitions(base
+    PUBLIC
+        NOMINMAX
+    )
+
+target_include_directories(base
+    PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+        ${CMAKE_CURRENT_BINARY_DIR}/include
+    )
 
 file(GLOB_RECURSE SIGSLOT_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/sigslot/*
@@ -21,28 +29,17 @@ file(GLOB_RECURSE EIGEN_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/Eigen/*
     )
 
-set(ARGH_SOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/argh.h
-    )
-
-volcano_library(base
-    OUTPUT_NAME
-        Base
-    PUBLIC_DEFINITIONS
-        NOMINMAX
-    PUBLIC_INCLUDE_DIRECTORIES
-        ${PHYSFS_INCLUDE_DIR}
-        ${PHYSFS_LIBRARY}
-        ${CMAKE_CURRENT_SOURCE_DIR}/include
-        ${CMAKE_CURRENT_BINARY_DIR}/include
-    PRIVATE_SOURCES
+target_sources(base
+    PRIVATE
         ${ARGH_SOURCES}
         ${SIGSLOT_SOURCES}
         ${RTTR_SOURCES}
         ${EIGEN_SOURCES}
         ${MINIZ_SOURCES}
+        include/argh.h
         include/Volcano/Buffer.hpp
         include/Volcano/Common.hpp
+        include/Volcano/Config.hpp.in
         include/Volcano/FileSystem.hpp
         include/Volcano/IO.hpp
         include/Volcano/ScopeGuard.hpp
@@ -50,6 +47,21 @@ volcano_library(base
         src/Volcano/Buffer.cpp
         src/Volcano/Common.cpp
         src/Volcano/IO.cpp
-    CONFIGURE_FILES
-        include/Volcano/Config.hpp.in
     )
+
+configure_file(
+    include/Volcano/Config.hpp.in
+    include/Volcano/Config.hpp
+    )
+
+# PhysFS
+include(FindPhysFS)
+if(PHYSFS_FOUND)
+    target_include_directories(base PUBLIC ${PHYSFS_INCLUDE_DIR})
+    target_link_libraries(base PUBLIC ${PHYSFS_LIBRARY})
+else()
+    message(FATAL_ERROR "PhysFS not found.")
+endif()
+
+volcano_target_post_setup(base)
+

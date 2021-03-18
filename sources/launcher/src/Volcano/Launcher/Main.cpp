@@ -3,7 +3,6 @@
 #include <string>
 #include <memory>
 #include <thread>
-#include <filesystem>
 
 #include <argh.h>
 #include <GLFW/glfw3.h>

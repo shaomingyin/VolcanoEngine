@@ -1,67 +1,60 @@
 
-include(FindOpenGL)
-if(NOT OPENGL_FOUND)
-    message(FATAL_ERROR "OpenGL not found.")
-endif()
+add_library(ui STATIC)
 
-set(GL_SOURCES
-    include/GL/vgl.h
-    include/GL/glcorearb.h
-    include/KHR/khrplatform.h
-    src/GL/vgl.c
-
-    include/GL/Buffer.hpp
-    include/GL/Common.hpp
-    include/GL/FrameBuffer.hpp
-    include/GL/Object.hpp
-    include/GL/Program.hpp
-    include/GL/Shader.hpp
-    include/GL/Texture.hpp
-    include/GL/VertexArray.hpp
-    src/GL/Buffer.cpp
-    src/GL/FrameBuffer.cpp
-    src/GL/Object.cpp
-    src/GL/Program.cpp
-    src/GL/Shader.cpp
-    src/GL/Texture.cpp
-    src/GL/VertexArray.cpp
+add_dependencies(ui
+    game
+    base
     )
 
-set(NANOVG_SOURCES
-    include/fontstash.h
-    include/nanovg.h
-    include/nanovg_gl.h
-    include/nanovg_gl_utils.h
-    include/stb_image.h
-    include/stb_truetype.h
-    src/nanovg/nanovg.c
-    )
-
-set(OUI_SOURCES
-    include/oui.h
-    )
-
-volcano_library(ui
-    OUTPUT_NAME
-        UI
-    DEPENDENCIES
+target_link_libraries(ui
+    PUBLIC
         game
         base
-    PUBLIC_LINK_LIBRARIES
-        game
-        base
-        ${OPENGL_LIBRARIES}
-    PUBLIC_INCLUDE_DIRECTORIES
-        ${OPENGL_INCLUDE_DIR}
+    )
+
+target_include_directories(ui
+    PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/include
         ${CMAKE_CURRENT_BINARY_DIR}/include
-    PRIVATE_SOURCES
-        ${GL_SOURCES}
-        ${NANOVG_SOURCES}
-        ${OUI_SOURCES}
+    )
+
+target_sources(ui
+    PRIVATE
+        include/GL/vgl.h
+        include/GL/glcorearb.h
+        include/KHR/khrplatform.h
+        src/GL/vgl.c
+
+        include/GL/Buffer.hpp
+        include/GL/Common.hpp
+        include/GL/FrameBuffer.hpp
+        include/GL/Object.hpp
+        include/GL/Program.hpp
+        include/GL/Shader.hpp
+        include/GL/Texture.hpp
+        include/GL/VertexArray.hpp
+        src/GL/Buffer.cpp
+        src/GL/FrameBuffer.cpp
+        src/GL/Object.cpp
+        src/GL/Program.cpp
+        src/GL/Shader.cpp
+        src/GL/Texture.cpp
+        src/GL/VertexArray.cpp
+
+        include/fontstash.h
+        include/nanovg.h
+        include/nanovg_gl.h
+        include/nanovg_gl_utils.h
+        include/stb_image.h
+        include/stb_truetype.h
+        src/nanovg/nanovg.c
+
+        include/oui.h
+
         include/Volcano/UI/Common.hpp
         include/Volcano/UI/Graphics/Buffer.hpp
         include/Volcano/UI/Graphics/Common.hpp
+        include/Volcano/UI/Config.hpp.in
         include/Volcano/UI/Graphics/DirectionalLight.hpp
         include/Volcano/UI/Graphics/Heap.hpp
         include/Volcano/UI/Graphics/Light.hpp
@@ -83,6 +76,21 @@ volcano_library(ui
         src/Volcano/UI/Graphics/SpotLight.cpp
         src/Volcano/UI/Input/Common.cpp
         src/Volcano/UI/Sound/Common.cpp
-    CONFIGURE_FILES
-        include/Volcano/UI/Config.hpp.in
     )
+
+configure_file(
+    include/Volcano/UI/Config.hpp.in
+    include/Volcano/UI/Config.hpp
+    )
+
+# OpenGL
+include(FindOpenGL)
+if(OPENGL_FOUND)
+    target_include_directories(ui PUBLIC ${OPENGL_INCLUDE_DIR})
+    target_link_libraries(ui PUBLIC ${OPENGL_LIBRARIES})
+else()
+    message(FATAL_ERROR "OpenGL not found.")
+endif()
+
+volcano_target_post_setup(ui)
+
