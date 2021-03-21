@@ -3,7 +3,7 @@
 #ifndef GL_COMMON_HPP
 #define GL_COMMON_HPP
 
-#include <GL/vgl.h>
+#include <GL/gl3w.h>
 
 #include <Eigen/Geometry>
 

@@ -22,12 +22,12 @@ bool Buffer::create(GLsizeiptr size, const void *data)
     GL_ASSERT(m_usage != GL_INVALID_ENUM);
     GL_ASSERT(size > 0);
 
-    vglGenBuffers(1, &m_id);
+    glGenBuffers(1, &m_id);
     if (m_id < 1)
         return false;
 
-    vglBindBuffer(m_target, m_id);
-    vglBufferData(m_target, size, data, m_usage);
+    glBindBuffer(m_target, m_id);
+    glBufferData(m_target, size, data, m_usage);
     m_size = size;
 
     return true;
@@ -37,7 +37,7 @@ void Buffer::destroy(void)
 {
     GL_ASSERT(isValid());
 
-    vglDeleteBuffers(1, &m_id);
+    glDeleteBuffers(1, &m_id);
     m_id = 0;
 }
 

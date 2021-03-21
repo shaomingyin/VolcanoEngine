@@ -40,7 +40,6 @@ target_sources(base
         include/Volcano/Buffer.hpp
         include/Volcano/Common.hpp
         include/Volcano/Config.hpp.in
-        include/Volcano/FileSystem.hpp
         include/Volcano/IO.hpp
         include/Volcano/ScopeGuard.hpp
         include/Volcano/SpinLock.hpp

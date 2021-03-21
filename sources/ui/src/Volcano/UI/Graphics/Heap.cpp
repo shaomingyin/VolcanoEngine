@@ -173,7 +173,7 @@ Heap::~Heap(void)
 bool Heap::init(int order)
 {
     VOLCANO_ASSERT(order >= 0);
-    VOLCANO_ASSERT(!m_glBuffer.isCreated());
+    VOLCANO_ASSERT(!m_glBuffer.isValid());
 
     GLsizeiptr size = GLsizeiptr(1) << order;
 
@@ -195,7 +195,7 @@ void Heap::release(void)
 Buffer *Heap::allocBuffer(GLsizeiptr size)
 {
     VOLCANO_ASSERT(size > 0);
-    VOLCANO_ASSERT(m_glBuffer.isCreated());
+    VOLCANO_ASSERT(m_glBuffer.isValid());
 
     if (size > m_freeSize)
         return nullptr;

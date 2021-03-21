@@ -7,7 +7,6 @@
 
 #include <Volcano/UI/Graphics/Memory.hpp>
 #include <Volcano/UI/Graphics/Renderer.hpp>
-
 #include <Volcano/Editor/Common.hpp>
 
 #include <QOpenGLWidget>

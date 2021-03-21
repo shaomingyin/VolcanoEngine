@@ -1,5 +1,5 @@
 
-add_executable(launcher)
+add_executable(launcher WIN32)
 
 add_dependencies(launcher
     ui
@@ -25,17 +25,18 @@ target_include_directories(launcher
 target_sources(launcher   
     PRIVATE
         include/Volcano/Launcher/Common.hpp
+        include/Volcano/Launcher/Context.hpp
+        src/Volcano/Launcher/Context.cpp
         src/Volcano/Launcher/Main.cpp
     )
 
-# GLFW3
-include(FindGLFW3)
-if(GLFW3_FOUND)
-    target_include_directories(launcher PUBLIC ${GLFW3_INCLUDE_DIRS})
-    target_link_libraries(launcher PUBLIC ${GLFW3_LIBRARIES})
+# SDL2
+include(FindSDL2)
+if(SDL2_FOUND)
+    target_include_directories(launcher PUBLIC ${SDL2_INCLUDE_DIR})
+    target_link_libraries(launcher PUBLIC ${SDL2_LIBRARY} ${SDL2MAIN_LIBRARY})
 else()
-    message(FATAL_ERROR "GLFW3 not found.")
+    message(FATAL_ERROR "SDL2 not found.")
 endif()
 
 volcano_target_post_setup(launcher)
-

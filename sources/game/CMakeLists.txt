@@ -45,5 +45,13 @@ target_sources(game
         src/Volcano/Game/World.cpp
     )
 
-volcano_target_post_setup(game)
+# BulletPhysics
+include(FindBullet)
+if(BULLET_FOUND)
+    target_include_directories(game PUBLIC ${BULLET_INCLUDE_DIRS})
+    target_link_libraries(game PUBLIC ${BULLET_LIBRARIES})
+else()
+    message(FATAL_ERROR "Bullet physics not found.")
+endif()
 
+volcano_target_post_setup(game)

@@ -49,6 +49,8 @@ target_sources(editor
         src/Volcano/Editor/PropertyView.cpp
         src/Volcano/Editor/ResourceView.cpp
         src/Volcano/Editor/WorldView.cpp
+
+        src/Volcano/Editor/Resources/Main.qrc
     )
 
 configure_file(
@@ -56,5 +58,6 @@ configure_file(
     include/Volcano/Editor/Config.hpp
     )
 
-volcano_target_post_setup(editor)
+source_group(\\qt_mocs FILES REGULAR_EXPRESSION "mocs_.*\.cpp$")
 
+volcano_target_post_setup(editor)

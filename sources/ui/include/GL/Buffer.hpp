@@ -71,7 +71,7 @@ GL_INLINE void Buffer::bind(void)
 {
     GL_ASSERT(isValid());
 
-    vglBindBuffer(m_target, m_id);
+    glBindBuffer(m_target, m_id);
 }
 
 GL_INLINE bool Buffer::isBound(void) const
@@ -79,7 +79,7 @@ GL_INLINE bool Buffer::isBound(void) const
     GL_ASSERT(isValid());
 
     GLint id = -1;
-    vglGetIntegerv(targetToBinding(m_target), &id);
+    glGetIntegerv(targetToBinding(m_target), &id);
 
     return id == GLint(m_id);
 }
@@ -89,7 +89,7 @@ GL_INLINE void Buffer::setData(GLsizeiptr length, const void *data)
     GL_ASSERT(isBound());
     GL_ASSERT(0 < length && length <= m_size);
 
-    vglBufferData(m_target, length, data, m_usage);
+    glBufferData(m_target, length, data, m_usage);
 }
 
 GL_INLINE void Buffer::setSubData(GLintptr offset, GLsizeiptr length, const void *data)
@@ -99,14 +99,14 @@ GL_INLINE void Buffer::setSubData(GLintptr offset, GLsizeiptr length, const void
     GL_ASSERT(length > 0);
     GL_ASSERT((offset + length) < m_size);
 
-    vglBufferSubData(m_target, offset, length, data);
+    glBufferSubData(m_target, offset, length, data);
 }
 
 GL_INLINE void *Buffer::map(GLenum access)
 {
     GL_ASSERT(isBound());
 
-    return vglMapBuffer(m_target, access);
+    return glMapBuffer(m_target, access);
 }
 
 GL_INLINE void *Buffer::mapRange(GLintptr offset, GLsizeiptr length, GLbitfield access)
@@ -116,14 +116,14 @@ GL_INLINE void *Buffer::mapRange(GLintptr offset, GLsizeiptr length, GLbitfield 
     GL_ASSERT(length > 0);
     GL_ASSERT((offset + length) < m_size);
 
-    return vglMapBufferRange(m_target, offset, length, access);
+    return glMapBufferRange(m_target, offset, length, access);
 }
 
 GL_INLINE void Buffer::unmap(void)
 {
     GL_ASSERT(isBound());
 
-    vglUnmapBuffer(m_id);
+    glUnmapBuffer(m_id);
 }
 
 GL_END

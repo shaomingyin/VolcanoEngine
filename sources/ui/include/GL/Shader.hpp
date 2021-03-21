@@ -48,7 +48,7 @@ GL_INLINE void Shader::setSource(const char *p)
     GL_ASSERT(isValid());
     GL_ASSERT(p != nullptr);
 
-    vglShaderSource(m_id, 1, &p, nullptr);
+    glShaderSource(m_id, 1, &p, nullptr);
 }
 
 GL_INLINE void Shader::setSource(const std::string &v)

@@ -1,8 +1,11 @@
 //
 //
+#include <QScopeGuard>
 #include <QScopedPointer>
 #include <QCommandLineParser>
 #include <QApplication>
+
+#include <physfs.h>
 
 #include <Volcano/Editor/Common.hpp>
 #include <Volcano/Editor/MainWindow.hpp>
@@ -17,11 +20,14 @@ static int Main(int argc, char *argv[])
     QApplication::setApplicationDisplayName("Volcano Editor");
     QApplication::setApplicationName("VolcanoEditor");
 
+    if (!PHYSFS_init(argv[0]))
+        return false;
+
+    QScopeGuard physfsGuard([] { PHYSFS_deinit();  });
+
     QScopedPointer<MainWindow> mainWindow(new MainWindow);
     if (!mainWindow || !mainWindow->init())
-    {
         return EXIT_FAILURE;
-    }
 
     mainWindow->show();
 

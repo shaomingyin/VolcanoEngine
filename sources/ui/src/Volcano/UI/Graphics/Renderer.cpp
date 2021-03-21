@@ -16,7 +16,7 @@ Renderer::~Renderer(void)
 
 bool Renderer::init(int width, int height)
 {
-    vglClearColor(0.3f, 0.3f, 0.3f, 0.0f);
+    glClearColor(0.3f, 0.3f, 0.3f, 0.0f);
 
     m_width = width;
     m_height = height;
@@ -34,8 +34,8 @@ void Renderer::beginFrame(void)
 
 void Renderer::endFrame(void)
 {
-    vglViewport(0, 0, m_width, m_height);
-    vglClear(GL_COLOR_BUFFER_BIT);
+    glViewport(0, 0, m_width, m_height);
+    glClear(GL_COLOR_BUFFER_BIT);
 
     // m_program.use();
     // setup view matrix uniform.

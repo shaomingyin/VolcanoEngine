@@ -19,7 +19,7 @@ bool Program::create(void)
 {
     GL_ASSERT(!isValid());
 
-    m_id = vglCreateProgram();
+    m_id = glCreateProgram();
     if (m_id < 1)
         return false;
 
@@ -32,7 +32,7 @@ void Program::destroy(void)
 {
     GL_ASSERT(isValid());
 
-    vglDeleteProgram(m_id);
+    glDeleteProgram(m_id);
     m_id = 0;
     m_linked = false;
     m_infoLog.clear();
@@ -60,14 +60,14 @@ bool Program::link(void)
     GL_ASSERT(isValid());
     GL_ASSERT(!isLinked());
 
-    vglLinkProgram(m_id);
+    glLinkProgram(m_id);
 
     GLint result;
-    vglGetProgramiv(m_id, GL_LINK_STATUS, &result);
+    glGetProgramiv(m_id, GL_LINK_STATUS, &result);
     if (result != GL_TRUE) {
         char infoLog[256] = { 0 };
         GLsizei length;
-        vglGetProgramInfoLog(m_id, sizeof(infoLog), &length, infoLog);
+        glGetProgramInfoLog(m_id, sizeof(infoLog), &length, infoLog);
         m_infoLog = infoLog;
         return false;
     }

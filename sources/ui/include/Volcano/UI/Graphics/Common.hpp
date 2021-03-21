@@ -3,7 +3,7 @@
 #ifndef VOLCANO_UI_GRAPHICS_COMMON_HPP
 #define VOLCANO_UI_GRAPHICS_COMMON_HPP
 
-#include <GL/vgl.h>
+#include <GL/gl3w.h>
 
 #include <Volcano/UI/Common.hpp>
 

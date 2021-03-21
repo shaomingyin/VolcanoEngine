@@ -20,10 +20,10 @@ target_include_directories(ui
 
 target_sources(ui
     PRIVATE
-        include/GL/vgl.h
+        include/GL/gl3w.h
         include/GL/glcorearb.h
         include/KHR/khrplatform.h
-        src/GL/vgl.c
+        src/GL/gl3w.c
 
         include/GL/Buffer.hpp
         include/GL/Common.hpp
@@ -52,6 +52,7 @@ target_sources(ui
         include/oui.h
 
         include/Volcano/UI/Common.hpp
+
         include/Volcano/UI/Graphics/Buffer.hpp
         include/Volcano/UI/Graphics/Common.hpp
         include/Volcano/UI/Config.hpp.in
@@ -74,7 +75,11 @@ target_sources(ui
         src/Volcano/UI/Graphics/Mesh.cpp
         src/Volcano/UI/Graphics/Renderer.cpp
         src/Volcano/UI/Graphics/SpotLight.cpp
+
+        include/Volcano/UI/Input/Common.hpp
         src/Volcano/UI/Input/Common.cpp
+
+        include/Volcano/UI/Sound/Common.hpp
         src/Volcano/UI/Sound/Common.cpp
     )
 

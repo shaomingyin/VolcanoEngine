@@ -13,20 +13,13 @@ Context::~Context(void)
 {
 }
 
-bool Context::init(std::string_view rootDir)
+bool Context::init(void)
 {
-    m_rootDir = rootDir;
-
     return true;
 }
 
 void Context::update(float elapsed)
 {
-}
-
-const std::string &Context::rootDir(void) const
-{
-    return m_rootDir;
 }
 
 World &Context::world(void)

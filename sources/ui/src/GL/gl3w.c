@@ -26,7 +26,7 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include <GL/vgl.h>
+#include <GL/gl3w.h>
 #include <stdlib.h>
 
 #define ARRAY_SIZE(x)  (sizeof(x) / sizeof((x)[0]))
@@ -35,29 +35,30 @@ static struct {
     int major, minor;
 } version;
 
-static int vglParseVersion(void)
+static int gl3wParseVersion(void)
 {
-    if (!vglGetIntegerv)
-        return VGL_ERROR_INIT;
+    if (!glGetIntegerv)
+        return GL3W_ERROR_INIT;
 
-    vglGetIntegerv(GL_MAJOR_VERSION, &version.major);
-    vglGetIntegerv(GL_MINOR_VERSION, &version.minor);
+    glGetIntegerv(GL_MAJOR_VERSION, &version.major);
+    glGetIntegerv(GL_MINOR_VERSION, &version.minor);
 
     if (version.major < 3)
-        return VGL_ERROR_OPENGL_VERSION;
-    return VGL_OK;
+        return GL3W_ERROR_OPENGL_VERSION;
+
+    return GL3W_OK;
 }
 
-static void vglLoadProcs(VGLGetProcAddressProc proc);
+static void gl3wLoadProcs(GL3WGetProcAddressProc proc);
 
-int vglInit(union VGLProcs *procs, VGLGetProcAddressProc proc)
+int gl3wInit(union GL3WProcs *procs, GL3WGetProcAddressProc proc)
 {
-    vglProcs = procs;
-    vglLoadProcs(proc);
-    return vglParseVersion();
+    gl3wProcs = procs;
+    gl3wLoadProcs(proc);
+    return gl3wParseVersion();
 }
 
-int vglIsSupported(int major, int minor)
+int gl3wIsSupported(int major, int minor)
 {
     if (major < 3)
         return 0;
@@ -66,7 +67,7 @@ int vglIsSupported(int major, int minor)
     return version.major >= major;
 }
 
-static const char *vglProcNames[] = {
+static const char *gl3wProcNames[] = {
     "glActiveShaderProgram",
     "glActiveTexture",
     "glAttachShader",
@@ -728,12 +729,12 @@ static const char *vglProcNames[] = {
     "glWaitSync",
 };
 
-union VGLProcs *vglProcs;
+union GL3WProcs *gl3wProcs;
 
-static void vglLoadProcs(VGLGetProcAddressProc proc)
+static void gl3wLoadProcs(GL3WGetProcAddressProc proc)
 {
     size_t i;
 
-    for (i = 0; i < ARRAY_SIZE(vglProcNames); i++)
-        vglProcs->ptr[i] = proc(vglProcNames[i]);
+    for (i = 0; i < ARRAY_SIZE(gl3wProcNames); i++)
+        gl3wProcs->ptr[i] = proc(gl3wProcNames[i]);
 }

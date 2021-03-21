@@ -21,7 +21,7 @@ bool Shader::create(void)
     GL_ASSERT(!isValid());
     GL_ASSERT(m_type != GL_INVALID_ENUM);
 
-    m_id = vglCreateShader(m_type);
+    m_id = glCreateShader(m_type);
     if (m_id < 1)
         return false;
 
@@ -35,7 +35,7 @@ void Shader::destroy(void)
 {
     GL_ASSERT(isValid());
 
-    vglDeleteShader(m_id);
+    glDeleteShader(m_id);
     m_id = 0;
     m_compiled = false;
     m_infoLog.clear();
@@ -46,14 +46,14 @@ bool Shader::compile(void)
     GL_ASSERT(isValid());
     GL_ASSERT(!isCompiled());
 
-    vglCompileShader(m_id);
+    glCompileShader(m_id);
 
     GLint result;
-    vglGetShaderiv(m_id, GL_COMPILE_STATUS, &result);
+    glGetShaderiv(m_id, GL_COMPILE_STATUS, &result);
     if (result != GL_TRUE) {
         char infoLog[256] = { 0 };
         GLsizei length;
-        vglGetShaderInfoLog(m_id, sizeof(infoLog), &length, infoLog);
+        glGetShaderInfoLog(m_id, sizeof(infoLog), &length, infoLog);
         m_infoLog = infoLog;
         return false;
     }
