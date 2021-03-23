@@ -7,8 +7,6 @@
 #include <string>
 #include <memory>
 
-#include <bullet/btBulletDynamicsCommon.h>
-
 #include <Volcano/Game/Common.hpp>
 #include <Volcano/Game/Scene.hpp>
 #include <Volcano/Game/Camera.hpp>
@@ -27,7 +25,7 @@ public:
     virtual ~World(void);
 
 public:
-    void update(float elapsed);
+    virtual void update(float elapsed);
     void addCamera(CameraPtr camera);
     void removeCamera(CameraPtr camera);
     const CameraPtrList cameras(void) const;
@@ -44,18 +42,7 @@ public:
 private:
     CameraPtrList m_cameras;
     ScenePtrList m_scenes;
-    btDynamicsWorld *m_btWorld;
 };
-
-VOLCANO_INLINE const CameraPtrList World::cameras(void) const
-{
-    return m_cameras;
-}
-
-VOLCANO_INLINE const ScenePtrList World::scenes(void) const
-{
-    return m_scenes;
-}
 
 VOLCANO_GAME_END
 

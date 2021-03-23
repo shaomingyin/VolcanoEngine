@@ -23,6 +23,7 @@ target_sources(game
         include/Volcano/Game/Component.hpp
         include/Volcano/Game/Context.hpp
         include/Volcano/Game/DirectionalLight.hpp
+        include/Volcano/Game/DynamicWorld.hpp
         include/Volcano/Game/Entity.hpp
         include/Volcano/Game/Light.hpp
         include/Volcano/Game/Model.hpp
@@ -36,6 +37,7 @@ target_sources(game
         src/Volcano/Game/Component.cpp
         src/Volcano/Game/Context.cpp
         src/Volcano/Game/DirectionalLight.cpp
+        src/Volcano/Game/DynamicWorld.cpp
         src/Volcano/Game/Entity.cpp
         src/Volcano/Game/Light.cpp
         src/Volcano/Game/Model.cpp

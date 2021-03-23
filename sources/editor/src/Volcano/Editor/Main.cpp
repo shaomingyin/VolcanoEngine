@@ -1,12 +1,12 @@
 //
 //
-#include <QScopeGuard>
 #include <QScopedPointer>
 #include <QCommandLineParser>
 #include <QApplication>
 
 #include <physfs.h>
 
+#include <Volcano/ScopeGuard.hpp>
 #include <Volcano/Editor/Common.hpp>
 #include <Volcano/Editor/MainWindow.hpp>
 
@@ -23,7 +23,7 @@ static int Main(int argc, char *argv[])
     if (!PHYSFS_init(argv[0]))
         return false;
 
-    QScopeGuard physfsGuard([] { PHYSFS_deinit();  });
+    ScopeGuard physfsGuard([] { PHYSFS_deinit();  });
 
     QScopedPointer<MainWindow> mainWindow(new MainWindow);
     if (!mainWindow || !mainWindow->init())

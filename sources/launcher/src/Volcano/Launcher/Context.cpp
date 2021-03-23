@@ -59,7 +59,7 @@ bool Context::init(void)
     if (m_gl == nullptr)
         return false;
 
-    ScopeGuard glContextGuard([=] { SDL_GL_DeleteContext(m_gl); m_gl = nullptr; });
+    ScopeGuard glGuard([=] { SDL_GL_DeleteContext(m_gl); m_gl = nullptr; });
 
     SDL_GL_MakeCurrent(m_window, m_gl);
 
@@ -71,7 +71,7 @@ bool Context::init(void)
     if (!m_graphicsRenderer.init(800, 600))
         return false;
 
-    glContextGuard.dismiss();
+    glGuard.dismiss();
     windowGuard.dismiss();
 
 	return true;

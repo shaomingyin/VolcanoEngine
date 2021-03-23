@@ -4,23 +4,26 @@
 
 VOLCANO_GAME_BEGIN
 
-World::World(void):
-	m_btWorld(nullptr)
+World::World(void)
 {
 }
 
 World::~World(void)
 {
-	if (m_btWorld)
-		delete m_btWorld;
 }
 
 void World::update(float elapsed)
 {
-	if (m_btWorld != nullptr) {
-		m_btWorld->stepSimulation(elapsed);
-		// TODO
-	}
+}
+
+const CameraPtrList World::cameras(void) const
+{
+    return m_cameras;
+}
+
+const ScenePtrList World::scenes(void) const
+{
+    return m_scenes;
 }
 
 void World::addCamera(CameraPtr camera)

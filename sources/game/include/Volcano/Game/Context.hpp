@@ -1,7 +1,7 @@
 //
 //
-#ifndef VOLCANO_GAME_CONTEXTIMPL_HPP
-#define VOLCANO_GAME_CONTEXTIMPL_HPP
+#ifndef VOLCANO_GAME_CONTEXT_HPP
+#define VOLCANO_GAME_CONTEXT_HPP
 
 #include <Volcano/Game/Common.hpp>
 #include <Volcano/Game/World.hpp>
@@ -14,14 +14,16 @@ public:
     virtual ~Context(void);
 
 public:
-    bool init(void);
-    void update(float elapsed);
-    World &world(void);
+    virtual bool init(void);
+    virtual void update(float elapsed);
+
+protected:
+	virtual World *createWorld(void) = 0;
 
 private:
-    World m_world;
+    World *m_world;
 };
 
 VOLCANO_GAME_END
 
-#endif // VOLCANO_GAME_CONTEXTIMPL_HPP
+#endif // VOLCANO_GAME_CONTEXT_HPP

@@ -35,16 +35,25 @@ target_sources(base
         ${SIGSLOT_SOURCES}
         ${RTTR_SOURCES}
         ${EIGEN_SOURCES}
-        ${MINIZ_SOURCES}
+
         include/argh.h
+
+        include/pugiconfig.hpp
+        include/pugixml.hpp
+        src/pugixml/pugixml.cpp
+
         include/Volcano/Buffer.hpp
         include/Volcano/Common.hpp
         include/Volcano/Config.hpp.in
+        include/Volcano/Dir.hpp
+        include/Volcano/File.hpp
         include/Volcano/IO.hpp
         include/Volcano/ScopeGuard.hpp
         include/Volcano/SpinLock.hpp
         src/Volcano/Buffer.cpp
         src/Volcano/Common.cpp
+        src/Volcano/Dir.cpp
+        src/Volcano/File.cpp
         src/Volcano/IO.cpp
     )
 

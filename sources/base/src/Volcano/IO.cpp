@@ -7,23 +7,12 @@
 VOLCANO_BEGIN
 
 IO::IO(void):
-    m_mode(0),
-    m_map(nullptr)
+    m_mode(0)
 {
 }
 
 IO::~IO(void)
 {
-}
-
-int IO::flags(void)
-{
-    return deviceFlags();
-}
-
-int64_t IO::size(void)
-{
-    return deviceSize();
 }
 
 bool IO::open(int mode)
@@ -37,11 +26,12 @@ bool IO::open(int mode)
             return false;
     }
 
-    if (!openDevice(mode))
-        return false;
+    if (mode & ModeRead) {
+        if (!(flags() & FlagReadable))
+            return false;
+    }
 
     m_mode = mode;
-    m_map = nullptr;
 
     return true;
 }
@@ -50,10 +40,7 @@ void IO::close(void)
 {
     VOLCANO_ASSERT(isOpen());
 
-    closeDevice();
-
     m_mode = 0;
-    m_map = nullptr;
 }
 
 bool IO::isOpen(void) const
@@ -68,20 +55,12 @@ int IO::mode(void) const
     return m_mode;
 }
 
-bool IO::isEof(void)
-{
-    VOLCANO_ASSERT(isOpen());
-    VOLCANO_ASSERT(deviceFlags() & FlagSeekable);
-
-    return (devicePos() == deviceSize());
-}
-
 int64_t IO::tell(void)
 {
     VOLCANO_ASSERT(isOpen());
-    VOLCANO_ASSERT(deviceFlags() & FlagSeekable);
+    VOLCANO_ASSERT(flags() & FlagSeekable);
 
-    return devicePos();
+    return pos();
 }
 
 int64_t IO::seek(int64_t offset, SeekMode seekMode)
@@ -89,8 +68,8 @@ int64_t IO::seek(int64_t offset, SeekMode seekMode)
     VOLCANO_ASSERT(isOpen());
     VOLCANO_ASSERT(flags() & FlagSeekable);
 
-    int64_t size = deviceSize();
-    int64_t curPos = devicePos();
+    int64_t siz = size();
+    int64_t curPos = pos();
     int64_t newPos;
 
     switch (seekMode) {
@@ -101,16 +80,16 @@ int64_t IO::seek(int64_t offset, SeekMode seekMode)
         newPos = curPos + offset;
         break;
     case SeekMode::End:
-        newPos = size + offset;
+        newPos = siz + offset;
         break;
     default:
         return -1;
     }
 
-    if (!setDevicePos(newPos))
+    if (!setPos(newPos))
         return -1;
 
-    return devicePos();
+    return newPos;
 }
 
 int64_t IO::read(void *buf, int64_t len)
@@ -119,36 +98,17 @@ int64_t IO::read(void *buf, int64_t len)
     VOLCANO_ASSERT(m_mode & ModeRead);
     VOLCANO_ASSERT(len > 0);
 
-    return readDevice(buf, len);
+    return readData(buf, len);
 }
 
 int64_t IO::write(const void *buf, int64_t len)
 {
     VOLCANO_ASSERT(flags() & FlagWritable);
     VOLCANO_ASSERT(isOpen());
+    VOLCANO_ASSERT(buf != nullptr);
     VOLCANO_ASSERT(len > 0);
 
-    return writeDevice(buf, len);
-}
-
-void *IO::map(void)
-{
-    VOLCANO_ASSERT(isOpen());
-    VOLCANO_ASSERT(m_map == nullptr);
-
-    m_map = mapDevice();
-
-    return m_map;
-}
-
-void IO::unmap(void)
-{
-    VOLCANO_ASSERT(isOpen());
-
-    if (m_map) {
-        unmapDevice();
-        m_map = nullptr;
-    }
+    return writeData(buf, len);
 }
 
 VOLCANO_END

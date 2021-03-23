@@ -22,20 +22,19 @@ public:
     ~HeapBuffer(void) override;
 
 public:
+    int flags(void) override;
+    int64_t size(void) override;
+    bool open(int mode) override;
+    void close(void) override;
+    bool isEof(void) override;
+    void bind(void) override;
     int64_t offset(void) const;
 
 protected:
-    int deviceFlags(void) override;
-    int64_t deviceSize(void) override;
-    bool openDevice(int mode) override;
-    void closeDevice(void) override;
-    int64_t devicePos(void) override;
-    bool setDevicePos(int64_t pos) override;
-    int64_t readDevice(void *buf, int64_t len) override;
-    int64_t writeDevice(const void *buf, int64_t len) override;
-    void *mapDevice(void) override;
-    void unmapDevice(void) override;
-    void bind(void) override;
+    int64_t pos(void) override;
+    bool setPos(int64_t pos) override;
+    int64_t readData(void *buf, int64_t len) override;
+    int64_t writeData(const void *buf, int64_t len) override;
 
 private:
     int64_t m_offset;
@@ -58,21 +57,24 @@ HeapBuffer::~HeapBuffer(void)
         close();
 }
 
-int HeapBuffer::deviceFlags(void)
+int HeapBuffer::flags(void)
 {
-    return (FlagReadable | FlagWritable | FlagSeekable | FlagMappable);
+    return (FlagReadable | FlagWritable | FlagSeekable);
 }
 
-int64_t HeapBuffer::deviceSize(void)
+int64_t HeapBuffer::size(void)
 {
     return m_size;
 }
 
-bool HeapBuffer::openDevice(int mode)
+bool HeapBuffer::open(int mode)
 {
     VOLCANO_ASSERT(!isOpen());
 
-    ScopeGuard closeGuard([=] { closeDevice(); });
+    if (!Buffer::open(mode))
+        return false;
+
+    ScopeGuard openGuard([=] { Buffer::close(); });
 
     m_map = mapFunction();
     if (m_map == nullptr)
@@ -80,33 +82,26 @@ bool HeapBuffer::openDevice(int mode)
 
     m_pos = 0;
 
-    closeGuard.dismiss();
+    openGuard.dismiss();
 
     return true;
 }
 
-void HeapBuffer::closeDevice(void)
+void HeapBuffer::close(void)
 {
     VOLCANO_ASSERT(m_map != nullptr);
 
     unmapFunction();
     m_map = nullptr;
+
+    Buffer::close();
 }
 
-int64_t HeapBuffer::devicePos(void)
+bool HeapBuffer::isEof(void)
 {
-    VOLCANO_ASSERT(isOpen());
+    VOLCANO_ASSERT(m_map != nullptr);
 
-    return m_pos;
-}
-
-bool HeapBuffer::setDevicePos(int64_t pos)
-{
-    VOLCANO_ASSERT(isOpen());
-
-    m_pos = pos;
-
-    return true;
+    return (m_pos == m_size);
 }
 
 void HeapBuffer::bind(void)
@@ -119,7 +114,26 @@ int64_t HeapBuffer::offset(void) const
     return m_offset;
 }
 
-int64_t HeapBuffer::readDevice(void *data, int64_t maxSize)
+int64_t HeapBuffer::pos(void)
+{
+    VOLCANO_ASSERT(isOpen());
+
+    return m_pos;
+}
+
+bool HeapBuffer::setPos(int64_t pos)
+{
+    VOLCANO_ASSERT(isOpen());
+
+    if (pos < 0 || m_size < pos)
+        return false;
+
+    m_pos = pos;
+
+    return true;
+}
+
+int64_t HeapBuffer::readData(void *data, int64_t maxSize)
 {
     VOLCANO_ASSERT(isOpen());
 
@@ -132,7 +146,7 @@ int64_t HeapBuffer::readDevice(void *data, int64_t maxSize)
     return len;
 }
 
-int64_t HeapBuffer::writeDevice(const void *data, int64_t maxSize)
+int64_t HeapBuffer::writeData(const void *data, int64_t maxSize)
 {
     VOLCANO_ASSERT(isOpen());
 
@@ -143,15 +157,6 @@ int64_t HeapBuffer::writeDevice(const void *data, int64_t maxSize)
     }
 
     return len;
-}
-
-void *HeapBuffer::mapDevice(void)
-{
-    return nullptr;
-}
-
-void HeapBuffer::unmapDevice(void)
-{
 }
 
 // heap
