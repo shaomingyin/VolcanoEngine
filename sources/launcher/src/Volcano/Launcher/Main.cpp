@@ -10,7 +10,7 @@
 
 #include <Volcano/ScopeGuard.hpp>
 #include <Volcano/Launcher/Common.hpp>
-#include <Volcano/Launcher/Context.hpp>
+#include <Volcano/Launcher/Application.hpp>
 
 VOLCANO_LAUNCHER_BEGIN
 
@@ -27,11 +27,11 @@ static int main(int argc, char *argv[])
     ret = SDL_Init(SDL_INIT_EVERYTHING);
     if (ret != 0)
         return EXIT_FAILURE;
-    
+
     ScopeGuard sdlGuard([] { SDL_Quit(); });
 
-    auto context = std::make_unique<Context>();
-    if (!context || !context->init())
+    auto app = std::make_unique<Application>();
+    if (!app || !app->init())
         return EXIT_FAILURE;
 
     SDL_Event event;
@@ -41,15 +41,15 @@ static int main(int argc, char *argv[])
     for (;;) {
         while (SDL_PollEvent(&event)) {
             if (event.type != SDL_QUIT)
-                context->handleEvent(event);
+                app->handleEvent(event);
             else
-                return !context->canQuit();
+                return !app->canQuit();
         }
         curr = SDL_GetTicks();
         if (curr > last) {
             pass = curr - last;
             if (pass >= 16) {
-                context->frame(float(pass) / 1000.0f);
+                app->frame(float(pass) / 1000.0f);
                 last = curr;
             } else
                 SDL_Delay(16 - pass);

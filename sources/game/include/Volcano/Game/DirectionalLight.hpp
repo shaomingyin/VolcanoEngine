@@ -8,28 +8,9 @@
 
 VOLCANO_GAME_BEGIN
 
-class DirectionalLight: public Light {
-public:
-    DirectionalLight(void);
-    ~DirectionalLight(void) override;
-
-public:
-    const Eigen::Vector3f &direction(void) const;
-    void setDirection(const Eigen::Vector3f &r);
-
-private:
-    Eigen::Vector3f m_direction;
+struct DirectionalLight: public Light {
+    sigslot::signal<const Eigen::Vector3f &> setDirection;
 };
-
-VOLCANO_INLINE const Eigen::Vector3f &DirectionalLight::direction(void) const
-{
-    return m_direction;
-}
-
-VOLCANO_INLINE void DirectionalLight::setDirection(const Eigen::Vector3f &r)
-{
-    m_direction = r;
-}
 
 VOLCANO_GAME_END
 

@@ -5,8 +5,8 @@
 
 #include <memory>
 
-#include <Volcano/UI/Graphics/Memory.hpp>
-#include <Volcano/UI/Graphics/Renderer.hpp>
+#include <Volcano/Drivers/Graphics/Memory.hpp>
+#include <Volcano/Drivers/Graphics/Renderer.hpp>
 #include <Volcano/Editor/Common.hpp>
 
 #include <QOpenGLWidget>
@@ -26,8 +26,8 @@ protected:
     void resizeGL(int w, int h) override;
 
 private:
-    std::shared_ptr<UI::Graphics::Memory> m_graphicsMemory;
-    std::shared_ptr<UI::Graphics::Renderer> m_graphicsRenderer;
+    std::shared_ptr<Drivers::Graphics::Memory> m_graphicsMemory;
+    std::shared_ptr<Drivers::Graphics::Renderer> m_graphicsRenderer;
 };
 
 VOLCANO_EDITOR_END

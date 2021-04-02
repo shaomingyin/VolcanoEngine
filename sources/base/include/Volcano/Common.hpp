@@ -9,23 +9,29 @@
 #include <cassert>
 #include <cstdint>
 
+#include <rttr/type>
+#include <rttr/registration>
+
 #include <sigslot/signal.hpp>
 
 #include <physfs.h>
-
-#include <Eigen/Core>
-#include <Eigen/Geometry>
 
 #include <Volcano/Config.hpp>
 
 #ifdef VOLCANO_DEBUG
 #   define VOLCANO_ASSERT(expr) assert(expr)
-#   ifdef EIGEN_NO_DEBUG 
-#       undef EIGEN_NO_DEBUG 
+#   ifdef EIGEN_NO_DEBUG
+#       undef EIGEN_NO_DEBUG
 #   endif
 #else
 #   define VOLCANO_ASSERT(expr) do { } while (0)
+#   ifndef EIGEN_NO_DEBUG
+#       define EIGEN_NO_DEBUG
+#   endif
 #endif
+
+#include <Eigen/Core>
+#include <Eigen/Geometry>
 
 #if defined(_MSC_VER)
 #    define VOLCANO_FORCE_INLINE __forceinline

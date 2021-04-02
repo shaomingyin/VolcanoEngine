@@ -8,6 +8,8 @@
 VOLCANO_GAME_BEGIN
 
 class Component {
+    RTTR_ENABLE()
+
 public:
     Component(void);
     virtual ~Component(void);

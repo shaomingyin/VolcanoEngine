@@ -1,23 +1,21 @@
 
-add_library(game STATIC)
+# BulletPhysics
+include(FindBullet)
+if(NOT BULLET_FOUND)
+    message(FATAL_ERROR "Bullet physics not found.")
+endif()
 
-add_dependencies(game
-    base
-    )
-
-target_link_libraries(game
-    PUBLIC
+volcano_static_library(game
+    DEPENDENCIES
         base
-    )
-
-target_include_directories(game
-    PUBLIC
+    PUBLIC_LINK_LIBRARIES
+        base
+        ${BULLET_LIBRARIES}
+    PUBLIC_INCLUDE_DIRECTORIES
         ${CMAKE_CURRENT_SOURCE_DIR}/include
         ${CMAKE_CURRENT_BINARY_DIR}/include
-    )
-
-target_sources(game
-    PRIVATE
+        ${BULLET_INCLUDE_DIRS}
+    PRIVATE_SOURCES
         include/Volcano/Game/Camera.hpp
         include/Volcano/Game/Common.hpp
         include/Volcano/Game/Component.hpp
@@ -27,9 +25,12 @@ target_sources(game
         include/Volcano/Game/Entity.hpp
         include/Volcano/Game/Light.hpp
         include/Volcano/Game/Model.hpp
+        include/Volcano/Game/Object.hpp
+        include/Volcano/Game/OrthoCamera.hpp
         include/Volcano/Game/PerpectiveCamera.hpp
         include/Volcano/Game/PointLight.hpp
         include/Volcano/Game/Scene.hpp
+        include/Volcano/Game/Screen.hpp
         include/Volcano/Game/SpotLight.hpp
         include/Volcano/Game/World.hpp
         src/Volcano/Game/Camera.cpp
@@ -41,19 +42,17 @@ target_sources(game
         src/Volcano/Game/Entity.cpp
         src/Volcano/Game/Light.cpp
         src/Volcano/Game/Model.cpp
+        src/Volcano/Game/Object.cpp
+        src/Volcano/Game/OrthoCamera.cpp
+        src/Volcano/Game/PerpectiveCamera.cpp
         src/Volcano/Game/PointLight.cpp
         src/Volcano/Game/Scene.cpp
+        src/Volcano/Game/Screen.cpp
         src/Volcano/Game/SpotLight.cpp
         src/Volcano/Game/World.cpp
+
+        include/Volcano/Game/Templates/Common.hpp
+        include/Volcano/Game/Templates/FPS/Common.hpp
+        src/Volcano/Game/Templates/Common.cpp
+        src/Volcano/Game/Templates/FPS/Common.cpp
     )
-
-# BulletPhysics
-include(FindBullet)
-if(BULLET_FOUND)
-    target_include_directories(game PUBLIC ${BULLET_INCLUDE_DIRS})
-    target_link_libraries(game PUBLIC ${BULLET_LIBRARIES})
-else()
-    message(FATAL_ERROR "Bullet physics not found.")
-endif()
-
-volcano_target_post_setup(game)

@@ -21,7 +21,7 @@ WorldView::WorldView(QWidget *parent):
     format.setAlphaBufferSize(16);
     format.setDepthBufferSize(24);
     format.setSwapBehavior(QSurfaceFormat::DoubleBuffer);
-    
+
     setFormat(format);
 }
 
@@ -34,11 +34,11 @@ void WorldView::initializeGL(void)
     if (m_graphicsRenderer != nullptr)
         return;
 
-    auto graphicsRenderer = std::make_shared<UI::Graphics::Renderer>();
+    auto graphicsRenderer = std::make_shared<Drivers::Graphics::Renderer>();
     if (!graphicsRenderer || !m_graphicsRenderer->init(width(), height()))
         return;
 
-    auto graphicsMemory = std::make_shared<UI::Graphics::Memory>();
+    auto graphicsMemory = std::make_shared<Drivers::Graphics::Memory>();
     if (!graphicsMemory)
         return;
 
