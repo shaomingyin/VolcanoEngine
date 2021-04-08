@@ -8,7 +8,8 @@
 
 VOLCANO_GAME_BEGIN
 
-struct Light: public Entity {
+class Light: public Entity {
+public:
     sigslot::signal<float> setStrength;
     sigslot::signal<const Eigen::Vector3f &> setColor;
 };

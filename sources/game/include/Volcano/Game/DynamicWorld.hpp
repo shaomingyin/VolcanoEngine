@@ -22,6 +22,9 @@ public:
 public:
     void update(float elapsed) override;
 
+public:
+    sigslot::signal<const Eigen::Vector3f &> setGravity;
+
 private:
     btDynamicsWorld *m_btWorld;
 };

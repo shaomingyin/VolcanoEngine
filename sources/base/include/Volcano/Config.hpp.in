@@ -9,4 +9,6 @@
 
 #cmakedefine VOLCANO_DEBUG
 
+#cmakedefine VOLCANO_BIG_ENDIAN
+
 #endif // VOLCANO_CONFIG_HPP

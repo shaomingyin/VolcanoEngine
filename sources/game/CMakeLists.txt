@@ -19,7 +19,7 @@ volcano_static_library(game
         include/Volcano/Game/Camera.hpp
         include/Volcano/Game/Common.hpp
         include/Volcano/Game/Component.hpp
-        include/Volcano/Game/Context.hpp
+        include/Volcano/Game/ContextBase.hpp
         include/Volcano/Game/DirectionalLight.hpp
         include/Volcano/Game/DynamicWorld.hpp
         include/Volcano/Game/Entity.hpp
@@ -36,7 +36,7 @@ volcano_static_library(game
         src/Volcano/Game/Camera.cpp
         src/Volcano/Game/Common.cpp
         src/Volcano/Game/Component.cpp
-        src/Volcano/Game/Context.cpp
+        src/Volcano/Game/ContextBase.cpp
         src/Volcano/Game/DirectionalLight.cpp
         src/Volcano/Game/DynamicWorld.cpp
         src/Volcano/Game/Entity.cpp
@@ -52,7 +52,10 @@ volcano_static_library(game
         src/Volcano/Game/World.cpp
 
         include/Volcano/Game/Templates/Common.hpp
-        include/Volcano/Game/Templates/FPS/Common.hpp
         src/Volcano/Game/Templates/Common.cpp
+
+        include/Volcano/Game/Templates/FPS/Common.hpp
+        include/Volcano/Game/Templates/FPS/Context.hpp
         src/Volcano/Game/Templates/FPS/Common.cpp
+        src/Volcano/Game/Templates/FPS/Context.cpp
     )

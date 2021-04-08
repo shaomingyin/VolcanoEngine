@@ -9,7 +9,8 @@
 
 VOLCANO_GAME_BEGIN
 
-struct Object {
+class Object {
+public:
     sigslot::signal<std::string_view> setName;
     sigslot::signal<> enable;
     sigslot::signal<> disable;

@@ -5,7 +5,7 @@
 
 #include <memory>
 
-#include <Volcano/Game/Context.hpp>
+#include <Volcano/Game/ContextBase.hpp>
 #include <Volcano/Framework/Common.hpp>
 
 VOLCANO_FRAMEWORK_BEGIN
@@ -20,7 +20,7 @@ public:
     void frame(float elapsed);
 
 private:
-    std::unique_ptr<Game::Context> m_game;
+    std::unique_ptr<Game::ContextBase> m_game;
 };
 
 VOLCANO_FRAMEWORK_END

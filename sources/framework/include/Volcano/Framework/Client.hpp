@@ -5,7 +5,7 @@
 
 #include <memory>
 
-#include <Volcano/Game/Context.hpp>
+#include <Volcano/Game/ContextBase.hpp>
 #include <Volcano/Drivers/Graphics/Memory.hpp>
 #include <Volcano/Drivers/Graphics/Renderer.hpp>
 #include <Volcano/Drivers/Input/Context.hpp>
@@ -13,7 +13,7 @@
 
 VOLCANO_FRAMEWORK_BEGIN
 
-class Client: public Game::Context {
+class Client: public Game::ContextBase {
 public:
     Client(void);
     ~Client(void) override;

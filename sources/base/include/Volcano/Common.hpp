@@ -74,8 +74,15 @@
 
 VOLCANO_BEGIN
 
+enum class ByteOrder {
+    BigEndian = 0,
+    LittleEndian
+};
+
 using ByteArray = std::vector<uint8_t>;
 using StringList = std::list<std::string>;
+
+void memcpyReverse(void *dst, const void *src, size_t len);
 
 VOLCANO_END
 

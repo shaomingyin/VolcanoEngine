@@ -74,6 +74,8 @@ macro(volcano_target_setup TARGET)
 
     get_target_property(${TARGET}_SOURCES ${TARGET} SOURCES)
     source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${${TARGET}_SOURCES})
+
+    target_compile_features(${TARGET} PRIVATE cxx_std_17)
 endmacro()
 
 macro(volcano_shared_library TARGET)

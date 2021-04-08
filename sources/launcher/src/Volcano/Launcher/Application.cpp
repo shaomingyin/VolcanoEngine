@@ -68,7 +68,7 @@ bool Application::init(void)
 
     gl3wProcs = &m_gl3w;
 
-    if (!m_graphicsRenderer.init(800, 600))
+    if (!m_client->init())
         return false;
 
     glGuard.dismiss();
@@ -99,8 +99,7 @@ void Application::frame(float elapsed)
     gl3wProcs = &m_gl3w;
 
     if (SDL_GL_MakeCurrent(m_window, m_gl) == 0) {
-        m_graphicsRenderer.beginFrame();
-        m_graphicsRenderer.endFrame();
+        m_client->frame(elapsed);
         SDL_GL_SwapWindow(m_window);
     }
 }

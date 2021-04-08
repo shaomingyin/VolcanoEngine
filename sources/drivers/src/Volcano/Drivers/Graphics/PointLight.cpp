@@ -1,11 +1,10 @@
 //
 //
-#include <Volcano/UI/Graphics/PointLight.hpp>
+#include <Volcano/Drivers/Graphics/PointLight.hpp>
 
-VOLCANO_UI_GRAPHICS_BEGIN
+VOLCANO_DRIVERS_GRAPHICS_BEGIN
 
-PointLight::PointLight(QObject *parent):
-    Light(parent)
+PointLight::PointLight(void)
 {
 }
 
@@ -13,4 +12,4 @@ PointLight::~PointLight(void)
 {
 }
 
-VOLCANO_UI_GRAPHICS_END
+VOLCANO_DRIVERS_GRAPHICS_END

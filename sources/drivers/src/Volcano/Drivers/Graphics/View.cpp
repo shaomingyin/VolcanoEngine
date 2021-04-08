@@ -1,11 +1,10 @@
 //
 //
-#include <Volcano/UI/Graphics/View.hpp>
+#include <Volcano/Drivers/Graphics/View.hpp>
 
-VOLCANO_UI_GRAPHICS_BEGIN
+VOLCANO_DRIVERS_GRAPHICS_BEGIN
 
-View::View(QObject *parent):
-    QObject(parent)
+View::View(void)
 {
 }
 
@@ -13,4 +12,4 @@ View::~View(void)
 {
 }
 
-VOLCANO_UI_GRAPHICS_END
+VOLCANO_DRIVERS_GRAPHICS_END

@@ -5,6 +5,10 @@ if(NOT PHYSFS_FOUND)
     message(FATAL_ERROR "PhysFS not found.")
 endif()
 
+# ByteOrder
+include(TestBigEndian)
+TEST_BIG_ENDIAN(VOLCANO_BIG_ENDIAN)
+
 file(GLOB_RECURSE BASE_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/*
     ${CMAKE_CURRENT_SOURCE_DIR}/src/*

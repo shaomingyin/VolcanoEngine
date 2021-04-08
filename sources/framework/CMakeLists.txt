@@ -10,16 +10,17 @@ volcano_static_library(framework-base
         ${CMAKE_CURRENT_SOURCE_DIR}/include
         ${CMAKE_CURRENT_BINARY_DIR}/include
     PRIVATE_SOURCES
+        include/Volcano/Framework/Channel.hpp
         include/Volcano/Framework/Common.hpp
         include/Volcano/Framework/Config.hpp.in
+        include/Volcano/Framework/LocalChannel.hpp
+        include/Volcano/Framework/NetChannel.hpp
         include/Volcano/Framework/Server.hpp
+        src/Volcano/Framework/Channel.cpp
         src/Volcano/Framework/Common.cpp
+        src/Volcano/Framework/LocalChannel.cpp
+        src/Volcano/Framework/NetChannel.cpp
         src/Volcano/Framework/Server.cpp
-    )
-
-configure_file(
-    include/Volcano/Framework/Config.hpp.in
-    include/Volcano/Framework/Config.hpp
     )
 
 volcano_static_library(framework-client
@@ -29,9 +30,16 @@ volcano_static_library(framework-client
         framework-base
     PRIVATE_SOURCES
         include/Volcano/Framework/Client.hpp
+        include/Volcano/Framework/Console.hpp
         include/Volcano/Framework/MultiPlayer.hpp
         include/Volcano/Framework/SinglePlayer.hpp
         src/Volcano/Framework/Client.cpp
+        src/Volcano/Framework/Console.cpp
         src/Volcano/Framework/MultiPlayer.cpp
         src/Volcano/Framework/SinglePlayer.cpp
+    )
+
+configure_file(
+    include/Volcano/Framework/Config.hpp.in
+    include/Volcano/Framework/Config.hpp
     )

@@ -8,7 +8,8 @@
 
 VOLCANO_GAME_BEGIN
 
-struct DirectionalLight: public Light {
+class DirectionalLight: public Light {
+public:
     sigslot::signal<const Eigen::Vector3f &> setDirection;
 };
 

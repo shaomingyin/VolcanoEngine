@@ -11,6 +11,7 @@
 VOLCANO_GAME_BEGIN
 
 class Entity: public Object {
+public:
     sigslot::signal<const Eigen::Vector3f &> setPosition;
     sigslot::signal<const Eigen::Vector3f &> setScale;
     sigslot::signal<const Eigen::Quaternionf &> setRotation;

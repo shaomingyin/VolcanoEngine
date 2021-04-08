@@ -13,9 +13,6 @@
 
 VOLCANO_GAME_BEGIN
 
-using CameraPtr = std::shared_ptr<Camera>;
-using CameraPtrList = std::list<CameraPtr>;
-
 using ScenePtr = std::shared_ptr<Scene>;
 using ScenePtrList = std::list<ScenePtr>;
 
@@ -26,21 +23,15 @@ public:
 
 public:
     virtual void update(float elapsed);
-    void addCamera(CameraPtr camera);
-    void removeCamera(CameraPtr camera);
-    const CameraPtrList cameras(void) const;
     void addScene(ScenePtr scene);
     void removeScene(ScenePtr scene);
     const ScenePtrList scenes(void) const;
 
 public:
-    sigslot::signal<CameraPtr> cameraAdded;
-    sigslot::signal<CameraPtr> cameraRemoved;
     sigslot::signal<ScenePtr> sceneAdded;
     sigslot::signal<ScenePtr> sceneRemoved;
 
 private:
-    CameraPtrList m_cameras;
     ScenePtrList m_scenes;
 };
 

@@ -8,7 +8,8 @@
 
 VOLCANO_GAME_BEGIN
 
-struct Camera: public Object {
+class Camera: public Object {
+public:
     sigslot::signal<const Eigen::Vector3f &> setPosition;
     sigslot::signal<const Eigen::Vector3f &> setDirection;
     sigslot::signal<const Eigen::Vector3f &> setUp;

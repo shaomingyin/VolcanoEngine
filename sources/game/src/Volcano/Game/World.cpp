@@ -16,22 +16,9 @@ void World::update(float elapsed)
 {
 }
 
-const CameraPtrList World::cameras(void) const
-{
-    return m_cameras;
-}
-
 const ScenePtrList World::scenes(void) const
 {
     return m_scenes;
-}
-
-void World::addCamera(CameraPtr camera)
-{
-}
-
-void World::removeCamera(CameraPtr camera)
-{
 }
 
 void World::addScene(ScenePtr scene)

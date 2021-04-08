@@ -9,8 +9,6 @@
 VOLCANO_GAME_BEGIN
 
 class Screen: public Entity {
-    RTTR_ENABLE(Entity)
-
 public:
     Screen(void);
     virtual ~Screen(void);
