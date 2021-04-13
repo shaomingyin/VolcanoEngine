@@ -12,10 +12,10 @@ file(GLOB_RECURSE EDITOR_SOURCES
 volcano_executable(editor
     DEPENDENCIES
         drivers
-        framework-client
+        framework
     PUBLIC_LINK_LIBRARIES
         drivers
-        framework-client
+        framework
         Qt5::Core
         Qt5::Gui
         Qt5::Widgets

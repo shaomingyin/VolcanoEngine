@@ -7,9 +7,9 @@ endif()
 
 volcano_executable(server
     DEPENDENCIES
-        framework-base
+        framework
     PRIVATE_LINK_LIBRARIES
-        framework-base
+        framework
         ${UV_LIBRARIES}
     PRIVATE_INCLUDE_DIRECTORIES
         ${CMAKE_CURRENT_SOURCE_DIR}/include

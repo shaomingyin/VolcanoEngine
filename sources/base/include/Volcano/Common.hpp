@@ -14,6 +14,8 @@
 
 #include <sigslot/signal.hpp>
 
+#include <flatbuffers/flexbuffers.h>
+
 #include <physfs.h>
 
 #include <Volcano/Config.hpp>

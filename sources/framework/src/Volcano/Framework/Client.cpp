@@ -14,7 +14,7 @@ Client::~Client(void)
 
 bool Client::init(void)
 {
-    if (!Game::Context::init())
+    if (!Game::ContextBase::init())
         return false;
 
     // if (m_graphicsRenderer.init)
@@ -33,7 +33,7 @@ void Client::frame(float elapsed)
     VOLCANO_ASSERT(m_inputContext);
     m_inputContext->frame(elapsed);
 
-    Game::Context::frame(elapsed);
+    Game::ContextBase::frame(elapsed);
 }
 
 VOLCANO_FRAMEWORK_END

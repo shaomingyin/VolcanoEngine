@@ -8,10 +8,10 @@ endif()
 volcano_executable(launcher
     DEPENDENCIES
         drivers
-        framework-base
+        framework
     PRIVATE_LINK_LIBRARIES
         drivers
-        framework-base
+        framework
         ${SDL2_LIBRARY}
         ${SDL2MAIN_LIBRARY}
     PRIVATE_INCLUDE_DIRECTORIES

@@ -33,11 +33,13 @@ macro(volcano_target_setup TARGET)
     endif()
 
     foreach(PUBLIC_SOURCE ${${TARGET}_PUBLIC_SOURCES})
-        target_sources(${TARGET} PUBLIC ${PUBLIC_SOURCE})
+        file(REAL_PATH ${PUBLIC_SOURCE} PUBLIC_SOURCE_FULL_PATH)
+        target_sources(${TARGET} PUBLIC ${PUBLIC_SOURCE_FULL_PATH})
     endforeach()
 
     foreach(PRIVATE_SOURCE ${${TARGET}_PRIVATE_SOURCES})
-        target_sources(${TARGET} PRIVATE ${PRIVATE_SOURCE})
+        file(REAL_PATH ${PRIVATE_SOURCE} PRIVATE_SOURCE_FULL_PATH)
+        target_sources(${TARGET} PRIVATE ${PRIVATE_SOURCE_FULL_PATH})
     endforeach()
 
     foreach(PUBLIC_DEFINITION ${${TARGET}_PUBLIC_DEFINITIONS})
@@ -49,11 +51,13 @@ macro(volcano_target_setup TARGET)
     endforeach()
 
     foreach(PUBLIC_INCLUDE_DIRECTORY ${${TARGET}_PUBLIC_INCLUDE_DIRECTORIES})
-        target_include_directories(${TARGET} PUBLIC ${PUBLIC_INCLUDE_DIRECTORY})
+        file(REAL_PATH ${PUBLIC_INCLUDE_DIRECTORY} PUBLIC_INCLUDE_DIRECTORY_FULL_PATH)
+        target_include_directories(${TARGET} PUBLIC ${PUBLIC_INCLUDE_DIRECTORY_FULL_PATH})
     endforeach()
 
     foreach(PRIVATE_INCLUDE_DIRECTORY ${${TARGET}_PRIVATE_INCLUDE_DIRECTORIES})
-        target_include_directories(${TARGET} PRIVATE ${PRIVATE_INCLUDE_DIRECTORY})
+        file(REAL_PATH ${PRIVATE_INCLUDE_DIRECTORY} PRIVATE_INCLUDE_DIRECTORY_FULL_PATH)
+        target_include_directories(${TARGET} PRIVATE ${PRIVATE_INCLUDE_DIRECTORY_FULL_PATH})
     endforeach()
 
     foreach(PUBLIC_LINK_DIRECTORY ${${TARGET}_PUBLIC_LINK_DIRECOTRIES})
