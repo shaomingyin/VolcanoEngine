@@ -31,9 +31,10 @@ VOLCANO_C_BEGIN
 
 typedef struct {
 	VolcanoListNode node;
+	uv_loop_t *loop;
 	uv_timer_t sleepTimer;
 	int trapResult;
-	void *data;
+	void *kernel;
 } VolcanoVMTask;
 
 void volcanoVMAddTaskHook(lua_State *L, lua_State *T);

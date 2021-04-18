@@ -1,16 +1,16 @@
 //
 //
 #include <Volcano/ScopeGuard.hpp>
-#include <Volcano/Boot/Engine.hpp>
+#include <Volcano/System/Engine.hpp>
 
-VOLCANO_BOOT_BEGIN
+VOLCANO_SYSTEM_BEGIN
 
-Engine::Engine(uv_loop_t *loop):
-	m_loop(loop),
+Engine::Engine(uv_loop_t *loop, std::string_view rootPath):
     m_window(nullptr),
-    m_gl(nullptr)
+    m_gl(nullptr),
+	m_vmKernel(loop, rootPath)
 {
-	VOLCANO_ASSERT(m_loop != nullptr);
+	VOLCANO_ASSERT(loop != nullptr);
 }
 
 Engine::~Engine(void)
@@ -88,13 +88,11 @@ bool Engine::start(void)
 
 	VOLCANO_LOGI("Create VM...");
 
-	auto vm = std::make_unique<VM::Kernel>(m_loop);
-	if (!vm || !vm->start(this)) {
-		VOLCANO_LOGE("Failed to create VM.");
+	if (!m_vmKernel.start()) {
+		VOLCANO_LOGE("Failed to start VM.");
 		return false;
 	}
 
-    m_vm = std::move(vm);
 	glGuard.dismiss();
 	windowGuard.dismiss();
 
@@ -103,10 +101,8 @@ bool Engine::start(void)
 
 void Engine::stop(void)
 {
-	VOLCANO_ASSERT(m_vm);
-	VOLCANO_LOGI("Destroying VM...");
-    m_vm->stop();
-    m_vm.reset();
+	VOLCANO_LOGI("Shuting down VM...");
+    m_vmKernel.stop();
 
 	VOLCANO_LOGI("Destroying OpenGL context...");
 	VOLCANO_ASSERT(m_gl != nullptr);
@@ -126,14 +122,9 @@ void Engine::handleEvent(const SDL_Event &event)
         handleWindowEvent(event.window);
         break;
     default:
-        if (m_vm)
-            m_vm->handleEvent(event);
+        m_vmKernel.postEvent(event);
         break;
     }
-}
-
-void Engine::output(void)
-{
 }
 
 void Engine::handleWindowEvent(const SDL_WindowEvent &event)
@@ -159,4 +150,4 @@ void Engine::handleWindowEvent(const SDL_WindowEvent &event)
     }
 }
 
-VOLCANO_BOOT_END
+VOLCANO_SYSTEM_END
