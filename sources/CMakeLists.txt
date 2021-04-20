@@ -35,6 +35,11 @@ configure_file(
     include/Volcano/Config.h
     )
 
+configure_file(
+    include/cx/config.h.in
+    include/cx/config.h
+    )
+
 file(GLOB_RECURSE VOLCANO_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/*
     ${CMAKE_CURRENT_SOURCE_DIR}/src/*

@@ -86,6 +86,8 @@ bool Engine::start(void)
 
 	gl3wProcs = &m_gl3w;
 
+	// TODO init graphics, input, sound subsystems...
+
 	VOLCANO_LOGI("Create VM...");
 
 	if (!m_vmKernel.start()) {

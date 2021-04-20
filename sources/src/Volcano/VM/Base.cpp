@@ -1,11 +1,14 @@
 //
 //
+#include <chrono>
 #include <filesystem>
 
 #include <Volcano/ScopeGuard.hpp>
 #include <Volcano/VM/Base.hpp>
 
 VOLCANO_VM_BEGIN
+
+using namespace std::chrono;
 
 Base::Base(uv_loop_t *loop, std::string_view rootPath):
 	m_loop(loop),
@@ -34,8 +37,9 @@ bool Base::start(void)
 	std::promise<bool> initPromise;
 	auto initResult = initPromise.get_future();
 	m_thread = std::thread(&Base::threadMain, this, &initPromise);
+	auto state = initResult.wait_for(15s);
 
-	return initResult.get();
+	return (state == std::future_status::ready);
 }
 
 void Base::stop(void)

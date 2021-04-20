@@ -1,2 +1,2 @@
 # VolcanoEngine
-A Qt based Simple Game Engine
+A Simple Game Engine
