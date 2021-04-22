@@ -8,38 +8,34 @@
 
 #include <GL/gl3w.h>
 
-#include <Volcano/Graphics/Memory.hpp>
 #include <Volcano/Graphics/Renderer.hpp>
 #include <Volcano/Input/Context.hpp>
 #include <Volcano/VM/Kernel.hpp>
 #include <Volcano/System/Common.hpp>
+#include <Volcano/System/Window.hpp>
+#include <Volcano/System/Sound.hpp>
 
 VOLCANO_SYSTEM_BEGIN
 
-class Engine {
+class Engine: public VM::Kernel::Traps {
 public:
-	Engine(uv_loop_t *loop, std::string_view rootPath);
-	virtual ~Engine(void);
+	Engine(uv_loop_t *loop);
+	~Engine(void) override;
 
 public:
-	bool start(void);
+	bool start(std::string_view rootPath);
 	void stop(void);
 	void handleEvent(const SDL_Event &event);
 
-private:
-	void handleWindowEvent(const SDL_WindowEvent &event);
+public: // vm traps
+	VM::Window *window(void) override;
+	VM::Sound *sound(void) override;
 
 private:
-	SDL_Window *m_window;
-	Uint32 m_windowID;
-	int m_windowSize[2];
-	bool m_windowVisible;
-	SDL_GLContext m_gl;
-	union GL3WProcs m_gl3w;
-	Graphics::Memory m_graphicsMemory;
-	Graphics::Renderer m_graphicsRenderer;
+	Window m_window;
+	Sound m_sound;
 	//Input::Context m_inputContext;
-	VM::Kernel m_vmKernel;
+	VM::Kernel m_vm;
 };
 
 VOLCANO_SYSTEM_END

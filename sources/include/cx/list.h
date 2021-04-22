@@ -15,7 +15,7 @@ typedef struct cx_list_node_struct {
 	struct cx_list_node_struct *next;
 } cx_list_node_t;
 
-CX_INLINE void cx_list_node_reset(cx_list_node_t *node)
+CX_FORCE_INLINE void cx_list_node_reset(cx_list_node_t *node)
 {
 	CX_ASSERT(node != NULL);
 
@@ -23,14 +23,14 @@ CX_INLINE void cx_list_node_reset(cx_list_node_t *node)
 	node->next = node;
 }
 
-CX_INLINE bool cx_list_node_is_linked(cx_list_node_t *node)
+CX_FORCE_INLINE bool cx_list_node_is_linked(cx_list_node_t *node)
 {
 	CX_ASSERT(node != NULL);
 
 	return (node->prev != node);
 }
 
-CX_INLINE void cx_list_node_link(cx_list_node_t *node, cx_list_node_t *prev, cx_list_node_t *next)
+CX_FORCE_INLINE void cx_list_node_link(cx_list_node_t *node, cx_list_node_t *prev, cx_list_node_t *next)
 {
 	CX_ASSERT(node != NULL);
 	CX_ASSERT(prev != NULL);
@@ -42,7 +42,7 @@ CX_INLINE void cx_list_node_link(cx_list_node_t *node, cx_list_node_t *prev, cx_
 	next->prev = node;
 }
 
-CX_INLINE void cx_list_node_unlink(cx_list_node_t *node)
+CX_FORCE_INLINE void cx_list_node_unlink(cx_list_node_t *node)
 {
 	CX_ASSERT(node != NULL);
 	CX_ASSERT(node->prev != NULL);
@@ -54,7 +54,7 @@ CX_INLINE void cx_list_node_unlink(cx_list_node_t *node)
 	node->next = node;
 }
 
-CX_INLINE cx_list_node_t *cx_list_node_prev(cx_list_node_t *node)
+CX_FORCE_INLINE cx_list_node_t *cx_list_node_prev(cx_list_node_t *node)
 {
 	CX_ASSERT(node != NULL);
 	CX_ASSERT(node->prev != NULL);
@@ -62,7 +62,7 @@ CX_INLINE cx_list_node_t *cx_list_node_prev(cx_list_node_t *node)
 
 	return node->prev;
 }
-CX_INLINE cx_list_node_t *cx_list_node_next(cx_list_node_t *node)
+CX_FORCE_INLINE cx_list_node_t *cx_list_node_next(cx_list_node_t *node)
 {
 	CX_ASSERT(node != NULL);
 	CX_ASSERT(node->prev != NULL);
@@ -77,42 +77,42 @@ typedef struct {
 	cx_list_node_t knot;
 } cx_list_t;
 
-CX_INLINE void cx_list_reset(cx_list_t *list)
+CX_FORCE_INLINE void cx_list_reset(cx_list_t *list)
 {
 	CX_ASSERT(list != NULL);
 
 	cx_list_node_reset(&list->knot);
 }
 
-CX_INLINE cx_list_node_t *cx_list_head(cx_list_t *list)
+CX_FORCE_INLINE cx_list_node_t *cx_list_head(cx_list_t *list)
 {
 	CX_ASSERT(list != NULL);
 
 	return cx_list_node_next(&list->knot);
 }
 
-CX_INLINE cx_list_node_t *cx_list_tail(cx_list_t *list)
+CX_FORCE_INLINE cx_list_node_t *cx_list_tail(cx_list_t *list)
 {
 	CX_ASSERT(list != NULL);
 
 	return cx_list_node_prev(&list->knot);
 }
 
-CX_INLINE cx_list_node_t *cx_list_knot(cx_list_t *list)
+CX_FORCE_INLINE cx_list_node_t *cx_list_knot(cx_list_t *list)
 {
 	CX_ASSERT(list != NULL);
 
 	return &list->knot;
 }
 
-CX_INLINE bool cx_list_is_empty(cx_list_t *list)
+CX_FORCE_INLINE bool cx_list_is_empty(cx_list_t *list)
 {
 	CX_ASSERT(list != NULL);
 
 	return !cx_list_node_is_linked(&list->knot);
 }
 
-CX_INLINE int cx_list_length(cx_list_t *list)
+CX_FORCE_INLINE int cx_list_length(cx_list_t *list)
 {
 	CX_ASSERT(list != NULL);
 
@@ -125,7 +125,7 @@ CX_INLINE int cx_list_length(cx_list_t *list)
 	return n;
 }
 
-CX_INLINE bool cx_list_is_contains(cx_list_t *list, cx_list_node_t *node)
+CX_FORCE_INLINE bool cx_list_is_contains(cx_list_t *list, cx_list_node_t *node)
 {
 	CX_ASSERT(list != NULL);
 	CX_ASSERT(node != NULL);
@@ -140,7 +140,7 @@ CX_INLINE bool cx_list_is_contains(cx_list_t *list, cx_list_node_t *node)
 	return false;
 }
 
-CX_INLINE void cx_list_prepend(cx_list_t *list, cx_list_node_t *node)
+CX_FORCE_INLINE void cx_list_prepend(cx_list_t *list, cx_list_node_t *node)
 {
 	CX_ASSERT(list != NULL);
 	CX_ASSERT(node != NULL);
@@ -148,7 +148,7 @@ CX_INLINE void cx_list_prepend(cx_list_t *list, cx_list_node_t *node)
 	cx_list_node_link(node, cx_list_knot(list), cx_list_head(list));
 }
 
-CX_INLINE void cx_list_insert(cx_list_t *list, cx_list_node_t *node, cx_list_node_t *from)
+CX_FORCE_INLINE void cx_list_insert(cx_list_t *list, cx_list_node_t *node, cx_list_node_t *from)
 {
 	CX_ASSERT(list != NULL);
 	CX_ASSERT(node != NULL);
@@ -158,7 +158,7 @@ CX_INLINE void cx_list_insert(cx_list_t *list, cx_list_node_t *node, cx_list_nod
 	cx_list_node_link(node, cx_list_node_prev(from), from);
 }
 
-CX_INLINE void cx_list_append(cx_list_t *list, cx_list_node_t *node)
+CX_FORCE_INLINE void cx_list_append(cx_list_t *list, cx_list_node_t *node)
 {
 	CX_ASSERT(list != NULL);
 	CX_ASSERT(node != NULL);
@@ -166,7 +166,7 @@ CX_INLINE void cx_list_append(cx_list_t *list, cx_list_node_t *node)
 	cx_list_node_link(node, cx_list_tail(list), cx_list_knot(list));
 }
 
-CX_INLINE cx_list_node_t *cx_list_remove_head(cx_list_t *list)
+CX_FORCE_INLINE cx_list_node_t *cx_list_remove_head(cx_list_t *list)
 {
 	CX_ASSERT(list != NULL);
 
@@ -176,7 +176,7 @@ CX_INLINE cx_list_node_t *cx_list_remove_head(cx_list_t *list)
 	return p;
 }
 
-CX_INLINE cx_list_node_t *cx_list_remove_tail(cx_list_t *list)
+CX_FORCE_INLINE cx_list_node_t *cx_list_remove_tail(cx_list_t *list)
 {
 	CX_ASSERT(list != NULL);
 
@@ -186,7 +186,7 @@ CX_INLINE cx_list_node_t *cx_list_remove_tail(cx_list_t *list)
 	return p;
 }
 
-CX_INLINE void cx_list_remove(cx_list_t *list, cx_list_node_t *node)
+CX_FORCE_INLINE void cx_list_remove(cx_list_t *list, cx_list_node_t *node)
 {
 	CX_ASSERT(list != NULL);
 	CX_ASSERT(node != NULL);
@@ -195,7 +195,7 @@ CX_INLINE void cx_list_remove(cx_list_t *list, cx_list_node_t *node)
 	cx_list_node_unlink(node);
 }
 
-CX_INLINE void cx_list_clear(cx_list_t *list)
+CX_FORCE_INLINE void cx_list_clear(cx_list_t *list)
 {
 	CX_ASSERT(list != NULL);
 

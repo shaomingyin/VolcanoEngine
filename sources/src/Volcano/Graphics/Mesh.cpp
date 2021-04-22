@@ -4,8 +4,8 @@
 
 VOLCANO_GRAPHICS_BEGIN
 
-Mesh::Mesh(Memory &memory):
-    m_memory(memory)
+Mesh::Mesh(void):
+    m_mesh(nullptr)
 {
 }
 

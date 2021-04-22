@@ -27,32 +27,17 @@ public:
     virtual ~Renderer(void);
 
 public:
-    bool init(int width, int height);
-    void shutdown(void);
+    bool init(int x, int y, int width, int height);
+    const Eigen::Vector4i &viewport(void) const;
+    void setViewport(int x, int y, int width, int height);
     Light &ambientLight(void);
-    void beginFrame(void);
-    void endFrame(void);
-    MatrixMode matrixMode(void) const;
-    void setMatrixMode(MatrixMode matrixMode);
-    void loadIdentity(void);
-    void translate(const Eigen::Vector3f &r);
-    void scale(const Eigen::Vector3f &r);
-    void rotation(float angle, const Eigen::Vector3f &r);
-    void add(Mesh &mesh, Material &material);
-    void add(DirectionalLight &directionalLight);
-    void add(PointLight &pointLight);
-    void add(SpotLight &spotLight);
+    void update(void);
 
 private:
-    int m_width;
-    int m_height;
+    Eigen::Vector4i m_viewport;
     Light m_ambientLight;
-    MatrixMode m_matrixMode;
-    Eigen::Matrix4f m_matrix[MatrixModeMax];
-    Material *m_material;
-    Eigen::Vector3f m_translate;
-    Eigen::Vector3f m_scale;
-    Eigen::Quaternionf m_rotation;
+    GLEXContext *m_glex;
+    NVGcontext *m_nvg;
 };
 
 VOLCANO_INLINE Light &Renderer::ambientLight(void)

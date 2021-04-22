@@ -31,8 +31,8 @@ include(TestBigEndian)
 TEST_BIG_ENDIAN(VOLCANO_BIG_ENDIAN)
 
 configure_file(
-    include/Volcano/Config.h.in
-    include/Volcano/Config.h
+    include/Volcano/Config.hpp.in
+    include/Volcano/Config.hpp
     )
 
 configure_file(

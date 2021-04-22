@@ -11,7 +11,7 @@ bool Context::init(void)
 
 void Context::frame(float elapsed)
 {
-    VOLCANO_UNUSED(elapsed);
+    CX_UNUSED(elapsed);
 
     Event event;
 

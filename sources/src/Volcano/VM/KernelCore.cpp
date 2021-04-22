@@ -7,8 +7,8 @@ VOLCANO_VM_BEGIN
 
 static constexpr const char *initrcPath = "/init.lua";
 
-Kernel::Kernel(uv_loop_t *loop, std::string_view rootPath):
-	Base(loop, rootPath)
+Kernel::Kernel(uv_loop_t *loop):
+	Base(loop)
 {
 }
 
@@ -22,21 +22,21 @@ void Kernel::addTaskHook(lua_State *L, lua_State *T)
 	auto task = taskFromLua(T);
 	auto kernel = fromTask(task);
 
-	task->kernel = kernel;
+	task->data = kernel;
 	task->loop = main->loop;
 
 	uv_timer_init(task->loop, &task->sleepTimer);
 	task->sleepTimer.data = task;
 
-	volcanoListNodeReset(&task->node);
-	volcanoListAppend(&kernel->m_taskListReady, &task->node);
+	cx_list_node_reset(&task->node);
+	cx_list_append(&kernel->m_taskListReady, &task->node);
 }
 
 void Kernel::removeTaskHook(lua_State *L, lua_State *T)
 {
 	auto task = taskFromLua(T);
 
-	volcanoListNodeUnlink(&task->node);
+	cx_list_node_unlink(&task->node);
 }
 
 void Kernel::resumeTaskHook(lua_State *T, int n)
@@ -62,11 +62,11 @@ void Kernel::run(uv_loop_t *loop, std::promise<bool> *initPromise)
 	ScopeGuard luaGuard([=] { lua_close(L); });
 
 	auto task = taskFromLua(L);
-	task->kernel = this;
+	task->data = this;
 	task->loop = loop;
 
-	volcanoListReset(&m_taskListReady);
-	volcanoListReset(&m_taskListTrap);
+	cx_list_reset(&m_taskListReady);
+	cx_list_reset(&m_taskListTrap);
 
 	lua_pushcfunction(L, [](lua_State *L) {
 		auto loop = reinterpret_cast<uv_loop_t *>(lua_touserdata(L, 1));
@@ -96,18 +96,18 @@ void Kernel::handleEvent(const SDL_Event &event)
 	Base::handleEvent(event);
 }
 
-void Kernel::handleTrap(void)
+void Kernel::handleTrap(Traps *traps)
 {
-	while (!volcanoListIsEmpty(&m_taskListTrap)) {
-		auto node = volcanoListRemoveHead(&m_taskListTrap);
-		auto task = VOLCANO_MEMBEROF(node, Task, node);
+	while (!cx_list_is_empty(&m_taskListTrap)) {
+		auto node = cx_list_remove_head(&m_taskListTrap);
+		auto task = CX_MEMBEROF(node, Task, node);
 		auto T = taskToLua(task);
 		lua_call(T, 1, 1);
 		task->trapResult = lua_tointeger(T, -1);
-		volcanoListAppend(&m_taskListReady, &task->node);
+		cx_list_append(&m_taskListReady, &task->node);
 	}
 
-	Base::handleTrap();
+	Base::handleTrap(traps);
 }
 
 void Kernel::Main(lua_State *L, uv_loop_t *loop, std::promise<bool> *initPromise)
@@ -181,15 +181,15 @@ void Kernel::schedule(uv_prepare_t *p)
 	auto kernel = fromLua(L);
 	VOLCANO_ASSERT(kernel != nullptr);
 
-	VolcanoListNode *node;
+	cx_list_node_t *node;
 	Task *task;
 	lua_State *T;
 	int ret;
 	int nResults;
 
-	while (!volcanoListIsEmpty(&kernel->m_taskListReady)) {
-		node = volcanoListRemoveHead(&kernel->m_taskListReady);
-		task = VOLCANO_MEMBEROF(node, Task, node);
+	while (!cx_list_is_empty(&kernel->m_taskListReady)) {
+		node = cx_list_remove_head(&kernel->m_taskListReady);
+		task = CX_MEMBEROF(node, Task, node);
 		T = taskToLua(task);
 		ret = lua_resume(T, L, 0, &nResults);
 		if (ret != LUA_OK && ret != LUA_YIELD) {
@@ -198,7 +198,7 @@ void Kernel::schedule(uv_prepare_t *p)
 		}
 	}
 
-	if (!volcanoListIsEmpty(&kernel->m_taskListTrap))
+	if (!cx_list_is_empty(&kernel->m_taskListTrap))
 		kernel->syncTrap();
 }
 
@@ -210,8 +210,8 @@ int Kernel::trapRequest(lua_State *T)
 	auto kernel = fromTask(task);
 
 	task->trapResult = 0;
-	volcanoListNodeUnlink(&task->node);
-	volcanoListAppend(&kernel->m_taskListTrap, &task->node);
+	cx_list_node_unlink(&task->node);
+	cx_list_append(&kernel->m_taskListTrap, &task->node);
 
 	return lua_yieldk(T, 0, lua_KContext(kernel), &Kernel::trapDone);
 }

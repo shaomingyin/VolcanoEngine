@@ -25,6 +25,9 @@
 extern "C" {
 #endif
 
+#define GLEX_DEBUG_DRAW_TRIANGLES	0x1
+#define GLEX_DEBUG_DRAW_NORMALS		0x2
+
 typedef enum {
 	GLEX_LOG_LEVEL_FATAL = 0,
 	GLEX_LOG_LEVEL_ERROR,
@@ -44,8 +47,7 @@ typedef enum {
 	GLEX_LIGHT_TYPE_DIRECTIONAL = 0,
 	GLEX_LIGHT_TYPE_POINT,
 	GLEX_LIGHT_TYPE_SPOT,
-	GLEX_LIGHT_TYPE_MAX,
-	GLEX_LIGHT_TYPE_AMBIENT /* For internal. */
+	GLEX_LIGHT_TYPE_MAX
 } GLEXLightType;
 
 typedef enum {
@@ -79,23 +81,23 @@ GLEX_API void glexDeleteContext(GLEXContext *context);
 GLEX_API GLEXContext *glexCurrentContext(void);
 GLEX_API void glexMakeCurrent(GLEXContext *context);
 
-GLEX_API void *glexUserData(void);
+GLEX_API void *glexGetUserData(void);
 
 GLEX_API void glexEnableLog(void);
 GLEX_API void glexDisableLog(void);
-GLEX_API GLboolean glexIsLogEnabled(void);
 GLEX_API void glexLogPrefix(const char *prefix);
 GLEX_API void glexLogLevel(GLEXLogLevel logLevel);
 GLEX_API GLEXLogLevel glexGetLogLevel(void);
 
-GLEX_API void glexViewport(int x, int y, int width, int height);
+GLEX_API void glexEnableLighting(void);
+GLEX_API void glexDisableLighting(void);
 
-GLEX_API void glexEnableClear(void);
-GLEX_API void glexDisableClear(void);
-GLEX_API GLboolean glexIsClearEnabled(void);
-GLEX_API void glexClearColor(GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha);
+GLEX_API void glexEnableShadow(void);
+GLEX_API void glexDisableShadow(void);
 
-GLEX_API void glexBeginFrame(void);
+GLEX_API void glexDebugDrawMask(GLuint mask);
+
+GLEX_API void glexBeginFrame(GLint width, GLint height);
 GLEX_API void glexEndFrame(void);
 
 GLEX_API void glexResetTransform(void);
@@ -110,8 +112,8 @@ GLEX_API void glexLookAt(GLfloat eyeX, GLfloat eyeY, GLfloat eyeZ,
 
 GLEX_API void glexPerpective(GLfloat fov, GLfloat ratio, GLfloat zNear, GLfloat zFar);
 
+GLEX_API void glexAmbientLight(float strength, GLfloat red, GLfloat green, GLfloat blue);
 GLEX_API GLEXLight *glexCreateLight(GLEXLightType lightType);
-GLEX_API GLEXLight *glexAmbientLight(void);
 GLEX_API void glexDeleteLight(GLEXLight *light);
 GLEX_API void glexBindLight(GLEXLight *light);
 GLEX_API void glexAddLight(void);

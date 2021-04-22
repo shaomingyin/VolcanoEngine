@@ -11,17 +11,32 @@
 #include <condition_variable>
 #include <functional>
 
+#include <physfs.h>
+
 #include <Volcano/VM/Common.hpp>
+#include <Volcano/VM/Window.hpp>
+#include <Volcano/VM/Sound.hpp>
 
 VOLCANO_VM_BEGIN
 
 class Base {
 public:
-	Base(uv_loop_t *loop, std::string_view rootPath);
+	class Traps {
+	public:
+		Traps(void) = default;
+		virtual ~Traps(void) = default;
+
+	public:
+		virtual Window *window(void) = 0;
+		virtual Sound *sound(void) = 0;
+	};
+
+public:
+	Base(uv_loop_t *loop);
 	virtual ~Base(void);
 
 public:
-	bool start(void);
+	bool start(std::string_view rootPath, Traps *traps);
 	void stop(void);
 	void postEvent(const SDL_Event &event);
 	uv_loop_t *loop(void);
@@ -32,7 +47,7 @@ protected:
 	virtual void run(uv_loop_t *loop, std::promise<bool> *initPromise) = 0;
 	virtual void frame(float elapsed);
 	virtual void handleEvent(const SDL_Event &event);
-	virtual void handleTrap(void) = 0;
+	virtual void handleTrap(Traps *traps);
 
 private:
 	void threadMain(std::promise<bool> *initPromise);
@@ -48,6 +63,7 @@ private:
 	uv_loop_t *m_loop;
 	uv_async_t m_trapAsync;
 	std::string m_rootPath;
+	Traps *m_traps;
 	SDL_Event m_eventQueue[EVENT_QUEUE_SIZE];
 	int64_t m_eventFirst;
 	int64_t m_eventLast;

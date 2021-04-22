@@ -11,29 +11,11 @@
 #include <Volcano/System/Common.hpp>
 #include <Volcano/System/Engine.hpp>
 
-static void volcanoPrintHelp(void)
+VOLCANO_SYSTEM_BEGIN
+
+static void pollEvents(uv_timer_t *p)
 {
-}
-
-static void volcanoPrintVersion(void)
-{
-}
-
-static void volcanoLogOutputFunction(void *userdata, int category, SDL_LogPriority priority, const char *message)
-{
-    FILE *fp;
-
-    if (priority == SDL_LOG_PRIORITY_ERROR || priority == SDL_LOG_PRIORITY_CRITICAL)
-        fp = stderr;
-    else
-        fp = stdout;
-
-    fprintf(fp, "[%06d] %08d: %s\n", SDL_ThreadID(), SDL_GetTicks(), message);
-}
-
-static void volcanoPollEvents(uv_timer_t *p)
-{
-    auto engine = reinterpret_cast<Volcano::System::Engine *>(p->data);
+    auto engine = reinterpret_cast<Engine *>(p->data);
     VOLCANO_ASSERT(engine != nullptr);
 
     SDL_Event event;
@@ -46,9 +28,29 @@ static void volcanoPollEvents(uv_timer_t *p)
     }
 }
 
-int main(int argc, char *argv[])
+static void printHelp(void)
 {
-    SDL_LogSetOutputFunction(&volcanoLogOutputFunction, NULL);
+}
+
+static void printVersion(void)
+{
+}
+
+static void logOutputFunction(void *userdata, int category, SDL_LogPriority priority, const char *message)
+{
+    FILE *fp;
+
+    if (priority == SDL_LOG_PRIORITY_ERROR || priority == SDL_LOG_PRIORITY_CRITICAL)
+        fp = stderr;
+    else
+        fp = stdout;
+
+    fprintf(fp, "[%06d] %08d: %s\n", SDL_ThreadID(), SDL_GetTicks(), message);
+}
+
+static int Run(int argc, char *argv[])
+{
+    SDL_LogSetOutputFunction(&logOutputFunction, NULL);
 
     argh::parser cmdline;
     cmdline.add_params({ "-m", "--mode" });
@@ -62,12 +64,12 @@ int main(int argc, char *argv[])
 #endif
 
     if (cmdline[{ "-h", "--help"}]) {
-        volcanoPrintHelp();
+        printHelp();
         return EXIT_SUCCESS;
     }
 
     if (cmdline[{ "-v", "--version"}]) {
-        volcanoPrintVersion();
+        printVersion();
         return EXIT_SUCCESS;
     }
 
@@ -77,7 +79,7 @@ int main(int argc, char *argv[])
     std::string rootPath = std::filesystem::current_path().u8string();
     if (cmdline.size() > 1) {
         if (cmdline.size() != 2) {
-            volcanoPrintHelp();
+            printHelp();
             return EXIT_FAILURE;
         }
         rootPath = cmdline[1];
@@ -96,7 +98,7 @@ int main(int argc, char *argv[])
         return EXIT_FAILURE;
     }
 
-    Volcano::ScopeGuard sdlGuard([] { SDL_Quit(); });
+    ScopeGuard sdlGuard([] { SDL_Quit(); });
 
     VOLCANO_LOGI("Initializing engine...");
 
@@ -106,19 +108,26 @@ int main(int argc, char *argv[])
         return EXIT_FAILURE;
     }
 
-    auto engine = std::make_unique<Volcano::System::Engine>(loop, rootPath);
-    if (!engine || !engine->start()) {
+    auto engine = std::make_unique<Engine>(loop);
+    if (!engine || !engine->start(rootPath)) {
         VOLCANO_LOGE("Failed to init engine.");
         return EXIT_FAILURE;
     }
 
     uv_timer_t pollEventsTimer;
     uv_timer_init(loop, &pollEventsTimer);
-    uv_timer_start(&pollEventsTimer, &volcanoPollEvents, 0, 15);
+    uv_timer_start(&pollEventsTimer, &pollEvents, 0, 15);
     pollEventsTimer.data = engine.get();
 
     VOLCANO_LOGI("Start main loop...");
     uv_run(loop, UV_RUN_DEFAULT);
 
     return EXIT_SUCCESS;
+}
+
+VOLCANO_SYSTEM_END
+
+int main(int argc, char *argv[])
+{
+    return Volcano::System::Run(argc, argv);
 }

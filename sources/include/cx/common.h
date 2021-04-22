@@ -26,19 +26,23 @@
 #endif
 
 #if defined(_MSC_VER)
-#   define CX_INLINE __forceinline
+#   define CX_FORCE_INLINE __forceinline
 #   define CX_LIKELY(x) x
 #   define CX_UNLIKELY(x) x
-#   define HMM_DEPRECATED(msg) __declspec(deprecated(msg))
 #   define CX_THREAD __declspec(thread)
+#   define CX_DEPRECATED(msg) __declspec(deprecated(msg))
 #elif defined(__GNUC__) || defined(__clang__)
-#   define CX_INLINE inline __attribute__((always_inline))
+#   define CX_FORCE_INLINE inline __attribute__((always_inline))
 #   define CX_LIKELY(x) x
 #   define CX_UNLIKELY(x) x
-#   define CX_DEPRECATED(msg) __attribute__((deprecated(msg)))
 #   define CX_THREAD __thread
+#   define CX_DEPRECATED(msg) __attribute__((deprecated(msg)))
 #else
 #    error unsupported compiler.
+#endif
+
+#ifndef CX_API
+#   define CX_API
 #endif
 
 #define CX_UNUSED(param) ((void)(param))
@@ -69,7 +73,7 @@
 
 CX_BEGIN_DECLS
 
-void cx_memrcpy(void *dst, const void *src, size_t len);
+CX_API void cx_memrcpy(void *dst, const void *src, size_t len);
 
 CX_END_DECLS
 

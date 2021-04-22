@@ -10,12 +10,10 @@ VOLCANO_VM_BEGIN
 
 using namespace std::chrono;
 
-Base::Base(uv_loop_t *loop, std::string_view rootPath):
-	m_loop(loop),
-	m_rootPath(rootPath)
+Base::Base(uv_loop_t *loop):
+	m_loop(loop)
 {
 	VOLCANO_ASSERT(m_loop != nullptr);
-	VOLCANO_ASSERT(!m_rootPath.empty());
 
 	uv_async_init(m_loop, &m_trapAsync, &Base::trapHandler);
 	m_trapAsync.data = this;
@@ -25,14 +23,18 @@ Base::~Base(void)
 {
 }
 
-bool Base::start(void)
+bool Base::start(std::string_view rootPath, Traps *traps)
 {
 	VOLCANO_ASSERT(m_loop != nullptr);
+	VOLCANO_ASSERT(traps != nullptr);
 
 	if (!std::filesystem::is_directory(m_rootPath)) {
 		VOLCANO_LOGE("Root path '%s' is not a directory.", m_rootPath.c_str());
 		return false;
 	}
+
+	m_rootPath = rootPath;
+	m_traps = traps;
 
 	std::promise<bool> initPromise;
 	auto initResult = initPromise.get_future();
@@ -101,7 +103,7 @@ void Base::handleEvent(const SDL_Event &event)
 {
 }
 
-void Base::handleTrap(void)
+void Base::handleTrap(Traps *traps)
 {
 	m_cond.notify_all();
 }
@@ -161,7 +163,7 @@ void Base::trapHandler(uv_async_t *p)
 	auto base = reinterpret_cast<Base *>(p->data);
 	VOLCANO_ASSERT(base != nullptr);
 	std::lock_guard<std::mutex> locker(base->m_mutex);
-	base->handleTrap();
+	base->handleTrap(base->m_traps);
 }
 
 VOLCANO_VM_END

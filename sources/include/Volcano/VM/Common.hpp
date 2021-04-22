@@ -3,7 +3,7 @@
 #ifndef VOLCANO_VM_COMMON_HPP
 #define VOLCANO_VM_COMMON_HPP
 
-#include <lua.hpp>
+#include <physfs.h>
 
 #include <Volcano/Common.hpp>
 

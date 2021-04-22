@@ -3,92 +3,99 @@
 #include <Volcano/ScopeGuard.hpp>
 #include <Volcano/Graphics/Renderer.hpp>
 
+#define NANOVG_GL3_IMPLEMENTATION
+#include <nanovg_gl.h>
+
 VOLCANO_GRAPHICS_BEGIN
 
-Renderer::Renderer(void)
+Renderer::Renderer(void):
+    m_glex(nullptr),
+    m_nvg(nullptr)
 {
 }
 
 Renderer::~Renderer(void)
 {
-    // TODO
+    if (m_nvg != nullptr)
+        nvgDeleteGL3(m_nvg);
+
+    if (m_glex != nullptr)
+        glexDeleteContext(m_glex);
 }
 
-bool Renderer::init(int width, int height)
+bool Renderer::init(int x, int y, int width, int height)
 {
+    VOLCANO_ASSERT(m_glex == nullptr);
+    VOLCANO_ASSERT(m_nvg == nullptr);
+
+    m_glex = glexCreateContext(this);
+    if (m_glex == NULL) {
+        VOLCANO_LOGE("Failed to create glex context.");
+        return false;
+    }
+
+    ScopeGuard glexGuard([&] { glexDeleteContext(m_glex); m_glex = nullptr;  });
+
+    glexMakeCurrent(m_glex);
+
+    glexLogPrefix("Volcano GLEX ");
+
+#ifdef VOLCANO_DEBUG
+    glexLogLevel(GLEX_LOG_LEVEL_DEBUG);
+#else
+    glexLogLevel(GLEX_LOG_LEVEL_WARNING);
+#endif
+
+    m_nvg = nvgCreateGL3(0);
+    if (m_nvg == nullptr) {
+        VOLCANO_LOGE("Failed to create nanovg context.");
+        return false;
+    }
+
+    ScopeGuard nvgGuard([&] { nvgDeleteGL3(m_nvg); m_nvg = nullptr; });
+
     glClearColor(0.3f, 0.3f, 0.3f, 0.0f);
 
-    m_width = width;
-    m_height = height;
+    setViewport(x, y, width, height);
+
+    nvgGuard.dismiss();
+    glexGuard.dismiss();
 
 	return true;
 }
 
-void Renderer::shutdown(void)
+const Eigen::Vector4i &Renderer::viewport(void) const
 {
+    return m_viewport;
 }
 
-void Renderer::beginFrame(void)
+void Renderer::setViewport(int x, int y, int width, int height)
 {
+    VOLCANO_ASSERT(width >= 0);
+    VOLCANO_ASSERT(height >= 0);
+
+    m_viewport[0] = x;
+    m_viewport[1] = y;
+    m_viewport[2] = width;
+    m_viewport[3] = height;
 }
 
-void Renderer::endFrame(void)
+void Renderer::update(void)
 {
-    glViewport(0, 0, m_width, m_height);
-    glClear(GL_COLOR_BUFFER_BIT);
+    VOLCANO_ASSERT(m_glex != nullptr);
 
-    // m_program.use();
-    // setup view matrix uniform.
-}
+    if (m_viewport[2] < 1 || m_viewport[3] < 1)
+        return;
 
-Renderer::MatrixMode Renderer::matrixMode(void) const
-{
-    return m_matrixMode;
-}
+    glViewport(m_viewport[0], m_viewport[1], m_viewport[2], m_viewport[3]);
 
-void Renderer::setMatrixMode(MatrixMode mode)
-{
-    m_matrixMode = mode;
-}
+    glexMakeCurrent(m_glex);
 
-void Renderer::loadIdentity(void)
-{
-#if 0
-    m_matrix[m_matrixMode].setToIdentity();
-    m_translate = QVector3D(0.0f, 0.0f, 0.0f);
-    m_scale = QVector3D(0.0f, 0.0f, 0.0f);
-    m_rotation = QQuaternion(0.0f, 0.0f, 0.0f, 0.0f);
-#endif
-}
+    glexBeginFrame(m_viewport[2], m_viewport[3]);
 
-void Renderer::translate(const Eigen::Vector3f &r)
-{
-    //m_translate += r;
-}
+    // TODO
 
-void Renderer::scale(const Eigen::Vector3f &r)
-{
-    //m_scale *= r;
-}
-
-void Renderer::rotation(float angle, const Eigen::Vector3f &axis)
-{
-    //m_rotation *= Eigen::Quaternionf(Eigen::AngleAxisf(angle, axis));
-}
-
-void Renderer::add(DirectionalLight &directionalLight)
-{
-
-}
-
-void Renderer::add(PointLight &pointLight)
-{
-
-}
-
-void Renderer::add(SpotLight &spotLight)
-{
-
+    glexEndFrame();
 }
 
 VOLCANO_GRAPHICS_END

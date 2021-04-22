@@ -4,17 +4,16 @@
 #define VOLCANO_GRPHICS_MESH_HPP
 
 #include <Volcano/Graphics/Common.hpp>
-#include <Volcano/Graphics/Memory.hpp>
 
 VOLCANO_GRAPHICS_BEGIN
 
 class Mesh {
 public:
-    Mesh(Memory &memory);
+    Mesh(void);
     virtual ~Mesh(void);
 
 private:
-    Memory &m_memory;
+    GLEXMesh *m_mesh;
 };
 
 VOLCANO_GRAPHICS_END

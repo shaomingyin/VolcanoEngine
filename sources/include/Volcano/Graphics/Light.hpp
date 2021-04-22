@@ -11,6 +11,9 @@ class Light {
 public:
     Light();
     virtual ~Light(void);
+
+private:
+    GLEXLight *m_light;
 };
 
 VOLCANO_GRAPHICS_END

@@ -4,8 +4,8 @@
 #ifndef VOLCANO_VM_TASK_H
 #define VOLCANO_VM_TASK_H
 
-#include <Volcano/Common.h>
-#include <Volcano/List.h>
+#include <uv.h>
+#include <cx/list.h>
 
 #ifdef LUA_EXTRASPACE
 #	undef LUA_EXTRASPACE
@@ -27,14 +27,14 @@
 #   undef luai_userstateyield
 #endif
 
-VOLCANO_C_BEGIN
+CX_BEGIN_DECLS
 
 typedef struct {
-	VolcanoListNode node;
+	cx_list_node_t node;
 	uv_loop_t *loop;
 	uv_timer_t sleepTimer;
 	int trapResult;
-	void *kernel;
+	void *data;
 } VolcanoVMTask;
 
 void volcanoVMAddTaskHook(lua_State *L, lua_State *T);
@@ -42,7 +42,7 @@ void volcanoVMRemoveTaskHook(lua_State *L, lua_State *T);
 void volcanoVMResumeTaskHook(lua_State *T, int n);
 void volcanoVMYieldTaskHook(lua_State *T, int n);
 
-VOLCANO_C_END
+CX_END_DECLS
 
 #define LUA_EXTRASPACE sizeof(VolcanoVMTask)
 

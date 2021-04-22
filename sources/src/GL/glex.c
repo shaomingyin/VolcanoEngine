@@ -7,8 +7,10 @@
 #include <string.h>
 
 #include <cx/list.h>
-#include <HandmadeMath.h>
 #include <GL/glex.h>
+
+#define HANDMADE_MATH_IMPLEMENTATION
+#include <HandmadeMath.h>
 
 typedef struct {
 	hmm_vec3 translate;
@@ -16,19 +18,17 @@ typedef struct {
 	hmm_quaternion rotation;
 } GLEXTransform;
 
-#define GLEX_TRANSFORM_STACK_DEPTH 64
+#define GLEX_TRANSFORM_STACK_DEPTH 16
 
 #define GLEX_HEAP_SIZE_SHIFT 26
 #define GLEX_HEAP_SIZE (1 << GLEX_HEAP_SIZE_SHIFT)
 #define GLEX_HEAP_MASK (GLEX_HEAP_SIZE - 1)
 
 typedef struct {
-	cx_list_t bufferList;
+	GLuint id;
 	GLsizeiptr freeSize;
-	GLenum target;
-	GLenum usage;
-	GLuint bufferObject;
 	cx_list_node_t node;
+	cx_list_t bufferList;
 } GLEXHeap;
 
 typedef struct {
@@ -63,6 +63,17 @@ struct GLEXMesh_ {
 };
 
 typedef struct {
+	GLint width;
+	GLint height;
+	GLboolean sizeChanged;
+	GLuint id;
+	GLuint positionTex;
+	GLuint normalTex;
+	GLuint colorTex;
+	GLuint program;
+} GLEXGBuffer;
+
+typedef struct {
 	GLEXLight *light;
 	GLEXTransform transform;
 } GLEXFrameLight;
@@ -73,10 +84,12 @@ typedef struct {
 	GLEXTransform transform;
 } GLEXFrameMesh;
 
-#define GLEX_FRAME_LIGHT_MAX 256
-#define GLEX_FRAME_MESH_MAX 1024
+#define GLEX_FRAME_LIGHT_MAX 512
+#define GLEX_FRAME_MESH_MAX 4096
 
 typedef struct {
+	hmm_mat4 viewMatrix;
+	hmm_mat4 projectionMatrix;
 	GLEXFrameLight lightArray[GLEX_FRAME_LIGHT_MAX];
 	GLint lightCount;
 	GLEXFrameMesh meshArray[GLEX_FRAME_MESH_MAX];
@@ -89,10 +102,9 @@ struct GLEXContext_ {
 	GLchar *logPrefix;
 	GLint logId;
 
-	GLint viewport[4];
-
-	GLboolean clearEnabled;
-	hmm_vec4 clearColor;
+	GLboolean lightingEnabled;
+	GLboolean shadowEnabled;
+	GLuint debugDrawMask;
 
 	cx_list_t heapLists[GLEX_HEAP_TYPE_MAX];
 
@@ -100,12 +112,14 @@ struct GLEXContext_ {
 	GLint transformTop;
 
 	hmm_vec3 viewPosition;
-	hmm_vec3 viewDirection;
+	hmm_vec3 viewCenter;
 	hmm_vec3 viewUp;
 
 	GLfloat viewFov;
 	GLfloat viewRatio;
 	GLfloat viewRange[2];
+
+	GLEXGBuffer gBuffer;
 
 	GLEXLight *currentLight;
 	GLEXLight ambientLight;
@@ -130,6 +144,39 @@ static const hmm_vec3 glexAxis[3] = {
 };
 
 static CX_THREAD GLEXContext *glex = NULL;
+
+static const GLchar *GLEX_VS_BASIC =
+	"#version 330 core\n"
+	"layout(location = 0) in vec3 inPosition;\n"
+	"layout(location = 1) in vec3 inNormal;\n"
+	"layout(location = 2) in vec2 inTexCoord;\n"
+	"uniform mat4 modelMatrix;\n"
+	"uniform mat4 viewMatrix;\n"
+	"uniform mat4 projectionMatrix;\n"
+	"uniform mat4 normalMatrix;\n"
+	"out vec2 outTexCoord;\n"
+	"out vec3 outFragPos;\n"
+	"void main() {\n"
+	"	gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(position, 1.0);\n"
+	"	outTexCoord = inTexCoord;\n"
+	"}\n";
+
+static const GLchar *GLEX_FS_GBUFFER =
+	"#version 330 core\n"
+	"layout(location = 0) out vec3 gPosition;\n"
+	"layout(location = 1) out vec3 gNormal;\n"
+	"layout(location = 2) out vec4 gAlbedoSpec;\n"
+	"in vec2 texCoord;\n"
+	"in vec3 fragPos;\n"
+	"in vec3 normal;\n"
+	"uniform sampler2D texture_diffuse1;\n"
+	"uniform sampler2D texture_specular1;\n"
+	"void main() {\n"
+	"	gPosition = FragPos;\n"
+	"	gNormal = normalize(Normal);\n"
+	"	gColor.rgb = texture(texture_diffuse1, TexCoords).rgb;\n"
+	"	gColor.a = texture(texture_specular1, TexCoords).r;\n"
+	"}\n";
 
 static void glexWriteLog(GLEXLogLevel logLevel, const char *fmt, ...)
 {
@@ -185,10 +232,11 @@ static void glexWriteLog(GLEXLogLevel logLevel, const char *fmt, ...)
 #define GLEX_LOGI(fmt, ...) glexWriteLog(GLEX_LOG_LEVEL_INFO, fmt, __VA_ARGS__)
 #define GLEX_LOGD(fmt, ...) glexWriteLog(GLEX_LOG_LEVEL_DEBUG, fmt, __VA_ARGS__)
 
-static GLboolean glexAllocBufferFromHeap(GLEXHeap *heap, GLEXBuffer *out, GLsizeiptr size)
+static GLboolean glexAllocBufferFromHeap(GLEXBuffer *out, GLEXHeap *heap, GLsizeiptr size)
 {
-	GLEX_ASSERT(glex != NULL);
 	GLEX_ASSERT(out != NULL);
+	GLEX_ASSERT(heap != NULL);
+	GLEX_ASSERT(size > 0);
 
 	if (size > heap->freeSize)
 		return GL_FALSE;
@@ -204,10 +252,6 @@ static GLboolean glexAllocBufferFromHeap(GLEXHeap *heap, GLEXBuffer *out, GLsize
 		offset = used->offset + used->size;
 	}
 
-	out->heap = heap;
-	out->offset = offset;
-	out->size = size;
-
 	cx_list_node_reset(&out->node);
 
 	if (node == cx_list_knot(&heap->bufferList)) {
@@ -216,6 +260,10 @@ static GLboolean glexAllocBufferFromHeap(GLEXHeap *heap, GLEXBuffer *out, GLsize
 		cx_list_append(&heap->bufferList, &out->node);
 	} else
 		cx_list_insert(&heap->bufferList, &out->node, node);
+
+	out->offset = offset;
+	out->size = size;
+	out->heap = heap;
 
 	heap->freeSize -= size;
 
@@ -235,7 +283,7 @@ static GLboolean glexAllocBuffer(GLEXBuffer *out, GLEXHeapType heapType, GLsizei
 
 	CX_LIST_FOREACH(node, heapList) {
 		heap = CX_MEMBEROF(node, GLEXHeap, node);
-		if (glexAllocBufferFromHeap(heap, out, size))
+		if (glexAllocBufferFromHeap(out, heap, size))
 			return GL_TRUE;
 	}
 
@@ -256,16 +304,16 @@ static GLboolean glexAllocBuffer(GLEXBuffer *out, GLEXHeapType heapType, GLsizei
 	if (heap == NULL)
 		return GL_FALSE;
 
-	glGenBuffers(1, &heap->bufferObject);
-	if (heap->bufferObject == 0) {
+	glGenBuffers(1, &heap->id);
+	if (heap->id == 0) {
 		free(heap);
 		return GL_FALSE;
 	}
 
 	GLint arrayBufferBackup;
 	glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &arrayBufferBackup);
-	glBindBuffer(GL_ARRAY_BUFFER, heap->bufferObject);
-	glBufferData(GL_ARRAY_BUFFER, size, NULL, usage);
+	glBindBuffer(GL_ARRAY_BUFFER, heap->id);
+	glBufferData(GL_ARRAY_BUFFER, GLEX_HEAP_SIZE, NULL, usage);
 	glBindBuffer(GL_ARRAY_BUFFER, arrayBufferBackup);
 
 	heap->freeSize = GLEX_HEAP_SIZE;
@@ -274,7 +322,7 @@ static GLboolean glexAllocBuffer(GLEXBuffer *out, GLEXHeapType heapType, GLsizei
 	cx_list_node_reset(&heap->node);
 	cx_list_append(heapList, &heap->node);
 
-	return glexAllocBufferFromHeap(heap, out, size);
+	return glexAllocBufferFromHeap(out, heap, size);
 }
 
 static void glexFreeBuffer(GLEXBuffer *buf)
@@ -294,7 +342,7 @@ static void glexFreeBuffer(GLEXBuffer *buf)
 
 static GLuint glexCreateShader(GLenum type, const char *source)
 {
-	int len = strlen(source);
+	GLint len = (GLint)strlen(source);
 	if (len <= 0)
 		return 0;
 
@@ -354,9 +402,8 @@ static GLuint glexCreateProgram(GLenum type1, const char *source1, ...)
 
 	GLint linkStatus;
 	glGetProgramiv(id, GL_LINK_STATUS, &linkStatus);
-	if (!linkStatus) {
+	if (!linkStatus)
 		goto bad1;
-	}
 
 bad1:
 	glDeleteProgram(id);
@@ -369,7 +416,7 @@ static GLboolean glexInitLight(GLEXContext *context, GLEXLight *light, GLEXLight
 {
 	GLEX_ASSERT(context != NULL);
 	GLEX_ASSERT(light != NULL);
-	GLEX_ASSERT((0 <= lightType && lightType < GLEX_LIGHT_TYPE_MAX) || lightType == GLEX_LIGHT_TYPE_AMBIENT);
+	GLEX_ASSERT(0 <= lightType && lightType < GLEX_LIGHT_TYPE_MAX);
 
 	light->type = lightType;
 	light->color = HMM_Vec3(1.0f, 1.0f, 1.0f);
@@ -431,24 +478,187 @@ static GLboolean glexInitMesh(GLEXContext *context, GLEXMesh *mesh, GLEXHeapType
 	return GL_TRUE;
 }
 
+static void glexFreeGBuffer(GLEXGBuffer *gBuffer)
+{
+	GLEX_ASSERT(gBuffer != NULL);
+
+	if (gBuffer->positionTex > 0) {
+		glDeleteTextures(1, &gBuffer->positionTex);
+		gBuffer->positionTex = 0;
+	}
+
+	if (gBuffer->normalTex > 0) {
+		glDeleteTextures(1, &gBuffer->normalTex);
+		gBuffer->normalTex = 0;
+	}
+
+	if (gBuffer->colorTex > 0) {
+		glDeleteTextures(1, &gBuffer->colorTex);
+		gBuffer->colorTex = 0;
+	}
+
+	if (gBuffer->id > 0) {
+		glDeleteFramebuffers(1, &gBuffer->id);
+		gBuffer->id = 0;
+	}
+}
+
+GLEX_API void glexUpdateGBuffer(GLEXGBuffer *gBuffer)
+{
+	GLEX_ASSERT(gBuffer != NULL);
+
+	if (gBuffer->sizeChanged)
+		return;
+
+	glexFreeGBuffer(gBuffer);
+
+	gBuffer->sizeChanged = GL_FALSE;
+
+	if (gBuffer->width < 1 || gBuffer->height < 1)
+		return;
+
+	GLuint id;
+	GLuint positionTex, normalTex, colorTex;
+
+	glGenFramebuffers(1, &id);
+	glBindFramebuffer(GL_FRAMEBUFFER, id);
+
+	glGenTextures(1, &positionTex);
+	glBindTexture(GL_TEXTURE_2D, positionTex);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, gBuffer->width, gBuffer->height, 0, GL_RGB, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, positionTex, 0);
+
+	glGenTextures(1, &normalTex);
+	glBindTexture(GL_TEXTURE_2D, normalTex);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, gBuffer->width, gBuffer->height, 0, GL_RGB, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, normalTex, 0);
+
+	glGenTextures(1, &colorTex);
+	glBindTexture(GL_TEXTURE_2D, colorTex);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, gBuffer->width, gBuffer->height, 0, GL_RGBA, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, colorTex, 0);
+
+	GLuint attachments[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
+	glDrawBuffers(3, attachments);
+
+	gBuffer->id = id;
+	gBuffer->positionTex = positionTex;
+	gBuffer->normalTex = normalTex;
+	gBuffer->colorTex = colorTex;
+}
+
+static GLboolean glexInitGBuffer(GLEXContext *context, GLint width, GLint height)
+{
+	GLEX_ASSERT(context != NULL);
+	GLEX_ASSERT(context->gBuffer.program == 0);
+
+	context->gBuffer.program = glexCreateProgram(
+		GL_VERTEX_SHADER, GLEX_VS_BASIC,
+		GL_FRAGMENT_SHADER, GLEX_FS_GBUFFER,
+		GL_INVALID_ENUM);
+
+	if (context->gBuffer.program == 0)
+		return GL_FALSE;
+
+	return GL_TRUE;
+}
+
+static void glexReleaseGBuffer(GLEXContext *context)
+{
+	GLEX_ASSERT(context != NULL);
+	GLEX_ASSERT(context->gBuffer.program > 0);
+
+	glexFreeGBuffer(&context->gBuffer);
+
+	glDeleteProgram(context->gBuffer.program);
+	context->gBuffer.program = 0;
+}
+
+static void glexRenderShadows(void)
+{
+	GLEX_ASSERT(glex != NULL);
+
+	if (!glex->shadowEnabled)
+		return;
+
+	// TODO
+}
+
+static void glexRenderDebugTriangles(void)
+{
+	GLEX_ASSERT(glex != NULL);
+
+	if (!(glex->debugDrawMask & GLEX_DEBUG_DRAW_TRIANGLES))
+		return;
+}
+
+static void glexRenderDebugNormals(void)
+{
+	GLEX_ASSERT(glex != NULL);
+
+	if (!(glex->debugDrawMask & GLEX_DEBUG_DRAW_NORMALS))
+		return;
+}
+
+static void glexDeferredRender(void)
+{
+	GLEX_ASSERT(glex != NULL);
+
+	glexUpdateGBuffer(&glex->gBuffer);
+
+	if (glex->gBuffer.width < 1 || glex->gBuffer.height < 1)
+		return;
+
+	glBindFramebuffer(GL_FRAMEBUFFER, glex->gBuffer.id);
+	glUseProgram(glex->gBuffer.program);
+
+	// TODO draw meshes to gbuffer...
+	for (GLint i = 0; i < glex->frameData.meshCount; ++i) {
+	}
+
+	glBindFramebuffer(GL_FRAMEBUFFER, GL_NONE);
+
+#if 0
+	glUseProgram(glex->program);
+	// TODO deferred shading...
+	// TODO render op objects...
+	// TODO render debug drawing...
+#endif
+
+	glexRenderShadows();
+	glexRenderDebugTriangles();
+	glexRenderDebugNormals();
+}
+
+static void glexSimpleRender(void)
+{
+	GLEX_ASSERT(glex != NULL);
+
+	// TODO
+}
+
 GLEX_API GLEXContext *glexCreateContext(void *userData)
 {
 	GLEXContext *context = malloc(sizeof(GLEXContext));
 	if (context == NULL)
 		goto bad0;
 
+	memset(context, 0, sizeof(GLEXContext));
+
 	context->logEnabled = GL_FALSE;
 	context->logLevel = GLEX_LOG_LEVEL_ERROR;
 	context->logPrefix = NULL;
 	context->logId = 0;
 
-	context->viewport[0] = 0;
-	context->viewport[1] = 0;
-	context->viewport[2] = 1;
-	context->viewport[3] = 1;
-
-	context->clearEnabled = GL_TRUE;
-	context->clearColor = HMM_Vec4(0.0f, 0.0f, 0.0f, 0.0f);
+	context->lightingEnabled = GL_TRUE;
+	context->shadowEnabled = GL_TRUE;
+	context->debugDrawMask = 0;
 
 	for (GLint i = 0; i < GLEX_HEAP_TYPE_MAX; ++i)
 		cx_list_reset(&context->heapLists[i]);
@@ -459,7 +669,7 @@ GLEX_API GLEXContext *glexCreateContext(void *userData)
 	context->transformTop = 0;
 
 	context->viewPosition = HMM_Vec3(0.0f, 0.0f, 0.0f);
-	context->viewDirection = HMM_Vec3(0.0f, 0.0f, -1.0f);
+	context->viewCenter = HMM_Vec3(0.0f, 0.0f, -1.0f);
 	context->viewUp = HMM_Vec3(0.0f, 1.0f, 0.0f);
 
 	context->viewFov = 90.0f;
@@ -467,10 +677,10 @@ GLEX_API GLEXContext *glexCreateContext(void *userData)
 	context->viewRange[0] = 0.1f;
 	context->viewRange[1] = 100.0f;
 
-	context->currentLight = NULL;
-
-	if (!glexInitLight(context, &context->ambientLight, GLEX_LIGHT_TYPE_AMBIENT))
+	if (!glexInitGBuffer(context, 0, 0))
 		goto bad1;
+
+	context->currentLight = NULL;
 
 	for (GLint i = 0; i < GLEX_LIGHT_TYPE_MAX; ++i)
 		cx_list_reset(&context->lights[i]);
@@ -478,7 +688,7 @@ GLEX_API GLEXContext *glexCreateContext(void *userData)
 	context->currentMaterial = NULL;
 
 	if (!glexInitBuiltinMaterial(context))
-		goto bad1;
+		goto bad2;
 
 	context->currentMesh = NULL;
 	cx_list_reset(&context->meshes);
@@ -490,6 +700,9 @@ GLEX_API GLEXContext *glexCreateContext(void *userData)
 	context->userData = userData;
 
 	return context;
+
+bad2:
+	glexReleaseGBuffer(context);
 
 bad1:
 	free(context);
@@ -505,6 +718,7 @@ GLEX_API void glexDeleteContext(GLEXContext *context)
 	if (glex == context)
 		glex = NULL;
 
+	glexReleaseGBuffer(context);
 	free(context);
 }
 
@@ -518,7 +732,7 @@ GLEX_API void glexMakeCurrent(GLEXContext *context)
 	glex = context;
 }
 
-GLEX_API void *glexUserData(void)
+GLEX_API void *glexGetUserData(void)
 {
 	GLEX_ASSERT(glex != NULL);
 
@@ -537,13 +751,6 @@ GLEX_API void glexDisableLog(void)
 	GLEX_ASSERT(glex != NULL);
 
 	glex->logEnabled = GL_FALSE;
-}
-
-GLEX_API GLboolean glexIsLogEnabled(void)
-{
-	GLEX_ASSERT(glex != NULL);
-
-	return glex->logEnabled;
 }
 
 GLEX_API void glexLogPrefix(const char *prefix)
@@ -577,50 +784,42 @@ GLEX_API GLEXLogLevel glexGetLogLevel(void)
 	return glex->logLevel;
 }
 
-GLEX_API void glexViewport(int x, int y, int width, int height)
-{
-	GLEX_ASSERT(glex != NULL);
-	GLEX_ASSERT(width >= 0);
-	GLEX_ASSERT(height >= 0);
-
-	glex->viewport[0] = x;
-	glex->viewport[1] = y;
-	glex->viewport[2] = width;
-	glex->viewport[3] = height;
-}
-
-GLEX_API void glexEnableClear(void)
+GLEX_API void glexEnableLighting(void)
 {
 	GLEX_ASSERT(glex != NULL);
 
-	glex->clearEnabled = GL_TRUE;
+	glex->lightingEnabled = GL_TRUE;
 }
 
-GLEX_API void glexDisableClear(void)
+GLEX_API void glexDisableLighting(void)
 {
 	GLEX_ASSERT(glex != NULL);
 
-	glex->clearEnabled = GL_FALSE;
+	glex->lightingEnabled = GL_FALSE;
 }
 
-GLEX_API GLboolean glexIsClearEnabled(void)
+GLEX_API void glexEnableShadow(void)
 {
 	GLEX_ASSERT(glex != NULL);
 
-	return glex->clearEnabled;
+	glex->shadowEnabled = GL_TRUE;
 }
 
-GLEX_API void glexClearColor(GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha)
+GLEX_API void glexDisableShadow(void)
 {
 	GLEX_ASSERT(glex != NULL);
 
-	glex->clearColor.R = red;
-	glex->clearColor.G = green;
-	glex->clearColor.B = blue;
-	glex->clearColor.A = alpha;
+	glex->shadowEnabled = GL_FALSE;
 }
 
-GLEX_API void glexBeginFrame(void)
+GLEX_API void glexDebugDrawMask(GLuint mask)
+{
+	GLEX_ASSERT(glex != NULL);
+
+	glex->debugDrawMask = mask;
+}
+
+GLEX_API void glexBeginFrame(GLint width, GLint height)
 {
 	GLEX_ASSERT(glex != NULL);
 	GLEX_ASSERT(!glex->framing);
@@ -628,6 +827,12 @@ GLEX_API void glexBeginFrame(void)
 	glex->framing = GL_TRUE;
 	glex->frameData.lightCount = 0;
 	glex->frameData.meshCount = 0;
+
+	if (glex->gBuffer.width != width || glex->gBuffer.height != height) {
+		glex->gBuffer.width = width;
+		glex->gBuffer.height = height;
+		glex->gBuffer.sizeChanged = GL_TRUE;
+	}
 }
 
 GLEX_API void glexEndFrame(void)
@@ -637,35 +842,34 @@ GLEX_API void glexEndFrame(void)
 
 	glex->framing = GL_FALSE;
 
-	if (glex->viewport[2] < 1 || glex->viewport[3] < 0)
-		return;
-
-	glViewport(glex->viewport[0], glex->viewport[1], glex->viewport[2], glex->viewport[3]);
-
-	if (glex->clearEnabled) {
-		glClearColor(glex->clearColor.R, glex->clearColor.G, glex->clearColor.B, glex->clearColor.A);
-		glClear(GL_COLOR_BUFFER_BIT);
-	}
-
 	if (glex->frameData.meshCount < 1)
 		return;
 
-	hmm_mat4 viewMatrix = HMM_LookAt(glex->viewPosition,
-		HMM_AddVec3(glex->viewPosition, glex->viewDirection), glex->viewUp);
+	// TODO sort frame meshes by material and heap?
 
-	hmm_mat4 projectionMatrix =
+	glex->frameData.viewMatrix =
+		HMM_LookAt(glex->viewPosition, glex->viewCenter, glex->viewUp);
+
+	glex->frameData.projectionMatrix =
 		HMM_Perspective(glex->viewFov, glex->viewRatio, glex->viewRange[0], glex->viewRange[1]);
 
-	// TODO Deferred rendering.
+	// hmm_mat4 normalMatrix;
+
+	if (glex->lightingEnabled)
+		glexDeferredRender();
+	else
+		glexSimpleRender();
 }
 
 GLEX_API void glexResetTransform(void)
 {
 	GLEX_ASSERT(glex != NULL);
 
-	glex->transformStack[glex->transformTop].translate = HMM_Vec3(0.0f, 0.0f, 0.0f);
-	glex->transformStack[glex->transformTop].scale = HMM_Vec3(1.0f, 1.0f, 1.0f);
-	glex->transformStack[glex->transformTop].rotation = HMM_QuaternionFromAxisAngle(glexAxis[0], 0.0f);
+	GLEXTransform *transform = &glex->transformStack[glex->transformTop];
+
+	transform->translate = HMM_Vec3(0.0f, 0.0f, 0.0f);
+	transform->scale = HMM_Vec3(1.0f, 1.0f, 1.0f);
+	transform->rotation = HMM_QuaternionFromAxisAngle(glexAxis[0], 0.0f);
 }
 
 GLEX_API void glexPushTransform(void)
@@ -711,7 +915,7 @@ GLEX_API void glexRotate(GLfloat angle, GLfloat x, GLfloat y, GLfloat z)
 }
 
 GLEX_API void glexLookAt(GLfloat eyeX, GLfloat eyeY, GLfloat eyeZ,
-	GLfloat dirX, GLfloat dirY, GLfloat dirZ, GLfloat upX, GLfloat upY, GLfloat upZ)
+	GLfloat centerX, GLfloat centerY, GLfloat centerZ, GLfloat upX, GLfloat upY, GLfloat upZ)
 {
 	GLEX_ASSERT(glex != NULL);
 
@@ -719,13 +923,11 @@ GLEX_API void glexLookAt(GLfloat eyeX, GLfloat eyeY, GLfloat eyeZ,
 	glex->viewPosition.Y = eyeY;
 	glex->viewPosition.Z = eyeZ;
 
-	glex->viewDirection.X = dirX;
-	glex->viewDirection.Y = dirY;
-	glex->viewDirection.Z = dirZ;
+	glex->viewCenter.X = centerX;
+	glex->viewCenter.Y = centerY;
+	glex->viewCenter.Z = centerZ;
 
-	glex->viewUp.X = upX;
-	glex->viewUp.Y = upY;
-	glex->viewUp.Z = upZ;
+	glex->viewUp = HMM_NormalizeVec3(HMM_Vec3(upX, upY, upZ));
 }
 
 GLEX_API void glexPerpective(GLfloat fov, GLfloat ratio, GLfloat zNear, GLfloat zFar)
@@ -736,6 +938,16 @@ GLEX_API void glexPerpective(GLfloat fov, GLfloat ratio, GLfloat zNear, GLfloat 
 	glex->viewRatio = ratio;
 	glex->viewRange[0] = zNear;
 	glex->viewRange[1] = zFar;
+}
+
+GLEX_API void glexAmbientLight(float strength, GLfloat red, GLfloat green, GLfloat blue)
+{
+	GLEX_ASSERT(glex != NULL);
+
+	glex->ambientLight.strength = HMM_Clamp(0.0f, strength, 1.0f);
+	glex->ambientLight.color.R = HMM_Clamp(0.0f, red, 1.0f);
+	glex->ambientLight.color.G = HMM_Clamp(0.0f, green, 1.0f);
+	glex->ambientLight.color.B = HMM_Clamp(0.0f, blue, 1.0f);
 }
 
 GLEX_API GLEXLight *glexCreateLight(GLEXLightType lightType)
@@ -752,13 +964,6 @@ GLEX_API GLEXLight *glexCreateLight(GLEXLightType lightType)
 	}
 
 	return light;
-}
-
-GLEX_API GLEXLight *glexAmbientLight(void)
-{
-	GLEX_ASSERT(glex != NULL);
-
-	return &glex->ambientLight;
 }
 
 GLEX_API void glexDeleteLight(GLEXLight *light)
@@ -925,8 +1130,8 @@ GLEX_API void glexBindMesh(GLEXMesh *mesh)
 	if (mesh != NULL) {
 		GLEX_ASSERT(mesh->vertexBuffer.heap != NULL);
 		GLEX_ASSERT(mesh->vertexIndexBuffer.heap != NULL);
-		glBindBuffer(GL_ARRAY_BUFFER, mesh->vertexBuffer.heap->bufferObject);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->vertexIndexBuffer.heap->bufferObject);
+		glBindBuffer(GL_ARRAY_BUFFER, mesh->vertexBuffer.heap->id);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->vertexIndexBuffer.heap->id);
 	} else {
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
@@ -960,7 +1165,7 @@ GLEX_API void glexMeshVertexData(const GLEXVertex *p, GLsizeiptr count, GLintptr
 #ifdef GLEX_DEBUG
 	GLint id;
 	glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &id);
-	GLEX_ASSERT(id == mesh->vertexBuffer.heap->bufferObject);
+	GLEX_ASSERT(id == mesh->vertexBuffer.heap->id);
 #endif
 
 	GLsizeiptr size = sizeof(GLEXVertex) * count;
@@ -983,7 +1188,7 @@ GLEX_API void glexMeshVertexIndexData(const GLEXVertexIndex *p, GLsizeiptr count
 #ifdef GLEX_DEBUG
 	GLint id;
 	glGetIntegerv(GL_ELEMENT_ARRAY_BUFFER_BINDING, &id);
-	GLEX_ASSERT(id == mesh->vertexIndexBuffer.heap->bufferObject);
+	GLEX_ASSERT(id == mesh->vertexIndexBuffer.heap->id);
 #endif
 
 	GLsizeiptr size = sizeof(GLEXVertexIndex) * count;
@@ -1005,7 +1210,7 @@ GLEX_API GLEXVertex *glexMapMeshVertexBuffer(GLintptr offset, GLsizeiptr count)
 #ifdef GLEX_DEBUG
 	GLint id;
 	glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &id);
-	GLEX_ASSERT(id == mesh->vertexBuffer.heap->bufferObject);
+	GLEX_ASSERT(id == mesh->vertexBuffer.heap->id);
 #endif
 
 	GLsizeiptr size = sizeof(GLEXVertex) * count;
@@ -1026,7 +1231,7 @@ GLEX_API void glexUnmapMeshVertexBuffer(void)
 #ifdef GLEX_DEBUG
 	GLint id;
 	glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &id);
-	GLEX_ASSERT(id == mesh->vertexBuffer.heap->bufferObject);
+	GLEX_ASSERT(id == mesh->vertexBuffer.heap->id);
 #endif
 
 	glUnmapBuffer(GL_ARRAY_BUFFER);
@@ -1045,7 +1250,7 @@ GLEX_API GLEXVertexIndex *glexMapMeshVertexIndexBuffer(GLintptr offset, GLsizeip
 #ifdef GLEX_DEBUG
 	GLint id;
 	glGetIntegerv(GL_ELEMENT_ARRAY_BUFFER_BINDING, &id);
-	GLEX_ASSERT(id == mesh->vertexIndexBuffer.heap->bufferObject);
+	GLEX_ASSERT(id == mesh->vertexIndexBuffer.heap->id);
 #endif
 
 	GLsizeiptr size = sizeof(GLEXVertex) * count;
@@ -1066,7 +1271,7 @@ GLEX_API void glexUnmapMeshVertexIndexBuffer(void)
 #ifdef GLEX_DEBUG
 	GLint id;
 	glGetIntegerv(GL_ELEMENT_ARRAY_BUFFER_BINDING, &id);
-	GLEX_ASSERT(id == mesh->vertexIndexBuffer.heap->bufferObject);
+	GLEX_ASSERT(id == mesh->vertexIndexBuffer.heap->id);
 #endif
 
 	glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
