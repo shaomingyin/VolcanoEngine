@@ -21,6 +21,10 @@ Base::Base(uv_loop_t *loop):
 
 Base::~Base(void)
 {
+	if (m_thread.joinable())
+		stop();
+
+	uvSyncClose(&m_trapAsync);
 }
 
 bool Base::start(std::string_view rootPath, Traps *traps)
@@ -28,8 +32,8 @@ bool Base::start(std::string_view rootPath, Traps *traps)
 	VOLCANO_ASSERT(m_loop != nullptr);
 	VOLCANO_ASSERT(traps != nullptr);
 
-	if (!std::filesystem::is_directory(m_rootPath)) {
-		VOLCANO_LOGE("Root path '%s' is not a directory.", m_rootPath.c_str());
+	if (!std::filesystem::is_directory(rootPath)) {
+		VOLCANO_LOGE("Root path '%s' is not a directory.", rootPath.data());
 		return false;
 	}
 
@@ -41,7 +45,10 @@ bool Base::start(std::string_view rootPath, Traps *traps)
 	m_thread = std::thread(&Base::threadMain, this, &initPromise);
 	auto state = initResult.wait_for(15s);
 
-	return (state == std::future_status::ready);
+	if (state != std::future_status::ready)
+		return false;
+
+	return initResult.get();
 }
 
 void Base::stop(void)
@@ -79,16 +86,24 @@ void Base::run(uv_loop_t *loop, std::promise<bool> *initPromise)
 	VOLCANO_ASSERT(loop != nullptr);
 	VOLCANO_ASSERT(initPromise != nullptr);
 
+	uv_async_init(loop, &m_quitAsync, &Base::quitHandler);
+	ScopeGuard quitGuard([this] { uvSyncClose(&m_quitAsync); });
+
 	uv_timer_t frameTimer;
 	uv_timer_init(loop, &frameTimer);
 	uv_timer_start(&frameTimer, &Base::frameHandler, 0, 16);
 	frameTimer.data = this;
 
-	ScopeGuard updateTimerGuard([&] { uv_timer_stop(&frameTimer); });
+	ScopeGuard updateTimerGuard([&frameTimer] {
+		uv_timer_stop(&frameTimer);
+		uvSyncClose(&frameTimer);
+	});
 
 	initPromise->set_value(true);
 
+	VOLCANO_LOGI("VM main loop running...");
 	uv_run(loop, UV_RUN_DEFAULT);
+	VOLCANO_LOGI("VM main loop exited.");
 }
 
 void Base::frame(float elapsed)
@@ -147,14 +162,24 @@ void Base::threadMain(std::promise<bool> *initPromise)
 	run(&loop, initPromise);
 }
 
+void Base::quitHandler(uv_async_t *p)
+{
+	VOLCANO_ASSERT(p != nullptr);
+	uv_stop(p->loop);
+}
+
 void Base::frameHandler(uv_timer_t *p)
 {
-	auto core = reinterpret_cast<Base *>(p->data);
-	VOLCANO_ASSERT(core != nullptr);
+	VOLCANO_ASSERT(p != nullptr);
+	auto base = reinterpret_cast<Base *>(p->data);
+	VOLCANO_ASSERT(base != nullptr);
+
 	uint64_t curr = uv_now(p->loop);
-	uint64_t pass = curr - core->m_timeLast;
-	core->frame(float(pass));
-	core->m_timeLast = curr;
+	uint64_t pass = curr - base->m_timeLast;
+
+	base->frame(float(pass));
+	base->m_timeLast = curr;
+
 	uv_update_time(p->loop);
 }
 

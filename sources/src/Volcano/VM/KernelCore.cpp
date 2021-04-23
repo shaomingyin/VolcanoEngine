@@ -5,7 +5,7 @@
 
 VOLCANO_VM_BEGIN
 
-static constexpr const char *initrcPath = "/init.lua";
+static const char *initPath = "/init.lua";
 
 Kernel::Kernel(uv_loop_t *loop):
 	Base(loop)
@@ -19,8 +19,13 @@ Kernel::~Kernel(void)
 void Kernel::addTaskHook(lua_State *L, lua_State *T)
 {
 	auto main = taskFromLua(L);
+	VOLCANO_ASSERT(main != nullptr);
+
 	auto task = taskFromLua(T);
+	VOLCANO_ASSERT(task != nullptr);
+
 	auto kernel = fromTask(task);
+	VOLCANO_ASSERT(kernel != nullptr);
 
 	task->data = kernel;
 	task->loop = main->loop;
@@ -35,7 +40,9 @@ void Kernel::addTaskHook(lua_State *L, lua_State *T)
 void Kernel::removeTaskHook(lua_State *L, lua_State *T)
 {
 	auto task = taskFromLua(T);
+	VOLCANO_ASSERT(task != nullptr);
 
+	uvSyncClose(&task->sleepTimer);
 	cx_list_node_unlink(&task->node);
 }
 
@@ -81,7 +88,7 @@ void Kernel::run(uv_loop_t *loop, std::promise<bool> *initPromise)
 
 	int ret = lua_pcall(L, 2, 0, 0);
 	if (ret != LUA_OK) {
-		VOLCANO_LOGE("Failed to enter VM protected mode [%d].", ret);
+		VOLCANO_LOGE("Failed to enter VM protected mode [%d]: %s", ret, lua_tostring(L, -1));
 		initPromise->set_value(false);
 	}
 }
@@ -116,21 +123,28 @@ void Kernel::Main(lua_State *L, uv_loop_t *loop, std::promise<bool> *initPromise
 	VOLCANO_ASSERT(loop != nullptr);
 	VOLCANO_ASSERT(initPromise != nullptr);
 
-	uv_prepare_t schedulePrepare;
-	uv_prepare_init(loop, &schedulePrepare);
-	uv_prepare_start(&schedulePrepare, &Kernel::schedule);
-	schedulePrepare.data = L;
-
-	ScopeGuard schedulerGuard([&] { uv_prepare_stop(&schedulePrepare); });
+	VOLCANO_LOGI("VM starting...");
 
 	luaL_openlibs(L);
-	initExports(L);
+
+	newExports(L);
+	lua_setglobal(L, "volcnao");
 
 	if (!loadInitrc(L)) {
 		VOLCANO_LOGE("Failed to load initrc.");
 		initPromise->set_value(false);
 		return;
 	}
+
+	uv_prepare_t schedulePrepare;
+	uv_prepare_init(loop, &schedulePrepare);
+	uv_prepare_start(&schedulePrepare, &Kernel::schedule);
+	schedulePrepare.data = L;
+
+	ScopeGuard schedulerGuard([&schedulePrepare] {
+		uv_prepare_stop(&schedulePrepare);
+		uvSyncClose(&schedulePrepare);
+	});
 
 	Base::run(loop, initPromise);
 }
@@ -139,32 +153,34 @@ bool Kernel::loadInitrc(lua_State *L)
 {
 	VOLCANO_ASSERT(L != nullptr);
 
+	VOLCANO_LOGI("Loading %s...", initPath);
+
 	lua_State *T = lua_newthread(L);
 	if (T == NULL) {
 		VOLCANO_LOGE("Failed to create init task.");
 		return false;
 	}
 
-	ScopeGuard taskGuard([=] { lua_pop(L, 1); });
+	ScopeGuard taskGuard([L] { lua_pop(L, 1); });
 
-	PHYSFS_File *fp = PHYSFS_openRead(initrcPath);
+	PHYSFS_File *fp = PHYSFS_openRead(initPath);
 	if (fp == nullptr) {
-		VOLCANO_LOGE("Failed to open '%s'.", initrcPath);
+		VOLCANO_LOGE("Failed to open '%s'.", initPath);
 		return false;
 	}
 
-	ScopeGuard fpGuard([=] { PHYSFS_close(fp); });
+	ScopeGuard fpGuard([fp] { PHYSFS_close(fp); });
 
 	auto size = PHYSFS_fileLength(fp);
 	if (size < 1) {
-		VOLCANO_LOGE("Empty file '%s'.", initrcPath);
+		VOLCANO_LOGE("Empty file '%s'.", initPath);
 		return false;
 	}
 
 	ByteArray buf(size);
 	auto readSize = PHYSFS_readBytes(fp, buf.data(), size);
 	if (readSize != size) {
-		VOLCANO_LOGE("Failed to read '%s'.", initrcPath);
+		VOLCANO_LOGE("Failed to read '%s'.", initPath);
 		return false;
 	}
 

@@ -51,6 +51,7 @@ protected:
 
 private:
 	void threadMain(std::promise<bool> *initPromise);
+	static void quitHandler(uv_async_t *p);
 	static void frameHandler(uv_timer_t *p);
 	static void trapHandler(uv_async_t *p);
 

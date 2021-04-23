@@ -3,6 +3,7 @@
 #include <string>
 #include <string_view>
 #include <memory>
+#include <mutex>
 #include <filesystem>
 
 #include <argh.h>
@@ -36,25 +37,48 @@ static void printVersion(void)
 {
 }
 
-static void logOutputFunction(void *userdata, int category, SDL_LogPriority priority, const char *message)
+static void logOutput(void *data, int category, SDL_LogPriority priority, const char *message)
 {
-    FILE *fp;
 
-    if (priority == SDL_LOG_PRIORITY_ERROR || priority == SDL_LOG_PRIORITY_CRITICAL)
+#ifdef VOLCANO_DEBUG
+    FILE *fp;
+    if (priority == SDL_LOG_PRIORITY_CRITICAL || priority == SDL_LOG_PRIORITY_ERROR)
         fp = stderr;
     else
         fp = stdout;
+#else
+    static FILE *fp = nullptr
+    static std::mutex mutex;
 
-    fprintf(fp, "[%06d] %08d: %s\n", SDL_ThreadID(), SDL_GetTicks(), message);
+    {
+        std::lock_guard<std::mutex> locker(mutex);
+        if (fp == nullptr) {
+            fp = f
+        }
+    }
+#endif
+
+    static const char indTable[] = { 'V', 'D', 'I', 'W', 'E', 'F' };
+
+    char ind = '?';
+
+    if (SDL_LOG_PRIORITY_VERBOSE <= priority && priority < SDL_NUM_LOG_PRIORITIES)
+        ind = indTable[priority - SDL_LOG_PRIORITY_VERBOSE];
+
+    fprintf(fp, "[%06d] %c %08d: %s\n", SDL_ThreadID(), ind, SDL_GetTicks(), message);
 }
 
 static int Run(int argc, char *argv[])
 {
-    SDL_LogSetOutputFunction(&logOutputFunction, NULL);
+#ifdef VOLCANO_DEBUG
+    SDL_SetMainReady();
+#endif
 
     argh::parser cmdline;
     cmdline.add_params({ "-m", "--mode" });
     cmdline.parse(argc, argv);
+
+    SDL_LogSetOutputFunction(&logOutput, nullptr);
 
 #ifdef VOLCANO_DEBUG
     SDL_LogSetAllPriority(SDL_LOG_PRIORITY_DEBUG);
@@ -110,7 +134,7 @@ static int Run(int argc, char *argv[])
 
     auto engine = std::make_unique<Engine>(loop);
     if (!engine || !engine->start(rootPath)) {
-        VOLCANO_LOGE("Failed to init engine.");
+        VOLCANO_LOGE("Failed to initialize engine.");
         return EXIT_FAILURE;
     }
 
@@ -118,6 +142,7 @@ static int Run(int argc, char *argv[])
     uv_timer_init(loop, &pollEventsTimer);
     uv_timer_start(&pollEventsTimer, &pollEvents, 0, 15);
     pollEventsTimer.data = engine.get();
+    ScopeGuard pollEventsGuard([&pollEventsTimer] { uvSyncClose(&pollEventsTimer); });
 
     VOLCANO_LOGI("Start main loop...");
     uv_run(loop, UV_RUN_DEFAULT);

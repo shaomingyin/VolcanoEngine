@@ -6,7 +6,8 @@
 VOLCANO_SYSTEM_BEGIN
 
 Window::Window(void) :
-	m_window(nullptr)
+	m_window(nullptr),
+	m_gl(nullptr)
 {
 }
 

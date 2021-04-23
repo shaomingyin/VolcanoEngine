@@ -6,6 +6,7 @@
 #include <stack>
 #include <string>
 #include <string_view>
+#include <functional>
 
 #include <lua.hpp>
 
@@ -16,35 +17,32 @@
 
 VOLCANO_VM_LUA_BEGIN
 
-VOLCANO_INLINE void push(lua_State *L, bool v)
-{
-	lua_pushboolean(L, v);
-}
+struct MetaTable {
+	MetaTable(void) :
+		name(nullptr),
+		gc(nullptr),
+		toString(nullptr),
+		index(nullptr),
+		newIndex(nullptr)
+	{
+	}
 
-VOLCANO_INLINE void push(lua_State *L, int v)
-{
-	lua_pushinteger(L, v);
-}
+	int (*name)(lua_State *L);
+	int (*gc)(lua_State *L);
+	int (*toString)(lua_State *L);
+	int (*index)(lua_State *L);
+	int (*newIndex)(lua_State *L);
+};
 
-VOLCANO_INLINE void push(lua_State *L, long v)
-{
-	lua_pushinteger(L, v);
-}
+void newTable(lua_State *L, const char *metaName, const MetaTable *metaTable);
 
-VOLCANO_INLINE void push(lua_State *L, double v)
-{
-	lua_pushnumber(L, v);
-}
+void setField(lua_State *L, const char *name, bool v);
+void setField(lua_State *L, const char *name, int v);
+void setField(lua_State *L, const char *name, lua_CFunction fn);
 
-VOLCANO_INLINE void push(lua_State *L, std::string_view v)
-{
-	lua_pushstring(L, v.data());
-}
-
-VOLCANO_INLINE void push(lua_State *L, lua_CFunction fn)
-{
-	lua_pushcfunction(L, fn);
-}
+void rawSetField(lua_State *L, const char *name, bool v);
+void rawSetField(lua_State *L, const char *name, int v);
+void rawSetField(lua_State *L, const char *name, lua_CFunction fn);
 
 VOLCANO_VM_LUA_END
 

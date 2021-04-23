@@ -22,6 +22,7 @@
 #   ifdef EIGEN_NO_DEBUG
 #       undef EIGEN_NO_DEBUG
 #   endif
+#   define SDL_MAIN_HANDLED
 #   define SDL_ASSERT_LEVEL 3
 #   include <SDL_assert.h>
 #   define VOLCANO_ASSERT(expr) SDL_assert(expr)
@@ -54,6 +55,27 @@ using ByteArray = std::vector<uint8_t>;
 using StringList = std::list<std::string>;
 
 void writeLog(SDL_LogPriority prio, const char *fmt, ...);
+void uvSyncClose(uv_handle_t *p);
+
+VOLCANO_INLINE void uvSyncClose(uv_prepare_t *p)
+{
+    uvSyncClose(reinterpret_cast<uv_handle_t *>(p));
+}
+
+VOLCANO_INLINE void uvSyncClose(uv_check_t *p)
+{
+    uvSyncClose(reinterpret_cast<uv_handle_t *>(p));
+}
+
+VOLCANO_INLINE void uvSyncClose(uv_timer_t *p)
+{
+    uvSyncClose(reinterpret_cast<uv_handle_t *>(p));
+}
+
+VOLCANO_INLINE void uvSyncClose(uv_async_t *p)
+{
+    uvSyncClose(reinterpret_cast<uv_handle_t *>(p));
+}
 
 VOLCANO_END
 

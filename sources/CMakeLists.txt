@@ -21,7 +21,10 @@ endif()
 include(FindSDL2)
 if(SDL2_FOUND)
     include_directories(${SDL2_INCLUDE_DIR})
-    link_libraries(${SDL2_LIBRARY} ${SDL2MAIN_LIBRARY})
+    link_libraries(${SDL2_LIBRARY})
+    if(NOT VOLCANO_DEBUG)
+        link_libraries(${SDL2MAIN_LIBRARY})
+    endif()
 else()
     message(FATAL_ERROR "SDL2 not found.")
 endif()
@@ -55,5 +58,10 @@ include_directories(
     ${CMAKE_CURRENT_BINARY_DIR}/include
     )
 
-add_executable(volcano ${VOLCANO_SOURCES})
+if(WIN32 AND NOT VOLCANO_DEBUG)
+    add_executable(volcano WIN32 ${VOLCANO_SOURCES})
+else()
+    add_executable(volcano ${VOLCANO_SOURCES})
+endif()
+
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${VOLCANO_SOURCES})

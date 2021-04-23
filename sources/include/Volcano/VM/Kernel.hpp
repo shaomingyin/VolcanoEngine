@@ -52,7 +52,7 @@ private:
 	static int trapDone(lua_State *T, int status, lua_KContext ctx);
 
 private:
-	void initExports(lua_State *L);
+	void newExports(lua_State *L);
 
 private: // volcano
 	static int sysIndex(lua_State *L);
@@ -67,9 +67,9 @@ private: // volcano.window
 	static int sysWindowIndex(lua_State *L);
 	static int sysWindowNewIndex(lua_State *L);
 
-private: // volcano.renderer
-	static int sysRendererIndex(lua_State *L);
-	static int sysRendererNewIndex(lua_State *L);
+private: // volcano.window.renderer
+	static int sysWindowRendererIndex(lua_State *L);
+	static int sysWindowRendererNewIndex(lua_State *L);
 
 private:
 	cx_list_t m_taskListReady;

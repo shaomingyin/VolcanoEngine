@@ -8,64 +8,38 @@
 
 VOLCANO_VM_BEGIN
 
-void Kernel::initExports(lua_State *L)
+class test {
+public:
+	test(void) { }
+	~test(void) { }
+};
+
+void Kernel::newExports(lua_State *L)
 {
 	VOLCANO_ASSERT(L != nullptr);
 
-	luaL_newmetatable(L, "Volcano");
+	Lua::MetaTable sysMetaTable;
+	Lua::MetaTable sysWindowMetaTable;
+	Lua::MetaTable sysWindowRendererMetaTable;
 
-	lua_pushstring(L, "__index");
-	lua_pushcfunction(L, &Kernel::sysIndex);
-	lua_rawset(L, -3);
+	sysMetaTable.index = &Kernel::sysIndex;
+	sysMetaTable.newIndex = &Kernel::sysNewIndex;
 
-	lua_pushstring(L, "__newindex");
-	lua_pushcfunction(L, &Kernel::sysNewIndex);
-	lua_rawset(L, -3);
+	sysWindowMetaTable.index = &Kernel::sysWindowIndex;
+	sysWindowMetaTable.newIndex = &Kernel::sysWindowNewIndex;
 
-	lua_newtable(L);
-	luaL_setmetatable(L, "Volcano");
+	sysWindowRendererMetaTable.index = &Kernel::sysWindowRendererIndex;
+	sysWindowRendererMetaTable.newIndex = &Kernel::sysWindowRendererNewIndex;
 
-	// common
-
-	lua_pushcfunction(L, &Kernel::sysCurrent);
-	lua_setfield(L, -2, "current");
-	
-	lua_pushcfunction(L, &Kernel::sysTask);
-	lua_setfield(L, -2, "task");
-
-	lua_pushcfunction(L, &Kernel::sysSleep);
-	lua_setfield(L, -2, "sleep");
-
-	// window
-
-	luaL_newmetatable(L, "Volcnao.Window");
-
-	lua_pushstring(L, "__index");
-	lua_pushcfunction(L, &Kernel::sysWindowIndex);
-	lua_rawset(L, -3);
-
-	lua_pushstring(L, "__newindex");
-	lua_pushcfunction(L, &Kernel::sysWindowNewIndex);
-	lua_rawset(L, -3);
-
-	lua_newtable(L);
-	luaL_setmetatable(L, "Volcano.Window");
-
-	lua_setfield(L, -2, "window");
-
-	// renderer
-
-	luaL_newmetatable(L, "Volcano.Renderer");
-
-	lua_pushstring(L, "__index");
-	lua_pushcfunction(L, &Kernel::sysRendererIndex);
-	lua_rawset(L, -3);
-
-	lua_pushstring(L, "__newindex");
-	lua_pushcfunction(L, &Kernel::sysRendererNewIndex);
-	lua_rawset(L, -3);
-
-	lua_setglobal(L, "volcano");
+	Lua::newTable(L, "Volcano", &sysMetaTable);
+		Lua::rawSetField(L, "current", &Kernel::sysCurrent);
+		Lua::rawSetField(L, "task", &Kernel::sysTask);
+		Lua::rawSetField(L, "sleep", &Kernel::sysSleep);
+		lua_pushstring(L, "window");
+		Lua::newTable(L, "Window", &sysWindowMetaTable);
+			Lua::newTable(L, "renderer", "Renderer", &sysWindowRendererMetaTable);
+			lua_setfield
+		Lua::endTable(L);
 }
 
 int Kernel::sysIndex(lua_State *L)
@@ -75,7 +49,7 @@ int Kernel::sysIndex(lua_State *L)
 	if (strcmp(name, "version") == 0) {
 		// TODO
 	} else
-		luaL_error(L, "unknown field '%s' for 'volcano.window'.", name);
+		lua_pushvalue(L, 1);
 
 	return 0;
 }
@@ -86,7 +60,7 @@ int Kernel::sysNewIndex(lua_State *L)
 
 	if (strcmp(name, "visible") == 0) {
 	} else
-		luaL_error(L, "unknown field '%s' for 'volcano.window'.", name);
+		luaL_error(L, "unknown symbol 'volcano.%s'", name);
 
 	return 0;
 }
@@ -197,7 +171,7 @@ int Kernel::sysWindowNewIndex(lua_State *L)
 	return 0;
 }
 
-int Kernel::sysRendererIndex(lua_State *L)
+int Kernel::sysWindowRendererIndex(lua_State *L)
 {
 	const char *name = lua_tostring(L, 2);
 
@@ -215,7 +189,7 @@ int Kernel::sysRendererIndex(lua_State *L)
 	return 0;
 }
 
-int Kernel::sysRendererNewIndex(lua_State *L)
+int Kernel::sysWindowRendererNewIndex(lua_State *L)
 {
 	const char *name = lua_tostring(L, 2);
 
