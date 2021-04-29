@@ -27,14 +27,14 @@ public:
     virtual ~Renderer(void);
 
 public:
-    bool init(int x, int y, int width, int height);
-    const Eigen::Vector4i &viewport(void) const;
-    void setViewport(int x, int y, int width, int height);
+    bool init(const Eigen::Vector2i &size);
+    const Eigen::Vector2i &size(void) const;
+    void setSize(const Eigen::Vector2i &v);
     Light &ambientLight(void);
     void update(void);
 
 private:
-    Eigen::Vector4i m_viewport;
+    Eigen::Vector2i m_size;
     Light m_ambientLight;
     GLEXContext *m_glex;
     NVGcontext *m_nvg;

@@ -4,7 +4,6 @@
 #define VOLCANO_SYSTEM_ENGINE_HPP
 
 #include <memory>
-#include <string_view>
 
 #include <GL/gl3w.h>
 
@@ -23,8 +22,7 @@ public:
 	~Engine(void) override;
 
 public:
-	bool start(std::string_view rootPath);
-	void stop(void);
+	bool init(void);
 	void handleEvent(const SDL_Event &event);
 
 public: // vm traps

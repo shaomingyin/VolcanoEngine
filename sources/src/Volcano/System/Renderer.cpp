@@ -12,8 +12,11 @@ Renderer::~Renderer(void)
 {
 }
 
-bool Renderer::init(int width, int height)
+bool Renderer::init(const Eigen::Vector4i &viewport)
 {
+	if (!m_graphicsRenderer.init(Eigen::RowVector2i(viewport[2], viewport[3])))
+		return false;
+
 	return true;
 }
 
@@ -31,7 +34,7 @@ void Renderer::update(void)
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}
 
-	// TODO
+	m_graphicsRenderer.update();
 }
 
 const Eigen::Vector4i &Renderer::viewport(void) const

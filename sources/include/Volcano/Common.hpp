@@ -33,13 +33,14 @@
 #   define VOLCANO_ASSERT(expr) do { } while (0)
 #endif
 
-#define VOLCANO_INLINE CX_FORCE_INLINE
-
 #include <SDL.h>
 #include <uv.h>
+#include <physfs.h>
 
 #include <Eigen/Core>
 #include <Eigen/Geometry>
+
+#define VOLCANO_INLINE CX_FORCE_INLINE
 
 #define VOLCANO_BEGIN namespace Volcano {
 #define VOLCANO_END }

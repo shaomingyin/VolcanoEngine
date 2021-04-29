@@ -82,7 +82,7 @@ bool Window::init(std::string_view title, int width, int height)
 	gl3wProcs = &m_gl3w;
 
 	VOLCANO_LOGI("Initializing renderer...");
-	if (!m_renderer.init(width, height)) {
+	if (!m_renderer.init(Eigen::Vector4i(0, 0, width, height))) {
 		VOLCANO_LOGE("Failed to init renderer.");
 		return false;
 	}
@@ -113,7 +113,7 @@ void Window::update(void)
 	VOLCANO_ASSERT(m_window != nullptr);
 	VOLCANO_ASSERT(m_gl != nullptr);
 
-	if (m_size.x() > 0 && m_size.y() > 0 && SDL_GL_MakeCurrent(m_window, m_gl) == 0) {
+	if (SDL_GL_MakeCurrent(m_window, m_gl) == 0) {
 		gl3wProcs = &m_gl3w;
 		m_renderer.update();
 		SDL_GL_SwapWindow(m_window);
@@ -137,6 +137,7 @@ void Window::handleEvent(const SDL_WindowEvent &event)
 	case SDL_WINDOWEVENT_RESIZED:
 		m_size[0] = event.data1;
 		m_size[1] = event.data2;
+		m_renderer.setViewport(Eigen::Vector4i(0, 0, m_size[0], m_size[1]));
 		break;
 	default:
 		break;

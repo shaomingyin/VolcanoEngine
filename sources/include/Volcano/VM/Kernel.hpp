@@ -3,33 +3,40 @@
 #ifndef VOLCANO_VM_KERNEL_HPP
 #define VOLCANO_VM_KERNEL_HPP
 
-#include <string>
-#include <string_view>
 #include <thread>
 #include <future>
 #include <mutex>
 #include <condition_variable>
 
 #include <Volcano/VM/Common.hpp>
-#include <Volcano/VM/Lua.hpp>
-#include <Volcano/VM/Renderer.hpp>
-#include <Volcano/VM/Sound.hpp>
 #include <Volcano/VM/Window.hpp>
-#include <Volcano/VM/Base.hpp>
+#include <Volcano/VM/Sound.hpp>
 
 VOLCANO_VM_BEGIN
 
-class Kernel: public Base {
+class Kernel {
 public:
-	using Task = VolcanoVMTask;
+	class Traps {
+	public:
+		Traps(void) = default;
+		virtual ~Traps(void) = default;
+
+	public:
+		virtual Window *window(void) = 0;
+		virtual Sound *sound(void) = 0;
+	};
 
 public:
 	Kernel(uv_loop_t *loop);
 	virtual ~Kernel(void);
 
+public:
+	bool start(Traps *traps);
+	void stop(void);
+	void postEvent(const SDL_Event &event);
+	uv_loop_t *loop(void);
+
 public: // For lua
-	static Task *taskFromLua(lua_State *L);
-	static lua_State *taskToLua(Task *task);
 	static Kernel *fromTask(Task *task);
 	static Kernel *fromLua(lua_State *L);
 
@@ -39,20 +46,18 @@ public: // For lua
 	void yieldTaskHook(lua_State *T, int n);
 
 protected:
-	void run(uv_loop_t *loop, std::promise<bool> *initPromise) override;
-	void frame(float elapsed) override;
-	void handleEvent(const SDL_Event &event) override;
-	void handleTrap(Traps *traps) override;
+	static int trapRequest(lua_State *T, lua_CFunction fn, lua_KFunction cb = nullptr, lua_KContext ctx = 0);
 
 private:
-	void Main(lua_State *L, uv_loop_t *loop, std::promise<bool> *initPromise);
+	void threadMain(std::promise<bool> *initPromise);
+	void protectedMain(lua_State *L, uv_loop_t *loop, std::promise<bool> *initPromise);
+	void openLibs(lua_State *L);
 	bool loadInitrc(lua_State *L);
+	void frame(float elapsed);
 	static void schedule(uv_prepare_t *p);
-	static int trapRequest(lua_State *T);
+	void handleEvent(const SDL_Event &event);
+	void handleTraps(void);
 	static int trapDone(lua_State *T, int status, lua_KContext ctx);
-
-private:
-	void newExports(lua_State *L);
 
 private: // volcano
 	static int sysIndex(lua_State *L);
@@ -72,19 +77,25 @@ private: // volcano.window.renderer
 	static int sysWindowRendererNewIndex(lua_State *L);
 
 private:
+	static const int EVENT_QUEUE_ORDER = 6;
+	static const int EVENT_QUEUE_SIZE = 1 << EVENT_QUEUE_ORDER;
+	static const int EVENT_QUEUE_MASK = EVENT_QUEUE_SIZE - 1;
+
+private:
+	uv_loop_t *m_loop;
+	uv_async_t m_trapAsync;
+	Traps *m_traps;
+	SDL_Event m_eventQueue[EVENT_QUEUE_SIZE];
+	int64_t m_eventFirst;
+	int64_t m_eventLast;
+	std::thread m_thread;
+	std::mutex m_mutex;
+	std::condition_variable_any m_cond;
+	uv_async_t m_quitAsync;
+	uint64_t m_timeLast;
 	cx_list_t m_taskListReady;
 	cx_list_t m_taskListTrap;
 };
-
-VOLCANO_INLINE Kernel::Task *Kernel::taskFromLua(lua_State *L)
-{
-	return reinterpret_cast<Task *>(lua_getextraspace(L));
-}
-
-VOLCANO_INLINE lua_State *Kernel::taskToLua(Task *task)
-{
-	return reinterpret_cast<lua_State *>(CX_PMOVB(task, LUA_EXTRASPACE));
-}
 
 VOLCANO_INLINE Kernel *Kernel::fromTask(Task *task)
 {

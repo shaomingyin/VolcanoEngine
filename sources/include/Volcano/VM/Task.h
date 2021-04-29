@@ -33,6 +33,9 @@ typedef struct {
 	cx_list_node_t node;
 	uv_loop_t *loop;
 	uv_timer_t sleepTimer;
+	lua_CFunction trapFunction;
+	lua_KFunction trapCallback;
+	lua_KContext trapContext;
 	int trapResult;
 	void *data;
 } VolcanoVMTask;

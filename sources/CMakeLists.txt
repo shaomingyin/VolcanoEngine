@@ -50,7 +50,9 @@ file(GLOB_RECURSE VOLCANO_SOURCES
 
 add_definitions(
     -DNOMINMAX
-    -DLUA_USER_H=\"${CMAKE_CURRENT_SOURCE_DIR}/include/Volcano/VM/Task.h\"
+    -DLUAINTF_HEADERS_ONLY=0
+    -DLUAINTF_LINK_LUA_COMPILED_IN_CXX=0
+     -DLUA_USER_H=\"${CMAKE_CURRENT_SOURCE_DIR}/include/Volcano/VM/Task.h\"
     )
 
 include_directories(

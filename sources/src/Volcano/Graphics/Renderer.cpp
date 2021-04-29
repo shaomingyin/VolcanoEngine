@@ -23,7 +23,7 @@ Renderer::~Renderer(void)
         glexDeleteContext(m_glex);
 }
 
-bool Renderer::init(int x, int y, int width, int height)
+bool Renderer::init(const Eigen::Vector2i &size)
 {
     VOLCANO_ASSERT(m_glex == nullptr);
     VOLCANO_ASSERT(m_nvg == nullptr);
@@ -56,7 +56,7 @@ bool Renderer::init(int x, int y, int width, int height)
 
     glClearColor(0.3f, 0.3f, 0.3f, 0.0f);
 
-    setViewport(x, y, width, height);
+    setSize(size);
 
     nvgGuard.dismiss();
     glexGuard.dismiss();
@@ -64,34 +64,23 @@ bool Renderer::init(int x, int y, int width, int height)
 	return true;
 }
 
-const Eigen::Vector4i &Renderer::viewport(void) const
+const Eigen::Vector2i &Renderer::size(void) const
 {
-    return m_viewport;
+    return m_size;
 }
 
-void Renderer::setViewport(int x, int y, int width, int height)
+void Renderer::setSize(const Eigen::Vector2i &v)
 {
-    VOLCANO_ASSERT(width >= 0);
-    VOLCANO_ASSERT(height >= 0);
-
-    m_viewport[0] = x;
-    m_viewport[1] = y;
-    m_viewport[2] = width;
-    m_viewport[3] = height;
+    m_size = v;
 }
 
 void Renderer::update(void)
 {
     VOLCANO_ASSERT(m_glex != nullptr);
 
-    if (m_viewport[2] < 1 || m_viewport[3] < 1)
-        return;
-
-    glViewport(m_viewport[0], m_viewport[1], m_viewport[2], m_viewport[3]);
-
     glexMakeCurrent(m_glex);
 
-    glexBeginFrame(m_viewport[2], m_viewport[3]);
+    glexBeginFrame(m_size.x(), m_size.y());
 
     // TODO
 

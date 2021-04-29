@@ -17,7 +17,7 @@ public:
 	~Renderer(void) override;
 
 public:
-	bool init(int width, int height);
+	bool init(const Eigen::Vector4i &viewport);
 	void shutdown(void);
 	void update(void);
 	const Eigen::Vector4i &viewport(void) const override;

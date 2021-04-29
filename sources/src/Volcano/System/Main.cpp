@@ -14,21 +14,6 @@
 
 VOLCANO_SYSTEM_BEGIN
 
-static void pollEvents(uv_timer_t *p)
-{
-    auto engine = reinterpret_cast<Engine *>(p->data);
-    VOLCANO_ASSERT(engine != nullptr);
-
-    SDL_Event event;
-
-    while (SDL_PollEvent(&event)) {
-        if (event.type != SDL_QUIT)
-            engine->handleEvent(event);
-        else
-            uv_stop(p->loop);
-    }
-}
-
 static void printHelp(void)
 {
 }
@@ -39,7 +24,6 @@ static void printVersion(void)
 
 static void logOutput(void *data, int category, SDL_LogPriority priority, const char *message)
 {
-
 #ifdef VOLCANO_DEBUG
     FILE *fp;
     if (priority == SDL_LOG_PRIORITY_CRITICAL || priority == SDL_LOG_PRIORITY_ERROR)
@@ -116,6 +100,25 @@ static int Run(int argc, char *argv[])
         return EXIT_FAILURE;
     }
 
+    VOLCANO_LOGI("Initializing physfs...");
+
+    if (!PHYSFS_init("volcano")) {
+        VOLCANO_LOGE("Failed to init physfs.");
+        return EXIT_FAILURE;
+    }
+
+    ScopeGuard physfsGuard([] { PHYSFS_deinit(); });
+
+    if (!PHYSFS_setWriteDir(rootPath.c_str())) {
+        VOLCANO_LOGE("Failed to set write dir to '%s'.", rootPath.c_str());
+        return EXIT_FAILURE;
+    }
+
+    if (!PHYSFS_mount(rootPath.c_str(), "/", 0)) {
+        VOLCANO_LOGE("Failed to mount root path '%s'.", rootPath.c_str());
+        return EXIT_FAILURE;
+    }
+
     int ret = SDL_Init(SDL_INIT_EVERYTHING);
     if (ret != 0) {
         VOLCANO_LOGE("Failed to init SDL.");
@@ -133,14 +136,19 @@ static int Run(int argc, char *argv[])
     }
 
     auto engine = std::make_unique<Engine>(loop);
-    if (!engine || !engine->start(rootPath)) {
+    if (!engine || !engine->init()) {
         VOLCANO_LOGE("Failed to initialize engine.");
         return EXIT_FAILURE;
     }
 
     uv_timer_t pollEventsTimer;
     uv_timer_init(loop, &pollEventsTimer);
-    uv_timer_start(&pollEventsTimer, &pollEvents, 0, 15);
+    uv_timer_start(&pollEventsTimer, [] (uv_timer_t *p) {
+        auto engine = reinterpret_cast<Engine *>(p->data);
+        SDL_Event event;
+        while (SDL_PollEvent(&event))
+            engine->handleEvent(event);
+    }, 0, 15);
     pollEventsTimer.data = engine.get();
     ScopeGuard pollEventsGuard([&pollEventsTimer] { uvSyncClose(&pollEventsTimer); });
 

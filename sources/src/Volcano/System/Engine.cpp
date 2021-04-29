@@ -8,14 +8,18 @@ VOLCANO_SYSTEM_BEGIN
 Engine::Engine(uv_loop_t *loop):
 	m_vm(loop)
 {
-	VOLCANO_ASSERT(loop != nullptr);
 }
 
 Engine::~Engine(void)
 {
+	VOLCANO_LOGI("Stopping VM...");
+	m_vm.stop();
+
+	VOLCANO_LOGI("Shuting down window...");
+	m_window.shutdown();
 }
 
-bool Engine::start(std::string_view rootPath)
+bool Engine::init(void)
 {
 	VOLCANO_LOGI("Initializing window...");
 	bool ret = m_window.init("Volcano", 800, 600);
@@ -26,8 +30,11 @@ bool Engine::start(std::string_view rootPath)
 
 	ScopeGuard windowGuard([this] { m_window.shutdown(); });
 
+	// TODO init sound
+	// TODO init input
+
 	VOLCANO_LOGI("Starting VM...");
-	if (!m_vm.start(rootPath, this)) {
+	if (!m_vm.start(this)) {
 		VOLCANO_LOGE("Failed to start VM.");
 		return false;
 	}
@@ -35,15 +42,6 @@ bool Engine::start(std::string_view rootPath)
 	windowGuard.dismiss();
 
 	return true;
-}
-
-void Engine::stop(void)
-{
-	VOLCANO_LOGI("Stopping VM...");
-    m_vm.stop();
-
-	VOLCANO_LOGI("Shuting down window...");
-	m_window.shutdown();
 }
 
 void Engine::handleEvent(const SDL_Event &event)
