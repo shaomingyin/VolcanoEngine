@@ -97,11 +97,6 @@ typedef struct {
 } GLEXFrameData;
 
 struct GLEXContext_ {
-	GLboolean logEnabled;
-	GLEXLogLevel logLevel;
-	GLchar *logPrefix;
-	GLint logId;
-
 	GLboolean lightingEnabled;
 	GLboolean shadowEnabled;
 	GLuint debugDrawMask;
@@ -143,7 +138,15 @@ static const hmm_vec3 glexAxis[3] = {
 	{ 0.0f, 0.0f, 1.0f }
 };
 
-static CX_THREAD GLEXContext *glex = NULL;
+static struct {
+	GLboolean logEnabled;
+	GLEXLogLevel logLevel;
+	GLchar *logPrefix;
+	GLint logId;
+	GLint contextCount;
+} glexState;
+
+static CX_THREAD GLEXContext *glexCurrent = NULL;
 
 static const GLchar *GLEX_VS_BASIC =
 	"#version 330 core\n"
@@ -154,48 +157,32 @@ static const GLchar *GLEX_VS_BASIC =
 	"uniform mat4 viewMatrix;\n"
 	"uniform mat4 projectionMatrix;\n"
 	"uniform mat4 normalMatrix;\n"
-	"out vec2 outTexCoord;\n"
-	"out vec3 outFragPos;\n"
 	"void main() {\n"
-	"	gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(position, 1.0);\n"
-	"	outTexCoord = inTexCoord;\n"
+	"	gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(inPosition, 1.0);\n"
 	"}\n";
 
 static const GLchar *GLEX_FS_GBUFFER =
 	"#version 330 core\n"
-	"layout(location = 0) out vec3 gPosition;\n"
-	"layout(location = 1) out vec3 gNormal;\n"
-	"layout(location = 2) out vec4 gAlbedoSpec;\n"
-	"in vec2 texCoord;\n"
-	"in vec3 fragPos;\n"
-	"in vec3 normal;\n"
-	"uniform sampler2D texture_diffuse1;\n"
-	"uniform sampler2D texture_specular1;\n"
 	"void main() {\n"
-	"	gPosition = FragPos;\n"
-	"	gNormal = normalize(Normal);\n"
-	"	gColor.rgb = texture(texture_diffuse1, TexCoords).rgb;\n"
-	"	gColor.a = texture(texture_specular1, TexCoords).r;\n"
 	"}\n";
 
 static void glexWriteLog(GLEXLogLevel logLevel, const char *fmt, ...)
 {
-	GLEX_ASSERT(glex != NULL);
 	GLEX_ASSERT(0 <= logLevel && logLevel <= GLEX_LOG_LEVEL_MAX);
 
-	if (!glex->logEnabled || logLevel > glex->logLevel)
+	if (!glexState.logEnabled || logLevel > glexState.logLevel)
 		return;
 
 	GLchar buf[256];
 	GLint prefixLen;
 	static const GLchar ind[5] = { 'F', 'E', 'W', 'I', 'D' };
 	
-	if (glex->logPrefix != NULL) {
+	if (glexState.logPrefix != NULL) {
 		prefixLen = snprintf(buf, sizeof(buf),
-			"[GLEX] %c %p: %s", ind[logLevel], glex, glex->logPrefix);
+			"[GLEX] %c %p: %s", ind[logLevel], glexCurrent, glexState.logPrefix);
 	} else {
 		prefixLen = snprintf(buf, sizeof(buf),
-			"[GLEX] %c %p: ", ind[logLevel], glex);
+			"[GLEX] %c %p: ", ind[logLevel], glexCurrent);
 	}
 
 	va_list ap;
@@ -222,8 +209,8 @@ static void glexWriteLog(GLEXLogLevel logLevel, const char *fmt, ...)
 		break;
 	}
 
-	glDebugMessageInsert(
-		GL_DEBUG_SOURCE_APPLICATION, type, glex->logId++, severity, prefixLen + userLen, buf);
+	glDebugMessageInsert(GL_DEBUG_SOURCE_APPLICATION,
+		type, glexState.logId++, severity, prefixLen + userLen, buf);
 }
 
 #define GLEX_LOGF(fmt, ...) glexWriteLog(GLEX_LOG_LEVEL_FATAL, fmt, __VA_ARGS__)
@@ -272,13 +259,13 @@ static GLboolean glexAllocBufferFromHeap(GLEXBuffer *out, GLEXHeap *heap, GLsize
 
 static GLboolean glexAllocBuffer(GLEXBuffer *out, GLEXHeapType heapType, GLsizeiptr size)
 {
-	GLEX_ASSERT(glex != NULL);
+	GLEX_ASSERT(glexCurrent != NULL);
 	GLEX_ASSERT(out != NULL);
 	GLEX_ASSERT(0 <= heapType && heapType < GLEX_HEAP_TYPE_MAX);
 	GLEX_ASSERT(size > 0);
 
 	GLEXHeap *heap;
-	cx_list_t *heapList = &glex->heapLists[heapType];
+	cx_list_t *heapList = &glexCurrent->heapLists[heapType];
 	cx_list_node_t *node;
 
 	CX_LIST_FOREACH(node, heapList) {
@@ -327,7 +314,7 @@ static GLboolean glexAllocBuffer(GLEXBuffer *out, GLEXHeapType heapType, GLsizei
 
 static void glexFreeBuffer(GLEXBuffer *buf)
 {
-	GLEX_ASSERT(glex != NULL);
+	GLEX_ASSERT(glexCurrent != NULL);
 	GLEX_ASSERT(buf->size > 0);
 	GLEX_ASSERT(buf->heap != NULL);
 	GLEX_ASSERT(cx_list_is_contains(&buf->heap->bufferList, &buf->node));
@@ -356,10 +343,7 @@ static GLuint glexCreateShader(GLenum type, const char *source)
 	GLint compileStatus;
 	glGetShaderiv(id, GL_COMPILE_STATUS, &compileStatus);
 	if (!compileStatus) {
-		char infoLog[256];
-		GLsizei len;
-		glGetShaderInfoLog(id, sizeof(infoLog), &len, infoLog);
-		GLEX_LOGE(infoLog);
+		GLEX_LOGE("Failed to create shader.");
 		glDeleteShader(id);
 		return 0;
 	}
@@ -402,8 +386,12 @@ static GLuint glexCreateProgram(GLenum type1, const char *source1, ...)
 
 	GLint linkStatus;
 	glGetProgramiv(id, GL_LINK_STATUS, &linkStatus);
-	if (!linkStatus)
+	if (!linkStatus) {
+		GLEX_LOGE("Failed to create program.");
 		goto bad1;
+	}
+
+	return id;
 
 bad1:
 	glDeleteProgram(id);
@@ -582,9 +570,9 @@ static void glexReleaseGBuffer(GLEXContext *context)
 
 static void glexRenderShadows(void)
 {
-	GLEX_ASSERT(glex != NULL);
+	GLEX_ASSERT(glexCurrent != NULL);
 
-	if (!glex->shadowEnabled)
+	if (!glexCurrent->shadowEnabled)
 		return;
 
 	// TODO
@@ -592,40 +580,40 @@ static void glexRenderShadows(void)
 
 static void glexRenderDebugTriangles(void)
 {
-	GLEX_ASSERT(glex != NULL);
+	GLEX_ASSERT(glexCurrent != NULL);
 
-	if (!(glex->debugDrawMask & GLEX_DEBUG_DRAW_TRIANGLES))
+	if (!(glexCurrent->debugDrawMask & GLEX_DEBUG_DRAW_TRIANGLES))
 		return;
 }
 
 static void glexRenderDebugNormals(void)
 {
-	GLEX_ASSERT(glex != NULL);
+	GLEX_ASSERT(glexCurrent != NULL);
 
-	if (!(glex->debugDrawMask & GLEX_DEBUG_DRAW_NORMALS))
+	if (!(glexCurrent->debugDrawMask & GLEX_DEBUG_DRAW_NORMALS))
 		return;
 }
 
 static void glexDeferredRender(void)
 {
-	GLEX_ASSERT(glex != NULL);
+	GLEX_ASSERT(glexCurrent != NULL);
 
-	glexUpdateGBuffer(&glex->gBuffer);
+	glexUpdateGBuffer(&glexCurrent->gBuffer);
 
-	if (glex->gBuffer.width < 1 || glex->gBuffer.height < 1)
+	if (glexCurrent->gBuffer.width < 1 || glexCurrent->gBuffer.height < 1)
 		return;
 
-	glBindFramebuffer(GL_FRAMEBUFFER, glex->gBuffer.id);
-	glUseProgram(glex->gBuffer.program);
+	glBindFramebuffer(GL_FRAMEBUFFER, glexCurrent->gBuffer.id);
+	glUseProgram(glexCurrent->gBuffer.program);
 
 	// TODO draw meshes to gbuffer...
-	for (GLint i = 0; i < glex->frameData.meshCount; ++i) {
+	for (GLint i = 0; i < glexCurrent->frameData.meshCount; ++i) {
 	}
 
 	glBindFramebuffer(GL_FRAMEBUFFER, GL_NONE);
 
 #if 0
-	glUseProgram(glex->program);
+	glUseProgram(glexCurrent->program);
 	// TODO deferred shading...
 	// TODO render op objects...
 	// TODO render debug drawing...
@@ -638,9 +626,63 @@ static void glexDeferredRender(void)
 
 static void glexSimpleRender(void)
 {
-	GLEX_ASSERT(glex != NULL);
+	GLEX_ASSERT(glexCurrent != NULL);
 
 	// TODO
+}
+
+GLEX_API GLboolean glexInit(void)
+{
+	glexState.logEnabled = GL_FALSE;
+	glexState.logLevel = GLEX_LOG_LEVEL_INFO;
+	glexState.logPrefix = NULL;
+	glexState.logId = 0;
+	glexState.contextCount = 0;
+
+	glexCurrent = NULL;
+
+	return GL_TRUE;
+}
+
+GLEX_API void glexShutdown(void)
+{
+	GLEX_ASSERT(glexState.contextCount == 0);
+
+	if (glexState.logPrefix != NULL) {
+		free(glexState.logPrefix);
+		glexState.logPrefix = NULL;
+	}
+}
+
+GLEX_API void glexEnableLog(void)
+{
+	glexState.logEnabled = GL_TRUE;
+}
+
+GLEX_API void glexDisableLog(void)
+{
+	glexState.logEnabled = GL_FALSE;
+}
+
+GLEX_API void glexLogPrefix(const char *prefix)
+{
+	if (glexState.logPrefix != NULL) {
+		free(glexState.logPrefix);
+		glexState.logPrefix = NULL;
+	}
+
+	if (prefix != NULL) {
+		glexState.logPrefix = strdup(prefix);
+		if (glexState.logPrefix == NULL)
+			GLEX_LOGE("Failed to set log prefix.");
+	}
+}
+
+GLEX_API void glexLogLevel(GLEXLogLevel logLevel)
+{
+	GLEX_ASSERT(0 <= logLevel && logLevel < GLEX_LOG_LEVEL_MAX);
+
+	glexState.logLevel = logLevel;
 }
 
 GLEX_API GLEXContext *glexCreateContext(void *userData)
@@ -650,11 +692,6 @@ GLEX_API GLEXContext *glexCreateContext(void *userData)
 		goto bad0;
 
 	memset(context, 0, sizeof(GLEXContext));
-
-	context->logEnabled = GL_FALSE;
-	context->logLevel = GLEX_LOG_LEVEL_ERROR;
-	context->logPrefix = NULL;
-	context->logId = 0;
 
 	context->lightingEnabled = GL_TRUE;
 	context->shadowEnabled = GL_TRUE;
@@ -699,6 +736,8 @@ GLEX_API GLEXContext *glexCreateContext(void *userData)
 
 	context->userData = userData;
 
+	glexState.contextCount += 1;
+
 	return context;
 
 bad2:
@@ -714,148 +753,106 @@ bad0:
 GLEX_API void glexDeleteContext(GLEXContext *context)
 {
 	GLEX_ASSERT(context != NULL);
+	GLEX_ASSERT(glexState.contextCount > 0);
 
-	if (glex == context)
-		glex = NULL;
+	if (glexCurrent == context)
+		glexCurrent = NULL;
 
 	glexReleaseGBuffer(context);
 	free(context);
+
+	glexState.contextCount -= 1;
 }
 
 GLEX_API GLEXContext *glexCurrentContext(void)
 {
-	return glex;
+	return glexCurrent;
 }
 
 GLEX_API void glexMakeCurrent(GLEXContext *context)
 {
-	glex = context;
+	glexCurrent = context;
 }
 
 GLEX_API void *glexGetUserData(void)
 {
-	GLEX_ASSERT(glex != NULL);
+	GLEX_ASSERT(glexCurrent != NULL);
 
-	return glex->userData;
-}
-
-GLEX_API void glexEnableLog(void)
-{
-	GLEX_ASSERT(glex != NULL);
-
-	glex->logEnabled = GL_TRUE;
-}
-
-GLEX_API void glexDisableLog(void)
-{
-	GLEX_ASSERT(glex != NULL);
-
-	glex->logEnabled = GL_FALSE;
-}
-
-GLEX_API void glexLogPrefix(const char *prefix)
-{
-	GLEX_ASSERT(glex != NULL);
-
-	if (glex->logPrefix != NULL) {
-		free(glex->logPrefix);
-		glex->logPrefix = NULL;
-	}
-
-	if (prefix != NULL) {
-		glex->logPrefix = strdup(prefix);
-		if (glex->logPrefix == NULL)
-			GLEX_LOGE("Failed to set log prefix.");
-	}
-}
-
-GLEX_API void glexLogLevel(GLEXLogLevel logLevel)
-{
-	GLEX_ASSERT(glex != NULL);
-	GLEX_ASSERT(0 <= logLevel && logLevel < GLEX_LOG_LEVEL_MAX);
-
-	glex->logLevel = logLevel;
-}
-
-GLEX_API GLEXLogLevel glexGetLogLevel(void)
-{
-	GLEX_ASSERT(glex != NULL);
-
-	return glex->logLevel;
+	return glexCurrent->userData;
 }
 
 GLEX_API void glexEnableLighting(void)
 {
-	GLEX_ASSERT(glex != NULL);
+	GLEX_ASSERT(glexCurrent != NULL);
 
-	glex->lightingEnabled = GL_TRUE;
+	glexCurrent->lightingEnabled = GL_TRUE;
 }
 
 GLEX_API void glexDisableLighting(void)
 {
-	GLEX_ASSERT(glex != NULL);
+	GLEX_ASSERT(glexCurrent != NULL);
 
-	glex->lightingEnabled = GL_FALSE;
+	glexCurrent->lightingEnabled = GL_FALSE;
 }
 
 GLEX_API void glexEnableShadow(void)
 {
-	GLEX_ASSERT(glex != NULL);
+	GLEX_ASSERT(glexCurrent != NULL);
 
-	glex->shadowEnabled = GL_TRUE;
+	glexCurrent->shadowEnabled = GL_TRUE;
 }
 
 GLEX_API void glexDisableShadow(void)
 {
-	GLEX_ASSERT(glex != NULL);
+	GLEX_ASSERT(glexCurrent != NULL);
 
-	glex->shadowEnabled = GL_FALSE;
+	glexCurrent->shadowEnabled = GL_FALSE;
 }
 
 GLEX_API void glexDebugDrawMask(GLuint mask)
 {
-	GLEX_ASSERT(glex != NULL);
+	GLEX_ASSERT(glexCurrent != NULL);
 
-	glex->debugDrawMask = mask;
+	glexCurrent->debugDrawMask = mask;
 }
 
 GLEX_API void glexBeginFrame(GLint width, GLint height)
 {
-	GLEX_ASSERT(glex != NULL);
-	GLEX_ASSERT(!glex->framing);
+	GLEX_ASSERT(glexCurrent != NULL);
+	GLEX_ASSERT(!glexCurrent->framing);
 
-	glex->framing = GL_TRUE;
-	glex->frameData.lightCount = 0;
-	glex->frameData.meshCount = 0;
+	glexCurrent->framing = GL_TRUE;
+	glexCurrent->frameData.lightCount = 0;
+	glexCurrent->frameData.meshCount = 0;
 
-	if (glex->gBuffer.width != width || glex->gBuffer.height != height) {
-		glex->gBuffer.width = width;
-		glex->gBuffer.height = height;
-		glex->gBuffer.sizeChanged = GL_TRUE;
+	if (glexCurrent->gBuffer.width != width || glexCurrent->gBuffer.height != height) {
+		glexCurrent->gBuffer.width = width;
+		glexCurrent->gBuffer.height = height;
+		glexCurrent->gBuffer.sizeChanged = GL_TRUE;
 	}
 }
 
 GLEX_API void glexEndFrame(void)
 {
-	GLEX_ASSERT(glex != NULL);
-	GLEX_ASSERT(glex->framing);
+	GLEX_ASSERT(glexCurrent != NULL);
+	GLEX_ASSERT(glexCurrent->framing);
 
-	glex->framing = GL_FALSE;
+	glexCurrent->framing = GL_FALSE;
 
-	if (glex->frameData.meshCount < 1)
+	if (glexCurrent->frameData.meshCount < 1)
 		return;
 
 	// TODO sort frame meshes by material and heap?
 
-	glex->frameData.viewMatrix =
-		HMM_LookAt(glex->viewPosition, glex->viewCenter, glex->viewUp);
+	glexCurrent->frameData.viewMatrix =
+		HMM_LookAt(glexCurrent->viewPosition, glexCurrent->viewCenter, glexCurrent->viewUp);
 
-	glex->frameData.projectionMatrix =
-		HMM_Perspective(glex->viewFov, glex->viewRatio, glex->viewRange[0], glex->viewRange[1]);
+	glexCurrent->frameData.projectionMatrix =
+		HMM_Perspective(glexCurrent->viewFov, glexCurrent->viewRatio, glexCurrent->viewRange[0], glexCurrent->viewRange[1]);
 
 	// hmm_mat4 normalMatrix;
 
-	if (glex->lightingEnabled)
+	if (glexCurrent->lightingEnabled)
 		glexDeferredRender();
 	else
 		glexSimpleRender();
@@ -863,9 +860,9 @@ GLEX_API void glexEndFrame(void)
 
 GLEX_API void glexResetTransform(void)
 {
-	GLEX_ASSERT(glex != NULL);
+	GLEX_ASSERT(glexCurrent != NULL);
 
-	GLEXTransform *transform = &glex->transformStack[glex->transformTop];
+	GLEXTransform *transform = &glexCurrent->transformStack[glexCurrent->transformTop];
 
 	transform->translate = HMM_Vec3(0.0f, 0.0f, 0.0f);
 	transform->scale = HMM_Vec3(1.0f, 1.0f, 1.0f);
@@ -874,91 +871,91 @@ GLEX_API void glexResetTransform(void)
 
 GLEX_API void glexPushTransform(void)
 {
-	GLEX_ASSERT(glex != NULL);
-	GLEX_ASSERT(glex->transformTop < (GLEX_TRANSFORM_STACK_DEPTH - 1));
+	GLEX_ASSERT(glexCurrent != NULL);
+	GLEX_ASSERT(glexCurrent->transformTop < (GLEX_TRANSFORM_STACK_DEPTH - 1));
 
-	GLint oldTop = glex->transformTop++;
-	glex->transformStack[glex->transformTop] = glex->transformStack[oldTop];
+	GLint oldTop = glexCurrent->transformTop++;
+	glexCurrent->transformStack[glexCurrent->transformTop] = glexCurrent->transformStack[oldTop];
 }
 
 GLEX_API void glexPopTransform(void)
 {
-	GLEX_ASSERT(glex != NULL);
-	GLEX_ASSERT(glex->transformTop > 0);
+	GLEX_ASSERT(glexCurrent != NULL);
+	GLEX_ASSERT(glexCurrent->transformTop > 0);
 
-	glex->transformTop -= 1;
+	glexCurrent->transformTop -= 1;
 }
 
 GLEX_API void glexTranslate(GLfloat x, GLfloat y, GLfloat z)
 {
-	GLEX_ASSERT(glex != NULL);
+	GLEX_ASSERT(glexCurrent != NULL);
 
-	glex->transformStack[glex->transformTop].translate =
-		HMM_AddVec3(glex->transformStack[glex->transformTop].translate, HMM_Vec3(x, y, z));
+	glexCurrent->transformStack[glexCurrent->transformTop].translate =
+		HMM_AddVec3(glexCurrent->transformStack[glexCurrent->transformTop].translate, HMM_Vec3(x, y, z));
 }
 
 GLEX_API void glexScale(GLfloat x, GLfloat y, GLfloat z)
 {
-	GLEX_ASSERT(glex != NULL);
+	GLEX_ASSERT(glexCurrent != NULL);
 
-	glex->transformStack[glex->transformTop].scale =
-		HMM_MultiplyVec3(glex->transformStack[glex->transformTop].scale, HMM_Vec3(x, y, z));
+	glexCurrent->transformStack[glexCurrent->transformTop].scale =
+		HMM_MultiplyVec3(glexCurrent->transformStack[glexCurrent->transformTop].scale, HMM_Vec3(x, y, z));
 }
 
 GLEX_API void glexRotate(GLfloat angle, GLfloat x, GLfloat y, GLfloat z)
 {
-	GLEX_ASSERT(glex != NULL);
+	GLEX_ASSERT(glexCurrent != NULL);
 
-	glex->transformStack[glex->transformTop].rotation =
-		HMM_MultiplyQuaternion(glex->transformStack[glex->transformTop].rotation,
+	glexCurrent->transformStack[glexCurrent->transformTop].rotation =
+		HMM_MultiplyQuaternion(glexCurrent->transformStack[glexCurrent->transformTop].rotation,
 			HMM_QuaternionFromAxisAngle(HMM_Vec3(x, y, z), angle));
 }
 
 GLEX_API void glexLookAt(GLfloat eyeX, GLfloat eyeY, GLfloat eyeZ,
 	GLfloat centerX, GLfloat centerY, GLfloat centerZ, GLfloat upX, GLfloat upY, GLfloat upZ)
 {
-	GLEX_ASSERT(glex != NULL);
+	GLEX_ASSERT(glexCurrent != NULL);
 
-	glex->viewPosition.X = eyeX;
-	glex->viewPosition.Y = eyeY;
-	glex->viewPosition.Z = eyeZ;
+	glexCurrent->viewPosition.X = eyeX;
+	glexCurrent->viewPosition.Y = eyeY;
+	glexCurrent->viewPosition.Z = eyeZ;
 
-	glex->viewCenter.X = centerX;
-	glex->viewCenter.Y = centerY;
-	glex->viewCenter.Z = centerZ;
+	glexCurrent->viewCenter.X = centerX;
+	glexCurrent->viewCenter.Y = centerY;
+	glexCurrent->viewCenter.Z = centerZ;
 
-	glex->viewUp = HMM_NormalizeVec3(HMM_Vec3(upX, upY, upZ));
+	glexCurrent->viewUp = HMM_NormalizeVec3(HMM_Vec3(upX, upY, upZ));
 }
 
 GLEX_API void glexPerpective(GLfloat fov, GLfloat ratio, GLfloat zNear, GLfloat zFar)
 {
-	GLEX_ASSERT(glex != NULL);
+	GLEX_ASSERT(glexCurrent != NULL);
 
-	glex->viewFov = fov;
-	glex->viewRatio = ratio;
-	glex->viewRange[0] = zNear;
-	glex->viewRange[1] = zFar;
+	glexCurrent->viewFov = fov;
+	glexCurrent->viewRatio = ratio;
+	glexCurrent->viewRange[0] = zNear;
+	glexCurrent->viewRange[1] = zFar;
 }
 
 GLEX_API void glexAmbientLight(float strength, GLfloat red, GLfloat green, GLfloat blue)
 {
-	GLEX_ASSERT(glex != NULL);
+	GLEX_ASSERT(glexCurrent != NULL);
 
-	glex->ambientLight.strength = HMM_Clamp(0.0f, strength, 1.0f);
-	glex->ambientLight.color.R = HMM_Clamp(0.0f, red, 1.0f);
-	glex->ambientLight.color.G = HMM_Clamp(0.0f, green, 1.0f);
-	glex->ambientLight.color.B = HMM_Clamp(0.0f, blue, 1.0f);
+	glexCurrent->ambientLight.strength = HMM_Clamp(0.0f, strength, 1.0f);
+	glexCurrent->ambientLight.color.R = HMM_Clamp(0.0f, red, 1.0f);
+	glexCurrent->ambientLight.color.G = HMM_Clamp(0.0f, green, 1.0f);
+	glexCurrent->ambientLight.color.B = HMM_Clamp(0.0f, blue, 1.0f);
 }
 
 GLEX_API GLEXLight *glexCreateLight(GLEXLightType lightType)
 {
-	GLEX_ASSERT(glex != NULL);
+	GLEX_ASSERT(glexCurrent != NULL);
 
 	GLEXLight *light = malloc(sizeof(GLEXLight));
 	if (light == NULL)
 		return NULL;
 
-	if (!glexInitLight(glex, light, lightType)) {
+	if (!glexInitLight(glexCurrent, light, lightType)) {
 		free(light);
 		return NULL;
 	}
@@ -968,11 +965,11 @@ GLEX_API GLEXLight *glexCreateLight(GLEXLightType lightType)
 
 GLEX_API void glexDeleteLight(GLEXLight *light)
 {
-	GLEX_ASSERT(glex != NULL);
+	GLEX_ASSERT(glexCurrent != NULL);
 	GLEX_ASSERT(light != NULL);
 
-	if (glex->currentLight == light)
-		glex->currentLight = NULL;
+	if (glexCurrent->currentLight == light)
+		glexCurrent->currentLight = NULL;
 
 	cx_list_node_unlink(&light->node);
 
@@ -981,77 +978,77 @@ GLEX_API void glexDeleteLight(GLEXLight *light)
 
 GLEX_API void glexBindLight(GLEXLight *light)
 {
-	GLEX_ASSERT(glex != NULL);
+	GLEX_ASSERT(glexCurrent != NULL);
 
-	glex->currentLight = light;
+	glexCurrent->currentLight = light;
 }
 
 GLEX_API void glexAddLight(void)
 {
-	GLEX_ASSERT(glex != NULL);
-	GLEX_ASSERT(glex->framing);
-	GLEX_ASSERT(glex->currentLight != NULL);
+	GLEX_ASSERT(glexCurrent != NULL);
+	GLEX_ASSERT(glexCurrent->framing);
+	GLEX_ASSERT(glexCurrent->currentLight != NULL);
 
-	if (glex->frameData.lightCount < GLEX_FRAME_LIGHT_MAX) {
-		GLEXFrameLight *frameLight = &glex->frameData.lightArray[glex->frameData.lightCount++];
-		frameLight->light = glex->currentLight;
-		frameLight->transform = glex->transformStack[glex->transformTop];
+	if (glexCurrent->frameData.lightCount < GLEX_FRAME_LIGHT_MAX) {
+		GLEXFrameLight *frameLight = &glexCurrent->frameData.lightArray[glexCurrent->frameData.lightCount++];
+		frameLight->light = glexCurrent->currentLight;
+		frameLight->transform = glexCurrent->transformStack[glexCurrent->transformTop];
 	}
 }
 
 GLEX_API void glexLightStrength(GLfloat strength)
 {
-	GLEX_ASSERT(glex != NULL);
-	GLEX_ASSERT(glex->currentLight != NULL);
+	GLEX_ASSERT(glexCurrent != NULL);
+	GLEX_ASSERT(glexCurrent->currentLight != NULL);
 	GLEX_ASSERT(strength >= 0.0f);
 
-	glex->currentLight->strength = strength;
+	glexCurrent->currentLight->strength = strength;
 }
 
 GLEX_API void glexLightColor(GLfloat red, GLfloat green, GLfloat blue)
 {
-	GLEX_ASSERT(glex != NULL);
-	GLEX_ASSERT(glex->currentLight != NULL);
+	GLEX_ASSERT(glexCurrent != NULL);
+	GLEX_ASSERT(glexCurrent->currentLight != NULL);
 
-	glex->currentLight->color = HMM_Vec3(red, green, blue);
+	glexCurrent->currentLight->color = HMM_Vec3(red, green, blue);
 }
 
 GLEX_API void glexLightDirection(GLfloat x, GLfloat y, GLfloat z)
 {
-	GLEX_ASSERT(glex != NULL);
-	GLEX_ASSERT(glex->currentLight != NULL);
-	GLEX_ASSERT(glex->currentLight->type == GLEX_LIGHT_TYPE_DIRECTIONAL || glex->currentLight->type == GLEX_LIGHT_TYPE_SPOT);
+	GLEX_ASSERT(glexCurrent != NULL);
+	GLEX_ASSERT(glexCurrent->currentLight != NULL);
+	GLEX_ASSERT(glexCurrent->currentLight->type == GLEX_LIGHT_TYPE_DIRECTIONAL || glexCurrent->currentLight->type == GLEX_LIGHT_TYPE_SPOT);
 
-	glex->currentLight->direction = HMM_NormalizeVec3(HMM_Vec3(x, y, z));
+	glexCurrent->currentLight->direction = HMM_NormalizeVec3(HMM_Vec3(x, y, z));
 }
 
 GLEX_API void glexLightSpotShape(GLEXLightSpotShape lightSpotShape)
 {
-	GLEX_ASSERT(glex != NULL);
-	GLEX_ASSERT(glex->currentLight->type == GLEX_LIGHT_TYPE_SPOT);
+	GLEX_ASSERT(glexCurrent != NULL);
+	GLEX_ASSERT(glexCurrent->currentLight->type == GLEX_LIGHT_TYPE_SPOT);
 
 	// TODO
 }
 
 GLEX_API void glexLightRange(GLfloat range)
 {
-	GLEX_ASSERT(glex != NULL);
-	GLEX_ASSERT(glex->currentLight != NULL);
-	GLEX_ASSERT(glex->currentLight->type == GLEX_LIGHT_TYPE_POINT || glex->currentLight->type == GLEX_LIGHT_TYPE_SPOT);
+	GLEX_ASSERT(glexCurrent != NULL);
+	GLEX_ASSERT(glexCurrent->currentLight != NULL);
+	GLEX_ASSERT(glexCurrent->currentLight->type == GLEX_LIGHT_TYPE_POINT || glexCurrent->currentLight->type == GLEX_LIGHT_TYPE_SPOT);
 	GLEX_ASSERT(range > 0.0f);
 
-	glex->currentLight->range = range;
+	glexCurrent->currentLight->range = range;
 }
 
 GLEX_API GLEXMaterial *glexCreateMaterial(void)
 {
-	GLEX_ASSERT(glex != NULL);
+	GLEX_ASSERT(glexCurrent != NULL);
 
 	GLEXMaterial *material = malloc(sizeof(GLEXMaterial));
 	if (material == NULL)
 		return NULL;
 
-	if (!glexInitMaterial(glex, material)) {
+	if (!glexInitMaterial(glexCurrent, material)) {
 		free(material);
 		return NULL;
 	}
@@ -1061,15 +1058,15 @@ GLEX_API GLEXMaterial *glexCreateMaterial(void)
 
 GLEX_API GLEXMaterial *glexGetBuiltinMaterial(GLEXBuiltinMaterial builtinMaterial)
 {
-	GLEX_ASSERT(glex != NULL);
+	GLEX_ASSERT(glexCurrent != NULL);
 	GLEX_ASSERT(0 <= builtinMaterial && builtinMaterial < GLEX_BUILTIN_MATERIAL_MAX);
 
-	return &glex->builtinMaterials[builtinMaterial];
+	return &glexCurrent->builtinMaterials[builtinMaterial];
 }
 
 GLEX_API void glexDeleteMaterial(GLEXMaterial *material)
 {
-	GLEX_ASSERT(glex != NULL);
+	GLEX_ASSERT(glexCurrent != NULL);
 	GLEX_ASSERT(material != NULL);
 
 	// TODO
@@ -1079,14 +1076,14 @@ GLEX_API void glexDeleteMaterial(GLEXMaterial *material)
 
 GLEX_API void glexBindMaterial(GLEXMaterial *material)
 {
-	GLEX_ASSERT(glex != NULL);
+	GLEX_ASSERT(glexCurrent != NULL);
 
-	glex->currentMaterial = material;
+	glexCurrent->currentMaterial = material;
 }
 
 GLEX_API GLEXMesh *glexCreateMesh(GLEXHeapType heapType, GLsizeiptr vertexCount, GLsizeiptr vertexIndexCount)
 {
-	GLEX_ASSERT(glex != NULL);
+	GLEX_ASSERT(glexCurrent != NULL);
 	GLEX_ASSERT(0 <= heapType && heapType < GLEX_HEAP_TYPE_MAX);
 	GLEX_ASSERT(vertexCount > 0);
 	GLEX_ASSERT(vertexIndexCount > 0);
@@ -1095,7 +1092,7 @@ GLEX_API GLEXMesh *glexCreateMesh(GLEXHeapType heapType, GLsizeiptr vertexCount,
 	if (mesh == NULL)
 		return NULL;
 
-	if (!glexInitMesh(glex, mesh, heapType, vertexCount, vertexIndexCount)) {
+	if (!glexInitMesh(glexCurrent, mesh, heapType, vertexCount, vertexIndexCount)) {
 		free(mesh);
 		return NULL;
 	}
@@ -1105,13 +1102,13 @@ GLEX_API GLEXMesh *glexCreateMesh(GLEXHeapType heapType, GLsizeiptr vertexCount,
 
 GLEX_API void glexDeleteMesh(GLEXMesh *mesh)
 {
-	GLEX_ASSERT(glex != NULL);
+	GLEX_ASSERT(glexCurrent != NULL);
 	GLEX_ASSERT(mesh != NULL);
 	GLEX_ASSERT(mesh->vertexMap == NULL);
 	GLEX_ASSERT(mesh->vertexIndexMap == NULL);
 
-	if (glex->currentMesh == mesh)
-		glex->currentMesh = NULL;
+	if (glexCurrent->currentMesh == mesh)
+		glexCurrent->currentMesh = NULL;
 
 	glexFreeBuffer(&mesh->vertexBuffer);
 	glexFreeBuffer(&mesh->vertexIndexBuffer);
@@ -1123,9 +1120,9 @@ GLEX_API void glexDeleteMesh(GLEXMesh *mesh)
 
 GLEX_API void glexBindMesh(GLEXMesh *mesh)
 {
-	GLEX_ASSERT(glex != NULL);
+	GLEX_ASSERT(glexCurrent != NULL);
 
-	glex->currentMesh = mesh;
+	glexCurrent->currentMesh = mesh;
 
 	if (mesh != NULL) {
 		GLEX_ASSERT(mesh->vertexBuffer.heap != NULL);
@@ -1140,26 +1137,26 @@ GLEX_API void glexBindMesh(GLEXMesh *mesh)
 
 GLEX_API void glexAddMesh(void)
 {
-	GLEX_ASSERT(glex != NULL);
-	GLEX_ASSERT(glex->framing);
-	GLEX_ASSERT(glex->currentMesh != NULL);
+	GLEX_ASSERT(glexCurrent != NULL);
+	GLEX_ASSERT(glexCurrent->framing);
+	GLEX_ASSERT(glexCurrent->currentMesh != NULL);
 
-	if (glex->frameData.meshCount < GLEX_FRAME_MESH_MAX) {
-		GLEXFrameMesh *frameMesh = &glex->frameData.meshArray[glex->frameData.meshCount++];
-		frameMesh->mesh = glex->currentMesh;
-		frameMesh->material = glex->currentMaterial;
-		frameMesh->transform = glex->transformStack[glex->transformTop];
+	if (glexCurrent->frameData.meshCount < GLEX_FRAME_MESH_MAX) {
+		GLEXFrameMesh *frameMesh = &glexCurrent->frameData.meshArray[glexCurrent->frameData.meshCount++];
+		frameMesh->mesh = glexCurrent->currentMesh;
+		frameMesh->material = glexCurrent->currentMaterial;
+		frameMesh->transform = glexCurrent->transformStack[glexCurrent->transformTop];
 	}
 }
 
 GLEX_API void glexMeshVertexData(const GLEXVertex *p, GLsizeiptr count, GLintptr offset)
 {
-	GLEX_ASSERT(glex != NULL);
+	GLEX_ASSERT(glexCurrent != NULL);
 	GLEX_ASSERT(p != NULL);
 	GLEX_ASSERT(count > 0);
 	GLEX_ASSERT(offset >= 0);
 
-	GLEXMesh *mesh = glex->currentMesh;
+	GLEXMesh *mesh = glexCurrent->currentMesh;
 	GLEX_ASSERT(mesh != NULL);
 
 #ifdef GLEX_DEBUG
@@ -1177,12 +1174,12 @@ GLEX_API void glexMeshVertexData(const GLEXVertex *p, GLsizeiptr count, GLintptr
 
 GLEX_API void glexMeshVertexIndexData(const GLEXVertexIndex *p, GLsizeiptr count, GLintptr offset)
 {
-	GLEX_ASSERT(glex != NULL);
+	GLEX_ASSERT(glexCurrent != NULL);
 	GLEX_ASSERT(p != NULL);
 	GLEX_ASSERT(count > 0);
 	GLEX_ASSERT(offset >= 0);
 
-	GLEXMesh *mesh = glex->currentMesh;
+	GLEXMesh *mesh = glexCurrent->currentMesh;
 	GLEX_ASSERT(mesh != NULL);
 
 #ifdef GLEX_DEBUG
@@ -1200,9 +1197,9 @@ GLEX_API void glexMeshVertexIndexData(const GLEXVertexIndex *p, GLsizeiptr count
 
 GLEX_API GLEXVertex *glexMapMeshVertexBuffer(GLintptr offset, GLsizeiptr count)
 {
-	GLEX_ASSERT(glex != NULL);
+	GLEX_ASSERT(glexCurrent != NULL);
 
-	GLEXMesh *mesh = glex->currentMesh;
+	GLEXMesh *mesh = glexCurrent->currentMesh;
 	GLEX_ASSERT(mesh != NULL);
 	GLEX_ASSERT(mesh->vertexBuffer.heap != NULL);
 	GLEX_ASSERT(mesh->vertexMap == NULL);
@@ -1221,9 +1218,9 @@ GLEX_API GLEXVertex *glexMapMeshVertexBuffer(GLintptr offset, GLsizeiptr count)
 
 GLEX_API void glexUnmapMeshVertexBuffer(void)
 {
-	GLEX_ASSERT(glex != NULL);
+	GLEX_ASSERT(glexCurrent != NULL);
 
-	GLEXMesh *mesh = glex->currentMesh;
+	GLEXMesh *mesh = glexCurrent->currentMesh;
 	GLEX_ASSERT(mesh != NULL);
 	GLEX_ASSERT(mesh->vertexBuffer.heap != NULL);
 	GLEX_ASSERT(mesh->vertexMap != NULL);
@@ -1240,9 +1237,9 @@ GLEX_API void glexUnmapMeshVertexBuffer(void)
 
 GLEX_API GLEXVertexIndex *glexMapMeshVertexIndexBuffer(GLintptr offset, GLsizeiptr count)
 {
-	GLEX_ASSERT(glex != NULL);
+	GLEX_ASSERT(glexCurrent != NULL);
 
-	GLEXMesh *mesh = glex->currentMesh;
+	GLEXMesh *mesh = glexCurrent->currentMesh;
 	GLEX_ASSERT(mesh != NULL);
 	GLEX_ASSERT(mesh->vertexIndexBuffer.heap != NULL);
 	GLEX_ASSERT(mesh->vertexIndexMap == NULL);
@@ -1261,9 +1258,9 @@ GLEX_API GLEXVertexIndex *glexMapMeshVertexIndexBuffer(GLintptr offset, GLsizeip
 
 GLEX_API void glexUnmapMeshVertexIndexBuffer(void)
 {
-	GLEX_ASSERT(glex != NULL);
+	GLEX_ASSERT(glexCurrent != NULL);
 
-	GLEXMesh *mesh = glex->currentMesh;
+	GLEXMesh *mesh = glexCurrent->currentMesh;
 	GLEX_ASSERT(mesh != NULL);
 	GLEX_ASSERT(mesh->vertexIndexBuffer.heap != NULL);
 	GLEX_ASSERT(mesh->vertexIndexMap != NULL);

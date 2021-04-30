@@ -7,7 +7,7 @@
 VOLCANO_SYSTEM_BEGIN
 
 Sound::Sound(void):
-	m_volumn(1.0f)
+	m_volume(1.0f)
 {
 }
 
@@ -15,14 +15,14 @@ Sound::~Sound(void)
 {
 }
 
-float Sound::soundVolumn(void) const
+float Sound::soundVolume(void) const
 {
-	return m_volumn;
+	return m_volume;
 }
 
-void Sound::setSoundVolumn(float v)
+void Sound::setSoundVolume(float v)
 {
-	m_volumn = std::clamp(v, 0.0f, 1.0f);
+	m_volume = std::clamp(v, 0.0f, 1.0f);
 }
 
 VOLCANO_SYSTEM_END

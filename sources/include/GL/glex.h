@@ -76,18 +76,19 @@ typedef struct GLEXLight_ GLEXLight;
 typedef struct GLEXMaterial_ GLEXMaterial;
 typedef struct GLEXMesh_ GLEXMesh;
 
+GLEX_API GLboolean glexInit(void);
+GLEX_API void glexShutdown(void);
+GLEX_API void glexEnableLog(void);
+GLEX_API void glexDisableLog(void);
+GLEX_API void glexLogPrefix(const char *prefix);
+GLEX_API void glexLogLevel(GLEXLogLevel logLevel);
+
 GLEX_API GLEXContext *glexCreateContext(void *userData);
 GLEX_API void glexDeleteContext(GLEXContext *context);
 GLEX_API GLEXContext *glexCurrentContext(void);
 GLEX_API void glexMakeCurrent(GLEXContext *context);
 
 GLEX_API void *glexGetUserData(void);
-
-GLEX_API void glexEnableLog(void);
-GLEX_API void glexDisableLog(void);
-GLEX_API void glexLogPrefix(const char *prefix);
-GLEX_API void glexLogLevel(GLEXLogLevel logLevel);
-GLEX_API GLEXLogLevel glexGetLogLevel(void);
 
 GLEX_API void glexEnableLighting(void);
 GLEX_API void glexDisableLighting(void);

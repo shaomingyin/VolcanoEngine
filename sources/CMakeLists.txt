@@ -33,6 +33,8 @@ endif()
 include(TestBigEndian)
 TEST_BIG_ENDIAN(VOLCANO_BIG_ENDIAN)
 
+# Volcano
+
 configure_file(
     include/Volcano/Config.hpp.in
     include/Volcano/Config.hpp
@@ -50,9 +52,7 @@ file(GLOB_RECURSE VOLCANO_SOURCES
 
 add_definitions(
     -DNOMINMAX
-    -DLUAINTF_HEADERS_ONLY=0
-    -DLUAINTF_LINK_LUA_COMPILED_IN_CXX=0
-     -DLUA_USER_H=\"${CMAKE_CURRENT_SOURCE_DIR}/include/Volcano/VM/Task.h\"
+    -DLUA_USER_H=\"${CMAKE_CURRENT_SOURCE_DIR}/include/Volcano/VM/Task.h\"
     )
 
 include_directories(

@@ -45,36 +45,58 @@ public: // For lua
 	void resumeTaskHook(lua_State *T, int n);
 	void yieldTaskHook(lua_State *T, int n);
 
-protected:
-	static int trapRequest(lua_State *T, lua_CFunction fn, lua_KFunction cb = nullptr, lua_KContext ctx = 0);
-
 private:
 	void threadMain(std::promise<bool> *initPromise);
 	void protectedMain(lua_State *L, uv_loop_t *loop, std::promise<bool> *initPromise);
-	void openLibs(lua_State *L);
 	bool loadInitrc(lua_State *L);
 	void frame(float elapsed);
 	static void schedule(uv_prepare_t *p);
 	void handleEvent(const SDL_Event &event);
 	void handleTraps(void);
+	static int trapRequest(lua_State *T, lua_CFunction fn, lua_KFunction cb = nullptr, lua_KContext ctx = 0);
 	static int trapDone(lua_State *T, int status, lua_KContext ctx);
 
-private: // volcano
-	static int sysIndex(lua_State *L);
-	static int sysNewIndex(lua_State *L);
+private:
+	void openLibs(lua_State *L);
+
+	static int sysVersion(lua_State *L);
+
 	static int sysCurrent(lua_State *L);
+
 	static int sysTask(lua_State *L);
 
 	static int sysSleep(lua_State *L);
 	static void sysSleepDone(uv_timer_t *p);
 
-private: // volcano.window
-	static int sysWindowIndex(lua_State *L);
-	static int sysWindowNewIndex(lua_State *L);
+	static int sysWindowIsVisible(lua_State *L);
+	static int sysWindowSetVisible(lua_State *L);
 
-private: // volcano.window.renderer
-	static int sysWindowRendererIndex(lua_State *L);
-	static int sysWindowRendererNewIndex(lua_State *L);
+	static int sysWindowSize(lua_State *L);
+	static int sysWindowSetSize(lua_State *L);
+
+	static int sysWindowIsFullscreen(lua_State *L);
+	static int sysWindowSetFullscreen(lua_State *L);
+
+	static int sysWindowTitle(lua_State *L);
+	static int sysWindowSetTitle(lua_State *L);
+
+	static int sysWindowRendererViewport(lua_State *L);
+	static int sysWindowRendererSetViewport(lua_State *L);
+
+	static int sysWindowRendererIsClearEnabled(lua_State *L);
+	static int sysWindowRendererSetClearEnabled(lua_State *L);
+
+	static int sysWindowRendererClearColor(lua_State *L);
+	static int sysWindowRendererSetClearColor(lua_State *L);
+
+	static int sysWindowRendererIsDrawTriangles(lua_State *L);
+	static int sysWindowRendererSetDrawTriangles(lua_State *L);
+
+	static int sysWindowRendererIsDrawNormals(lua_State *L);
+	static int sysWindowRendererSetDrawNormals(lua_State *L);
+
+	static int sysSoundVolume(lua_State *L);
+	static int sysSoundSetVolume(lua_State *L);
 
 private:
 	static const int EVENT_QUEUE_ORDER = 6;

@@ -38,17 +38,9 @@ bool Renderer::init(const Eigen::Vector2i &size)
 
     glexMakeCurrent(m_glex);
 
-    glexLogPrefix("Volcano GLEX ");
-
-#ifdef VOLCANO_DEBUG
-    glexLogLevel(GLEX_LOG_LEVEL_DEBUG);
-#else
-    glexLogLevel(GLEX_LOG_LEVEL_WARNING);
-#endif
-
     m_nvg = nvgCreateGL3(0);
     if (m_nvg == nullptr) {
-        VOLCANO_LOGE("Failed to create nanovg context.");
+        VOLCANO_LOGE("Failed to create NanoVG context.");
         return false;
     }
 

@@ -30,6 +30,9 @@ public:
 	const std::string &title(void) const override;
 	void setTitle(std::string_view title) override;
 	VM::Renderer *renderer(void) override;
+
+private:
+	static void glDebugLog(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const void *userParam);
 	
 private:
 	SDL_Window *m_window;

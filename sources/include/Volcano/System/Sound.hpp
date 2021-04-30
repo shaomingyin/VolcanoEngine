@@ -14,11 +14,11 @@ public:
 	~Sound(void) override;
 
 public:
-	float soundVolumn(void) const override;
-	void setSoundVolumn(float v) override;
+	float soundVolume(void) const override;
+	void setSoundVolume(float v) override;
 
 private:
-	float m_volumn;
+	float m_volume;
 };
 
 VOLCANO_SYSTEM_END

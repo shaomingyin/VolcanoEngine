@@ -33,6 +33,7 @@ bool Window::init(std::string_view title, int width, int height)
 
 #ifdef VOLCANO_DEBUG
 	int glFlags;
+
 	SDL_GL_GetAttribute(SDL_GL_CONTEXT_FLAGS, &glFlags);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, glFlags | SDL_GL_CONTEXT_DEBUG_FLAG);
 #endif
@@ -81,6 +82,10 @@ bool Window::init(std::string_view title, int width, int height)
 
 	gl3wProcs = &m_gl3w;
 
+#ifdef VOLCANO_DEBUG
+	glDebugMessageCallback(&Window::glDebugLog, nullptr);
+#endif
+
 	VOLCANO_LOGI("Initializing renderer...");
 	if (!m_renderer.init(Eigen::Vector4i(0, 0, width, height))) {
 		VOLCANO_LOGE("Failed to init renderer.");
@@ -95,7 +100,8 @@ bool Window::init(std::string_view title, int width, int height)
 
 void Window::shutdown(void)
 {
-	VOLCANO_ASSERT(m_window != nullptr);
+	if (m_window == nullptr)
+		return;
 
 	m_renderer.shutdown();
 
@@ -207,6 +213,77 @@ VM::Renderer *Window::renderer(void)
 	VOLCANO_ASSERT(m_window != nullptr);
 
 	return &m_renderer;
+}
+
+void Window::glDebugLog(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const void *userParam)
+{
+	SDL_LogPriority logPrio;
+
+	const char *typeText;
+
+	switch (type) {
+	case GL_DEBUG_TYPE_ERROR:
+		typeText = "ERROR";
+		logPrio = SDL_LOG_PRIORITY_ERROR;
+		break;
+	case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:
+		typeText = "DEPRECATED_BEHAVIOR";
+		logPrio = SDL_LOG_PRIORITY_WARN;
+		break;
+	case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
+		typeText = "UNDEFINED_BEHAVIOR";
+		logPrio = SDL_LOG_PRIORITY_ERROR;
+		break;
+	case GL_DEBUG_TYPE_PORTABILITY:
+		typeText = "PORTABILITY";
+		logPrio = SDL_LOG_PRIORITY_WARN;
+		break;
+	case GL_DEBUG_TYPE_PERFORMANCE:
+		typeText = "PERFORMANCE";
+		logPrio = SDL_LOG_PRIORITY_WARN;
+		break;
+	case GL_DEBUG_TYPE_MARKER:
+		typeText = "MARKER";
+		break;
+	case GL_DEBUG_TYPE_PUSH_GROUP:
+		typeText = "PUSH_GROUP";
+		break;
+	case GL_DEBUG_TYPE_POP_GROUP:
+		typeText = "POP_GROUP";
+		break;
+	case GL_DEBUG_TYPE_OTHER:
+		typeText = "OTHER";
+		break;
+	default:
+		typeText = "UNKNOWN";
+		logPrio = SDL_LOG_PRIORITY_ERROR;
+		break;
+	}
+
+	const char *severityText;
+
+	switch (severity) {
+	case GL_DEBUG_SEVERITY_LOW:
+		severityText = "L";
+		break;
+	case GL_DEBUG_SEVERITY_MEDIUM:
+		severityText = "M";
+		logPrio = SDL_LOG_PRIORITY_WARN;
+		break;
+	case GL_DEBUG_SEVERITY_HIGH:
+		severityText = "H";
+		logPrio = SDL_LOG_PRIORITY_ERROR;
+		break;
+	case GL_DEBUG_SEVERITY_NOTIFICATION:
+		severityText = "N";
+		break;
+	default:
+		severityText = "?";
+		logPrio = SDL_LOG_PRIORITY_WARN;
+		break;
+	}
+
+	writeLog(logPrio, "[GL-%06d] %s %s: %s", id, severityText, typeText, message);
 }
 
 VOLCANO_SYSTEM_END

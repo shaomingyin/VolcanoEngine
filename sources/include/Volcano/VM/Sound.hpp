@@ -13,8 +13,8 @@ public:
 	virtual ~Sound(void) = default;
 
 public:
-	virtual float soundVolumn(void) const = 0;
-	virtual void setSoundVolumn(float v) = 0;
+	virtual float soundVolume(void) const = 0;
+	virtual void setSoundVolume(float v) = 0;
 };
 
 VOLCANO_VM_END

@@ -127,6 +127,22 @@ static int Run(int argc, char *argv[])
 
     ScopeGuard sdlGuard([] { SDL_Quit(); });
 
+    VOLCANO_LOGI("Initializing GLEX...");
+    if (!glexInit()) {
+        VOLCANO_LOGE("Failed to init GLEX.");
+        return EXIT_FAILURE;
+    }
+
+    ScopeGuard glexGuard([] { glexShutdown(); });
+
+    glexEnableLog();
+
+#ifdef VOLCANO_DEBUG
+    glexLogLevel(GLEX_LOG_LEVEL_DEBUG);
+#else
+    glexLogLevel(GLEX_LOG_LEVEL_INFO);
+#endif
+
     VOLCANO_LOGI("Initializing engine...");
 
     uv_loop_t *loop = uv_default_loop();

@@ -29,7 +29,6 @@ Kernel::~Kernel(void)
 		stop();
 
 	uvSyncClose(&m_trapAsync);
-	uvSyncClose(&m_quitAsync);
 }
 
 bool Kernel::start(Traps *traps)
@@ -209,28 +208,6 @@ void Kernel::protectedMain(lua_State *L, uv_loop_t *loop, std::promise<bool> *in
 	VOLCANO_LOGI("VM main loop exited.");
 }
 
-void Kernel::openLibs(lua_State *L)
-{
-	VOLCANO_ASSERT(L != nullptr);
-
-	luaL_openlibs(L);
-
-	luabridge::getGlobalNamespace(L)
-		.beginNamespace("volcano")
-			.addCFunction("current", &Kernel::sysCurrent)
-			.addCFunction("task", &Kernel::sysTask)
-			.addCFunction("sleep", &Kernel::sysSleep)
-			.beginNamespace("window")
-				//.addProperty("visible", )
-				.beginNamespace("renderer")
-				.endNamespace()
-			.endNamespace()
-			.beginNamespace("sound")
-			.endNamespace()
-		.endNamespace()
-	.endNamespace();
-}
-
 bool Kernel::loadInitrc(lua_State *L)
 {
 	VOLCANO_ASSERT(L != nullptr);
@@ -293,20 +270,23 @@ void Kernel::schedule(uv_prepare_t *p)
 	int ret;
 	int nResults;
 
-	while (!cx_list_is_empty(&kernel->m_taskListReady)) {
-		node = cx_list_remove_head(&kernel->m_taskListReady);
-		task = CX_MEMBEROF(node, Task, node);
-		T = taskToLua(task);
-		ret = lua_resume(T, L, 0, &nResults);
-		if (ret != LUA_OK && ret != LUA_YIELD) {
-			VOLCANO_LOGE("LUAERR: %d - %s", ret, lua_tostring(T, -1));
-			// TODO vm exit?
+	for (;;) {
+		while (!cx_list_is_empty(&kernel->m_taskListReady)) {
+			node = cx_list_remove_head(&kernel->m_taskListReady);
+			task = CX_MEMBEROF(node, Task, node);
+			T = taskToLua(task);
+			ret = lua_resume(T, L, 0, &nResults);
+			if (ret != LUA_OK && ret != LUA_YIELD) {
+				VOLCANO_LOGE("LUAERR: %d - %s", ret, lua_tostring(T, -1));
+				// TODO vm exit?
+			}
 		}
-	}
 
-	if (!cx_list_is_empty(&kernel->m_taskListTrap)) {
-		uv_async_send(&kernel->m_trapAsync);
-		kernel->m_cond.wait(kernel->m_mutex);
+		if (!cx_list_is_empty(&kernel->m_taskListTrap)) {
+			uv_async_send(&kernel->m_trapAsync);
+			kernel->m_cond.wait(kernel->m_mutex);
+		} else
+			break;
 	}
 }
 
@@ -335,6 +315,8 @@ int Kernel::trapRequest(lua_State *T, lua_CFunction fn, lua_KFunction cb, lua_KC
 	VOLCANO_ASSERT(T != nullptr);
 	VOLCANO_ASSERT(fn != nullptr);
 
+	VOLCANO_LOGD("trap T %p", T);
+
 	auto task = taskFromLua(T);
 	auto kernel = fromTask(task);
 
@@ -354,31 +336,52 @@ int Kernel::trapDone(lua_State *T, int status, lua_KContext ctx)
 	return taskFromLua(T)->trapResult;
 }
 
-int Kernel::sysIndex(lua_State *L)
+void Kernel::openLibs(lua_State *L)
 {
-	const char *name = lua_tostring(L, 2);
+	VOLCANO_ASSERT(L != nullptr);
 
-	if (strcmp(name, "version") == 0) {
-		// TODO
-	}
-	else
-		lua_pushvalue(L, 1);
+	luaL_openlibs(L);
 
-	return 0;
+	luabridge::getGlobalNamespace(L)
+		.beginNamespace("volcano")
+			.addProperty("version", &Kernel::sysVersion)
+			.addCFunction("current", &Kernel::sysCurrent)
+			.addCFunction("task", &Kernel::sysTask)
+			.addCFunction("sleep", &Kernel::sysSleep)
+			.beginNamespace("window")
+				.addProperty("visible", &Kernel::sysWindowIsVisible, &Kernel::sysWindowSetVisible)
+				.addProperty("size", &Kernel::sysWindowSize, &Kernel::sysWindowSetSize)
+				.addProperty("fullscreen", &Kernel::sysWindowIsFullscreen, &Kernel::sysWindowSetFullscreen)
+				.addProperty("title", &Kernel::sysWindowTitle, &Kernel::sysWindowSetTitle)
+				.beginNamespace("renderer")
+					.addProperty("viewport", &Kernel::sysWindowRendererViewport, &Kernel::sysWindowRendererSetViewport)
+					.addProperty("clearEnabled", &Kernel::sysWindowRendererIsClearEnabled, &Kernel::sysWindowRendererSetClearEnabled)
+					.addProperty("clearColor", &Kernel::sysWindowRendererClearColor, &Kernel::sysWindowRendererSetClearColor)
+					.addProperty("drawTriangles", &Kernel::sysWindowRendererIsDrawTriangles, &Kernel::sysWindowRendererSetDrawTriangles)
+					.addProperty("drawNormals", &Kernel::sysWindowRendererIsDrawNormals, &Kernel::sysWindowRendererSetDrawNormals)
+				.endNamespace()
+			.endNamespace()
+			.beginNamespace("sound")
+				.addProperty("volume", &Kernel::sysSoundVolume, &Kernel::sysSoundSetVolume)
+			.endNamespace()
+		.endNamespace();
 }
 
-int Kernel::sysNewIndex(lua_State *L)
+int Kernel::sysVersion(lua_State *L)
 {
-	const char *name = lua_tostring(L, 2);
+	lua_newtable(L);
 
-	if (strcmp(name, "visible") == 0) {
-	}
-	else
-		luaL_error(L, "unknown symbol 'volcano.%s'", name);
+	lua_pushinteger(L, VOLCANO_VERSION_MAJOR);
+	lua_rawseti(L, -2, 1);
 
-	return 0;
+	lua_pushinteger(L, VOLCANO_VERSION_MINOR);
+	lua_rawseti(L, -2, 2);
+
+	lua_pushinteger(L, VOLCANO_VERSION_PATCH);
+	lua_rawseti(L, -2, 3);
+
+	return 1;
 }
-
 
 int Kernel::sysCurrent(lua_State *L)
 {
@@ -420,7 +423,6 @@ int Kernel::sysTask(lua_State *L)
 
 int Kernel::sysSleep(lua_State *L)
 {
-	VOLCANO_LOGD(__func__);
 	int ms = (int)luaL_checkinteger(L, 1);
 	auto task = taskFromLua(L);
 	Kernel *kernel = fromTask(task);
@@ -435,7 +437,6 @@ int Kernel::sysSleep(lua_State *L)
 
 void Kernel::sysSleepDone(uv_timer_t *p)
 {
-	VOLCANO_LOGD(__func__);
 	auto task = reinterpret_cast<Task *>(p->data);
 	auto kernel = fromTask(task);
 
@@ -443,102 +444,239 @@ void Kernel::sysSleepDone(uv_timer_t *p)
 	cx_list_append(&kernel->m_taskListReady, &task->node);
 }
 
-int Kernel::sysWindowIndex(lua_State *L)
+int Kernel::sysWindowIsVisible(lua_State *L)
 {
-	const char *name = lua_tostring(L, 2);
-
-	if (strcmp(name, "visible") == 0) {
-		// TODO
-	}
-	else if (strcmp(name, "resizable") == 0) {
-		// TODO
-	}
-	else if (strcmp(name, "size") == 0) {
-		// TODO
-	}
-	else if (strcmp(name, "fullscreen") == 0) {
-		// TODO
-	}
-	else if (strcmp(name, "title") == 0) {
-		// TODO
-	}
-	else
-		luaL_error(L, "unknown field '%s' for 'volcano.window'.", name);
-
-	return 0;
+	return trapRequest(L, [] (lua_State *L) {
+		lua_pushboolean(L, fromLua(L)->m_traps->window()->isVisible());
+		return 1;
+	});
 }
 
-int Kernel::sysWindowNewIndex(lua_State *L)
+int Kernel::sysWindowSetVisible(lua_State *L)
 {
-	const char *name = lua_tostring(L, 2);
+	luaL_checktype(L, -1, LUA_TBOOLEAN);
 
-	if (strcmp(name, "visible") == 0) {
-		bool v = !!luaL_checkinteger(L, 3);
-		// TODO
-	}
-	else if (strcmp(name, "resizable") == 0) {
-		bool v = !!luaL_checkinteger(L, 3);
-		// TODO
-	}
-	else if (strcmp(name, "size") == 0) {
-		// TODO
-	}
-	else if (strcmp(name, "fullscreen") == 0) {
-		bool v = !!luaL_checkinteger(L, 3);
-		// TODO
-	}
-	else if (strcmp(name, "title") == 0) {
-		// TODO
-	}
-	else
-		luaL_error(L, "unknown field '%s' for 'volcano.window'.", name);
-
-	return 0;
+	return trapRequest(L, [] (lua_State *L) {
+		fromLua(L)->m_traps->window()->setVisible(lua_toboolean(L, -1));
+		return 0;
+	});
 }
 
-int Kernel::sysWindowRendererIndex(lua_State *L)
+int Kernel::sysWindowSize(lua_State *L)
 {
-	const char *name = lua_tostring(L, 2);
-
-	if (strcmp(name, "clear") == 0) {
-		// TODO
-	}
-	else if (strcmp(name, "clearColor") == 0) {
-		// TODO
-	}
-	else if (strcmp(name, "drawTriangles") == 0) {
-		// TODO
-	}
-	else if (strcmp(name, "drawNormals") == 0) {
-		// TODO
-	}
-	else
-		luaL_error(L, "unknown field '%s' for 'volcano.window'.", name);
-
-	return 0;
+	return trapRequest(L, [] (lua_State *L) {
+		auto size = fromLua(L)->m_traps->window()->size();
+		lua_newtable(L);
+		lua_pushinteger(L, size[0]);
+		lua_rawseti(L, -2, 1);
+		lua_pushinteger(L, size[1]);
+		lua_rawseti(L, -2, 2);
+		return 1;
+	});
 }
 
-int Kernel::sysWindowRendererNewIndex(lua_State *L)
+int Kernel::sysWindowSetSize(lua_State *L)
 {
-	const char *name = lua_tostring(L, 2);
+	luaL_checktype(L, -1, LUA_TTABLE);
+	luaL_argcheck(L, lua_rawlen(L, 1) == 2, 1, "invalid size.");
 
-	if (strcmp(name, "clear") == 0) {
-		bool v = !!luaL_checkinteger(L, 3);
-		// TODO
-	}
-	else if (strcmp(name, "clearColor") == 0) {
-		// TODO
-	}
-	else if (strcmp(name, "drawTriangles") == 0) {
-		// TODO
-	}
-	else if (strcmp(name, "clearColor") == 0) {
-		// TODO
-	}
-	else
-		luaL_error(L, "unknown field '%s' for 'volcano.window'.", name);
+	lua_rawgeti(L, -1, 1);
+	lua_rawgeti(L, -1, 2);
 
-	return 0;
+	luaL_checkinteger(L, -1);
+	luaL_checkinteger(L, -2);
+
+	return trapRequest(L, [] (lua_State *L) {
+		Eigen::Vector2i size(lua_tointeger(L, -2), lua_tointeger(L, -1));
+		fromLua(L)->m_traps->window()->setSize(size);
+		lua_pop(L, 2);
+		return 0;
+	});
+}
+
+int Kernel::sysWindowIsFullscreen(lua_State *L)
+{
+	return trapRequest(L, [] (lua_State *L) {
+		lua_pushboolean(L, fromLua(L)->m_traps->window()->isFullscreen());
+		return 1;
+	});
+}
+
+int Kernel::sysWindowSetFullscreen(lua_State *L)
+{
+	luaL_checktype(L, -1, LUA_TBOOLEAN);
+
+	return trapRequest(L, [] (lua_State *L) {
+		fromLua(L)->m_traps->window()->setFullscreen(lua_toboolean(L, -1));
+		return 0;
+	});
+}
+
+int Kernel::sysWindowTitle(lua_State *L)
+{
+	return trapRequest(L, [] (lua_State *L) {
+		lua_pushstring(L, fromLua(L)->m_traps->window()->title().c_str());
+		return 1;
+	});
+}
+
+int Kernel::sysWindowSetTitle(lua_State *L)
+{
+	luaL_checktype(L, -1, LUA_TSTRING);
+
+	return trapRequest(L, [] (lua_State *L) {
+		fromLua(L)->m_traps->window()->setTitle(lua_tostring(L, -1));
+		return 0;
+	});
+}
+
+int Kernel::sysWindowRendererViewport(lua_State *L)
+{
+	return trapRequest(L, [] (lua_State *L) {
+		auto viewport = fromLua(L)->m_traps->window()->renderer()->viewport();
+		lua_newtable(L);
+		lua_pushinteger(L, viewport[0]);
+		lua_rawseti(L, -2, 1);
+		lua_pushinteger(L, viewport[1]);
+		lua_rawseti(L, -2, 2);
+		lua_pushinteger(L, viewport[2]);
+		lua_rawseti(L, -2, 3);
+		lua_pushinteger(L, viewport[3]);
+		lua_rawseti(L, -2, 4);
+		return 1;
+	});
+}
+
+int Kernel::sysWindowRendererSetViewport(lua_State *L)
+{
+	luaL_checktype(L, -1, LUA_TTABLE);
+	luaL_argcheck(L, lua_rawlen(L, 1) == 4, 1, "invalid viewport size.");
+
+	lua_rawgeti(L, -1, 1);
+	lua_rawgeti(L, -1, 2);
+	lua_rawgeti(L, -1, 3);
+	lua_rawgeti(L, -1, 4);
+
+	luaL_checktype(L, -1, LUA_TNUMBER);
+	luaL_checktype(L, -2, LUA_TNUMBER);
+	luaL_checktype(L, -3, LUA_TNUMBER);
+	luaL_checktype(L, -4, LUA_TNUMBER);
+
+	return trapRequest(L, [] (lua_State *L) {
+		Eigen::Vector4i viewport(lua_tointeger(L, -4),
+			lua_tointeger(L, -3), lua_tointeger(L, -2), lua_tointeger(L, -1));
+		fromLua(L)->m_traps->window()->renderer()->setViewport(viewport);
+		lua_pop(L, 4);
+		return 0;
+	});
+}
+
+int Kernel::sysWindowRendererIsClearEnabled(lua_State *L)
+{
+	return trapRequest(L, [] (lua_State *L) {
+		lua_pushboolean(L, fromLua(L)->m_traps->window()->renderer()->isClearEnabled());
+		return 1;
+	});
+}
+
+int Kernel::sysWindowRendererSetClearEnabled(lua_State *L)
+{
+	luaL_checktype(L, -1, LUA_TBOOLEAN);
+
+	return trapRequest(L, [] (lua_State *L) {
+		fromLua(L)->m_traps->window()->renderer()->setClearEnabled(lua_toboolean(L, -1));
+		return 0;
+	});
+}
+
+int Kernel::sysWindowRendererClearColor(lua_State *L)
+{
+	return trapRequest(L, [] (lua_State *L) {
+		auto clearColor = fromLua(L)->m_traps->window()->renderer()->clearColor();
+		lua_newtable(L);
+		lua_pushnumber(L, clearColor[0]);
+		lua_rawseti(L, -2, 1);
+		lua_pushnumber(L, clearColor[1]);
+		lua_rawseti(L, -2, 2);
+		lua_pushnumber(L, clearColor[2]);
+		lua_rawseti(L, -2, 3);
+		return 1;
+	});
+}
+
+int Kernel::sysWindowRendererSetClearColor(lua_State *L)
+{
+	luaL_checktype(L, -1, LUA_TTABLE);
+	luaL_argcheck(L, lua_rawlen(L, 1) == 3, 1, "invalid color size.");
+
+	lua_rawgeti(L, -1, 1);
+	lua_rawgeti(L, -1, 2);
+	lua_rawgeti(L, -1, 3);
+
+	luaL_checktype(L, -1, LUA_TNUMBER);
+	luaL_checktype(L, -2, LUA_TNUMBER);
+	luaL_checktype(L, -3, LUA_TNUMBER);
+
+	return trapRequest(L, [] (lua_State *L) {
+		Eigen::Vector3f clearColor(lua_tonumber(L, -3), lua_tonumber(L, -2), lua_tonumber(L, -3));
+		fromLua(L)->m_traps->window()->renderer()->setClearColor(clearColor);
+		lua_pop(L, 3);
+		return 0;
+	});
+}
+
+int Kernel::sysWindowRendererIsDrawTriangles(lua_State *L)
+{
+	return trapRequest(L, [] (lua_State *L) {
+		lua_pushboolean(L, fromLua(L)->m_traps->window()->renderer()->isDrawTriangles());
+		return 1;
+	});
+}
+
+int Kernel::sysWindowRendererSetDrawTriangles(lua_State *L)
+{
+	luaL_checktype(L, -1, LUA_TBOOLEAN);
+
+	return trapRequest(L, [] (lua_State *L) {
+		fromLua(L)->m_traps->window()->renderer()->setDrawTriangles(lua_toboolean(L, -1));
+		return 0;
+	});
+}
+
+int Kernel::sysWindowRendererIsDrawNormals(lua_State *L)
+{
+	return trapRequest(L, [] (lua_State *L) {
+		lua_pushboolean(L, fromLua(L)->m_traps->window()->renderer()->isDrawNormals());
+		return 1;
+	});
+}
+
+int Kernel::sysWindowRendererSetDrawNormals(lua_State *L)
+{
+	luaL_checktype(L, -1, LUA_TBOOLEAN);
+
+	return trapRequest(L, [] (lua_State *L) {
+		fromLua(L)->m_traps->window()->renderer()->setDrawNormals(lua_toboolean(L, -1));
+		return 0;
+	});
+}
+
+int Kernel::sysSoundVolume(lua_State *L)
+{
+	return trapRequest(L, [] (lua_State *L) {
+		lua_pushnumber(L, fromLua(L)->m_traps->sound()->soundVolume());
+		return 1;
+	});
+}
+
+int Kernel::sysSoundSetVolume(lua_State *L)
+{
+	luaL_checktype(L, 1, LUA_TNUMBER);
+
+	return trapRequest(L, [] (lua_State *L) {
+		fromLua(L)->m_traps->sound()->setSoundVolume(lua_tonumber(L, 1));
+		return 0;
+	});
 }
 
 VOLCANO_VM_END
