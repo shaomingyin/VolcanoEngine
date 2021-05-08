@@ -1,0 +1,171 @@
+//
+//
+#include <algorithm>
+#include <functional>
+
+#include <Volcano/ScopeGuard.hpp>
+#include <Volcano/Graphics/Heap.hpp>
+
+VOLCANO_GRAPHICS_BEGIN
+
+// heap_buffer
+
+class HeapBuffer: public Buffer {
+public:
+    std::function<void (void)> freeFunction;
+    std::function<void (void)> bindFunction;
+    std::function<void *(void)> mapFunction;
+    std::function<void (void)> unmapFunction;
+
+public:
+    HeapBuffer(int64_t offset, int64_t size);
+    ~HeapBuffer(void) override;
+
+private:
+    int64_t m_offset;
+    int64_t m_size;
+    int64_t m_pos;
+    void *m_map;
+};
+
+HeapBuffer::HeapBuffer(GLintptr offset, GLsizeiptr size):
+    m_offset(offset),
+    m_size(size),
+    m_map(nullptr),
+    m_pos(-1)
+{
+}
+
+HeapBuffer::~HeapBuffer(void)
+{
+}
+
+// heap
+
+Heap::Heap(GLenum target, GLenum usage):
+    m_glBuffer(target, usage),
+    m_freeSize(0),
+    m_map(nullptr),
+    m_mapCount(0)
+{
+}
+
+Heap::~Heap(void)
+{
+    VOLCANO_ASSERT(m_map == nullptr);
+    VOLCANO_ASSERT(m_mapCount == 0);
+}
+
+bool Heap::init(int order)
+{
+    VOLCANO_ASSERT(order >= 0);
+    VOLCANO_ASSERT(!m_glBuffer.isValid());
+
+    GLsizeiptr size = GLsizeiptr(1) << order;
+
+    if (!m_glBuffer.create(size))
+        return false;
+
+    m_freeSize = size;
+
+    return true;
+}
+
+void Heap::release(void)
+{
+    VOLCANO_ASSERT(m_bufferList.empty());
+
+    m_glBuffer.destroy();
+}
+
+Buffer *Heap::allocBuffer(GLsizeiptr size)
+{
+    VOLCANO_ASSERT(size > 0);
+    VOLCANO_ASSERT(m_glBuffer.isValid());
+
+    if (size > m_freeSize)
+        return nullptr;
+
+#if 0
+    BufferList::iterator it;
+    HeapBuffer *used;
+    int64_t offset = 0;
+
+    for (it = m_bufferList.begin(); it != m_bufferList.end(); ++it) {
+        used = static_cast<HeapBuffer *>(*it);
+        //if ((used->offset() - offset) >= size)
+        //    break;
+        //offset = used->offset() + used->size();
+    }
+
+    //auto buf = new HeapBuffer(offset, size);
+    if (buf == nullptr)
+        return nullptr;
+
+    if (it == m_bufferList.end()) {
+        if (used != nullptr && size > (m_glBuffer.size() - offset))
+            return nullptr;
+        m_bufferList.push_front(buf);
+    } else
+        m_bufferList.insert(it, buf);
+
+    m_freeSize -= size;
+
+    buf->freeFunction = std::bind(&Heap::freeBuffer, this, buf);
+    buf->bindFunction = std::bind(&Heap::bindBuffer, this, buf);
+    buf->mapFunction = std::bind(&Heap::mapBuffer, this, buf);
+    buf->unmapFunction = std::bind(&Heap::unmapBuffer, this, buf);
+    return buf;
+#endif
+    return nullptr;
+}
+
+void Heap::freeBuffer(Buffer *buf)
+{
+    m_bufferList.remove(buf);
+}
+
+void Heap::bindBuffer(Buffer *buf)
+{
+    VOLCANO_UNUSED(buf);
+
+    m_glBuffer.bind();
+}
+
+void *Heap::mapBuffer(Buffer *buf)
+{
+    VOLCANO_UNUSED(buf);
+
+    if (m_map == nullptr)
+    {
+#if 0
+        VOLCANO_ASSERT(m_mapCount == 0);
+        m_glBuffer.bind();
+        m_map = m_glBuffer.map(QOpenGLBuffer::ReadWrite);
+        if (m_map == nullptr)
+            return nullptr;
+#endif
+    }
+
+    m_mapCount += 1;
+
+    return m_map;
+}
+
+void Heap::unmapBuffer(Buffer *buf)
+{
+    VOLCANO_ASSERT(m_map != nullptr);
+    VOLCANO_ASSERT(m_mapCount > 0);
+    VOLCANO_UNUSED(buf);
+
+    m_mapCount -= 1;
+    if (m_mapCount > 0)
+        return;
+
+    m_glBuffer.bind();
+    m_glBuffer.unmap();
+
+    m_map = nullptr;
+}
+
+VOLCANO_GRAPHICS_END

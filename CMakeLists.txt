@@ -2,7 +2,7 @@
 #
 #
 
-cmake_minimum_required(VERSION 3.13)
+cmake_minimum_required(VERSION 3.19)
 
 project(VolcanoEngine VERSION 0.1.0)
 
@@ -15,14 +15,11 @@ set_property(GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER "cmake")
 
 set(CMAKE_MODULE_PATH "${CMAKE_HOME_DIRECTORY}/cmake")
 
-set(CMAKE_C_STANDARD 99)
-set(CMAKE_C_STANDARD_REQUIRED ON)
+set(VOLCANO_OUT_DIR ${CMAKE_BINARY_DIR}/out)
 
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${VOLCANO_OUT_DIR}/lib)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${VOLCANO_OUT_DIR}/lib)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${VOLCANO_OUT_DIR}/bin)
 
-set(VOLCANO_DEBUG ON CACHE BOOL "Enable debug functions.")
-
-add_subdirectory(documents document)
 add_subdirectory(sources sources)
-
+add_subdirectory(documents documents)

@@ -1,3 +1,0 @@
-
-file(GLOB_RECURSE RTTR_SOURCES LIST_DIRECTORIES false "*.cpp")
-target_sources(core PRIVATE ${RTTR_SOURCES})

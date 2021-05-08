@@ -1,69 +1,106 @@
 
-# libuv
-include(FindUV)
-if(UV_FOUND)
-    include_directories(${UV_INCLUDE_DIRS})
-    link_libraries(${UV_LIBRARIES})
-else()
-    message(FATAL_ERROR "libuv not found.")
-endif()
+macro(volcano_target_setup TARGET)
+    set(OPTIONS)
 
-# PhysFS
-include(FindPhysFS)
-if(PHYSFS_FOUND)
-    include_directories(${PHYSFS_INCLUDE_DIR})
-    link_libraries(${PHYSFS_LIBRARY})
-else()
-    message(FATAL_ERROR "PhysFS not found.")
-endif()
+    set(ONE_VALUE_ARGS)
 
-# SDL2
-include(FindSDL2)
-if(SDL2_FOUND)
-    include_directories(${SDL2_INCLUDE_DIR})
-    link_libraries(${SDL2_LIBRARY})
-    if(NOT VOLCANO_DEBUG)
-        link_libraries(${SDL2MAIN_LIBRARY})
+    set(MULTI_VALUE_ARGS
+        DEPENDENCIES
+        PUBLIC_SOURCES
+        PRIVATE_SOURCES
+        PUBLIC_DEFINITIONS
+        PRIVATE_DEFINITIONS
+        PUBLIC_INCLUDE_DIRECTORIES
+        PRIVATE_INCLUDE_DIRECTORIES
+        PUBLIC_LINK_DIRECTORIES
+        PRIVATE_LINK_DIRECTORIES
+        PUBLIC_LINK_LIBRARIES
+        PRIVATE_LINK_LIBRARIES
+        )
+
+    cmake_parse_arguments(${TARGET} "${OPTIONS}" "${ONE_VALUE_ARGS}" "${MULTI_VALUE_ARGS}" ${ARGN})
+
+    set_target_properties(${TARGET} PROPERTIES OUTPUT_NAME volcano-${TARGET})
+
+    if(${TARGET}_DEPENDENCIES)
+        add_dependencies(${TARGET} ${${TARGET}_DEPENDENCIES})
     endif()
-else()
-    message(FATAL_ERROR "SDL2 not found.")
+
+    foreach(PUBLIC_SOURCE ${${TARGET}_PUBLIC_SOURCES})
+        file(REAL_PATH ${PUBLIC_SOURCE} PUBLIC_SOURCE_FULL_PATH)
+        target_sources(${TARGET} PUBLIC ${PUBLIC_SOURCE_FULL_PATH})
+    endforeach()
+
+    foreach(PRIVATE_SOURCE ${${TARGET}_PRIVATE_SOURCES})
+        file(REAL_PATH ${PRIVATE_SOURCE} PRIVATE_SOURCE_FULL_PATH)
+        target_sources(${TARGET} PRIVATE ${PRIVATE_SOURCE_FULL_PATH})
+    endforeach()
+
+    foreach(PUBLIC_DEFINITION ${${TARGET}_PUBLIC_DEFINITIONS})
+        target_compile_definitions(${TARGET} PUBLIC ${PUBLIC_DEFINITION})
+    endforeach()
+
+    foreach(PRIVATE_DEFINITION ${${TARGET}_PRIVATE_DEFINITIONS})
+        target_compile_definitions(${TARGET} PRIVATE ${PRIVATE_DEFINITION})
+    endforeach()
+
+    foreach(PUBLIC_INCLUDE_DIRECTORY ${${TARGET}_PUBLIC_INCLUDE_DIRECTORIES})
+        file(REAL_PATH ${PUBLIC_INCLUDE_DIRECTORY} PUBLIC_INCLUDE_DIRECTORY_FULL_PATH)
+        target_include_directories(${TARGET} PUBLIC ${PUBLIC_INCLUDE_DIRECTORY_FULL_PATH})
+    endforeach()
+
+    foreach(PRIVATE_INCLUDE_DIRECTORY ${${TARGET}_PRIVATE_INCLUDE_DIRECTORIES})
+        file(REAL_PATH ${PRIVATE_INCLUDE_DIRECTORY} PRIVATE_INCLUDE_DIRECTORY_FULL_PATH)
+        target_include_directories(${TARGET} PRIVATE ${PRIVATE_INCLUDE_DIRECTORY_FULL_PATH})
+    endforeach()
+
+    foreach(PUBLIC_LINK_DIRECTORY ${${TARGET}_PUBLIC_LINK_DIRECOTRIES})
+        target_link_directories(${TARGET} PUBLIC ${${TARGET}PUBLIC_LINK_DIRECTORY})
+    endforeach()
+
+    foreach(PRIVATE_LINK_DIRECTORY ${${TARGET}_PRIVATE_LINK_DIRECOTRIES})
+        target_link_directories(${TARGET} PRIVATE ${PRIVATE_LINK_DIRECTORY})
+    endforeach()
+
+    foreach(PUBLIC_LINK_LIBRARY ${${TARGET}_PUBLIC_LINK_LIBRARIES})
+        target_link_libraries(${TARGET} PUBLIC ${PUBLIC_LINK_LIBRARY})
+    endforeach()
+
+    foreach(PRIVATE_LINK_LIBRARY ${${TARGET}_PRIVATE_LINK_LIBRARIES})
+        target_link_libraries(${TARGET} PRIVATE ${PRIVATE_LINK_LIBRARY})
+    endforeach()
+
+    source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES
+        ${${TARGET}_PUBLIC_SOURCES}
+        ${${TARGET}_PRIVATE_SOURCES}
+        )
+endmacro()
+
+macro(volcano_static_library TARGET)
+    add_library(${TARGET} STATIC)
+    volcano_target_setup(${TARGET} ${ARGN})
+endmacro()
+
+macro(volcano_executable TARGET)
+    add_executable(${TARGET})
+    volcano_target_setup(${TARGET} ${ARGN})
+endmacro()
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+if(WIN32)
+    add_definitions(-D_WINSOCK_DEPRECATED_NO_WARNINGS)
 endif()
 
-# ByteOrder
-include(TestBigEndian)
-TEST_BIG_ENDIAN(VOLCANO_BIG_ENDIAN)
+add_subdirectory(base base)
+add_subdirectory(graphics graphics)
+add_subdirectory(input input)
+add_subdirectory(sound sound)
+add_subdirectory(gui gui)
+add_subdirectory(rpc rpc)
+add_subdirectory(game game)
 
-# Volcano
-
-configure_file(
-    include/Volcano/Config.hpp.in
-    include/Volcano/Config.hpp
-    )
-
-configure_file(
-    include/cx/config.h.in
-    include/cx/config.h
-    )
-
-file(GLOB_RECURSE VOLCANO_SOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/*
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/*
-    )
-
-add_definitions(
-    -DNOMINMAX
-    -DLUA_USER_H=\"${CMAKE_CURRENT_SOURCE_DIR}/include/Volcano/VM/Task.h\"
-    )
-
-include_directories(
-    ${CMAKE_CURRENT_SOURCE_DIR}/include
-    ${CMAKE_CURRENT_BINARY_DIR}/include
-    )
-
-if(WIN32 AND NOT VOLCANO_DEBUG)
-    add_executable(volcano WIN32 ${VOLCANO_SOURCES})
-else()
-    add_executable(volcano ${VOLCANO_SOURCES})
-endif()
-
-source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${VOLCANO_SOURCES})
+add_subdirectory(server server)
+add_subdirectory(launcher launcher)
+add_subdirectory(editor editor)
