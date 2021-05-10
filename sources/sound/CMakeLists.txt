@@ -1,4 +1,9 @@
 
+option(VOLCANO_SOUND "Enable sound system." ON)
+if(NOT VOLCANO_SOUND)
+    return()
+endif()
+
 configure_file(
     include/Volcano/Sound/Config.hpp.in
     include/Volcano/Sound/Config.hpp

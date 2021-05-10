@@ -3,6 +3,9 @@
 #ifndef VOLCANO_EDITOR_COMMON_HPP
 #define VOLCANO_EDITOR_COMMON_HPP
 
+#include <QtGlobal>
+#include <QDebug>
+
 #include <Volcano/Common.hpp>
 
 #define VOLCANO_EDITOR_BEGIN VOLCANO_BEGIN namespace Editor {

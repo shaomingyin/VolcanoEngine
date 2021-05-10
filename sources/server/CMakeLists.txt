@@ -1,4 +1,9 @@
 
+cmake_dependent_option(VOLCANO_SERVER "Enable server" ON "VOLCANO_RPC;VOLCANO_GAME" OFF)
+if(NOT VOLCANO_SERVER)
+    return()
+endif()
+
 include(FindUV)
 if(NOT UV_FOUND)
     message(FATAL_ERROR "libuv not found.")

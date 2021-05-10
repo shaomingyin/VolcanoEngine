@@ -1,4 +1,12 @@
 
+cmake_dependent_option(VOLCANO_EDITOR "Enable editor" ON "VOLCANO_GUI;VOLCANO_GAME;VOLCANO_LAUNCHER;VOLCANO_SERVER" OFF)
+if(NOT VOLCANO_EDITOR)
+    return()
+endif()
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+
 find_package(Qt5Core REQUIRED)
 find_package(Qt5Gui REQUIRED)
 find_package(Qt5Widgets REQUIRED)

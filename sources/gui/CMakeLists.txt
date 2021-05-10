@@ -1,4 +1,9 @@
 
+cmake_dependent_option(VOLCANO_GUI "Enable gui system" ON "VOLCANO_GRAPHICS;VOLCANO_INPUT;VOLCANO_SOUND" OFF)
+if(NOT VOLCANO_GUI)
+    return()
+endif()
+
 configure_file(
     include/Volcano/Gui/Config.hpp.in
     include/Volcano/Gui/Config.hpp

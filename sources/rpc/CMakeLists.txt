@@ -1,3 +1,9 @@
+
+option(VOLCANO_RPC "Enable rpc system" ON)
+if(NOT VOLCANO_RPC)
+    return()
+endif()
+
 # ENet
 
 include(CheckFunctionExists)

@@ -3,6 +3,8 @@
 #ifndef VOLCANO_LAUNCHER_COMMON_HPP
 #define VOLCANO_LAUNCHER_COMMON_HPP
 
+#define SDL_MAIN_HANDLED
+#include <SDL.h>
 #include <enet/enet.h>
 
 #include <Volcano/Common.hpp>

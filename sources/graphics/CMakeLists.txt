@@ -1,4 +1,9 @@
 
+option(VOLCANO_GRAPHICS "Enable graphics system." ON)
+if(NOT VOLCANO_GRAPHICS)
+    return()
+endif()
+
 configure_file(
     include/Volcano/Graphics/Config.hpp.in
     include/Volcano/Graphics/Config.hpp

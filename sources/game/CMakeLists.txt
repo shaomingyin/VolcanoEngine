@@ -1,4 +1,6 @@
 
+option(VOLCANO_GAME "Enable game system" ON)
+
 configure_file(
     include/Volcano/Game/Config.hpp.in
     include/Volcano/Game/Config.hpp

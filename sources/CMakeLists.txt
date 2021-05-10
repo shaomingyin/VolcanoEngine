@@ -93,6 +93,8 @@ if(WIN32)
     add_definitions(-D_WINSOCK_DEPRECATED_NO_WARNINGS)
 endif()
 
+include(CMakeDependentOption)
+
 add_subdirectory(base base)
 add_subdirectory(graphics graphics)
 add_subdirectory(input input)

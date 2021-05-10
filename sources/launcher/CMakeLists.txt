@@ -1,4 +1,9 @@
 
+cmake_dependent_option(VOLCANO_LAUNCHER "Enable launcher" ON "VOLCANO_GUI;VOLCANO_GAME;VOLCANO_RPC" OFF)
+if(NOT VOLCANO_LAUNCHER)
+    return()
+endif()
+
 include(FindSDL2)
 if(NOT SDL2_FOUND)
     message(FATAL_ERROR "SDL2 not found.")
@@ -32,8 +37,6 @@ volcano_executable(launcher
         ${CMAKE_CURRENT_SOURCE_DIR}/include
         ${CMAKE_CURRENT_BINARY_DIR}/include
         ${SDL2_INCLUDE_DIR}
-    PRIVATE_DEFINITIONS
-        SDL_MAIN_HANDLED
     PRIVATE_SOURCES
         ${VOLCANO_LAUNCHER_SOURCES}
     )

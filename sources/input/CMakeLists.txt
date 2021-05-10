@@ -1,4 +1,9 @@
 
+option(VOLCANO_INPUT "Enable input system." ON)
+if(NOT VOLCANO_INPUT)
+    return()
+endif()
+
 configure_file(
     include/Volcano/Input/Config.hpp.in
     include/Volcano/Input/Config.hpp

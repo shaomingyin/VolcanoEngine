@@ -87,8 +87,6 @@ enum class ByteOrder {
 using ByteArray = std::vector<uint8_t>;
 using StringList = std::list<std::string>;
 
-namespace log = spdlog;
-
 struct Noncopyable {
     Noncopyable(void) = default;
     Noncopyable(const Noncopyable &) = delete;
