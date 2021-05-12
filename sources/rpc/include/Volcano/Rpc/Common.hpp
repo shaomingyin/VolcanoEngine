@@ -3,6 +3,7 @@
 #ifndef VOLCANO_RPC_COMMON_HPP
 #define VOLCANO_RPC_COMMON_HPP
 
+#include <ipc.h>
 #include <enet/enet.h>
 
 #include <Volcano/Common.hpp>

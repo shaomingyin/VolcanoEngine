@@ -9,6 +9,8 @@ if(NOT SDL2_FOUND)
     message(FATAL_ERROR "SDL2 not found.")
 endif()
 
+set(VOLCANO_LAUNCHER_ENABLE_MULTIPLAYER OFF CACHE BOOL "Enable multiplayer functions.")
+
 configure_file(
     include/Volcano/Launcher/Config.hpp.in
     include/Volcano/Launcher/Config.hpp
@@ -21,13 +23,11 @@ file(GLOB_RECURSE VOLCANO_LAUNCHER_SOURCES
 
 volcano_executable(launcher
     DPEENDENCIES
-        game
+        server
         graphics
         input
         sound
-        rpc
     PRIVATE_LINK_LIBRARIES
-        game
         graphics
         input
         sound

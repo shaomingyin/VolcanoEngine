@@ -6,6 +6,7 @@
 #include <list>
 #include <vector>
 #include <string>
+#include <memory>
 #include <cassert>
 #include <cstdarg>
 #include <cstdint>
@@ -77,6 +78,18 @@
 #define VOLCANO_BEGIN namespace Volcano {
 #define VOLCANO_END }
 
+#define VOLCANO_DISABLE_COPY(className) \
+    className(const className &) = delete; \
+    className &operator=(const className &) = delete;
+
+#define VOLCANO_DISABLE_MOVE(className) \
+    className(className &&) = delete; \
+    className &operator=(className &&) = delete;
+
+#define VOLCANO_DISABLE_COPY_AND_MOVE(className) \
+    VOLCANO_DISABLE_COPY(className) \
+    VOLCANO_DISABLE_MOVE(className)
+
 VOLCANO_BEGIN
 
 enum class ByteOrder {
@@ -87,12 +100,7 @@ enum class ByteOrder {
 using ByteArray = std::vector<uint8_t>;
 using StringList = std::list<std::string>;
 
-struct Noncopyable {
-    Noncopyable(void) = default;
-    Noncopyable(const Noncopyable &) = delete;
-    Noncopyable &operator=(const Noncopyable &) = delete;
-    virtual ~Noncopyable(void) = default;
-};
+void makeLogger(std::shared_ptr<spdlog::logger> logger);
 
 VOLCANO_END
 

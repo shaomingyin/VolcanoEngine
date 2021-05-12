@@ -3,15 +3,19 @@
 #ifndef VOLCANO_EDITOR_MAINWINDOW_HPP
 #define VOLCANO_EDITOR_MAINWINDOW_HPP
 
+#include <QMap>
+#include <QSharedPointer>
 #include <QAction>
 #include <QMenu>
 #include <QMenuBar>
 #include <QDockWidget>
 #include <QMdiArea>
+#include <QMdiSubWindow>
 #include <QMainWindow>
 
 #include <Volcano/Editor/Common.hpp>
 #include <Volcano/Editor/ProjectView.hpp>
+#include <Volcano/Editor/WorldView.hpp>
 
 VOLCANO_EDITOR_BEGIN
 
@@ -71,10 +75,16 @@ private:
 	QAction *m_helpAboutQt;
 
 private:
-	ProjectView m_projectView;
 	QDockWidget m_projectViewDocker;
+	ProjectView m_projectView;
 
 	QMdiArea m_mdiArea;
+
+private:
+	using WorldViewPtr = QSharedPointer<WorldView>;
+	using WorldViews = QMap<QMdiSubWindow *, WorldViewPtr>;
+
+	WorldViews m_worldViews;
 };
 
 VOLCANO_EDITOR_END

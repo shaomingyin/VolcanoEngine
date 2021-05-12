@@ -87,9 +87,9 @@ file(GLOB_RECURSE VOLCANO_RPC_SOURCES
 
 volcano_static_library(rpc
     DEPENDENCIES
-        base
+        game
     PUBLIC_LINK_LIBRARIES
-        base
+        game
     PUBLIC_INCLUDE_DIRECTORIES
         ${CMAKE_CURRENT_SOURCE_DIR}/include
         ${CMAKE_CURRENT_BINARY_DIR}/include

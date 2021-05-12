@@ -1,22 +1,22 @@
 //
 //
 #include <Volcano/ScopeGuard.hpp>
-#include <Volcano/Launcher/MainWindow.hpp>
+#include <Volcano/Launcher/Window.hpp>
 
 VOLCANO_LAUNCHER_BEGIN
 
-MainWindow::MainWindow(void):
+Window::Window(void):
 	m_window(nullptr),
 	m_glContext(nullptr)
 {
 }
 
-MainWindow::~MainWindow(void)
+Window::~Window(void)
 {
 	// TODO
 }
 
-bool MainWindow::init(void)
+bool Window::init(void)
 {
 	VOLCANO_ASSERT(m_window == nullptr);
 
@@ -59,7 +59,7 @@ bool MainWindow::init(void)
 	m_size[0] = windowWidth;
 	m_size[1] = windowHeight;
 
-	VOLCANO_ASSERT(m_gl == nullptr);
+	VOLCANO_ASSERT(m_glContext == nullptr);
 	spdlog::info("Creating OpenGL context...");
 
 	m_glContext = SDL_GL_CreateContext(m_window);
@@ -94,7 +94,7 @@ bool MainWindow::init(void)
 	return true;
 }
 
-bool MainWindow::handleEvent(const SDL_WindowEvent &evt)
+bool Window::handleEvent(const SDL_WindowEvent &evt)
 {
 	VOLCANO_ASSERT(m_window != nullptr);
 
@@ -118,7 +118,7 @@ bool MainWindow::handleEvent(const SDL_WindowEvent &evt)
 	return true;
 }
 
-void MainWindow::update(void)
+void Window::update(void)
 {
 	VOLCANO_ASSERT(m_window != nullptr);
 	VOLCANO_ASSERT(m_glContext != nullptr);
@@ -132,7 +132,7 @@ void MainWindow::update(void)
 	}
 }
 
-Graphics::Renderer &MainWindow::renderer(void)
+Graphics::Renderer &Window::renderer(void)
 {
 	return m_renderer;
 }

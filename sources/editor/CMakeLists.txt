@@ -26,6 +26,9 @@ volcano_executable(editor
         launcher
         server
     PRIVATE_LINK_LIBRARIES
+        graphics
+        input
+        sound
         game
         base
         Qt5::Widgets
@@ -37,3 +40,6 @@ volcano_executable(editor
     PRIVATE_SOURCES
         ${VOLCANO_EDITOR_SOURCES}
     )
+
+source_group(\\generated\\mocs REGULAR_EXPRESSION "mocs_.*\.cpp$")
+source_group(\\generated\\qrc REGULAR_EXPRESSION "qrc_.*\.cpp$")

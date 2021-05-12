@@ -21,5 +21,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${VOLCANO_OUT_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${VOLCANO_OUT_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${VOLCANO_OUT_DIR}/bin)
 
+set(VOLCANO_DEBUG ON CACHE BOOL "Enable debug funtions.")
+
 add_subdirectory(sources sources)
 add_subdirectory(documents documents)

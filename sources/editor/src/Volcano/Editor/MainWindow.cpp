@@ -20,6 +20,7 @@ bool MainWindow::init(void)
 	m_projectViewDocker.setWidget(&m_projectView);
 	addDockWidget(Qt::LeftDockWidgetArea, &m_projectViewDocker);
 
+	m_mdiArea.setViewMode(QMdiArea::TabbedView);
 	setCentralWidget(&m_mdiArea);
 
 	m_fileMenu = menuBar()->addMenu("&File");

@@ -3,7 +3,6 @@
 #ifndef VOLCANO_FILESYSTEM_HPP
 #define VOLCANO_FILESYSTEM_HPP
 
-#include <string>
 #include <string_view>
 
 #include <Volcano/Common.hpp>
@@ -11,33 +10,29 @@
 
 VOLCANO_BEGIN
 
-class FileSystem: public Noncopyable {
+class FileSystem {
+	VOLCANO_DISABLE_COPY_AND_MOVE(FileSystem)
+
 public:
 	enum class Type {
-		Invalid = 0,
+		Unknown = 0,
 		Dir,
 		File
 	};
 
 public:
-	FileSystem(void);
-	virtual ~FileSystem(void);
+	FileSystem(void) = default;
+	virtual ~FileSystem(void) = default;
 
 public:
-	virtual bool isWritable(void);
-	virtual bool init(std::string_view nativePath);
-	const std::string &nativePath(void) const;
-	bool isExists(std::string_view path);
-	virtual Type type(std::string_view path);
-	virtual bool remove(std::string_view path);
-	virtual bool makeDir(std::string_view dirName);
-	virtual void enumDir(std::string_view dirName, StringList &out, bool isRecursive = false);
-	virtual IO *openFile(std::string_view fileName, int modes);
-	static bool isPath(std::string_view path);
-	static bool isNameChar(char path);
-
-private:
-	std::string m_nativePath;
+	virtual Type type(std::string_view path) = 0;
+	bool exists(std::string_view path);
+	virtual bool remove(std::string_view path) = 0;
+	virtual bool makeDir(std::string_view dirName) = 0;
+	virtual void enumDir(std::string_view dirName, StringList &out, bool isRecursive = false) = 0;
+	virtual IO *openFile(std::string_view fileName, int modes) = 0;
+	static bool checkPath(std::string_view path);
+	static bool isNameChar(char c);
 };
 
 VOLCANO_END

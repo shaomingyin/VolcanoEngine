@@ -17,11 +17,6 @@ ZipFileSystem::~ZipFileSystem(void)
 	mz_zip_end(&m_zipArchive);
 }
 
-bool ZipFileSystem::isWritable(void)
-{
-	return false;
-}
-
 bool ZipFileSystem::init(std::string_view nativePath)
 {
 	return mz_zip_reader_init_file(&m_zipArchive, nativePath.data(), 0);
@@ -29,12 +24,12 @@ bool ZipFileSystem::init(std::string_view nativePath)
 
 FileSystem::Type ZipFileSystem::type(std::string_view path)
 {
-	if (!isPath(path))
-		return Type::Invalid;
+	if (!checkPath(path))
+		return Type::Unknown;
 
 	mz_zip_archive_file_stat st;
 	if (!stat(path.data(), st))
-		return Type::Invalid;
+		return Type::Unknown;
 
 	if (st.m_is_directory)
 		return Type::Dir;

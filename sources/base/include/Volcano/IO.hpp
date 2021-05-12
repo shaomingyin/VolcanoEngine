@@ -7,7 +7,9 @@
 
 VOLCANO_BEGIN
 
-class IO: public Noncopyable {
+class IO {
+	VOLCANO_DISABLE_COPY_AND_MOVE(IO)
+
 public:
 	enum {
 		FlagReadable = 0x1,
@@ -56,7 +58,7 @@ public:
 
 public:
 	IO(void);
-	~IO(void) override;
+	virtual ~IO(void);
 
 public:
 	virtual int flags(void) = 0;

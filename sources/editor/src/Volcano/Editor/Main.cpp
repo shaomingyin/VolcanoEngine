@@ -3,10 +3,10 @@
 #include <mutex>
 #include <memory>
 
+#include <spdlog/sinks/base_sink.h>
+
 #include <QScopedPointer>
 #include <QApplication>
-
-#include <spdlog/sinks/base_sink.h>
 
 #include <Volcano/Editor/Common.hpp>
 #include <Volcano/Editor/MainWindow.hpp>
@@ -14,11 +14,11 @@
 VOLCANO_EDITOR_BEGIN
 
 template<typename Mutex>
-class QSpdlogSink: public spdlog::sinks::base_sink<Mutex>
+class QSpdlogSink : public spdlog::sinks::base_sink<Mutex>
 {
 protected:
-    void sink_it_(const spdlog::details::log_msg &msg) override
-    {
+	void sink_it_(const spdlog::details::log_msg &msg) override
+	{
 		spdlog::memory_buf_t formatted;
 		spdlog::sinks::base_sink<Mutex>::formatter_->format(msg, formatted);
 		std::string str = fmt::to_string(formatted);
@@ -36,18 +36,22 @@ protected:
 		case spdlog::level::debug:
 			qDebug("%s", str.c_str());
 			break;
+		default:
+			qInfo("%s", str.c_str());
+			break;
 		}
-    }
+	}
 
-    void flush_(void) override
-    {
-    }
+	void flush_(void) override
+	{
+	}
 };
 
 int main(int argc, char *argv[])
 {
 	auto sink = std::make_shared<QSpdlogSink<std::mutex>>();
-	auto logger = std::make_shared<spdlog::logger>("QtLogger", sink);
+	auto logger = std::make_shared<spdlog::logger>("Editor", sink);
+	makeLogger(logger);
 	spdlog::set_default_logger(logger);
 
 	QApplication app(argc, argv);

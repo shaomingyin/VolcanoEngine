@@ -1,21 +1,20 @@
 //
 //
-#ifndef VOLCANO_ZIPFILESYSTEM_HPP
-#define VOLCANO_ZIPFILESYSTEM_HPP
+#ifndef VOLCANO_NATIVEFILESYSTEM_HPP
+#define VOLCANO_NATIVEFILESYSTEM_HPP
 
+#include <string>
 #include <string_view>
-
-#include <miniz_zip.h>
 
 #include <Volcano/Common.hpp>
 #include <Volcano/FileSystem.hpp>
 
 VOLCANO_BEGIN
 
-class ZipFileSystem: public FileSystem {
+class NativeFileSystem: public FileSystem {
 public:
-	ZipFileSystem(void);
-	~ZipFileSystem(void) override;
+	NativeFileSystem(void);
+	~NativeFileSystem(void) override;
 
 public:
 	bool init(std::string_view nativePath);
@@ -26,13 +25,10 @@ public:
 	void enumDir(std::string_view dirName, StringList &out, bool isRecursive) override;
 	IO *openFile(std::string_view fileName, int modes) override;
 
-protected:
-	bool stat(std::string_view path, mz_zip_archive_file_stat &out);
-
 private:
-	mz_zip_archive m_zipArchive;
+	std::string m_nativePath;
 };
 
 VOLCANO_END
 
-#endif // VOLCANO_ZIPFILESYSTEM_HPP
+#endif // VOLCANO_NATIVEFILESYSTEM_HPP

@@ -1,7 +1,7 @@
 //
 //
-#ifndef VOLCANO_LAUNCHER_MAINWINDOW_HPP
-#define VOLCANO_LAUNCHER_MAINWINDOW_HPP
+#ifndef VOLCANO_LAUNCHER_WINDOW_HPP
+#define VOLCANO_LAUNCHER_WINDOW_HPP
 
 #include <string_view>
 
@@ -11,10 +11,10 @@
 
 VOLCANO_LAUNCHER_BEGIN
 
-class MainWindow {
+class Window {
 public:
-	MainWindow(void);
-	virtual ~MainWindow(void);
+	Window(void);
+	virtual ~Window(void);
 
 public:
 	bool init(void);
@@ -34,4 +34,4 @@ private:
 
 VOLCANO_LAUNCHER_END
 
-#endif // VOLCANO_LAUNCHER_MAINWINDOW_HPP
+#endif // VOLCANO_LAUNCHER_WINDOW_HPP
