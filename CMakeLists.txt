@@ -23,5 +23,10 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${VOLCANO_OUT_DIR}/bin)
 
 set(VOLCANO_DEBUG ON CACHE BOOL "Enable debug funtions.")
 
-add_subdirectory(sources sources)
+include(CMakeDependentOption)
+include(VolcanoUtils)
+
+add_subdirectory(engine engine)
+add_subdirectory(framework framework)
+add_subdirectory(tools tools)
 add_subdirectory(documents documents)
