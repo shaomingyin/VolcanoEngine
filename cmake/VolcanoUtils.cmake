@@ -22,7 +22,11 @@ macro(volcano_native_target_setup TARGET)
 
     cmake_parse_arguments(${TARGET} "${OPTIONS}" "${ONE_VALUE_ARGS}" "${MULTI_VALUE_ARGS}" ${ARGN})
 
-    set_target_properties(${TARGET} PROPERTIES OUTPUT_NAME volcano-${TARGET})
+    set_target_properties(${TARGET} PROPERTIES
+        OUTPUT_NAME volcano-${TARGET}
+        CXX_STANDARD 17
+        CXX_STANDARD_REQUIRED ON
+        )
 
     if(${TARGET}_FOLDER)
         set_target_properties(${TARGET} PROPERTIES FOLDER ${${TARGET}_FOLDER})
@@ -94,5 +98,17 @@ endmacro()
 
 macro(volcano_executable TARGET)
     add_executable(${TARGET})
+    volcano_native_target_setup(${TARGET} ${ARGN})
+endmacro()
+
+include(NodeJS)
+
+set(NODEJS_DEFAULT_URL https://nodejs.org/download/release CACHE STRING "NodeJS release url.")
+
+nodejs_init()
+
+macro(volcano_nodejs_native_module TARGET)
+    add_nodejs_module(${TARGET})
+    source_group(\\_node FILES ${NODEJS_SOURCES})
     volcano_native_target_setup(${TARGET} ${ARGN})
 endmacro()

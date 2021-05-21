@@ -66,6 +66,13 @@ void File::close(void)
 	m_fp = nullptr;
 }
 
+bool File::isEof(void)
+{
+	VOLCANO_ASSERT(m_fp != nullptr);
+
+	return feof(m_fp);
+}
+
 const std::string &File::fileName(void) const
 {
 	return m_fileName;

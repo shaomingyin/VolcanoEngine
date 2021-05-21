@@ -19,7 +19,9 @@ file(GLOB_RECURSE VOLCANO_GAME_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/*
     )
 
-volcano_static_library(game
+volcano_nodejs_native_module(game
+    DEPENDENCIES
+        base
     PUBLIC_LINK_LIBRARIES
         base
         ${BULLET_LIBRARIES}

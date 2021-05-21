@@ -15,7 +15,7 @@ IO::Mapper::Mapper(Mapper &&that) :
 	that.m_size = 0;
 }
 
-IO::Mapper::Mapper(IO &io, void *data, int64_t size):
+IO::Mapper::Mapper(IO *io, void *data, int64_t size):
 	m_io(io),
 	m_data(data),
 	m_size(size)
@@ -25,7 +25,7 @@ IO::Mapper::Mapper(IO &io, void *data, int64_t size):
 IO::Mapper::~Mapper(void)
 {
 	if (isValid())
-		m_io.releaseMap(m_data, m_size);
+		m_io->releaseMap(m_data, m_size);
 }
 
 int64_t IO::Mapper::size(void) const
@@ -43,9 +43,22 @@ bool IO::Mapper::isValid(void) const
 	return (m_data != nullptr && m_size > 0);
 }
 
-IO &IO::Mapper::io(void)
+IO *IO::Mapper::io(void)
 {
 	return m_io;
+}
+
+IO::Mapper &IO::Mapper::operator=(Mapper &&that)
+{
+	m_io = that.m_io;
+	m_data = that.m_data;
+	m_size = that.m_size;
+
+	that.m_io = nullptr;
+	that.m_data = nullptr;
+	that.m_size = 0;
+
+	return (*this);
 }
 
 // IO
@@ -151,6 +164,23 @@ int64_t IO::read(void *buf, int64_t len)
 	return readData(buf, len);
 }
 
+ByteArray IO::readAll(void)
+{
+	VOLCANO_ASSERT(flags() & FlagReadable);
+	VOLCANO_ASSERT(flags() & FlagSeekable);
+	VOLCANO_ASSERT(isOpen());
+
+	ByteArray tmp(size());
+	if (tmp.size() > 0) {
+		int64_t curPos = pos();
+		setPos(0);
+		readData(tmp.data(), tmp.size());
+		setPos(curPos);
+	}
+
+	return tmp;
+}
+
 int64_t IO::write(const void *buf, int64_t len)
 {
 	VOLCANO_ASSERT(flags() & FlagWritable);
@@ -166,7 +196,7 @@ IO::Mapper IO::map(int64_t offset, int64_t len)
 	VOLCANO_ASSERT(flags() & FlagMappable);
 	VOLCANO_ASSERT(isOpen());
 
-	return Mapper(*this, createMap(offset, len), len);
+	return Mapper(this, createMap(offset, len), len);
 }
 
 VOLCANO_END

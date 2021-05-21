@@ -15,16 +15,15 @@ set_property(GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER "cmake")
 
 set(CMAKE_MODULE_PATH "${CMAKE_HOME_DIRECTORY}/cmake")
 
-set(VOLCANO_OUT_DIR ${CMAKE_BINARY_DIR}/out)
+include(CMakeDependentOption)
+include(VolcanoUtils)
+
+set(VOLCANO_DEBUG ON CACHE BOOL "Enable debug funtions.")
+set(VOLCANO_OUT_DIR ${CMAKE_BINARY_DIR}/out CACHE PATH "Build output directory.")
 
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${VOLCANO_OUT_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${VOLCANO_OUT_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${VOLCANO_OUT_DIR}/bin)
-
-set(VOLCANO_DEBUG ON CACHE BOOL "Enable debug funtions.")
-
-include(CMakeDependentOption)
-include(VolcanoUtils)
 
 add_subdirectory(engine engine)
 add_subdirectory(framework framework)

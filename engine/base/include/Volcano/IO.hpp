@@ -32,26 +32,26 @@ public:
 		End
 	};
 
-	class Mapper {
+	class Mapper final {
 	public:
 		Mapper(Mapper &&that);
-		virtual ~Mapper(void);
+		~Mapper(void);
 
 	public:
 		int64_t size(void) const;
 		void *data(void);
 		bool isValid(void) const;
-		IO &io(void);
+		IO *io(void);
 
 	public:
 		Mapper &operator=(Mapper &&that);
 
 	private:
 		friend class IO;
-		Mapper(IO &io, void *data, int64_t size);
+		Mapper(IO *io, void *data, int64_t size);
 
 	private:
-		IO &m_io;
+		IO *m_io;
 		int64_t m_size;
 		void *m_data;
 	};
@@ -67,9 +67,11 @@ public:
 	virtual void close(void);
 	bool isOpen(void) const;
 	int modes(void) const;
+	virtual bool isEof(void) = 0;
 	int64_t tell(void);
 	int64_t seek(int64_t offset, SeekMode seekMode = SeekMode::Set);
 	int64_t read(void *buf, int64_t len);
+	ByteArray readAll(void);
 	int64_t write(const void *buf, int64_t len);
 	Mapper map(int64_t offset, int64_t len);
 

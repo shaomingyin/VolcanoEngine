@@ -22,6 +22,7 @@ public:
 	int64_t size(void) override;
 	bool open(int modes) override;
 	void close(void) override;
+	bool isEof(void) override;
 	const std::string &fileName(void) const;
 
 protected:

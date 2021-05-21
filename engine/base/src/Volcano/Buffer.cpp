@@ -81,6 +81,13 @@ void Buffer::close(void)
 	m_pos = -1;
 }
 
+bool Buffer::isEof(void)
+{
+	VOLCANO_ASSERT(m_pos >= 0);
+
+	return (m_pos == m_byteArray.size());
+}
+
 const ByteArray &Buffer::byteArray(void) const
 {
 	return m_byteArray;

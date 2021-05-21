@@ -1,9 +1,4 @@
 
-include(FindPhysFS)
-if(NOT PHYSFS_FOUND)
-    message(FATAL_ERROR "PhysFS not found.")
-endif()
-
 configure_file(
     include/Volcano/Config.hpp.in
     include/Volcano/Config.hpp
@@ -16,13 +11,14 @@ file(GLOB_RECURSE VOLCANO_BASE_SOURCES
 
 volcano_static_library(base
     PUBLIC_DEFINITIONS
+        NOMINMAX
         LIBASYNC_STATIC
     PUBLIC_LINK_LIBRARIES
-        ${PHYSFS_LIBRARY}
+        ${NODEJS_LIBRARIES}
     PUBLIC_INCLUDE_DIRECTORIES
         ${CMAKE_CURRENT_SOURCE_DIR}/include
         ${CMAKE_CURRENT_BINARY_DIR}/include
-        ${PHYSFS_INCLUDE_DIR}
+        ${NODEJS_INCLUDE_DIRS}
     PRIVATE_SOURCES
         ${VOLCANO_BASE_SOURCES}
     )

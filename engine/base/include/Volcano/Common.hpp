@@ -4,6 +4,7 @@
 #define VOLCANO_COMMON_HPP
 
 #include <list>
+#include <chrono>
 #include <vector>
 #include <string>
 #include <memory>
@@ -13,13 +14,6 @@
 #include <cstdlib>
 
 #include <Volcano/Config.hpp>
-
-#ifdef VOLCANO_DEBUG
-#   include <cassert>
-#   define VOLCANO_ASSERT(expr) assert(expr)
-#else
-#   define VOLCANO_ASSERT(expr) do { } while (0)
-#endif
 
 #if defined(_MSC_VER)
 #   define VOLCANO_INLINE __forceinline
@@ -60,20 +54,24 @@
     ((struct_type *)VOLCANO_PMOVB(p, -VOLCANO_OFFSETOF(struct_type, member_name)))
 
 #ifdef VOLCANO_DEBUG
+#   include <assert.h>
+#   define VOLCANO_ASSERT(expr) assert(expr)
 #   ifdef EIGEN_NO_DEBUG
 #       undef EIGEN_NO_DEBUG
 #   endif
 #else
+#   define VOLCANO_ASSERT(expr) do { } while (0)
 #   ifndef EIGEN_NO_DEBUG
 #       define EIGEN_NO_DEBUG
 #   endif
 #endif
 
-#include <spdlog/spdlog.h>
-#include <sigslot/signal.hpp>
-
 #include <Eigen/Core>
 #include <Eigen/Geometry>
+
+#include <uv.h>
+#include <spdlog/spdlog.h>
+#include <sigslot/signal.hpp>
 
 #define VOLCANO_BEGIN namespace Volcano {
 #define VOLCANO_END }
@@ -90,6 +88,33 @@
     VOLCANO_DISABLE_COPY(className) \
     VOLCANO_DISABLE_MOVE(className)
 
+void uv_close_sync(uv_handle_t *p);
+
+VOLCANO_INLINE void uv_close_sync(uv_idle_t * p)
+{
+    uv_close_sync(reinterpret_cast<uv_handle_t *>(p));
+}
+
+VOLCANO_INLINE void uv_close_sync(uv_prepare_t *p)
+{
+    uv_close_sync(reinterpret_cast<uv_handle_t *>(p));
+}
+
+VOLCANO_INLINE void uv_close_sync(uv_check_t *p)
+{
+    uv_close_sync(reinterpret_cast<uv_handle_t *>(p));
+}
+
+VOLCANO_INLINE void uv_close_sync(uv_timer_t *p)
+{
+    uv_close_sync(reinterpret_cast<uv_handle_t *>(p));
+}
+
+VOLCANO_INLINE void uv_close_sync(uv_async_t *p)
+{
+    uv_close_sync(reinterpret_cast<uv_handle_t *>(p));
+}
+
 VOLCANO_BEGIN
 
 enum class ByteOrder {
@@ -97,7 +122,9 @@ enum class ByteOrder {
     LittleEndian
 };
 
-using ByteArray = std::vector<uint8_t>;
+using namespace std::chrono;
+
+using ByteArray = std::vector<std::byte>;
 using StringList = std::list<std::string>;
 
 void makeLogger(std::shared_ptr<spdlog::logger> logger);

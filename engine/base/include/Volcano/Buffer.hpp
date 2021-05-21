@@ -23,6 +23,7 @@ public:
 	int64_t size(void) override;
 	bool open(int modes) override;
 	void close(void) override;
+	bool isEof(void) override;
 	const ByteArray &byteArray(void) const;
 
 protected:

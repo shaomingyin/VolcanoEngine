@@ -17,12 +17,10 @@ file(GLOB_RECURSE VOLCANO_GUI_SOURCES
 volcano_static_library(gui
     DEPENDENCIES
         graphics
-        input
         sound
         base
     PUBLIC_LINK_LIBRARIES
         graphics
-        input
         sound
         base
     PUBLIC_INCLUDE_DIRECTORIES
