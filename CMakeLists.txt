@@ -16,7 +16,6 @@ set_property(GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER "cmake")
 set(CMAKE_MODULE_PATH "${CMAKE_HOME_DIRECTORY}/cmake")
 
 include(CMakeDependentOption)
-include(VolcanoUtils)
 
 set(VOLCANO_DEBUG ON CACHE BOOL "Enable debug funtions.")
 set(VOLCANO_OUT_DIR ${CMAKE_BINARY_DIR}/out CACHE PATH "Build output directory.")

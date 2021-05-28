@@ -1,6 +1,8 @@
 
 macro(volcano_native_target_setup TARGET)
-    set(OPTIONS)
+    set(OPTIONS
+        DISABLE_AUTO_SOURCE_GROUP
+        )
 
     set(ONE_VALUE_ARGS
         FOLDER
@@ -10,14 +12,18 @@ macro(volcano_native_target_setup TARGET)
         DEPENDENCIES
         PUBLIC_SOURCES
         PRIVATE_SOURCES
+        INTERFACE_SOURCES
         PUBLIC_DEFINITIONS
         PRIVATE_DEFINITIONS
+        INTERFACE_DEFINITIONS
         PUBLIC_INCLUDE_DIRECTORIES
         PRIVATE_INCLUDE_DIRECTORIES
+        INTERFACE_INCLUDE_DIRECTORIES
         PUBLIC_LINK_DIRECTORIES
         PRIVATE_LINK_DIRECTORIES
         PUBLIC_LINK_LIBRARIES
         PRIVATE_LINK_LIBRARIES
+        INTERFACE_LINK_LIBRARIES
         )
 
     cmake_parse_arguments(${TARGET} "${OPTIONS}" "${ONE_VALUE_ARGS}" "${MULTI_VALUE_ARGS}" ${ARGN})
@@ -46,12 +52,21 @@ macro(volcano_native_target_setup TARGET)
         target_sources(${TARGET} PRIVATE ${PRIVATE_SOURCE_FULL_PATH})
     endforeach()
 
+    foreach(INTERFACE_SOURCE ${${TARGET}_INTERFACE_SOURCES})
+        file(REAL_PATH ${INTERFACE_SOURCE} INTERFACE_SOURCE_FULL_PATH)
+        target_sources(${TARGET} INTERFACE ${INTERFACE_SOURCE_FULL_PATH})
+    endforeach()
+
     foreach(PUBLIC_DEFINITION ${${TARGET}_PUBLIC_DEFINITIONS})
         target_compile_definitions(${TARGET} PUBLIC ${PUBLIC_DEFINITION})
     endforeach()
 
     foreach(PRIVATE_DEFINITION ${${TARGET}_PRIVATE_DEFINITIONS})
         target_compile_definitions(${TARGET} PRIVATE ${PRIVATE_DEFINITION})
+    endforeach()
+
+    foreach(INTERFACE_DEFINITION ${${TARGET}_INTERFACE_DEFINITIONS})
+        target_compile_definitions(${TARGET} INTERFACE ${INTERFACE_DEFINITION})
     endforeach()
 
     foreach(PUBLIC_INCLUDE_DIRECTORY ${${TARGET}_PUBLIC_INCLUDE_DIRECTORIES})
@@ -62,6 +77,11 @@ macro(volcano_native_target_setup TARGET)
     foreach(PRIVATE_INCLUDE_DIRECTORY ${${TARGET}_PRIVATE_INCLUDE_DIRECTORIES})
         file(REAL_PATH ${PRIVATE_INCLUDE_DIRECTORY} PRIVATE_INCLUDE_DIRECTORY_FULL_PATH)
         target_include_directories(${TARGET} PRIVATE ${PRIVATE_INCLUDE_DIRECTORY_FULL_PATH})
+    endforeach()
+
+    foreach(INTERFACE_INCLUDE_DIRECTORY ${${TARGET}_INTERFACE_INCLUDE_DIRECTORIES})
+        file(REAL_PATH ${INTERFACE_INCLUDE_DIRECTORY} INTERFACE_INCLUDE_DIRECTORY_FULL_PATH)
+        target_include_directories(${TARGET} INTERFACE ${INTERFACE_INCLUDE_DIRECTORY_FULL_PATH})
     endforeach()
 
     foreach(PUBLIC_LINK_DIRECTORY ${${TARGET}_PUBLIC_LINK_DIRECOTRIES})
@@ -80,10 +100,21 @@ macro(volcano_native_target_setup TARGET)
         target_link_libraries(${TARGET} PRIVATE ${PRIVATE_LINK_LIBRARY})
     endforeach()
 
-    source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES
-        ${${TARGET}_PUBLIC_SOURCES}
-        ${${TARGET}_PRIVATE_SOURCES}
-        )
+    foreach(INTERFACE_LINK_LIBRARY ${${TARGET}_INTERFACE_LINK_LIBRARIES})
+        target_link_libraries(${TARGET} INTERFACE ${INTERFACE_LINK_LIBRARY})
+    endforeach()
+
+    if(NOT ${TARGET}_DISABLE_AUTO_SOURCE_GROUP)
+        source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES
+            ${${TARGET}_PUBLIC_SOURCES}
+            ${${TARGET}_PRIVATE_SOURCES}
+            )
+    endif()
+endmacro()
+
+macro(volcano_interface TARGET)
+    add_library(${TARGET} INTERFACE)
+    volcano_native_target_setup(${TARGET} ${ARGN})
 endmacro()
 
 macro(volcano_static_library TARGET)
@@ -98,17 +129,5 @@ endmacro()
 
 macro(volcano_executable TARGET)
     add_executable(${TARGET})
-    volcano_native_target_setup(${TARGET} ${ARGN})
-endmacro()
-
-include(NodeJS)
-
-set(NODEJS_DEFAULT_URL https://nodejs.org/download/release CACHE STRING "NodeJS release url.")
-
-nodejs_init()
-
-macro(volcano_nodejs_native_module TARGET)
-    add_nodejs_module(${TARGET})
-    source_group(\\_node FILES ${NODEJS_SOURCES})
     volcano_native_target_setup(${TARGET} ${ARGN})
 endmacro()
