@@ -3,7 +3,6 @@
 #include <Volcano/Graphics/Window.hpp>
 #include <Volcano/Graphics/Renderer.hpp>
 #include <Volcano/Game/Server.hpp>
-#include <Volcano/Game/Client.hpp>
 #include <Volcano/Game/World.hpp>
 
 #include <Volcano/Module/Common.hpp>
@@ -32,7 +31,7 @@ static Napi::Value pollEventsInterval(const Napi::CallbackInfo &info)
 static void setPollEventsInternal(const Napi::CallbackInfo &info)
 {
 	if (info.Length() != 1)
-		Napi::Error::New(info.Env(), "Invalid parameter.").ThrowAsJavaScriptException();
+		Node::throwError(info.Env(), "Invalid parameter.");
 
 	pollEventsIntervalValue = info[0].ToNumber().Int64Value();
 	if (pollEventsIntervalValue <= 0)
@@ -97,9 +96,9 @@ static napi_value init(napi_env env, napi_value exports)
 	root.Set("graphics", graphics);
 
 	auto game = Napi::Object::New(env);
+
 	game.Set("World", Game::World::defineClass(env));
 	game.Set("Server", Game::Server::defineClass(env));
-	game.Set("Client", Game::Client::defineClass(env));
 	root.Set("game", game);
 
 	return exports;

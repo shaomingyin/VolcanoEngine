@@ -84,52 +84,11 @@
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 
-#include <uv.h>
 #include <spdlog/spdlog.h>
 #include <sigslot/signal.hpp>
 
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
-
-#define NAPI_VERSION 7
-#include <node_api.h>
-
-#define NODE_ADDON_API_DISABLE_DEPRECATED
-#include <napi.h>
-
-namespace Napi {
-    VOLCANO_INLINE void ThrowError(Napi::Env env, std::string_view message)
-    {
-        Error::New(env, message.data()).ThrowAsJavaScriptException();
-    }
-}
-
-void uv_close_sync(uv_handle_t *p);
-
-VOLCANO_INLINE void uv_close_sync(uv_idle_t * p)
-{
-    uv_close_sync(reinterpret_cast<uv_handle_t *>(p));
-}
-
-VOLCANO_INLINE void uv_close_sync(uv_prepare_t *p)
-{
-    uv_close_sync(reinterpret_cast<uv_handle_t *>(p));
-}
-
-VOLCANO_INLINE void uv_close_sync(uv_check_t *p)
-{
-    uv_close_sync(reinterpret_cast<uv_handle_t *>(p));
-}
-
-VOLCANO_INLINE void uv_close_sync(uv_timer_t *p)
-{
-    uv_close_sync(reinterpret_cast<uv_handle_t *>(p));
-}
-
-VOLCANO_INLINE void uv_close_sync(uv_async_t *p)
-{
-    uv_close_sync(reinterpret_cast<uv_handle_t *>(p));
-}
 
 VOLCANO_BEGIN
 
@@ -138,7 +97,20 @@ enum class ByteOrder {
     LittleEndian
 };
 
-using namespace std::chrono;
+using TypeId = const void *;
+
+template <typename T>
+TypeId typeId(void)
+{
+    static int __i;
+    return &__i;
+}
+
+using namespace std::chrono_literals;
+
+using Clock = std::chrono::high_resolution_clock;
+using TimePoint = Clock::time_point;
+using Duration = Clock::duration;
 
 using ByteArray = std::vector<uint8_t>;
 using StringList = std::list<std::string>;

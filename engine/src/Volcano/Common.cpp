@@ -2,20 +2,6 @@
 //
 #include <Volcano/Common.hpp>
 
-void uv_close_sync(uv_handle_t *p)
-{
-	bool closed = false;
-	p->data = &closed;
-
-	uv_close(p, [](uv_handle_t *p) {
-		auto closed = reinterpret_cast<bool *>(p->data);
-		*closed = true;
-	});
-
-	while (!closed)
-		uv_run(p->loop, UV_RUN_ONCE);
-}
-
 VOLCANO_BEGIN
 
 void makeLogger(std::shared_ptr<spdlog::logger> logger)

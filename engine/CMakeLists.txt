@@ -44,13 +44,13 @@ file(GLOB_RECURSE VOLCANO_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/*
     )
 
-add_nodejs_module(volcano ${VOLCANO_SOURCES})
-set_target_properties(volcano PROPERTIES PROJECT_LABEL "engine")
+add_nodejs_module(engine ${VOLCANO_SOURCES})
+set_target_properties(engine PROPERTIES OUTPUT_NAME "volcano-engine")
 
 source_group(\\_node FILES ${NODEJS_SOURCES})
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${VOLCANO_SOURCES})
 
-target_compile_features(volcano
+target_compile_features(engine
     PRIVATE
         cxx_constexpr
         cxx_thread_local

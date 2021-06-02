@@ -27,8 +27,7 @@ public:
     virtual ~Renderer(void);
 
 public:
-    static Napi::Function defineClass(Napi::Env env);
-    static Napi::Object newInstance(const std::initializer_list<napi_value> &args);
+    static Napi::Function constructor(Napi::Env env);
     bool init(int width, int height);
     Light &ambientLight(void);
     void beginFrame(void);

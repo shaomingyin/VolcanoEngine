@@ -39,10 +39,14 @@ private:
 	void setPosition(const Napi::CallbackInfo &info, const Napi::Value &value);
 	Napi::Value size(const Napi::CallbackInfo &info);
 	void setSize(const Napi::CallbackInfo &info, const Napi::Value &value);
-	Napi::Value isGrabMode(const Napi::CallbackInfo &info);
-	void setGrabMode(const Napi::CallbackInfo &info, const Napi::Value &value);
+	Napi::Value isGrabMouse(const Napi::CallbackInfo &info);
+	void setGrabMouse(const Napi::CallbackInfo &info, const Napi::Value &value);
+	Napi::Value fps(const Napi::CallbackInfo &info);
+	Napi::Value fpsMax(const Napi::CallbackInfo &info);
+	void setFpsMax(const Napi::CallbackInfo &info, const Napi::Value &value);
 
 private:
+	void setFpsMax(int v);
 	void update(void);
 	static void onPos(GLFWwindow *window, int x, int y);
 	static void onSize(GLFWwindow *window, int width, int height);
@@ -58,10 +62,15 @@ private:
 	std::string m_title;
 	int m_rect[4];
 	bool m_isVisible;
-	bool m_isGrabMode;
+	bool m_isGrabMouse;
 	union GL3WProcs m_gl3w;
 	Napi::ObjectReference m_rendererRef;
 	Renderer *m_renderer;
+	Duration m_elapsedMin;
+	TimePoint m_frameLast;
+	TimePoint m_frameCountLast;
+	int m_frameCount;
+	int m_frameCountPerSecond;
 };
 
 VOLCANO_GRAPHICS_END

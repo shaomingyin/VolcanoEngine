@@ -9,7 +9,7 @@ Window::Window(const Napi::CallbackInfo &info):
 	Napi::ObjectWrap<Window>(info),
 	m_handle(nullptr),
 	m_isVisible(false),
-	m_isGrabMode(false)
+	m_isGrabMouse(false)
 {
 	m_title = "Volcano";
 	m_rect[0] = 0;
@@ -123,6 +123,8 @@ Window::Window(const Napi::CallbackInfo &info):
 		return;
 	}
 
+	setFpsMax(60);
+
 	windowGuard.dismiss();
 }
 
@@ -143,7 +145,9 @@ Napi::Function Window::defineClass(Napi::Env env)
 		InstanceAccessor<&Window::title, &Window::setTitle>("title"),
 		InstanceAccessor<&Window::position, &Window::setPosition>("position"),
 		InstanceAccessor<&Window::size, &Window::setSize>("size"),
-		InstanceAccessor<&Window::isGrabMode, &Window::setGrabMode>("grabMode")
+		InstanceAccessor<&Window::isGrabMouse, &Window::setGrabMouse>("grabMouse"),
+		InstanceAccessor<&Window::fps>("fps"),
+		InstanceAccessor<&Window::fpsMax, &Window::setFpsMax>("fpsMax")
 	});
 }
 
@@ -222,7 +226,7 @@ void Window::setPosition(const Napi::CallbackInfo &info, const Napi::Value &valu
 	if (m_handle == nullptr)
 		return;
 
-	if (!value.IsObject()) {
+	if (!value.IsArray()) {
 		// TODO bad arg
 	}
 
@@ -260,18 +264,46 @@ void Window::setSize(const Napi::CallbackInfo &info, const Napi::Value &value)
 		object.Get(1u).ToNumber().Int32Value());
 }
 
-Napi::Value Window::isGrabMode(const Napi::CallbackInfo &info)
+Napi::Value Window::isGrabMouse(const Napi::CallbackInfo &info)
 {
-	return Napi::Value::From(info.Env(), m_isGrabMode);
+	return Napi::Value::From(info.Env(), m_isGrabMouse);
 }
 
-void Window::setGrabMode(const Napi::CallbackInfo &info, const Napi::Value &value)
+void Window::setGrabMouse(const Napi::CallbackInfo &info, const Napi::Value &value)
 {
-	m_isGrabMode = value.ToBoolean();
-	if (m_isGrabMode)
+	m_isGrabMouse = value.ToBoolean();
+	if (m_isGrabMouse)
 		glfwSetInputMode(m_handle, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	else
 		glfwSetInputMode(m_handle, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+}
+
+Napi::Value Window::fps(const Napi::CallbackInfo &info)
+{
+	return Napi::Value::From(info.Env(), m_frameCountPerSecond);
+}
+
+Napi::Value Window::fpsMax(const Napi::CallbackInfo &info)
+{
+	return Napi::Value::From(info.Env(), 1000000000ns / m_elapsedMin);
+}
+
+void Window::setFpsMax(const Napi::CallbackInfo &info, const Napi::Value &value)
+{
+	setFpsMax(value.ToNumber().Int32Value());
+}
+
+void Window::setFpsMax(int v)
+{
+	int tmp = v;
+	if (tmp < 1)
+		tmp = 1;
+
+	m_elapsedMin = 1000000000ns / v;
+
+	m_frameCount = 0;
+	m_frameCountPerSecond = 0;
+	m_frameCountLast = Clock::now();
 }
 
 void Window::update(void)
@@ -308,11 +340,9 @@ void Window::onSize(GLFWwindow *window, int width, int height)
 void Window::onKey(GLFWwindow *window, int keyCode, int scanCode, int action, int mods)
 {
 	auto p = reinterpret_cast<Window *>(glfwGetWindowUserPointer(window));
-	if (p == nullptr)
-		return;
-
-	//if (keyCode == GLFW_KEY_ENTER && action == GLFW_PRESS && mods & GLFW_MOD_ALT)
-	//	p->toggleFullScreen();
+	if (p != nullptr) {
+		// TODO
+	}
 }
 
 void Window::onMouseButton(GLFWwindow *window, int button, int action, int mods)

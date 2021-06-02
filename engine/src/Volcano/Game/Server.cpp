@@ -8,181 +8,126 @@ VOLCANO_GAME_BEGIN
 
 Server::Server(const Napi::CallbackInfo &info):
 	Napi::ObjectWrap<Server>(info),
-	m_loop(nullptr),
-	m_frameCountPerSecond(0),
+	m_port(7788),
 	m_world(nullptr)
 {
+	uv_loop_t *loop = nullptr;
+	napi_status ns = napi_get_uv_event_loop(info.Env(), &loop);
+	if (ns != napi_ok) {
+		Napi::ThrowError(info.Env(), "Cannot get loop.");
+		return;
+	}
+
+	if (!baseInit(loop)) {
+		Napi::ThrowError(info.Env(), "Failed to init frame object.");
+		return;
+	}
+
+	if (uv_udp_init(loop, &m_handle) < 0) {
+		Napi::ThrowError(info.Env(), "Failed to init udp handle.");
+		return;
+	}
+
+	auto worldObject = World::newInstance({});
+	if (!worldObject.IsObject()) {
+		Napi::ThrowError(info.Env(), "Cannot create world object.");
+		return;
+	}
+
+	m_world = World::Unwrap(worldObject);
+	if (m_world == nullptr) {
+		Napi::ThrowError(info.Env(), "Cannot get world object.");
+		return;
+	}
+
+	m_worldRef = Napi::Persistent(worldObject);
 }
 
 Server::~Server(void)
 {
+	uv_close_sync(reinterpret_cast<uv_handle_t *>(&m_handle));
 }
 
-Napi::Function Server::defineClass(Napi::Env env)
+bool Server::start(void)
 {
-	return DefineClass(env, "Server", {
-		InstanceAccessor<&Server::fps>("fps"),
-		InstanceAccessor<&Server::fpsMax, &Server::setFpsMax>("fps"),
-		InstanceAccessor<&Server::isStarted>("isStarted"),
-		InstanceAccessor<&Server::world, &Server::setWorld>("world"),
-		InstanceMethod<&Server::start>("start"),
-		InstanceMethod<&Server::stop>("stop")
-	});
-}
-
-Napi::Value Server::start(const Napi::CallbackInfo &info)
-{
-	if (m_loop != nullptr)
-		return Napi::Value::From(info.Env(), false);
-
-	int port = 7788;
-
-	if (info.Length() > 0) {
-		if (info.Length() != 1) {
-			// TODO error or exception?
-		}
-		port = info[0].ToNumber().Int32Value();
-	}
-
-	napi_status ns;
-
-	ns = napi_get_uv_event_loop(info.Env(), &m_loop);
-	if (ns != napi_ok || m_loop == nullptr)
-		return Napi::Value::From(info.Env(), false);
-
-	uv_idle_init(m_loop, &m_frameIdle);
-	uv_idle_start(&m_frameIdle, &Server::frameCallback);
-	m_frameIdle.data = this;
-
-	uv_udp_init(m_loop, &m_handle);
+	if (!Frame::start())
+		return false;
 
 	sockaddr_in addr;
-	uv_ip4_addr("0.0.0.0", port, &addr);
+	uv_ip4_addr("0.0.0.0", m_port, &addr);
 	uv_udp_bind(&m_handle, reinterpret_cast<sockaddr *>(&addr), 0);
 	uv_udp_recv_start(&m_handle, &Server::allocCallback, &Server::receiveCallback);
 	m_handle.data = this;
 
-	m_frameLast = high_resolution_clock::now();
-	m_frameCountLast = m_frameLast;
-	m_frameCountPerSecond = 0;
-	m_frameCount = 0;
+	return true;
+}
+
+void Server::stop(void)
+{
+	uv_udp_recv_stop(&m_handle);
+
+	Frame::stop();
+}
+
+Napi::Function Server::constructor(Napi::Env env)
+{
+	return Node::defineClass<Server, Frame>(env, "Server", {
+		InstanceMethod<&Server::start>("start"),
+		InstanceMethod<&Server::stop>("stop"),
+		InstanceAccessor<&Server::port, &Server::setPort>("port"),
+		InstanceAccessor<&Server::isStarted>("isStarted")
+	});
+}
+
+void Server::update(Duration elapsed)
+{
+}
+
+Napi::Value Server::port(const Napi::CallbackInfo &info)
+{
+	return Napi::Value::From(info.Env(), m_port);
+}
+
+void Server::setPort(const Napi::CallbackInfo &info, const Napi::Value &value)
+{
+	int port = value.ToNumber().Int32Value();
+	if (port == m_port)
+		return;
+
+	m_port = port;
+
+	if (Frame::isStarted())
+		restart();
+}
+
+Napi::Value Server::start(const Napi::CallbackInfo &info)
+{
+	if (!Frame::start())
+		return Napi::Value::From(info.Env(), false);
+
+	if (!start()) {
+		Frame::stop();
+		return Napi::Value::From(info.Env(), false);
+	}
 
 	return Napi::Value::From(info.Env(), true);
 }
 
 Napi::Value Server::stop(const Napi::CallbackInfo &info)
 {
-	if (m_loop == nullptr)
-		return Napi::Value();
-
-	uv_idle_stop(&m_frameIdle);
-	uv_close_sync(reinterpret_cast<uv_handle_t *>(&m_frameIdle));
-
-	uv_udp_recv_stop(&m_handle);
-	uv_close_sync(reinterpret_cast<uv_handle_t *>(&m_handle));
-
-	m_frameCountPerSecond = 0;
-	m_loop = nullptr;
-
+	stop();
 	return Napi::Value();
 }
 
 Napi::Value Server::isStarted(const Napi::CallbackInfo &info)
 {
-	return Napi::Value::From(info.Env(), m_loop != nullptr);
-}
-
-Napi::Value Server::fps(const Napi::CallbackInfo &info)
-{
-	return Napi::Value::From(info.Env(), m_frameCountPerSecond);
-}
-
-Napi::Value Server::fpsMax(const Napi::CallbackInfo &info)
-{
-	auto usElapsedMin = duration_cast<std::chrono::microseconds>(m_elapsedMin).count();
-	return Napi::Value::From(info.Env(), double(usElapsedMin) / 1000000.0);
-}
-
-void Server::setFpsMax(const Napi::CallbackInfo &info, const Napi::Value &value)
-{
-	auto v = value.ToNumber();
-	setFpsMax(v.Int32Value());
+	return Napi::Value::From(info.Env(),
+		uv_is_active(reinterpret_cast<uv_handle_t *>(&m_handle)));
 }
 
 Napi::Value Server::world(const Napi::CallbackInfo &info)
 {
-	return m_worldValue;
-}
-
-void Server::setWorld(const Napi::CallbackInfo &info, const Napi::Value &value)
-{
-	if (info.Length() != 1) {
-		// ERROR
-	}
-
-	if (value.IsNull()) {
-		m_world = nullptr;
-		m_worldValue = Napi::Value();
-		return;
-	}
-
-	if (!value.IsObject()) {
-		// ERROR
-	}
-
-	m_world = World::Unwrap(value.ToObject());
-	m_worldValue = value;
-}
-
-void Server::setFpsMax(size_t v)
-{
-	size_t tmp = v;
-	if (tmp < 1)
-		tmp = 1;
-
-	m_elapsedMin = 1000000000ns / v;
-	m_frameLast = high_resolution_clock::now();
-	m_frameCount = 0;
-	m_frameCountPerSecond = 0;
-}
-
-void Server::frameCallback(uv_idle_t *p)
-{
-	reinterpret_cast<Server *>(p->data)->frame();
-}
-
-void Server::frame(void)
-{
-	auto curr = high_resolution_clock::now();
-	auto elapsed = curr - m_frameLast;
-	if (elapsed < m_elapsedMin) {
-		std::this_thread::yield();
-		return;
-	}
-
-	if ((curr - m_frameCountLast) >= 1s) {
-		m_frameCountLast = curr;
-		m_frameCountPerSecond = m_frameCount;
-		m_frameCount = 0;
-	}
-
-	auto usElapsed = duration_cast<std::chrono::milliseconds>(elapsed).count();
-	float floatElapsed = float(usElapsed) / 1000.0f;
-
-	update(floatElapsed);
-
-	m_frameLast = curr;
-	m_frameCount += 1;
-}
-
-void Server::update(float elapsed)
-{
-	// handleClients(elapsed);
-
-	if (m_world != nullptr)
-		m_world->update(elapsed);
-
-	// dispatchClients(elapsed);
+	return m_worldRef.Value();
 }
 
 void Server::allocCallback(uv_handle_t *handle, size_t suggestedSize, uv_buf_t *buf)
