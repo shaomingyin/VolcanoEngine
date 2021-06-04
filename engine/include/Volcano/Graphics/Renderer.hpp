@@ -3,6 +3,7 @@
 #ifndef VOLCANO_GRPHICS_RENDERER_HPP
 #define VOLCANO_GRPHICS_RENDERER_HPP
 
+#include <Volcano/Node.hpp>
 #include <Volcano/Graphics/Common.hpp>
 #include <Volcano/Graphics/Mesh.hpp>
 #include <Volcano/Graphics/Material.hpp>
@@ -13,7 +14,7 @@
 
 VOLCANO_GRAPHICS_BEGIN
 
-class Renderer : public Napi::ObjectWrap<Renderer> {
+class Renderer : public Node::Object<Renderer> {
 public:
     enum MatrixMode {
         MatrixModeModel = 0,
@@ -27,7 +28,7 @@ public:
     virtual ~Renderer(void);
 
 public:
-    static Napi::Function constructor(Napi::Env env);
+    static Napi::Function defineConstructor(Napi::Env env);
     bool init(int width, int height);
     Light &ambientLight(void);
     void beginFrame(void);
@@ -52,7 +53,6 @@ private:
     void setViewport(const Napi::CallbackInfo &info, const Napi::Value &value);
 
 private:
-    static Napi::FunctionReference c_constructorRef;
     bool m_clearEnabled;
     Eigen::Vector3f m_clearColor;
     Eigen::Vector4i m_viewport;

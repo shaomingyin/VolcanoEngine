@@ -2,6 +2,7 @@
 # NodeJS
 include(NodeJS)
 set(NODEJS_DEFAULT_URL https://nodejs.org/download/release CACHE STRING "NodeJS release url.")
+set(NODEJS_DEFAULT_VERSION v14.17.0 CACHE STRING "NodeJS version (at least v14.17.0)")
 nodejs_init()
 
 # GLFW
@@ -16,7 +17,7 @@ endif()
 # BulletPhysics
 include(FindBullet)
 if(BULLET_FOUND)
-    link_libraries(${BULLET_LIBRARIRES})
+    link_libraries(${BULLET_LIBRARIES})
     include_directories(${BULLET_INCLUDE_DIR})
 else()
     message(FATAL_ERROR "BulletPhysics not found.")

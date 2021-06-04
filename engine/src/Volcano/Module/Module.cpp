@@ -2,8 +2,10 @@
 //
 #include <Volcano/Graphics/Window.hpp>
 #include <Volcano/Graphics/Renderer.hpp>
-#include <Volcano/Game/Server.hpp>
 #include <Volcano/Game/World.hpp>
+#include <Volcano/Game/Level.hpp>
+#include <Volcano/Game/Server.hpp>
+#include <Volcano/Game/Client.hpp>
 
 #include <Volcano/Module/Common.hpp>
 
@@ -65,6 +67,8 @@ static napi_value init(napi_env env, napi_value exports)
 	logger->set_level(spdlog::level::warning);
 #endif
 
+	spdlog::info("asdfasdf");
+
 	if (glfwInit() != GLFW_TRUE)
 		return Napi::Error::New(env, "Failed to initialize GLFW.").Value();
 
@@ -87,19 +91,20 @@ static napi_value init(napi_env env, napi_value exports)
 	root.DefineProperty(Napi::PropertyDescriptor::Accessor<version>("version"));
 	root.DefineProperty(Napi::PropertyDescriptor::Accessor<pollEventsInterval, setPollEventsInternal>("pollEventsInterval"));
 
-	root.Set("start", Napi::Function::New(env, start));
-	root.Set("stop", Napi::Function::New(env, stop));
+	root["start"] = Napi::Function::New(env, start);
+	root["stop"] = Napi::Function::New(env, stop);
 
 	auto graphics = Napi::Object::New(env);
-	graphics.Set("Window", Graphics::Window::defineClass(env));
-	graphics.Set("Renderer", Graphics::Renderer::defineClass(env));
-	root.Set("graphics", graphics);
+	Graphics::Renderer::defineConstructor(env);
+	graphics["Window"] = Graphics::Window::defineConstructor(env);
+	root["graphics"] = graphics;
 
 	auto game = Napi::Object::New(env);
-
-	game.Set("World", Game::World::defineClass(env));
-	game.Set("Server", Game::Server::defineClass(env));
-	root.Set("game", game);
+	Game::World::defineConstructor(env);
+	Game::Level::defineConstructor(env);
+	game["Server"] = Game::Server::defineConstructor(env);
+	game["Client"] = Game::Client::defineConstructor(env);
+	root["game"] = game;
 
 	return exports;
 }

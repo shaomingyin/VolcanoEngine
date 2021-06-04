@@ -9,14 +9,14 @@
 
 VOLCANO_GAME_BEGIN
 
-class World: public Napi::ObjectWrap<World> {
+class World: public Node::Object<World> {
 
 public:
 	World(const Napi::CallbackInfo &info);
 	virtual ~World(void);
 
 public:
-	static Napi::Function constructor(Napi::Env env);
+	static Napi::Function defineConstructor(Napi::Env env);
 	void update(Duration elapsed);
 
 private:

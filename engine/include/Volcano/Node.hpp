@@ -3,8 +3,6 @@
 #ifndef VOLCANO_NODE_HPP
 #define VOLCANO_NODE_HPP
 
-#include <string_view>
-
 #include <uv.h>
 
 #include <Volcano/Common.hpp>
@@ -59,56 +57,123 @@ VOLCANO_INLINE void uv_close_sync(uv_async_t *p)
 
 VOLCANO_NODE_BEGIN
 
-bool registerConstructor(Napi::Env env, TypeId id, Napi::Function ctor);
-Napi::Function constructor(Napi::Env env, TypeId id);
-void makeInherits(Napi::Env env, Napi::Function ctor, Napi::Function superCtor);
-
-template <typename T>
-bool registerConstructor(Napi::Env env, Napi::Function ctor)
-{
-    return registerConstructor(env, typeId<T>(), ctor);
-}
-
-template <typename T>
-Napi::Function constructor(Napi::Env env)
-{
-    return constructor(env, typeId<T>());
-}
-
 inline void throwError(Napi::Env env, std::string_view message)
 {
     Napi::Error::New(env, message.data()).ThrowAsJavaScriptException();
 }
 
-inline Napi::Object newInstance(Napi::Function ctor, const std::initializer_list<napi_value> &args)
+inline Napi::Object newInstance(Napi::Env env, Napi::Function ctor, const std::initializer_list<napi_value> &args)
 {
-    Napi::EscapableHandleScope scope(ctor.Env());
+    Napi::EscapableHandleScope scope(env);
     Napi::Object object = ctor.New(args);
     return scope.Escape(napi_value(object)).ToObject();
 }
 
+void makeInherits(Napi::Env env, Napi::Function ctor, Napi::Function superCtor);
+
 template <typename T>
-Napi::Function defineClass(Napi::Env env, std::string_view name,
-    const std::vector<Napi::ClassPropertyDescriptor<T>> &properties)
-{
-    auto ctor = constructor<T>(env);
-    if (ctor.IsFunction())
+class Object: public Napi::ObjectWrap<T> {
+public:
+    Object(const Napi::CallbackInfo &info):
+        Napi::ObjectWrap<T>(info)
+    {
+    }
+
+    ~Object(void) override
+    {
+    }
+
+public:
+    static Napi::Function constructor(Napi::Env env)
+    {
+        return constructorFromTypeId(env, typeId<T>());
+    }
+
+    static Napi::Object newInstance(Napi::Env env,
+        const std::initializer_list<napi_value> &args = {})
+    {
+        return ::Volcano::Node::newInstance(env, constructor(env), args);
+    }
+
+protected:
+    static Napi::Function defineClass(Napi::Env env, const char *name,
+        const std::vector<Napi::ClassPropertyDescriptor<T>> &properties)
+    {
+        auto ctor = constructor(env);
+        if (ctor.IsFunction())
+            return ctor;
+
+        ctor = Napi::ObjectWrap<T>::DefineClass(env, name, properties);
+        registerConstructor(env, ctor);
+
         return ctor;
+    }
 
-    ctor = Napi::ObjectWrap<T>::DefineClass(env, name.data(), properties);
-    registerConstructor<T>(env, ctor);
+    template <typename SUPER>
+    static Napi::Function defineClass(Napi::Env env, const char *name,
+        const std::vector<Napi::ClassPropertyDescriptor<T>> &properties)
+    {
+        auto ctor = defineClass(env, name, properties);
+        makeInherits(env, ctor, constructorFromType<SUPER>(env));
+        return ctor;
+    }
 
-    return ctor;
-}
+private:
+    using ConstructorMap = std::unordered_map<TypeId, Napi::FunctionReference>;
 
-template <typename T, typename SUPER>
-Napi::Function defineClass(Napi::Env env, std::string_view name,
-    const std::vector<Napi::ClassPropertyDescriptor<T>> &properties)
-{
-    auto ctor = defineClass<T>(env, name, properties);
-    makeInherits(ctor, constructor<SUPER>(env));
-    return ctor;
-}
+    static ConstructorMap *constructorMap(Napi::Env env)
+    {
+        auto ctorMap = env.GetInstanceData<ConstructorMap>();
+        if (ctorMap == nullptr) {
+            ctorMap = new ConstructorMap;
+            env.SetInstanceData<ConstructorMap>(ctorMap);
+        }
+
+        return ctorMap;
+    }
+
+    static bool registerConstructor(Napi::Env env, TypeId id, Napi::Function ctor)
+    {
+        auto ctorMap = constructorMap(env);
+        if (ctorMap == nullptr)
+            return false;
+
+        auto it = ctorMap->find(id);
+        if (it != ctorMap->end())
+            return false;
+
+        auto ref = Napi::Persistent(ctor);
+        ref.SuppressDestruct();
+
+        (*ctorMap)[id] = std::move(ref);
+
+        return true;
+    }
+
+    static bool registerConstructor(Napi::Env env, Napi::Function ctor)
+    {
+        return registerConstructor(env, typeId<T>(), ctor);
+    }
+
+    static Napi::Function constructorFromTypeId(Napi::Env env, TypeId id)
+    {
+        auto ctorMap = constructorMap(env);
+        if (ctorMap == nullptr)
+            return Napi::Function();
+
+        auto it = ctorMap->find(id);
+        if (it == ctorMap->end())
+            return Napi::Function();
+
+        return it->second.Value();
+    }
+
+    template <typename U>
+    Napi::Function constructorFromType(Napi::Env env)
+    {
+        return constructorFromTypeId(env, typeId<U>());
+    }
+};
 
 VOLCANO_NODE_END
 

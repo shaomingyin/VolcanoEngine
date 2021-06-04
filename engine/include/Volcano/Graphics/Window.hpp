@@ -4,21 +4,21 @@
 #define VOLCANO_GRAPHICS_WINDOW_HPP
 
 #include <string>
+#include <string_view>
 
+#include <Volcano/Node.hpp>
 #include <Volcano/Graphics/Common.hpp>
 #include <Volcano/Graphics/Renderer.hpp>
 
 VOLCANO_GRAPHICS_BEGIN
 
-class Window: public Napi::ObjectWrap<Window> {
-	VOLCANO_DISABLE_COPY_AND_MOVE(Window)
-
+class Window: public Node::Object<Window> {
 public:
 	Window(const Napi::CallbackInfo &info);
-	virtual ~Window(void);
+	~Window(void) override;
 
 public:
-	static Napi::Function defineClass(Napi::Env env);
+	static Napi::Function defineConstructor(Napi::Env env);
 
 public:
 	sigslot::signal<bool> onVisibleChanged;

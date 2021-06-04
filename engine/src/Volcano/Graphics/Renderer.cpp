@@ -5,10 +5,8 @@
 
 VOLCANO_GRAPHICS_BEGIN
 
-Napi::FunctionReference Renderer::c_constructorRef;
-
 Renderer::Renderer(const Napi::CallbackInfo &info):
-    Napi::ObjectWrap<Renderer>(info),
+    Node::Object<Renderer>(info),
     m_clearEnabled(true),
     m_viewport(0, 0, 0, 0)
 {
@@ -18,24 +16,13 @@ Renderer::~Renderer(void)
 {
 }
 
-Napi::Function Renderer::defineClass(Napi::Env env)
+Napi::Function Renderer::defineConstructor(Napi::Env env)
 {
-    auto constructor = DefineClass(env, "Renderer", {
+    return defineClass(env, "Renderer", {
         InstanceAccessor<&Renderer::clearEnabled, &Renderer::setClearEnabled>("clearEnabled"),
         InstanceAccessor<&Renderer::clearColor, &Renderer::setClearColor>("clearColor"),
         InstanceAccessor<&Renderer::viewport, &Renderer::setViewport>("viewport")
     });
-
-    c_constructorRef = Napi::Persistent(constructor);
-
-    return constructor;
-}
-
-Napi::Object Renderer::newInstance(const std::initializer_list<napi_value> &args)
-{
-    Napi::EscapableHandleScope scope(c_constructorRef.Env());
-    Napi::Object obj = c_constructorRef.New(args);
-    return scope.Escape(napi_value(obj)).ToObject();
 }
 
 bool Renderer::init(int width, int height)

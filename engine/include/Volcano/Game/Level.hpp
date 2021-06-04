@@ -1,7 +1,7 @@
 //
 //
 #ifndef VOLCANO_GAME_LEVEL_HPP
-#define VOLCANO_GAME_WVOLCANO_GAME_LEVEL_HPPORLD_HPP
+#define VOLCANO_GAME_LEVEL_HPP
 
 #include <sigslot/signal.hpp>
 #include <bullet/btBulletDynamicsCommon.h>
@@ -11,14 +11,14 @@
 
 VOLCANO_GAME_BEGIN
 
-class Level: public Napi::ObjectWrap<Level> {
+class Level: public Node::Object<Level> {
 
 public:
 	Level(const Napi::CallbackInfo &info);
 	virtual ~Level(void);
 
 public:
-	static Napi::Function constructor(Napi::Env env);
+	static Napi::Function defineConstructor(Napi::Env env);
 	void update(Duration elapsed);
 
 private:

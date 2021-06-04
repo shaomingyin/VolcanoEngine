@@ -5,32 +5,27 @@
 
 #include <Volcano/Node.hpp>
 #include <Volcano/Game/Common.hpp>
-#include <Volcano/Game/Frame.hpp>
 #include <Volcano/Game/World.hpp>
 
 VOLCANO_GAME_BEGIN
 
-class Server: public Frame {
-	VOLCANO_DISABLE_COPY_AND_MOVE(Server)
-
+class Server: public Node::Object<Server> {
 public:
 	Server(const Napi::CallbackInfo &info);
 	virtual ~Server(void);
 
 public:
-	static Napi::Function constructor(Napi::Env env);
-
-protected:
-	bool init(void) override;
-	void shutdown(void) override;
-	void update(Duration elapsed) override;
+	static Napi::Function defineConstructor(Napi::Env env);
 
 private:
-	Napi::Value port(const Napi::CallbackInfo &info);
-	void setPort(const Napi::CallbackInfo &info, const Napi::Value &value);
+	Napi::Value start(const Napi::CallbackInfo &info);
+	Napi::Value stop(const Napi::CallbackInfo &info);
+	Napi::Value isStarted(const Napi::CallbackInfo &info);
 	Napi::Value world(const Napi::CallbackInfo &info);
 
 private:
+	void update(void);
+	void frame(Duration elapsed);
 	static void allocCallback(uv_handle_t *handle, size_t suggested_size, uv_buf_t *buf);
 	static void receiveCallback(uv_udp_t *req, ssize_t nread, const uv_buf_t *buf, const struct sockaddr *addr, unsigned flags);
 

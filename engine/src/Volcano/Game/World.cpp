@@ -6,23 +6,18 @@
 
 VOLCANO_GAME_BEGIN
 
-Napi::FunctionReference World::c_constructorRef;
-
 World::World(const Napi::CallbackInfo &info):
-	Napi::ObjectWrap<World>(info),
-	m_gravity(0.0f, -9.8f, 0.0f),
-	m_dynamicWorld(nullptr)
+	Node::Object<World>(info)
 {
 }
 
 World::~World(void)
 {
-	releaseDynamic();
 }
 
-Napi::Function World::constructor(Napi::Env env)
+Napi::Function World::defineConstructor(Napi::Env env)
 {
-	return Node::defineClass<World>(env, "World", {});
+	return defineClass(env, "World", {});
 }
 
 void World::update(Duration elapsed)

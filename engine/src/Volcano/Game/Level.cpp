@@ -6,7 +6,7 @@
 VOLCANO_GAME_BEGIN
 
 Level::Level(const Napi::CallbackInfo &info) :
-	Napi::ObjectWrap<Level>(info),
+	Node::Object<Level>(info),
 	m_gravity(0.0f, -9.8f, 0.0f),
 	m_dynamicWorld(nullptr)
 {
@@ -17,9 +17,9 @@ Level::~Level(void)
 	releaseDynamic();
 }
 
-Napi::Function Level::constructor(Napi::Env env)
+Napi::Function Level::defineConstructor(Napi::Env env)
 {
-	return Node::defineClass<Level>(env, "World", {
+	return defineClass(env, "World", {
 		InstanceAccessor<&Level::isDynamic, &Level::setDynamic>("dynamic"),
 		InstanceAccessor<&Level::gravity, &Level::setGravity>("gravity")
 	});

@@ -6,7 +6,7 @@
 VOLCANO_GRAPHICS_BEGIN
 
 Window::Window(const Napi::CallbackInfo &info):
-	Napi::ObjectWrap<Window>(info),
+	Node::Object<Window>(info),
 	m_handle(nullptr),
 	m_isVisible(false),
 	m_isGrabMouse(false)
@@ -32,7 +32,7 @@ Window::Window(const Napi::CallbackInfo &info):
 	case 0:
 		break;
 	default:
-		Napi::ThrowError(info.Env(), "Invalid prameter(s).");
+		Node::throwError(info.Env(), "Invalid prameter(s).");
 		return;
 	}
 
@@ -42,7 +42,7 @@ Window::Window(const Napi::CallbackInfo &info):
 	if (isFullScreen) {
 		defaultMonitor = glfwGetPrimaryMonitor();
 		if (defaultMonitor == nullptr) {
-			Napi::ThrowError(info.Env(), "Failed to get default monitor.");
+			Node::throwError(info.Env(), "Failed to get default monitor.");
 			return;
 		}
 	}
@@ -68,7 +68,7 @@ Window::Window(const Napi::CallbackInfo &info):
 
 	m_handle = glfwCreateWindow(m_rect[2], m_rect[3], m_title.c_str(), defaultMonitor, nullptr);
 	if (m_handle == nullptr) {
-		Napi::ThrowError(info.Env(), "Failed to initialize OpenGL window.");
+		Node::throwError(info.Env(), "Failed to initialize OpenGL window.");
 		return;
 	}
 
@@ -102,7 +102,7 @@ Window::Window(const Napi::CallbackInfo &info):
 	spdlog::info("Initializing GL3W...");
 
 	if (gl3wInit(&m_gl3w, (GL3WGetProcAddressProc)glfwGetProcAddress) != GL3W_OK) {
-		Napi::ThrowError(info.Env(), "Failed to initialize GL3W.");
+		Node::throwError(info.Env(), "Failed to initialize GL3W.");
 		return;
 	}
 
@@ -110,16 +110,16 @@ Window::Window(const Napi::CallbackInfo &info):
 
 	spdlog::info("Initializing renderer...");
 
-	auto renderer = Renderer::newInstance({});
+	auto renderer = Renderer::newInstance(info.Env());
 	if (renderer.IsEmpty() || renderer.IsNull()) {
-		Napi::ThrowError(info.Env(), "Failed to create renderer object.");
+		Node::throwError(info.Env(), "Failed to create renderer object.");
 		return;
 	}
 
 	m_rendererRef = Napi::ObjectReference::New(renderer, 2);
 	m_renderer = Renderer::Unwrap(renderer);
 	if (m_renderer == nullptr || !m_renderer->init(windowWidth, windowHeight)) {
-		Napi::ThrowError(info.Env(), "Failed to initialize renderer.");
+		Node::throwError(info.Env(), "Failed to initialize renderer.");
 		return;
 	}
 
@@ -136,9 +136,9 @@ Window::~Window(void)
 		glfwDestroyWindow(m_handle);
 }
 
-Napi::Function Window::defineClass(Napi::Env env)
+Napi::Function Window::defineConstructor(Napi::Env env)
 {
-	return DefineClass(env, "Window", {
+	return defineClass(env, "Window", {
 		InstanceAccessor<&Window::renderer>("renderer"),
 		InstanceAccessor<&Window::isVisible, &Window::setVisible>("visible"),
 		InstanceAccessor<&Window::isFullScreen, &Window::setFullScreen>("fullScreen"),

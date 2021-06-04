@@ -38,7 +38,7 @@ target_wrapper.*
 # QtCreator
 *.autosave
 
-# QtCreator Qml
+# QtCreator Qml#
 *.qmlproject.user
 *.qmlproject.user.*
 
@@ -50,3 +50,6 @@ compile_commands.json
 
 # QtCreator local machine specific files for imported projects
 *creator.user*
+
+.vscode
+

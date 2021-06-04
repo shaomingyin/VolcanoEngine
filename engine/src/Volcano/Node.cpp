@@ -1,52 +1,8 @@
 //
 //
-#include <string>
-#include <unordered_map>
-
 #include <Volcano/Node.hpp>
 
 VOLCANO_NODE_BEGIN
-
-using ConstructorMap = std::unordered_map<TypeId, Napi::FunctionReference>;
-
-static ConstructorMap *constructorMap(Napi::Env env)
-{
-    auto ctorMap = env.GetInstanceData<ConstructorMap>();
-    if (ctorMap == nullptr) {
-        ctorMap = new ConstructorMap;
-        env.SetInstanceData<ConstructorMap>(ctorMap);
-    }
-
-    return ctorMap;
-}
-
-bool registerConstructor(Napi::Env env, TypeId id, Napi::Function ctor)
-{
-    auto ctorMap = constructorMap(env);
-    if (ctorMap == nullptr)
-        return false;
-
-    auto it = ctorMap->find(id);
-    if (it != ctorMap->end())
-        return false;
-
-    (*ctorMap)[id] = Napi::Persistent(ctor);
-
-    return true;
-}
-
-Napi::Function constructor(Napi::Env env, TypeId id)
-{
-    auto ctorMap = constructorMap(env);
-    if (ctorMap == nullptr)
-        return Napi::Function();
-
-    auto it = ctorMap->find(id);
-    if (it == ctorMap->end())
-        return Napi::Function();
-
-    return it->second.Value();
-}
 
 void makeInherits(Napi::Env env, Napi::Function ctor, Napi::Function superCtor)
 {
