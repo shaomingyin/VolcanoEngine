@@ -15,7 +15,7 @@ public:
     ~Client(void) override;
 
 public:
-    static Napi::Function defineConstructor(Napi::Env env);
+    static void registerClass(Napi::Env env);
 
 private:
     Napi::Value start(const Napi::CallbackInfo &info);

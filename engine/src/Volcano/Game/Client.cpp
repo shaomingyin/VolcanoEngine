@@ -46,9 +46,9 @@ Client::~Client(void)
 	uv_close(reinterpret_cast<uv_handle_t *>(&m_connection), nullptr);
 }
 
-Napi::Function Client::defineConstructor(Napi::Env env)
+void Client::registerClass(Napi::Env env)
 {
-	return defineClass(env, "Frame", {
+	registerConstructor(env, "Frame", {
 		InstanceMethod<&Client::start>("start"),
 		InstanceMethod<&Client::stop>("stop"),
 		InstanceAccessor<&Client::started>("started"),

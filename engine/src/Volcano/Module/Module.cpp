@@ -86,6 +86,13 @@ static napi_value init(napi_env env, napi_value exports)
 
 	uv_timer_init(loop, &pollEventsTimer);
 
+	Game::Client::registerClass(env);
+	Game::Level::registerClass(env);
+	Game::Server::registerClass(env);
+	Game::World::registerClass(env);
+	Graphics::Renderer::registerClass(env);
+	Graphics::Window::registerClass(env);
+
 	auto root = Napi::Object(env, exports);
 
 	root.DefineProperty(Napi::PropertyDescriptor::Accessor<version>("version"));
@@ -95,15 +102,13 @@ static napi_value init(napi_env env, napi_value exports)
 	root["stop"] = Napi::Function::New(env, stop);
 
 	auto graphics = Napi::Object::New(env);
-	Graphics::Renderer::defineConstructor(env);
-	graphics["Window"] = Graphics::Window::defineConstructor(env);
+	Graphics::Renderer::constructor(env);
+	graphics["Window"] = Graphics::Window::constructor(env);
 	root["graphics"] = graphics;
 
 	auto game = Napi::Object::New(env);
-	Game::World::defineConstructor(env);
-	Game::Level::defineConstructor(env);
-	game["Server"] = Game::Server::defineConstructor(env);
-	game["Client"] = Game::Client::defineConstructor(env);
+	game["Server"] = Game::Server::constructor(env);
+	game["Client"] = Game::Client::constructor(env);
 	root["game"] = game;
 
 	return exports;

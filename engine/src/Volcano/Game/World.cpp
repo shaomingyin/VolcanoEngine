@@ -15,9 +15,9 @@ World::~World(void)
 {
 }
 
-Napi::Function World::defineConstructor(Napi::Env env)
+void World::registerClass(Napi::Env env)
 {
-	return defineClass(env, "World", {});
+	registerConstructor(env, "World", {});
 }
 
 void World::update(Duration elapsed)

@@ -16,9 +16,9 @@ Renderer::~Renderer(void)
 {
 }
 
-Napi::Function Renderer::defineConstructor(Napi::Env env)
+void Renderer::registerClass(Napi::Env env)
 {
-    return defineClass(env, "Renderer", {
+    registerConstructor(env, "Renderer", {
         InstanceAccessor<&Renderer::clearEnabled, &Renderer::setClearEnabled>("clearEnabled"),
         InstanceAccessor<&Renderer::clearColor, &Renderer::setClearColor>("clearColor"),
         InstanceAccessor<&Renderer::viewport, &Renderer::setViewport>("viewport")

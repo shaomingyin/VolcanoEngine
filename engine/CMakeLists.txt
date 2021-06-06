@@ -24,7 +24,7 @@ else()
 endif()
 
 add_definitions(
-    -DNOMAXMIN
+    -DNOMINMAX
     -DLIBASYNC_STATIC
     -DMICROPROFILE_GPU_TIMERS_GL
     -DMICROPROFILE_USE_CONFIG=1

@@ -28,7 +28,7 @@ public:
     virtual ~Renderer(void);
 
 public:
-    static Napi::Function defineConstructor(Napi::Env env);
+    static void registerClass(Napi::Env env);
     bool init(int width, int height);
     Light &ambientLight(void);
     void beginFrame(void);

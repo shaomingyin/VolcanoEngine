@@ -17,9 +17,9 @@ Level::~Level(void)
 	releaseDynamic();
 }
 
-Napi::Function Level::defineConstructor(Napi::Env env)
+void Level::registerClass(Napi::Env env)
 {
-	return defineClass(env, "World", {
+	registerConstructor(env, "World", {
 		InstanceAccessor<&Level::isDynamic, &Level::setDynamic>("dynamic"),
 		InstanceAccessor<&Level::gravity, &Level::setGravity>("gravity")
 	});

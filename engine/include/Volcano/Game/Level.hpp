@@ -18,7 +18,7 @@ public:
 	virtual ~Level(void);
 
 public:
-	static Napi::Function defineConstructor(Napi::Env env);
+	static void registerClass(Napi::Env env);
 	void update(Duration elapsed);
 
 private:

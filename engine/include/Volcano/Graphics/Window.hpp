@@ -18,7 +18,7 @@ public:
 	~Window(void) override;
 
 public:
-	static Napi::Function defineConstructor(Napi::Env env);
+	static void registerClass(Napi::Env env);
 
 public:
 	sigslot::signal<bool> onVisibleChanged;

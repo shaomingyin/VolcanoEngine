@@ -43,9 +43,9 @@ Server::~Server(void)
 	uv_close_sync(reinterpret_cast<uv_handle_t *>(&m_handle));
 }
 
-Napi::Function Server::defineConstructor(Napi::Env env)
+void Server::registerClass(Napi::Env env)
 {
-	return defineClass(env, "Server", {
+	registerConstructor(env, "Server", {
 		InstanceMethod<&Server::start>("start"),
 		InstanceMethod<&Server::stop>("stop"),
 		InstanceAccessor<&Server::isStarted>("isStarted")

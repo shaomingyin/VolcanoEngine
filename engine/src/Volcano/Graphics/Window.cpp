@@ -136,9 +136,9 @@ Window::~Window(void)
 		glfwDestroyWindow(m_handle);
 }
 
-Napi::Function Window::defineConstructor(Napi::Env env)
+void Window::registerClass(Napi::Env env)
 {
-	return defineClass(env, "Window", {
+	registerConstructor(env, "Window", {
 		InstanceAccessor<&Window::renderer>("renderer"),
 		InstanceAccessor<&Window::isVisible, &Window::setVisible>("visible"),
 		InstanceAccessor<&Window::isFullScreen, &Window::setFullScreen>("fullScreen"),

@@ -3,7 +3,13 @@
 #ifndef VOLCANO_NODE_HPP
 #define VOLCANO_NODE_HPP
 
+#include <string>
+#include <string_view>
+#include <unordered_map>
+#include <vector>
+
 #include <uv.h>
+#include <rttr/type>
 
 #include <Volcano/Common.hpp>
 
@@ -57,19 +63,25 @@ VOLCANO_INLINE void uv_close_sync(uv_async_t *p)
 
 VOLCANO_NODE_BEGIN
 
+namespace Details {
+    using ToVariant = rttr::variant(*)(Napi::Object);
+
+    inline rttr::type typeFromId(rttr::type::type_id id)
+    {
+        auto ret = rttr::type::get<void>();
+        *(reinterpret_cast<uintptr_t *>(&ret)) = id;
+        return ret;
+    }
+
+    rttr::variant newInstance(Napi::Env env, rttr::type type, const Napi::CallbackInfo &info);
+    Napi::Function constructorFromType(Napi::Env env, rttr::type type);
+    bool registerConstructor(Napi::Env env, rttr::type type, Napi::Function ctor, ToVariant toVariant);
+}
+
 inline void throwError(Napi::Env env, std::string_view message)
 {
     Napi::Error::New(env, message.data()).ThrowAsJavaScriptException();
 }
-
-inline Napi::Object newInstance(Napi::Env env, Napi::Function ctor, const std::initializer_list<napi_value> &args)
-{
-    Napi::EscapableHandleScope scope(env);
-    Napi::Object object = ctor.New(args);
-    return scope.Escape(napi_value(object)).ToObject();
-}
-
-void makeInherits(Napi::Env env, Napi::Function ctor, Napi::Function superCtor);
 
 template <typename T>
 class Object: public Napi::ObjectWrap<T> {
@@ -77,6 +89,7 @@ public:
     Object(const Napi::CallbackInfo &info):
         Napi::ObjectWrap<T>(info)
     {
+        m_instance = Details::newIntance(rttr::type::get<T>(), info);
     }
 
     ~Object(void) override
@@ -86,93 +99,69 @@ public:
 public:
     static Napi::Function constructor(Napi::Env env)
     {
-        return constructorFromTypeId(env, typeId<T>());
+        return Details::constructorFromType(env, rttr::type::get<T>());
     }
 
-    static Napi::Object newInstance(Napi::Env env,
+    static Napi::ObjectReference newInstance(Napi::Env env,
         const std::initializer_list<napi_value> &args = {})
     {
-        return ::Volcano::Node::newInstance(env, constructor(env), args);
+        auto ctor = Details::constructorFromType(env, rttr::type::get<T>());
+        return Napi::Persistent(ctor.New(args));
     }
 
-protected:
-    static Napi::Function defineClass(Napi::Env env, const char *name,
-        const std::vector<Napi::ClassPropertyDescriptor<T>> &properties)
+    static Napi::Function registerConstructor(Napi::Env env)
     {
-        auto ctor = constructor(env);
+        auto type = rttr::type::get<T>();
+        auto ctor = Details::constructorFromType(env, type);
         if (ctor.IsFunction())
-            return ctor;
+            return Napi::Function();
 
-        ctor = Napi::ObjectWrap<T>::DefineClass(env, name, properties);
-        registerConstructor(env, ctor);
+        std::vector<Napi::ClassPropertyDescriptor<T>> properties;
 
-        return ctor;
-    }
+        for (auto method : type.get_methods()) {
+            if (method.get_access_level() != rttr::access_levels::public_access)
+                continue;
+            properties.push_back(InstanceMethod<&T::method>(
+                method.get_name().data(), napi_default, (void *)(type.get_id())));
+        }
 
-    template <typename SUPER>
-    static Napi::Function defineClass(Napi::Env env, const char *name,
-        const std::vector<Napi::ClassPropertyDescriptor<T>> &properties)
-    {
-        auto ctor = defineClass(env, name, properties);
-        makeInherits(env, ctor, constructorFromType<SUPER>(env));
-        return ctor;
+        for (auto property : type.get_properties()) {
+            if (property.get_access_level() != rttr::access_levels::public_access)
+                continue;
+            if (property.is_readonly()) {
+                properties.push_back(InstanceAccessor<&T::getter>(
+                    property.get_name().data(), napi_default, (void *)(type.get_id())));
+            } else {
+                properties.push_back(InstanceAccessor<&T::getter, &T::setter>(
+                    property.get_name().data(), napi_default, (void *)(type.get_id())));
+            }
+        }
+
+        return Details::registerConstructor(env, type,
+            DefineClass(env, type.get_name().data(), properties, (void *)(type.get_id())),
+            &Object::toVariant);
     }
 
 private:
-    using ConstructorMap = std::unordered_map<TypeId, Napi::FunctionReference>;
-
-    static ConstructorMap *constructorMap(Napi::Env env)
+    Napi::Value getter(const Napi::CallbackInfo &info)
     {
-        auto ctorMap = env.GetInstanceData<ConstructorMap>();
-        if (ctorMap == nullptr) {
-            ctorMap = new ConstructorMap;
-            env.SetInstanceData<ConstructorMap>(ctorMap);
-        }
-
-        return ctorMap;
     }
 
-    static bool registerConstructor(Napi::Env env, TypeId id, Napi::Function ctor)
+    void setter(const Napi::CallbackInfo &info)
     {
-        auto ctorMap = constructorMap(env);
-        if (ctorMap == nullptr)
-            return false;
-
-        auto it = ctorMap->find(id);
-        if (it != ctorMap->end())
-            return false;
-
-        auto ref = Napi::Persistent(ctor);
-        ref.SuppressDestruct();
-
-        (*ctorMap)[id] = std::move(ref);
-
-        return true;
     }
 
-    static bool registerConstructor(Napi::Env env, Napi::Function ctor)
+    Napi::Value method(const Napi::CallbackInfo &info)
     {
-        return registerConstructor(env, typeId<T>(), ctor);
     }
 
-    static Napi::Function constructorFromTypeId(Napi::Env env, TypeId id)
+    static rttr::variant toVariant(Napi::Object object)
     {
-        auto ctorMap = constructorMap(env);
-        if (ctorMap == nullptr)
-            return Napi::Function();
-
-        auto it = ctorMap->find(id);
-        if (it == ctorMap->end())
-            return Napi::Function();
-
-        return it->second.Value();
+        return Unwrap(object)->m_instance;
     }
 
-    template <typename U>
-    Napi::Function constructorFromType(Napi::Env env)
-    {
-        return constructorFromTypeId(env, typeId<U>());
-    }
+private:
+    rttr::variant m_instance;
 };
 
 VOLCANO_NODE_END
