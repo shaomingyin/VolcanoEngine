@@ -1,59 +1,18 @@
 
-# NodeJS
-include(NodeJS)
-set(NODEJS_DEFAULT_URL https://nodejs.org/download/release CACHE STRING "NodeJS release url.")
-set(NODEJS_DEFAULT_VERSION v14.17.0 CACHE STRING "NodeJS version (at least v14.17.0)")
-nodejs_init()
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# GLFW
-include(FindGLFW)
-if(GLFW_FOUND)
-    include_directories(${GLFW_INCLUDE_DIRS})
-    link_libraries(${GLFW_LIBRARIES})
-else()
-    message(FATAL_ERROR "GLFW not found.")
-endif()
+set(AUTOMOC ON)
+set(AUTORCC ON)
+set(AUTOUIC ON)
 
-# BulletPhysics
-include(FindBullet)
-if(BULLET_FOUND)
-    link_libraries(${BULLET_LIBRARIES})
-    include_directories(${BULLET_INCLUDE_DIR})
-else()
-    message(FATAL_ERROR "BulletPhysics not found.")
-endif()
+find_package(Qt6 REQUIRED Core)
+link_libraries(Qt6::Core)
 
-add_definitions(
-    -DNOMINMAX
-    -DLIBASYNC_STATIC
-    -DMICROPROFILE_GPU_TIMERS_GL
-    -DMICROPROFILE_USE_CONFIG=1
-    )
-
-include_directories(
-    ${CMAKE_CURRENT_SOURCE_DIR}/include
-    ${CMAKE_CURRENT_BINARY_DIR}/include
-    )
-
-configure_file(
-    include/Volcano/Config.hpp.in
-    include/Volcano/Config.hpp
-    )
-
-file(GLOB_RECURSE VOLCANO_SOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/*
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/*
-    )
-
-add_nodejs_module(engine ${VOLCANO_SOURCES})
-set_target_properties(engine PROPERTIES OUTPUT_NAME "volcano-engine")
-
-source_group(\\_node FILES ${NODEJS_SOURCES})
-source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${VOLCANO_SOURCES})
-
-target_compile_features(engine
-    PRIVATE
-        cxx_constexpr
-        cxx_thread_local
-        cxx_std_17
-    )
+add_subdirectory(base base)
+add_subdirectory(game game)
+add_subdirectory(server server)
+add_subdirectory(graphics graphics)
+add_subdirectory(ui ui)
+add_subdirectory(launcher launcher)
+add_subdirectory(editor editor)

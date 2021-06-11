@@ -1,0 +1,13 @@
+World:
+    Level
+        gravity
+
+Server:
+    WorldStub
+
+Player:
+    Window
+    Renderer
+    Sound
+    Input
+    WorldProxy
