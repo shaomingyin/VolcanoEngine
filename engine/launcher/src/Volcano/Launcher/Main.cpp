@@ -6,34 +6,21 @@
 #include <QUrl>
 #include <QDir>
 #include <QObject>
-#include <QSurfaceFormat>
-#include <QQmlApplicationEngine>
+#include <QQuickView>
 #include <QCommandLineOption>
 #include <QCommandLineParser>
 #include <QGuiApplication>
 
-#include <Volcano/OpenGL/Common.hpp>
-#include <Volcano/Qml/Common.hpp>
+#include <Volcano/Init.hpp>
 #include <Volcano/Launcher/Common.hpp>
 
 VOLCANO_LAUNCHER_BEGIN
-
-static void basicInit(void)
-{
-    Qml::registerAll();
-
-    QSurfaceFormat format;
-    OpenGL::makeSurfaceFormat(format);
-    QSurfaceFormat::setDefaultFormat(format);
-}
 
 static int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
 
-    QGuiApplication::setOrganizationName("VolcanoEngine");
-    QGuiApplication::setApplicationName("Volcano");
-    QGuiApplication::setApplicationVersion(VOLCANO_VERSION_STR);
+    setApplicationName("Launcher");
 
     qInfo("VolcanoEngine %s", VOLCANO_VERSION_STR);
 
@@ -56,19 +43,41 @@ static int main(int argc, char *argv[])
         }
     }
 
-    QScopedPointer<QQmlApplicationEngine> appEngine(new QQmlApplicationEngine());
-    if (!appEngine)
+    if (!init()) {
+        qFatal("Failed to init system.");
         return EXIT_FAILURE;
+    }
 
-    QObject::connect(appEngine.get(), &QQmlApplicationEngine::objectCreated, [&app](QObject *object, const QUrl &url) {
-        if (object == nullptr)
-            app.quit();
+    QScopedPointer<QQuickView> mainWindow(new QQuickView());
+    if (!mainWindow) {
+        qFatal("Failed to create main window.");
+        return EXIT_FAILURE;
+    }
+
+    QObject::connect(mainWindow.get(), &QQuickView::statusChanged, [&url, &mainWindow](QQuickView::Status status) {
+        switch (status) {
+        case QQuickView::Ready:
+            mainWindow->show();
+            break;
+        case QQuickView::Loading:
+            qInfo("Loading %s...", qPrintable(url.toString()));
+            break;
+        case QQuickView::Error:
+            QGuiApplication::exit(EXIT_FAILURE);
+            break;
+        default:
+            break;
+        }
     });
 
-    basicInit();
+    mainWindow->setMinimumWidth(800);
+    mainWindow->setMaximumWidth(800);
+    mainWindow->setMinimumHeight(600);
+    mainWindow->setMaximumHeight(600);
 
-    qInfo("Loading from %s...", qPrintable(url.toString()));
-    appEngine->load(url);
+    mainWindow->setSource(url);
+    if (mainWindow->status() == QQuickView::Error)
+        return EXIT_FAILURE;
 
     return app.exec();
 }

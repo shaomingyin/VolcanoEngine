@@ -13,20 +13,8 @@ World::~World(void)
 {
 }
 
-bool World::isDynamic(void) const
+void World::update(float elapsed)
 {
-    return (m_btWorld != nullptr);
-}
-
-void World::setDynamic(bool v)
-{
-    if (v == isDynamic())
-        return;
-
-    if (v)
-        initDynamicWorld();
-    else
-        shutdownDynamicWorld();
 }
 
 const QList<Object *> &World::objects(void) const
@@ -43,26 +31,6 @@ QQmlListProperty<Object> World::qmlObjects(void)
         &World::clearObjects,
         &World::replaceObject,
         &World::removeLastObject };
-}
-
-void World::initDynamicWorld(void)
-{
-    if (m_btWorld != nullptr)
-        return;
-
-    // TODO
-
-    emit dynamicChanged(true);
-}
-
-void World::shutdownDynamicWorld(void)
-{
-    if (m_btWorld != nullptr)
-        return;
-
-    // TODO
-
-    emit dynamicChanged(false);
 }
 
 void World::appendObject(QQmlListProperty<Object> *list, Object *Object)

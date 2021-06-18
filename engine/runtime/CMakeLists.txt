@@ -19,8 +19,8 @@ configure_file(
     include/Volcano/Config.hpp
     )
 
-find_package(Qt6 COMPONENTS Gui OpenGL Qml Quick REQUIRED)
-target_link_libraries(runtime PUBLIC Qt6::Gui Qt6::OpenGL Qt6::Qml Qt6::Quick)
+find_package(Qt6 COMPONENTS Concurrent Gui OpenGL Qml Quick REQUIRED)
+target_link_libraries(runtime PUBLIC Qt6::Concurrent Qt6::Gui Qt6::OpenGL Qt6::Qml Qt6::Quick)
 
 include(FindAssimp)
 if(ASSIMP_FOUND)

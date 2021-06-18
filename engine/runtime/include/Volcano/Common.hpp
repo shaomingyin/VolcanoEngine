@@ -6,8 +6,6 @@
 #include <QtGlobal>
 #include <QDebug>
 #include <QString>
-#include <QQmlEngine>
-#include <QCoreApplication>
 
 #include <Volcano/Config.hpp>
 
@@ -37,6 +35,8 @@
 #define VOLCANO_END }
 
 VOLCANO_BEGIN
+
+void setApplicationName(const QString &name);
 
 VOLCANO_END
 
