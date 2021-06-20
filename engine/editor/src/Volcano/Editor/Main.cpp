@@ -3,7 +3,7 @@
 #include <QScopedPointer>
 #include <QApplication>
 
-#include <Volcano/Init.hpp>
+#include <Volcano/System/Common.hpp>
 #include <Volcano/Editor/Common.hpp>
 #include <Volcano/Editor/MainWindow.hpp>
 
@@ -15,7 +15,7 @@ static int main(int argc, char *argv[])
 
     setApplicationName("Editor");
 
-    if (!init()) {
+    if (!System::init()) {
         qFatal("Failed to init system.");
         return EXIT_FAILURE;
     }

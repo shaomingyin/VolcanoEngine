@@ -11,7 +11,7 @@
 #include <QCommandLineParser>
 #include <QGuiApplication>
 
-#include <Volcano/Init.hpp>
+#include <Volcano/System/Common.hpp>
 #include <Volcano/Launcher/Common.hpp>
 
 VOLCANO_LAUNCHER_BEGIN
@@ -43,7 +43,7 @@ static int main(int argc, char *argv[])
         }
     }
 
-    if (!init()) {
+    if (!System::init()) {
         qFatal("Failed to init system.");
         return EXIT_FAILURE;
     }
