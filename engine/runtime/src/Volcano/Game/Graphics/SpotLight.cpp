@@ -1,8 +1,8 @@
 //
 //
-#include <Volcano/Game/SpotLight.hpp>
+#include <Volcano/Game/Graphics/SpotLight.hpp>
 
-VOLCANO_GAME_BEGIN
+VOLCANO_GAME_GRAPHICS_BEGIN
 
 SpotLight::SpotLight(QObject *parent):
     DirectionalLight(parent)
@@ -39,4 +39,4 @@ void SpotLight::setScale(const QVector3D &v)
     }
 }
 
-VOLCANO_GAME_END
+VOLCANO_GAME_GRAPHICS_END

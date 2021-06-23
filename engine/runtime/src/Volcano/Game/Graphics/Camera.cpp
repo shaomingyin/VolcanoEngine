@@ -1,17 +1,22 @@
 //
 //
+#include <memory>
+
+#include <QMutexLocker>
+
 #include <Volcano/Game/Graphics/Camera.hpp>
 
 VOLCANO_GAME_GRAPHICS_BEGIN
 
 Camera::Camera(QQuickItem *parent):
     QQuickFramebufferObject(parent),
+    m_isClear(true),
+    m_clearColor(Qt::black),
     m_frameTimer(-1),
     m_frameCountTimer(-1),
     m_world(nullptr),
     m_viewRendering(1)
 {
-    printf("qqwer\n");
     setFpsMax(60);
 }
 
@@ -21,8 +26,36 @@ Camera::~Camera(void)
 
 QQuickFramebufferObject::Renderer *Camera::createRenderer(void) const
 {
-    printf("asdfasdfasdf");
-    return new ::Volcano::Game::Graphics::Renderer();
+    auto renderer = std::make_unique<::Volcano::Game::Graphics::Renderer>(const_cast<Camera &>(*this));
+    if (!renderer || !renderer->init())
+        return nullptr;
+    return renderer.release();
+}
+
+bool Camera::isClear(void) const
+{
+    return m_isClear;
+}
+
+void Camera::setClear(bool v)
+{
+    if (m_isClear != v) {
+        m_isClear = v;
+        emit clearChanged(v);
+    }
+}
+
+const QColor &Camera::clearColor(void) const
+{
+    return m_clearColor;
+}
+
+void Camera::setClearColor(const QColor &v)
+{
+    if (m_clearColor != v) {
+        m_clearColor = v;
+        emit clearColorChanged(v);
+    }
 }
 
 const QVector3D &Camera::position(void) const
@@ -158,13 +191,15 @@ void Camera::setWorld(World *world)
 
 const View *Camera::lockView(void)
 {
-    m_viewLock.lock();
-    return &m_viewFlip[m_viewRendering];
+    if (m_viewState.testAndSetRelaxed(2, 3))
+        return &m_viewFlip[m_viewRendering];
+    return nullptr;
 }
 
 void Camera::unlockView(void)
 {
-    m_viewLock.unlock();
+    Q_ASSERT(m_viewState == 3);
+    m_viewState = 0;
 }
 
 void Camera::timerEvent(QTimerEvent *event)
@@ -188,18 +223,30 @@ void Camera::timerEvent(QTimerEvent *event)
 
 void Camera::frame(void)
 {
-    if (Q_LIKELY(m_world != nullptr)) {
-        auto elapsed = m_frameElapsedTimer.restart();
-        m_world->update(float(elapsed) / 1000.0f);
-    }
+    if (Q_UNLIKELY(!isVisible() || size().isEmpty()))
+        return;
 
-    // TODO build vs...
+    // TODO make sure the renderer has initialized.
 
-    //m_visibleSetLock.lock();
-    //m_visibleSetRendering = !m_visibleSetRendering;
-    //m_visibleSetLock.unlock();
+    auto &view = m_viewFlip[!m_viewRendering];
+    buildView(view);
+
+    while (!m_viewState.testAndSetRelaxed(0, 1) && !m_viewState.testAndSetRelaxed(2, 1));
+
+    m_viewRendering = !m_viewRendering;
+    m_viewState = 2;
 
     update();
+}
+
+void Camera::buildView(View &out)
+{
+    // out.clear();
+
+    if (Q_UNLIKELY(m_world == nullptr))
+        return;
+
+    // TODO add visible object to 'out'...
 }
 
 VOLCANO_GAME_GRAPHICS_END

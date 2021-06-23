@@ -44,12 +44,12 @@ signals:
     void componentRemoved(Component *component);
 
 private:
-    static void appendComponent(QQmlListProperty<Component> *list, Component *component);
-    static qsizetype componentCount(QQmlListProperty<Component> *list);
-    static Component *componentAt(QQmlListProperty<Component> *list, qsizetype index);
-    static void clearComponents(QQmlListProperty<Component> *list);
-    static void replaceComponent(QQmlListProperty<Component> *list, qsizetype index, Component *component);
-    static void removeLastComponent(QQmlListProperty<Component> *list);
+    static void qmlAppendComponent(QQmlListProperty<Component> *list, Component *component);
+    static qsizetype qmlComponentCount(QQmlListProperty<Component> *list);
+    static Component *qmlComponentAt(QQmlListProperty<Component> *list, qsizetype index);
+    static void qmlClearComponents(QQmlListProperty<Component> *list);
+    static void qmlReplaceComponent(QQmlListProperty<Component> *list, qsizetype index, Component *component);
+    static void qmlRemoveLastComponent(QQmlListProperty<Component> *list);
 
 private:
     QVector3D m_position;

@@ -60,34 +60,34 @@ const QList<Component *> &Entity::components(void) const
 QQmlListProperty<Component> Entity::qmlComponents(void)
 {
     return { this, this,
-        &Entity::appendComponent,
-        &Entity::componentCount,
-        &Entity::componentAt,
-        &Entity::clearComponents,
-        &Entity::replaceComponent,
-        &Entity::removeLastComponent };
+        &Entity::qmlAppendComponent,
+        &Entity::qmlComponentCount,
+        &Entity::qmlComponentAt,
+        &Entity::qmlClearComponents,
+        &Entity::qmlReplaceComponent,
+        &Entity::qmlRemoveLastComponent };
 }
 
-void Entity::appendComponent(QQmlListProperty<Component> *list, Component *component)
+void Entity::qmlAppendComponent(QQmlListProperty<Component> *list, Component *component)
 {
     auto entity = reinterpret_cast<Entity *>(list->data);
     entity->m_components.append(component);
     emit entity->componentAdded(component);
 }
 
-qsizetype Entity::componentCount(QQmlListProperty<Component> *list)
+qsizetype Entity::qmlComponentCount(QQmlListProperty<Component> *list)
 {
     auto entity = reinterpret_cast<Entity *>(list->data);
     return entity->m_components.count();
 }
 
-Component *Entity::componentAt(QQmlListProperty<Component> *list, qsizetype i)
+Component *Entity::qmlComponentAt(QQmlListProperty<Component> *list, qsizetype i)
 {
     auto entity = reinterpret_cast<Entity *>(list->data);
     return entity->m_components.at(i);
 }
 
-void Entity::clearComponents(QQmlListProperty<Component> *list)
+void Entity::qmlClearComponents(QQmlListProperty<Component> *list)
 {
     auto entity = reinterpret_cast<Entity *>(list->data);
     auto backup = std::move(entity->m_components);
@@ -95,7 +95,7 @@ void Entity::clearComponents(QQmlListProperty<Component> *list)
         emit entity->componentRemoved(c);
 }
 
-void Entity::replaceComponent(QQmlListProperty<Component> *list, qsizetype i, Component *component)
+void Entity::qmlReplaceComponent(QQmlListProperty<Component> *list, qsizetype i, Component *component)
 {
     auto entity = reinterpret_cast<Entity *>(list->data);
     auto oldComponent = entity->m_components.at(i);
@@ -104,7 +104,7 @@ void Entity::replaceComponent(QQmlListProperty<Component> *list, qsizetype i, Co
     emit entity->componentAdded(component);
 }
 
-void Entity::removeLastComponent(QQmlListProperty<Component> *list)
+void Entity::qmlRemoveLastComponent(QQmlListProperty<Component> *list)
 {
     auto entity = reinterpret_cast<Entity *>(list->data);
     if (!entity->m_components.isEmpty()) {

@@ -1,8 +1,8 @@
 //
 //
-#include <Volcano/Game/Light.hpp>
+#include <Volcano/Game/Graphics/Light.hpp>
 
-VOLCANO_GAME_BEGIN
+VOLCANO_GAME_GRAPHICS_BEGIN
 
 Light::Light(QObject *parent):
     Object(parent)
@@ -35,8 +35,8 @@ void Light::setColor(const QColor &v)
 {
     if (m_color != v) {
         m_color = v;
-        colorChanged(v);
+        emit colorChanged(v);
     }
 }
 
-VOLCANO_GAME_END
+VOLCANO_GAME_GRAPHICS_END

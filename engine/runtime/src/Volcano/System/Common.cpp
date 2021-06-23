@@ -2,23 +2,25 @@
 //
 #include <QString>
 #include <QQmlEngine>
+#include <QQuickWindow>
 #include <QSurfaceFormat>
 
+#include <physfs.h>
+
+#include <Volcano/Game/Context.hpp>
 #include <Volcano/Game/Component.hpp>
-#include <Volcano/Game/Mesh.hpp>
 #include <Volcano/Game/Object.hpp>
 #include <Volcano/Game/Entity.hpp>
-#include <Volcano/Game/Light.hpp>
-#include <Volcano/Game/DirectionalLight.hpp>
-#include <Volcano/Game/PointLight.hpp>
-#include <Volcano/Game/SpotLight.hpp>
 #include <Volcano/Game/World.hpp>
-#include <Volcano/Game/DynamicWorld.hpp>
-#include <Volcano/Game/Context.hpp>
 
+#include <Volcano/Game/Graphics/Common.hpp>
 #include <Volcano/Game/Graphics/Camera.hpp>
+#include <Volcano/Game/Graphics/Light.hpp>
+#include <Volcano/Game/Graphics/DirectionalLight.hpp>
+#include <Volcano/Game/Graphics/PointLight.hpp>
+#include <Volcano/Game/Graphics/SpotLight.hpp>
+#include <Volcano/Game/Graphics/Mesh.hpp>
 
-#include <Volcano/OpenGL/Common.hpp>
 #include <Volcano/System/Common.hpp>
 
 VOLCANO_SYSTEM_BEGIN
@@ -41,25 +43,25 @@ bool init(void)
     const char *uri = "volcano.game";
 
     registerUncreatableType<Game::Component>(uri, "Component");
-    registerType<Game::Mesh>(uri, "Mesh");
-
     registerUncreatableType<Game::Object>(uri, "Object");
+
     registerType<Game::Entity>(uri, "Entity");
-
-    registerUncreatableType<Game::Light>(uri, "Light");
-    registerType<Game::DirectionalLight>(uri, "DirectionalLight");
-    registerType<Game::PointLight>(uri, "PointLight");
-    registerType<Game::SpotLight>(uri, "SpotLight");
-
     registerType<Game::World>(uri, "World");
-    registerType<Game::DynamicWorld>(uri, "DynamicWorld");
 
     uri = "volcano.game.graphics";
 
+    registerUncreatableType<Game::Graphics::Light>(uri, "Light");
+
     registerType<Game::Graphics::Camera>(uri, "Camera");
+    registerType<Game::Graphics::DirectionalLight>(uri, "DirectionalLight");
+    registerType<Game::Graphics::PointLight>(uri, "PointLight");
+    registerType<Game::Graphics::SpotLight>(uri, "SpotLight");
+    registerType<Game::Graphics::Mesh>(uri, "Mesh");
+
+    QQuickWindow::setGraphicsApi(QSGRendererInterface::OpenGL);
 
     QSurfaceFormat format;
-    OpenGL::makeSurfaceFormat(format);
+    Game::Graphics::glMakeDefaultSurfaceFormat(format);
     QSurfaceFormat::setDefaultFormat(format);
 
     return true;

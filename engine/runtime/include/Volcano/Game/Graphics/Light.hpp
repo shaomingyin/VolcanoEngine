@@ -1,14 +1,14 @@
 //
 //
-#ifndef VOLCANO_GAME_LIGHT_HPP
-#define VOLCANO_GAME_LIGHT_HPP
+#ifndef VOLCANO_GAME_GRAPHICS_LIGHT_HPP
+#define VOLCANO_GAME_GRAPHICS_LIGHT_HPP
 
 #include <QColor>
 
-#include <Volcano/Game/Common.hpp>
 #include <Volcano/Game/Object.hpp>
+#include <Volcano/Game/Graphics/Common.hpp>
 
-VOLCANO_GAME_BEGIN
+VOLCANO_GAME_GRAPHICS_BEGIN
 
 class Light: public Object {
     Q_OBJECT
@@ -34,6 +34,6 @@ private:
     QColor m_color;
 };
 
-VOLCANO_GAME_END
+VOLCANO_GAME_GRAPHICS_END
 
-#endif // VOLCANO_GAME_LIGHT_HPP
+#endif // VOLCANO_GAME_GRAPHICS_LIGHT_HPP

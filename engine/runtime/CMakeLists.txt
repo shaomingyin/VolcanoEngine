@@ -8,6 +8,13 @@ add_library(runtime STATIC ${RUNTIME_SOURCES})
 set_target_properties(runtime PROPERTIES OUTPUT_NAME "VolcanoRuntime")
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${RUNTIME_SOURCES})
 
+target_compile_definitions(runtime
+    PUBLIC
+        _LARGEFILE_SOURCE
+        _LARGEFILE64_SOURCE
+        _FILE_OFFSET_BITS=64
+    )
+
 target_include_directories(runtime
     PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/include
@@ -29,13 +36,13 @@ set_target_properties(runtime PROPERTIES
 
 qt6_qml_type_registration(runtime)
 
-#include(FindAssimp)
-#if(ASSIMP_FOUND)
-#    target_include_directories(runtime PUBLIC ${ASSIMP_INCLUDE_DIR})
-#    target_link_libraries(runtime PUBLIC ${ASSIMP_LIBRARIES})
-#else()
-#    message(FATAL_ERROR "Assimp not found.")
-#endif()
+include(FindPhysFS)
+if(PHYSFS_FOUND)
+    target_include_directories(runtime PUBLIC ${PHYSFS_INCLUDE_DIR})
+    target_link_libraries(runtime PUBLIC ${PHYSFS_LIBRARY})
+else()
+    message(FATAL_ERROR "PhysFS not found.")
+endif()
 
 include(FindBullet)
 if(BULLET_FOUND)
@@ -43,4 +50,12 @@ if(BULLET_FOUND)
     target_link_libraries(runtime PUBLIC ${BULLET_LIBRARIES})
 else()
     message(FATAL_ERROR "Failed to find BulletPhysics.")
+endif()
+
+include(FindAssimp)
+if(ASSIMP_FOUND)
+    target_include_directories(runtime PUBLIC ${ASSIMP_INCLUDE_DIR})
+    target_link_libraries(runtime PUBLIC ${ASSIMP_LIBRARIES})
+else()
+    message(FATAL_ERROR "Assimp not found.")
 endif()

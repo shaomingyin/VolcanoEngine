@@ -1,10 +1,15 @@
 //
 //
-#include <Volcano/OpenGL/Common.hpp>
+#include <Volcano/Game/Graphics/Common.hpp>
 
-VOLCANO_OPENGL_BEGIN
+VOLCANO_GAME_GRAPHICS_BEGIN
 
-void makeSurfaceFormat(QSurfaceFormat &out)
+OpenGLFunctions *glFunctions(QOpenGLContext *context)
+{
+    return QOpenGLVersionFunctionsFactory::get<OpenGLFunctions>(context);
+}
+
+void glMakeDefaultSurfaceFormat(QSurfaceFormat &out)
 {
     out = QSurfaceFormat::defaultFormat();
 
@@ -19,4 +24,4 @@ void makeSurfaceFormat(QSurfaceFormat &out)
     out.setDepthBufferSize(24);
 }
 
-VOLCANO_OPENGL_END
+VOLCANO_GAME_GRAPHICS_END

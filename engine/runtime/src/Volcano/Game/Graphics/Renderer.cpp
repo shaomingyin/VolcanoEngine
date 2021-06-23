@@ -2,6 +2,8 @@
 //
 #include <memory>
 
+#include <QScopeGuard>
+#include <QObject>
 #include <QQuickOpenGLUtils>
 
 #include <Volcano/Game/Graphics/Camera.hpp>
@@ -9,55 +11,108 @@
 
 VOLCANO_GAME_GRAPHICS_BEGIN
 
-Renderer::Renderer(void):
-    m_camera(nullptr),
-    m_view(nullptr)
+Renderer::Renderer(Camera &camera):
+    m_camera(camera),
+    m_world(nullptr),
+    m_view(nullptr),
+    m_gl(nullptr),
+    m_gBuffer(nullptr)
 {
 }
 
 Renderer::~Renderer(void)
 {
+    if (m_gBuffer != nullptr)
+        releaseGBuffer();
+}
+
+bool Renderer::init(void)
+{
+    Q_ASSERT(m_gl == nullptr);
+
+    m_gl = glFunctions();
+    if (m_gl == nullptr)
+        return false;
+
+    QScopeGuard glFuncsGuard([this] { m_gl = nullptr; });
+
+    updateGBuffer();
+    if (m_gBuffer == nullptr)
+        return false;
+
+    QScopeGuard gBufferGuard([this] { releaseGBuffer(); });
+
+    // TODO init resources...
+
+    QObject::connect(&m_camera, &Camera::worldChanged, [this] (World *world) {
+        attachWorld(world);
+    });
+
+    auto world = m_camera.world();
+    if (world == nullptr)
+        return false;
+
+    attachWorld(world);
+
+    gBufferGuard.dismiss();
+    glFuncsGuard.dismiss();
+
+    return true;
+}
+
+void Renderer::reset(void)
+{
+}
+
+void Renderer::updateGBuffer(void)
+{
+    if (Q_LIKELY(m_gBuffer != nullptr)) {
+        if (Q_LIKELY(m_gBuffer->size() == m_camera.size()))
+            return;
+        releaseGBuffer();
+    }
+
+    m_gBuffer = new QOpenGLFramebufferObject(m_camera.width(), m_camera.height());
+}
+
+void Renderer::releaseGBuffer(void)
+{
+    Q_ASSERT(m_gl != nullptr);
+    Q_ASSERT(m_gBuffer != nullptr);
+
+    // TODO
+
+    m_gBuffer = nullptr;
 }
 
 void Renderer::render(void)
 {
-    if (Q_UNLIKELY(m_camera == nullptr || m_view == nullptr))
+    Q_ASSERT(m_gl != nullptr);
+
+    if (Q_UNLIKELY(m_view == nullptr))
         return;
 
-    m_glRenderer.beginFrame();
+    if (m_camera.isClear()) {
+        auto &color = m_camera.clearColor();
+        m_gl->glClearColor(color.redF(), color.greenF(), color.blueF(), color.alphaF());
+        m_gl->glClear(GL_COLOR_BUFFER_BIT);
+    }
 
     // TODO
 
-    m_glRenderer.endFrame();
-
-    m_camera->unlockView();
+    m_camera.unlockView();
 
     QQuickOpenGLUtils::resetOpenGLState();
 }
 
 void Renderer::synchronize(QQuickFramebufferObject *item)
 {
-    if (Q_UNLIKELY(m_camera == nullptr)) {
-        auto camera = qobject_cast<Camera *>(item);
-        if (camera == nullptr)
-            return;
+    Q_ASSERT(m_gBuffer != nullptr);
+    Q_ASSERT(static_cast<QQuickFramebufferObject *>(&m_camera) == item);
 
-        auto world = camera->world();
-        if (world == nullptr)
-            return;
+    updateGBuffer();
 
-        if (!m_glRenderer.init(item->width(), item->height()))
-            return;
-
-        auto &objects = world->objects();
-        for (auto object: objects)
-            addObject(object);
-
-        m_camera = camera;
-    }
-
-    m_glRenderer.resize(QSize(item->width(), item->height()));
-    m_view = m_camera->lockView();
+    m_view = m_camera.lockView();
 }
 
 void Renderer::addObject(Object *object)
@@ -91,9 +146,6 @@ void Renderer::addEntity(Entity *entity)
 {
     auto components = entity->components();
     for (auto component: components) {
-        auto mesh = qobject_cast<Mesh *>(component);
-        if (mesh != nullptr) {
-        }
     }
 }
 
@@ -110,6 +162,22 @@ void Renderer::addPointLight(PointLight *pointLight)
 void Renderer::addSpotLight(SpotLight *spotLight)
 {
 
+}
+
+void Renderer::attachWorld(World *world)
+{
+    if (m_world == world)
+        return;
+
+    reset();
+
+    m_world = world;
+    if (m_world == nullptr)
+        return;
+
+    auto &objects = world->objects();
+    for (auto object: objects)
+        addObject(object);
 }
 
 VOLCANO_GAME_GRAPHICS_END
