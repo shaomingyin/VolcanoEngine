@@ -5,6 +5,7 @@
 
 #include <QFuture>
 
+#include <Volcano/OpenGL/Mesh.hpp>
 #include <Volcano/Game/Resource.hpp>
 #include <Volcano/Game/Graphics/Common.hpp>
 
@@ -17,12 +18,15 @@ public:
     Mesh(QObject *parent = nullptr);
     virtual ~Mesh(void);
 
-private:
-    void load(void) override;
+public:
+    OpenGL::Mesh *glMesh(void);
 
 private:
-    QIODevice *m_vertexBuffer;
-    QIODevice *m_vertexIndexBuffer;
+    void onSourceChanged(const QUrl &v) override;
+
+private:
+    OpenGL::Mesh *m_glMesh;
+    bool m_needReloading;
 };
 
 VOLCANO_GAME_GRAPHICS_END

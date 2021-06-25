@@ -3,8 +3,10 @@
 #ifndef VOLCANO_GAME_GRAPHICS_RARENDERER_HPP
 #define VOLCANO_GAME_GRAPHICS_RARENDERER_HPP
 
-#include <QOpenGLFramebufferObject>
+#include <QList>
 #include <QQuickFramebufferObject>
+
+#include <Volcano/OpenGL/Renderer.hpp>
 
 #include <Volcano/Game/World.hpp>
 #include <Volcano/Game/Entity.hpp>
@@ -32,13 +34,12 @@ public:
 
 protected:
     void reset(void);
-    void updateGBuffer(void);
-    void releaseGBuffer(void);
     void render(void) override;
     void renderView(const View &view);
     void synchronize(QQuickFramebufferObject *item) override;
     void addObject(Object *object);
     void addEntity(Entity *entity);
+    void addMesh(Mesh *mesh);
     void addDirectionalLight(DirectionalLight *directionalLight);
     void addPointLight(PointLight *pointLight);
     void addSpotLight(SpotLight *spotLight);
@@ -50,8 +51,7 @@ private:
     Camera &m_camera;
     World *m_world;
     const View *m_view;
-    OpenGLFunctions *m_gl;
-    QOpenGLFramebufferObject *m_gBuffer;
+    OpenGL::Renderer m_glRenderer;
 };
 
 VOLCANO_GAME_GRAPHICS_END

@@ -5,7 +5,8 @@
 VOLCANO_GAME_BEGIN
 
 Object::Object(QObject *parent):
-    QObject(parent)
+    QObject(parent),
+    m_isEnabled(true)
 {
 }
 

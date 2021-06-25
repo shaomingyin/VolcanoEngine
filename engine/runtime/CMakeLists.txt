@@ -29,13 +29,6 @@ configure_file(
 find_package(Qt6 COMPONENTS Concurrent Gui OpenGL Qml Quick REQUIRED)
 target_link_libraries(runtime PUBLIC Qt6::Concurrent Qt6::Gui Qt6::OpenGL Qt6::Qml Qt6::Quick)
 
-set_target_properties(runtime PROPERTIES
-    QT_QML_MODULE_VERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}"
-    QT_QML_MODULE_URI "volcano"
-    )
-
-qt6_qml_type_registration(runtime)
-
 include(FindPhysFS)
 if(PHYSFS_FOUND)
     target_include_directories(runtime PUBLIC ${PHYSFS_INCLUDE_DIR})

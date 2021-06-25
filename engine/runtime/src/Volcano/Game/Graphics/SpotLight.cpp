@@ -5,7 +5,8 @@
 VOLCANO_GAME_GRAPHICS_BEGIN
 
 SpotLight::SpotLight(QObject *parent):
-    DirectionalLight(parent)
+    DirectionalLight(parent),
+    m_distance(1.0f)
 {
 }
 
@@ -26,16 +27,16 @@ void SpotLight::setPosition(const QVector3D &v)
     }
 }
 
-const QVector3D &SpotLight::scale(void) const
+qreal SpotLight::distance(void) const
 {
-    return m_scale;
+    return m_distance;
 }
 
-void SpotLight::setScale(const QVector3D &v)
+void SpotLight::setDistance(qreal v)
 {
-    if (m_scale != v) {
-        m_scale = v;
-        emit scaleChanged(v);
+    if (!qFuzzyCompare(m_distance, v)) {
+        m_distance = v;
+        emit distanceChanged(v);
     }
 }
 

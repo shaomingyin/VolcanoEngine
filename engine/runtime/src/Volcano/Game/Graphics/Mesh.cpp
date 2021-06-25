@@ -2,42 +2,41 @@
 //
 #include <memory>
 
-#include <Volcano/Game/Graphics/Memory.hpp>
 #include <Volcano/Game/Graphics/Mesh.hpp>
 
 VOLCANO_GAME_GRAPHICS_BEGIN
 
 Mesh::Mesh(QObject *parent):
     Resource(parent),
-    m_vertexBuffer(nullptr),
-    m_vertexIndexBuffer(nullptr)
+    m_glMesh(nullptr),
+    m_needReloading(false)
 {
 }
 
 Mesh::~Mesh(void)
 {
-    if (m_vertexBuffer != nullptr)
-        delete m_vertexBuffer;
-    if (m_vertexIndexBuffer != nullptr)
-        delete m_vertexIndexBuffer;
 }
 
-void Mesh::load(void)
+OpenGL::Mesh *Mesh::glMesh(void)
 {
-#if 0 // TODO should be in rendering thread.
-    if (m_vertexBuffer != nullptr) {
-        delete m_vertexBuffer;
-        m_vertexBuffer = nullptr;
+    Q_ASSERT(QOpenGLContext::currentContext() != nullptr);
+
+    if (m_glMesh != nullptr) {
+        if (!m_needReloading)
+            return m_glMesh;
+        delete m_glMesh;
+        m_glMesh = nullptr;
+        m_needReloading = false;
     }
 
-    if (m_vertexIndexBuffer != nullptr) {
-        delete m_vertexIndexBuffer;
-        m_vertexIndexBuffer = nullptr;
-    }
+    // TODO start loading...
 
-    std::unique_ptr<QIODevice> vertexBuffer;
-    std::unique_ptr<QIODevice> vertexIndexBuffer;
-#endif
+    return nullptr;
+}
+
+void Mesh::onSourceChanged(const QUrl &v)
+{
+    m_needReloading = true;
 }
 
 VOLCANO_GAME_GRAPHICS_END

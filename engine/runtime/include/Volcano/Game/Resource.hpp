@@ -43,7 +43,7 @@ signals:
 protected:
     void setStatus(Status v);
     void setProgress(qreal v);
-    virtual void load(void) = 0;
+    virtual void onSourceChanged(const QUrl &v) = 0;
 
 private:
     QUrl m_source;

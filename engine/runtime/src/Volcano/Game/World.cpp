@@ -197,6 +197,8 @@ void World::frame(float elapsed)
 
 void World::handleObjectAdded(Object *object, bool emitSignal)
 {
+    object->setParent(this);
+
     if (m_btWorld != nullptr) {
         auto entity = qobject_cast<Entity *>(object);
         if (entity != nullptr) {

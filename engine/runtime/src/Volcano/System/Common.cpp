@@ -59,10 +59,7 @@ bool init(void)
     registerType<Game::Graphics::Mesh>(uri, "Mesh");
 
     QQuickWindow::setGraphicsApi(QSGRendererInterface::OpenGL);
-
-    QSurfaceFormat format;
-    Game::Graphics::glMakeDefaultSurfaceFormat(format);
-    QSurfaceFormat::setDefaultFormat(format);
+    OpenGL::makeDefaultSurfaceFormat();
 
     return true;
 }

@@ -72,6 +72,7 @@ void Entity::qmlAppendComponent(QQmlListProperty<Component> *list, Component *co
 {
     auto entity = reinterpret_cast<Entity *>(list->data);
     entity->m_components.append(component);
+    component->setParent(entity);
     emit entity->componentAdded(component);
 }
 
@@ -102,6 +103,7 @@ void Entity::qmlReplaceComponent(QQmlListProperty<Component> *list, qsizetype i,
     entity->m_components.replace(i, component);
     emit entity->componentRemoved(oldComponent);
     emit entity->componentAdded(component);
+    component->setParent(entity);
 }
 
 void Entity::qmlRemoveLastComponent(QQmlListProperty<Component> *list)

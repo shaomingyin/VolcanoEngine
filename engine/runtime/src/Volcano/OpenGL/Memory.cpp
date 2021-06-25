@@ -12,9 +12,9 @@
 #include <QOpenGLContext>
 #include <QOpenGLBuffer>
 
-#include <Volcano/Game/Graphics/Memory.hpp>
+#include <Volcano/OpenGL/Memory.hpp>
 
-VOLCANO_GAME_GRAPHICS_BEGIN
+VOLCANO_OPENGL_BEGIN
 
 class Buffer: public QIODevice {
     Q_OBJECT
@@ -481,6 +481,6 @@ QIODevice *allocDynamicVertexIndices(int count)
     return nullptr;
 }
 
-VOLCANO_GAME_GRAPHICS_END
+VOLCANO_OPENGL_END
 
 #include "Memory.moc"

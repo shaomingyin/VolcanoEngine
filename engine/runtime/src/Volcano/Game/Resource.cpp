@@ -1,5 +1,7 @@
 //
 //
+#include <QThread>
+
 #include <Volcano/Game/Resource.hpp>
 
 VOLCANO_GAME_BEGIN
@@ -27,17 +29,9 @@ void Resource::setSource(const QUrl &v)
         return;
 
     m_source = v;
+    onSourceChanged(v);
+
     emit sourceChanged(v);
-
-    setProgress(0.0f);
-
-    if (!v.isValid() || v.isEmpty()) {
-        setStatus(None);
-        return;
-    }
-
-    setStatus(Loading);
-    load();
 }
 
 Resource::Status Resource::status(void) const
@@ -52,9 +46,12 @@ qreal Resource::progress(void) const
 
 void Resource::setStatus(Status v)
 {
-    if (m_status != v) {
-        m_status = v;
-        emit statusChanged(v);
+    if (QThread::currentThread() == thread()) {
+        if (m_status != v) {
+            m_status = v;
+            emit statusChanged(v);
+        }
+        return;
     }
 }
 
