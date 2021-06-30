@@ -11,7 +11,8 @@
 #include <QCommandLineParser>
 #include <QGuiApplication>
 
-#include <Volcano/System/Common.hpp>
+#include <Volcano/Game/Init.hpp>
+#include <Volcano/Graphics/Init.hpp>
 #include <Volcano/Launcher/Common.hpp>
 
 VOLCANO_LAUNCHER_BEGIN
@@ -21,8 +22,6 @@ static int main(int argc, char *argv[])
     QGuiApplication app(argc, argv);
 
     setApplicationName("Launcher");
-
-    qInfo("VolcanoEngine %s", VOLCANO_VERSION_STR);
 
     QCommandLineParser cmdlineParser;
 
@@ -43,10 +42,8 @@ static int main(int argc, char *argv[])
         }
     }
 
-    if (!System::init()) {
-        qFatal("Failed to init system.");
-        return EXIT_FAILURE;
-    }
+    Game::init();
+    Graphics::init();
 
     QScopedPointer<QQuickView> mainWindow(new QQuickView());
     if (!mainWindow) {

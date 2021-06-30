@@ -4,10 +4,10 @@ include_directories(
     ${CMAKE_CURRENT_BINARY_DIR}/include
     )
 
-configure_file(
-    include/Volcano/Launcher/Config.hpp.in
-    include/Volcano/Launcher/Config.hpp
-    )
+link_libraries(game graphics sound)
+
+find_package(Qt6 COMPONENTS Gui Quick REQUIRED)
+link_libraries(Qt6::Gui Qt6::Quick)
 
 file(GLOB_RECURSE LAUNCHER_SOURCES LIST_DIRECTORIES false
     ${CMAKE_CURRENT_SOURCE_DIR}/include/*
@@ -15,6 +15,12 @@ file(GLOB_RECURSE LAUNCHER_SOURCES LIST_DIRECTORIES false
     )
 
 add_executable(launcher ${LAUNCHER_SOURCES})
+add_dependencies(launcher game graphics sound)
 set_target_properties(launcher PROPERTIES OUTPUT_NAME "VolcanoLauncher")
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${LAUNCHER_SOURCES})
-target_link_libraries(launcher PRIVATE runtime)
+
+configure_file(
+    include/Volcano/Launcher/Config.hpp.in
+    include/Volcano/Launcher/Config.hpp
+    )
+

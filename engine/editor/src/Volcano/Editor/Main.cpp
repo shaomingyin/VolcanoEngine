@@ -3,7 +3,8 @@
 #include <QScopedPointer>
 #include <QApplication>
 
-#include <Volcano/System/Common.hpp>
+#include <Volcano/Game/Init.hpp>
+#include <Volcano/Graphics/Init.hpp>
 #include <Volcano/Editor/Common.hpp>
 #include <Volcano/Editor/MainWindow.hpp>
 
@@ -15,16 +16,14 @@ static int main(int argc, char *argv[])
 
     setApplicationName("Editor");
 
-    if (!System::init()) {
-        qFatal("Failed to init system.");
-        return EXIT_FAILURE;
-    }
-
     QScopedPointer<MainWindow> mainWindow(new MainWindow());
     if (!mainWindow || !mainWindow->init()) {
         qFatal("Failed to create main window.");
         return EXIT_FAILURE;
     }
+
+    Game::init();
+    Graphics::init();
 
     mainWindow->resize(800, 600);
     mainWindow->show();

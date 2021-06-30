@@ -18,15 +18,11 @@ set(CMAKE_MODULE_PATH "${CMAKE_HOME_DIRECTORY}/cmake")
 include(CMakeDependentOption)
 
 set(VOLCANO_DEBUG ON CACHE BOOL "Enable debug funtions.")
-set(VOLCANO_OUT_DIR ${CMAKE_BINARY_DIR}/out CACHE PATH "Build output directory.")
+set(VOLCANO_OUT_DIR "${CMAKE_BINARY_DIR}/out" CACHE PATH "Build output directory.")
 
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${VOLCANO_OUT_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${VOLCANO_OUT_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${VOLCANO_OUT_DIR}/bin)
-
-set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTORCC ON)
-set(CMAKE_AUTOUIC ON)
 
 add_subdirectory(engine engine)
 add_subdirectory(framework framework)
