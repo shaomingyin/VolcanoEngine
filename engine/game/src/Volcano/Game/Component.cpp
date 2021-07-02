@@ -13,4 +13,8 @@ Component::~Component(void)
 {
 }
 
+void Component::update(float elapsed)
+{
+}
+
 VOLCANO_GAME_END

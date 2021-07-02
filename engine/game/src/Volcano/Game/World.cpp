@@ -192,6 +192,9 @@ void World::setLoadingProgress(qreal v)
 
 void World::frame(float elapsed)
 {
+    for (auto object: m_objects)
+        object->update(elapsed);
+
     if (m_btWorld != nullptr) {
         m_btWorld->stepSimulation(elapsed);
         // TODO
@@ -223,6 +226,8 @@ void World::handleObjectRemoved(Object *object, bool emitSignal)
     if (m_btWorld != nullptr) {
         // TODO
     }
+
+    object->setParent(nullptr);
 
     if (emitSignal)
         emit objectRemoved(object);
@@ -283,33 +288,37 @@ qsizetype World::qmlObjectCount(QQmlListProperty<Object> *list)
 Object *World::qmlObjectAt(QQmlListProperty<Object> *list, qsizetype i)
 {
     auto world = reinterpret_cast<World *>(list->data);
-    return world->m_objects.at(i);
+    if (0 <= i && i < world->m_objects.size())
+        return world->m_objects.at(i);
+    return nullptr;
 }
 
 void World::qmlClearObjects(QQmlListProperty<Object> *list)
 {
     auto world = reinterpret_cast<World *>(list->data);
-    QList<Object *> backup = std::move(world->m_objects);
-    for (auto s: backup)
-        world->handleObjectRemoved(s);
+    QList<Object *> backups = std::move(world->m_objects);
+    for (auto object: backups)
+        world->handleObjectRemoved(object);
 }
 
 void World::qmlReplaceObject(QQmlListProperty<Object> *list, qsizetype i, Object *object)
 {
     auto world = reinterpret_cast<World *>(list->data);
-    auto oldObject = world->m_objects.at(i);
-    world->m_objects.replace(i, object);
-    world->handleObjectRemoved(oldObject);
-    world->handleObjectAdded(object);
+    if (0 <= i && i < world->m_objects.size()) {
+        auto oldObject = world->m_objects.at(i);
+        world->m_objects.replace(i, object);
+        world->handleObjectRemoved(oldObject);
+        world->handleObjectAdded(object);
+    }
 }
 
 void World::qmlRemoveLastObject(QQmlListProperty<Object> *list)
 {
     auto world = reinterpret_cast<World *>(list->data);
     if (!world->m_objects.isEmpty()) {
-        auto backup = world->m_objects.last();
+        auto object = world->m_objects.last();
         world->m_objects.removeLast();
-        world->handleObjectRemoved(backup);
+        world->handleObjectRemoved(object);
     }
 }
 

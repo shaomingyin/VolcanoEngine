@@ -21,6 +21,7 @@ public:
     ~Object(void) override;
 
 public:
+    virtual void update(float elapsed);
     bool isEnabled(void) const;
     void setEnabled(bool v);
 

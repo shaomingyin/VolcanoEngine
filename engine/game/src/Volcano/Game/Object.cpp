@@ -14,6 +14,11 @@ Object::~Object(void)
 {
 }
 
+void Object::update(float elapsed)
+{
+    Q_UNUSED(elapsed);
+}
+
 bool Object::isEnabled(void) const
 {
     return m_isEnabled;

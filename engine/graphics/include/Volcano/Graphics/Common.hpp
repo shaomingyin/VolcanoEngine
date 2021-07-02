@@ -16,6 +16,11 @@ VOLCANO_GRAPHICS_BEGIN
 
 using OpenGLFunctions = QOpenGLFunctions_3_3_Core;
 
+VOLCANO_INLINE OpenGLFunctions *glFunctions(void)
+{
+    return QOpenGLVersionFunctionsFactory::get<OpenGLFunctions>();
+}
+
 struct Vertex {
     float position[3];
     float normal[3];
@@ -24,10 +29,11 @@ struct Vertex {
 
 using VertexIndex = quint32;
 
-VOLCANO_INLINE OpenGLFunctions *glFunctions(void)
-{
-    return QOpenGLVersionFunctionsFactory::get<OpenGLFunctions>();
-}
+QIODevice *allocStaticVertexBuffer(int count);
+QIODevice *allocStaticVertexIndexBuffer(int count);
+QIODevice *allocDynamicVertexBuffer(int count);
+QIODevice *allocDynamicVertexIndexBuffer(int count);
+QIODevice *allocTexture(int width, int height, GLenum format);
 
 VOLCANO_GRAPHICS_END
 

@@ -13,6 +13,12 @@ Entity::~Entity(void)
 {
 }
 
+void Entity::update(float elapsed)
+{
+    for (auto component: m_components)
+        component->update(elapsed);
+}
+
 const QVector3D &Entity::position(void) const
 {
     return m_position;
@@ -68,12 +74,23 @@ QQmlListProperty<Component> Entity::qmlComponents(void)
         &Entity::qmlRemoveLastComponent };
 }
 
+void Entity::handleComponentAdded(Component *component)
+{
+    component->setParent(this);
+    emit componentAdded(component);
+}
+
+void Entity::handleComponentRemoved(Component *component)
+{
+    component->setParent(nullptr);
+    emit componentRemoved(component);
+}
+
 void Entity::qmlAppendComponent(QQmlListProperty<Component> *list, Component *component)
 {
     auto entity = reinterpret_cast<Entity *>(list->data);
     entity->m_components.append(component);
-    component->setParent(entity);
-    emit entity->componentAdded(component);
+    entity->handleComponentAdded(component);
 }
 
 qsizetype Entity::qmlComponentCount(QQmlListProperty<Component> *list)
@@ -85,25 +102,28 @@ qsizetype Entity::qmlComponentCount(QQmlListProperty<Component> *list)
 Component *Entity::qmlComponentAt(QQmlListProperty<Component> *list, qsizetype i)
 {
     auto entity = reinterpret_cast<Entity *>(list->data);
-    return entity->m_components.at(i);
+    if (0 <= i && i < entity->m_components.size())
+        return entity->m_components.at(i);
+    return nullptr;
 }
 
 void Entity::qmlClearComponents(QQmlListProperty<Component> *list)
 {
     auto entity = reinterpret_cast<Entity *>(list->data);
     auto backup = std::move(entity->m_components);
-    for (auto c: backup)
-        emit entity->componentRemoved(c);
+    for (auto component: backup)
+        entity->handleComponentRemoved(component);
 }
 
 void Entity::qmlReplaceComponent(QQmlListProperty<Component> *list, qsizetype i, Component *component)
 {
     auto entity = reinterpret_cast<Entity *>(list->data);
-    auto oldComponent = entity->m_components.at(i);
-    entity->m_components.replace(i, component);
-    emit entity->componentRemoved(oldComponent);
-    emit entity->componentAdded(component);
-    component->setParent(entity);
+    if (0 <= i && i < entity->m_components.size()) {
+        auto oldComponent = entity->m_components.at(i);
+        entity->m_components.replace(i, component);
+        entity->handleComponentRemoved(oldComponent);
+        entity->handleComponentAdded(component);
+    }
 }
 
 void Entity::qmlRemoveLastComponent(QQmlListProperty<Component> *list)
@@ -112,7 +132,7 @@ void Entity::qmlRemoveLastComponent(QQmlListProperty<Component> *list)
     if (!entity->m_components.isEmpty()) {
         auto backup = entity->m_components.last();
         entity->m_components.removeLast();
-        emit entity->componentRemoved(backup);
+        entity->handleComponentRemoved(backup);
     }
 }
 

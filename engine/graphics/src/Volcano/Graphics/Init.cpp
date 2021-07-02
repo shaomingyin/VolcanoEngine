@@ -1,16 +1,23 @@
 //
 //
+#include <QQuickWindow>
 #include <QSurfaceFormat>
 
+#include <Volcano/Graphics/Camera.hpp>
 #include <Volcano/Graphics/Init.hpp>
 
 VOLCANO_GRAPHICS_BEGIN
 
 bool init(void)
 {
+    registerType<Camera>("volcano.graphics", "Camera");
+
+    QQuickWindow::setGraphicsApi(QSGRendererInterface::OpenGL);
+
     QSurfaceFormat format;
 
     format.setVersion(3, 3);
+    format.setRenderableType(QSurfaceFormat::OpenGL);
     format.setProfile(QSurfaceFormat::CoreProfile);
     format.setSwapBehavior(QSurfaceFormat::DoubleBuffer);
 

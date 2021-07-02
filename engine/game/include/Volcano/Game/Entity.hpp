@@ -27,6 +27,7 @@ public:
     ~Entity(void) override;
 
 public:
+    void update(float elapsed) override;
     const QVector3D &position(void) const;
     void setPosition(const QVector3D &v);
     const QVector3D &scale(void) const;
@@ -44,6 +45,8 @@ signals:
     void componentRemoved(Component *component);
 
 private:
+    void handleComponentAdded(Component *component);
+    void handleComponentRemoved(Component *component);
     static void qmlAppendComponent(QQmlListProperty<Component> *list, Component *component);
     static qsizetype qmlComponentCount(QQmlListProperty<Component> *list);
     static Component *qmlComponentAt(QQmlListProperty<Component> *list, qsizetype index);

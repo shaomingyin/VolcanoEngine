@@ -15,6 +15,9 @@ class Component: public QObject {
 public:
     Component(QObject *parent = nullptr);
     ~Component(void) override;
+
+public:
+    virtual void update(float elapsed);
 };
 
 VOLCANO_GAME_END
