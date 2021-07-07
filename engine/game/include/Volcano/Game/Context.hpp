@@ -15,8 +15,9 @@ class Context: public QObject {
 
 public:
     enum Mode {
+        Unknown = 0,
         Launcher,
-        Editor
+        Editor,
     };
     Q_ENUM(Mode)
 

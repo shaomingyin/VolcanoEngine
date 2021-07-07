@@ -3,22 +3,23 @@
 #ifndef VOLCANO_GRAPHICS_MESH_HPP
 #define VOLCANO_GRAPHICS_MESH_HPP
 
-#include <Volcano/Game/Mesh.hpp>
+#include <QObject>
+
 #include <Volcano/Graphics/Common.hpp>
+#include <Volcano/Graphics/Renderable.hpp>
 
 VOLCANO_GRAPHICS_BEGIN
 
-class Mesh {
-public:
-    Mesh(Game::Mesh *gameMesh);
-    virtual ~Mesh(void);
+class Mesh: public Renderable {
+    Q_OBJECT
 
 public:
-    bool init(void);
-    const Game::Mesh *gameMesh(void) const;
+    Mesh(QObject *parent = nullptr);
+    ~Mesh(void) override;
+
+public:
 
 private:
-    Game::Mesh *m_gameMesh;
     QIODevice *m_vertexBuffer;
     QIODevice *m_vertexIndexBuffer;
 };

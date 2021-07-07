@@ -4,7 +4,6 @@
 #define VOLCANO_GRAPHICS_CAMERA_HPP
 
 #include <QList>
-#include <QQueue>
 #include <QAtomicInt>
 #include <QRectF>
 #include <QColor>
@@ -14,20 +13,14 @@
 #include <QQuickFramebufferObject>
 
 #include <Volcano/Game/Component.hpp>
-#include <Volcano/Game/DirectionalLight.hpp>
-#include <Volcano/Game/Entity.hpp>
-#include <Volcano/Game/Light.hpp>
-#include <Volcano/Game/Material.hpp>
-#include <Volcano/Game/Mesh.hpp>
-#include <Volcano/Game/Object.hpp>
-#include <Volcano/Game/PointLight.hpp>
-#include <Volcano/Game/Resource.hpp>
-#include <Volcano/Game/SpotLight.hpp>
 #include <Volcano/Game/World.hpp>
-
+#include <Volcano/Game/Object.hpp>
+#include <Volcano/Game/Entity.hpp>
+#include <Volcano/Game/DirectionalLight.hpp>
+#include <Volcano/Game/PointLight.hpp>
+#include <Volcano/Game/SpotLight.hpp>
 #include <Volcano/Graphics/Common.hpp>
-#include <Volcano/Graphics/Renderer.hpp>
-#include <Volcano/Graphics/Mesh.hpp>
+#include <Volcano/Graphics/Entity.hpp>
 #include <Volcano/Graphics/VisibleSet.hpp>
 
 VOLCANO_GRAPHICS_BEGIN
@@ -106,18 +99,20 @@ private slots:
     void removeGameObject(Game::Object *gameObject);
 
 private:
+    using GameObjectList = QList<Game::Object *>;
+
+    using EntityList = QList<Entity>;
+    using DirectionalLightList = QList<DirectionalLight>;
+
+private:
     void frame(void);
     void buildVisibleSet(VisibleSet &out);
     void reset(void);
     void addGameEntity(Game::Entity *gameEntity);
-    void addGameMesh(Game::Mesh *gameMesh);
     void addGameDirectionalLight(Game::DirectionalLight *gameDirectionalLight);
     void addGamePointLight(Game::PointLight *gamePointLight);
     void addGameSpotLight(Game::SpotLight *gameSpotLight);
     void removeGameEntity(Game::Entity *gameEntity);
-
-private:
-    using MeshList = QList<Mesh>;
 
 private:
     int m_frameTimer;
@@ -137,8 +132,9 @@ private:
     float m_nearPlane;
     float m_farPlane;
     Game::World *m_gameWorld;
-    MeshList m_meshList;
-    MeshList m_meshListPengine;
+    GameObjectList m_addedGameObjectList;
+    GameObjectList m_removedGameObjectList;
+    EntityList m_entityList;
     VisibleSet m_vsFlip[2];
     QAtomicInt m_vsState;
     int m_vsRendering;

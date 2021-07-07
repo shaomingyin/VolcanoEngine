@@ -29,7 +29,7 @@ void Renderer::render(void)
     if (Q_UNLIKELY(m_vs == nullptr))
         return;
 
-    // TODO
+    // TODO render 'm_vs'...
 
     m_camera.unlockVisibleSet();
 

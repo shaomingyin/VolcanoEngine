@@ -3,8 +3,10 @@
 #include <memory>
 
 #include <QPointer>
+#include <QRunnable>
 #include <QMutexLocker>
 
+#include <Volcano/Graphics/Renderer.hpp>
 #include <Volcano/Graphics/Camera.hpp>
 
 VOLCANO_GRAPHICS_BEGIN
@@ -265,6 +267,31 @@ void Camera::timerEvent(QTimerEvent *event)
 
 QSGNode *Camera::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *updatePaintNodeData)
 {
+    while (!m_addedGameObjectList.isEmpty()) {
+        auto gameObject = m_addedGameObjectList.first();
+        m_addedGameObjectList.removeFirst();
+        auto gameEntity = qobject_cast<Game::Entity *>(gameObject);
+        if (gameEntity != nullptr) {
+            addGameEntity(gameEntity);
+            continue;
+        }
+        auto gameSpotLight = qobject_cast<Game::SpotLight *>(gameObject);
+        if (gameSpotLight != nullptr) {
+            addGameSpotLight(gameSpotLight);
+            continue;
+        }
+        auto gameDirectionalLight = qobject_cast<Game::DirectionalLight *>(gameObject);
+        if (gameDirectionalLight != nullptr) {
+            addGameDirectionalLight(gameDirectionalLight);
+            continue;
+        }
+        auto gamePointLight = qobject_cast<Game::PointLight *>(gameObject);
+        if (gamePointLight != nullptr) {
+            addGamePointLight(gamePointLight);
+            continue;
+        }
+    }
+
     return QQuickFramebufferObject::updatePaintNode(oldNode, updatePaintNodeData);
 }
 
@@ -304,50 +331,14 @@ void Camera::addGameObject(Game::Object *gameObject)
 {
     Q_ASSERT(gameObject != nullptr);
 
-    auto gameEntity = qobject_cast<Game::Entity *>(gameObject);
-    if (gameEntity != nullptr) {
-        addGameEntity(gameEntity);
-        return;
-    }
-
-    auto gameSpotLight = qobject_cast<Game::SpotLight *>(gameObject);
-    if (gameSpotLight != nullptr) {
-        addGameSpotLight(gameSpotLight);
-        return;
-    }
-
-    auto gameDirectionalLight = qobject_cast<Game::DirectionalLight *>(gameObject);
-    if (gameDirectionalLight != nullptr) {
-        addGameDirectionalLight(gameDirectionalLight);
-        return;
-    }
-
-    auto gamePointLight = qobject_cast<Game::PointLight *>(gameObject);
-    if (gamePointLight != nullptr) {
-        addGamePointLight(gamePointLight);
-        return;
-    }
+    m_addedGameObjectList.append(gameObject);
 }
 
 void Camera::addGameEntity(Game::Entity *gameEntity)
 {
     Q_ASSERT(gameEntity != nullptr);
 
-    auto gameComponents = gameEntity->components();
-    for (auto gameComponent: gameComponents) {
-        auto gameMesh = qobject_cast<Game::Mesh *>(gameComponent);
-        if (gameMesh != nullptr) {
-            addGameMesh(gameMesh);
-            continue;
-        }
-    }
-}
-
-void Camera::addGameMesh(Game::Mesh *gameMesh)
-{
-    Q_ASSERT(gameMesh != nullptr);
-
-    m_meshListPengine.append(gameMesh);
+    m_entityList.emplaceBack(Entity(gameEntity));
 }
 
 void Camera::addGameDirectionalLight(Game::DirectionalLight *gameDirectionalLight)
