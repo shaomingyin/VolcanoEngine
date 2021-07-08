@@ -3,23 +3,31 @@
 #ifndef VOLCANO_GRAPHICS_MESH_HPP
 #define VOLCANO_GRAPHICS_MESH_HPP
 
-#include <QObject>
+#include <QMetaObject>
 
+#include <Volcano/Game/Mesh.hpp>
 #include <Volcano/Graphics/Common.hpp>
-#include <Volcano/Graphics/Renderable.hpp>
 
 VOLCANO_GRAPHICS_BEGIN
 
-class Mesh: public Renderable {
-    Q_OBJECT
+class Mesh {
+public:
+    Mesh(Game::Mesh *gameMesh);
+    Mesh(Mesh &&that);
+    Mesh(const Mesh &that);
+    virtual ~Mesh(void);
 
 public:
-    Mesh(QObject *parent = nullptr);
-    ~Mesh(void) override;
-
-public:
+    Mesh &operator=(Mesh &&that);
+    Mesh &operator=(const Mesh &that);
 
 private:
+    void init(void);
+    void onGameMeshSourceChanged(const QUrl &url);
+
+private:
+    Game::Mesh *m_gameMesh;
+    QMetaObject::Connection m_onGameMeshSourceChangedConnection;
     QIODevice *m_vertexBuffer;
     QIODevice *m_vertexIndexBuffer;
 };

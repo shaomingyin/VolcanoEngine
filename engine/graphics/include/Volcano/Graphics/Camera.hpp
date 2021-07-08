@@ -102,7 +102,6 @@ private:
     using GameObjectList = QList<Game::Object *>;
 
     using EntityList = QList<Entity>;
-    using DirectionalLightList = QList<DirectionalLight>;
 
 private:
     void frame(void);

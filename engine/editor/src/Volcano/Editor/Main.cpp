@@ -25,7 +25,7 @@ static int main(int argc, char *argv[])
     Game::init();
     Graphics::init();
 
-    mainWindow->resize(800, 600);
+    mainWindow->setWindowTitle("Volcano Editor");
     mainWindow->show();
 
     return app.exec();

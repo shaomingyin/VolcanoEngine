@@ -268,8 +268,7 @@ void Camera::timerEvent(QTimerEvent *event)
 QSGNode *Camera::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *updatePaintNodeData)
 {
     while (!m_addedGameObjectList.isEmpty()) {
-        auto gameObject = m_addedGameObjectList.first();
-        m_addedGameObjectList.removeFirst();
+        auto gameObject = m_addedGameObjectList.takeFirst();
         auto gameEntity = qobject_cast<Game::Entity *>(gameObject);
         if (gameEntity != nullptr) {
             addGameEntity(gameEntity);
@@ -338,7 +337,7 @@ void Camera::addGameEntity(Game::Entity *gameEntity)
 {
     Q_ASSERT(gameEntity != nullptr);
 
-    m_entityList.emplaceBack(Entity(gameEntity));
+    m_entityList.emplaceBack(gameEntity);
 }
 
 void Camera::addGameDirectionalLight(Game::DirectionalLight *gameDirectionalLight)

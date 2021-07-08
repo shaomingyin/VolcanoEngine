@@ -24,11 +24,3 @@ configure_file(
 find_package(Qt6 COMPONENTS OpenGL Quick REQUIRED)
 target_link_libraries(graphics PUBLIC Qt6::OpenGL Qt6::Quick)
 
-include(FindAssimp)
-if(ASSIMP_FOUND)
-    include_directories(${ASSIMP_INCLUDE_DIR})
-    link_libraries(${ASSIMP_LIBRARIES})
-else()
-    message(FATAL_ERROR "Assimp not found.")
-endif()
-
