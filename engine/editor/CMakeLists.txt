@@ -4,8 +4,8 @@ include_directories(
     ${CMAKE_CURRENT_BINARY_DIR}/include
     )
 
-find_package(Qt6 COMPONENTS Gui Widgets Quick QuickWidgets REQUIRED)
-link_libraries(Qt6::Gui Qt6::Widgets Qt6::Quick Qt6::QuickWidgets)
+find_package(Qt6 COMPONENTS Gui Widgets Quick OpenGLWidgets REQUIRED)
+link_libraries(Qt6::Gui Qt6::Widgets Qt6::Quick Qt6::OpenGLWidgets)
 
 link_libraries(game graphics sound)
 

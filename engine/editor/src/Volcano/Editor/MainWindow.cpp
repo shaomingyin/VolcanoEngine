@@ -3,12 +3,15 @@
 #include <QSettings>
 #include <QMenuBar>
 #include <QMessageBox>
+#include <QDir>
 
+#include <Volcano/Editor/NewProjectWizard.hpp>
 #include <Volcano/Editor/MainWindow.hpp>
 
 VOLCANO_EDITOR_BEGIN
 
-MainWindow::MainWindow(void)
+MainWindow::MainWindow(void):
+    m_project(nullptr)
 {
 }
 
@@ -24,23 +27,27 @@ bool MainWindow::init(void)
 
     setCentralWidget(&m_mdiArea);
 
+    m_worldView = new WorldView(this);
+    m_worldViewDocker.setWidget(m_worldView);
     m_worldViewDocker.setWindowTitle("World");
-    m_worldViewDocker.setWidget(&m_worldView);
     addDockWidget(Qt::LeftDockWidgetArea, &m_worldViewDocker);
     restoreDockWidget(&m_worldViewDocker);
 
+    m_propertyView = new PropertyView(this);
+    m_propertyViewDocker.setWidget(m_propertyView);
     m_propertyViewDocker.setWindowTitle("Property");
-    m_propertyViewDocker.setWidget(&m_propertyView);
     addDockWidget(Qt::RightDockWidgetArea, &m_propertyViewDocker);
     restoreDockWidget(&m_propertyViewDocker);
 
+    m_resourceView = new ResourceView(this);
+    m_resourceViewDocker.setWidget(m_resourceView);
     m_resourceViewDocker.setWindowTitle("Resource");
-    m_resourceViewDocker.setWidget(&m_resourceView);
     addDockWidget(Qt::BottomDockWidgetArea, &m_resourceViewDocker);
     restoreDockWidget(&m_resourceViewDocker);
 
+    m_outputView = new OutputView(this);
+    m_outputViewDocker.setWidget(m_outputView);
     m_outputViewDocker.setWindowTitle("Output");
-    m_outputViewDocker.setWidget(&m_outputView);
     addDockWidget(Qt::BottomDockWidgetArea, &m_outputViewDocker);
     restoreDockWidget(&m_outputViewDocker);
 
@@ -65,8 +72,10 @@ void MainWindow::initMenuBar(void)
 
     m_fileMenu = menuBar()->addMenu("File");
 
-    m_fileNew = m_fileMenu->addAction("New...");
-    connect(m_fileNew, &QAction::triggered, this, &MainWindow::onFileNew);
+    m_fileNewMenu = m_fileMenu->addMenu("New");
+
+    m_fileNewProject = m_fileNewMenu->addAction("Project...");
+    connect(m_fileNewProject, &QAction::triggered, this, &MainWindow::onFileNewProject);
 
     m_fileOpen = m_fileMenu->addAction("Open...");
     connect(m_fileOpen, &QAction::triggered, this, &MainWindow::onFileOpen);
@@ -100,6 +109,7 @@ void MainWindow::initMenuBar(void)
 
     // view
 
+
     m_viewMenu = menuBar()->addMenu("View");
 
     m_viewWorld = m_viewMenu->addAction("World");
@@ -107,11 +117,27 @@ void MainWindow::initMenuBar(void)
     m_viewWorld->setChecked(m_worldViewDocker.isVisible());
     connect(m_viewWorld, &QAction::toggled, this, &MainWindow::onViewWorld);
 
+    m_viewProperty = m_viewMenu->addAction("Property");
+    m_viewProperty->setCheckable(true);
+    m_viewProperty->setChecked(m_propertyViewDocker.isVisible());
+    connect(m_viewProperty, &QAction::toggled, this, &MainWindow::onViewProperty);
+
     m_viewResource = m_viewMenu->addAction("Resource");
     m_viewResource->setCheckable(true);
     m_viewResource->setChecked(m_resourceViewDocker.isVisible());
+    connect(m_viewResource, &QAction::toggled, this, &MainWindow::onViewResource);
 
     m_viewOutput = m_viewMenu->addAction("Output");
+    m_viewOutput->setCheckable(true);
+    m_viewOutput->setChecked(m_outputViewDocker.isVisible());
+    connect(m_viewOutput, &QAction::toggled, this, &MainWindow::onViewOutput);
+
+    connect(m_viewMenu, &QMenu::aboutToShow, [this] {
+        m_viewWorld->setChecked(m_worldViewDocker.isVisible());
+        m_viewProperty->setChecked(m_propertyViewDocker.isVisible());
+        m_viewResource->setChecked(m_resourceViewDocker.isVisible());
+        m_viewOutput->setChecked(m_outputViewDocker.isVisible());
+    });
 
     // project
 
@@ -145,9 +171,40 @@ void MainWindow::initToolBar(void)
 {
 }
 
-void MainWindow::onFileNew(void)
+void MainWindow::onFileNewProject(void)
 {
+    NewProjectWizard newProjectWizard(this);
+    newProjectWizard.exec();
+    if (newProjectWizard.result() != QDialog::Accepted)
+        return;
 
+    if (m_project != nullptr) {
+        m_worldView->setModel(nullptr);
+        m_resourceView->setModel(nullptr);
+        m_propertyView->setModel(nullptr);
+        delete m_project;
+        m_project = nullptr;
+    }
+
+    auto name = newProjectWizard.field("name").toString();
+    //auto description = newProjectWizard.field("description").toString();
+    auto path = newProjectWizard.field("path").toString();
+
+    QDir dir(path);
+    if (!dir.isEmpty()) {
+        QMessageBox::critical(this, "Failed to create project",
+            QString("The directory '%1' is not empty.").arg(path));
+        return;
+    }
+
+    m_project = new Project(this);
+    m_project->init(path, name);
+
+    m_worldView->setModel(&m_project->worldModel());
+
+    auto &resModel = m_project->resourcesModel();
+    m_resourceView->setModel(&resModel);
+    m_resourceView->setRootIndex(resModel.index(path));
 }
 
 void MainWindow::onFileOpen(void)
@@ -192,17 +249,22 @@ void MainWindow::onEditPaste(void)
 
 void MainWindow::onViewWorld(bool checked)
 {
+    m_worldViewDocker.setVisible(checked);
+}
 
+void MainWindow::onViewProperty(bool checked)
+{
+    m_propertyViewDocker.setVisible(checked);
 }
 
 void MainWindow::onViewResource(bool checked)
 {
-
+    m_resourceViewDocker.setVisible(checked);
 }
 
 void MainWindow::onViewOutput(bool checked)
 {
-
+    m_outputViewDocker.setVisible(checked);
 }
 
 void MainWindow::onProjectImport(void)

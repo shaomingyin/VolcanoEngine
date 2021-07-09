@@ -38,7 +38,7 @@ private:
     void initToolBar(void);
 
 private slots:
-    void onFileNew(void);
+    void onFileNewProject(void);
     void onFileOpen(void);
     void onFileClose(void);
     void onFileSave(void);
@@ -48,6 +48,7 @@ private slots:
     void onEditCopy(void);
     void onEditPaste(void);
     void onViewWorld(bool checked);
+    void onViewProperty(bool checked);
     void onViewResource(bool checked);
     void onViewOutput(bool checked);
     void onProjectImport(void);
@@ -61,8 +62,23 @@ private slots:
 private:
     Project *m_project;
 
+    QMdiArea m_mdiArea;
+
+    QDockWidget m_worldViewDocker;
+    WorldView *m_worldView;
+
+    QDockWidget m_propertyViewDocker;
+    PropertyView *m_propertyView;
+
+    QDockWidget m_resourceViewDocker;
+    ResourceView *m_resourceView;
+
+    QDockWidget m_outputViewDocker;
+    OutputView *m_outputView;
+
     QMenu *m_fileMenu;
-    QAction *m_fileNew;
+    QMenu *m_fileNewMenu;
+    QAction *m_fileNewProject;
     QAction *m_fileOpen;
     QAction *m_fileClose;
     QAction *m_fileSave;
@@ -76,6 +92,7 @@ private:
 
     QMenu *m_viewMenu;
     QAction *m_viewWorld;
+    QAction *m_viewProperty;
     QAction *m_viewResource;
     QAction *m_viewOutput;
 
@@ -91,20 +108,6 @@ private:
     QMenu *m_helpMenu;
     QAction *m_helpAbout;
     QAction *m_helpAboutQt;
-
-    QMdiArea m_mdiArea;
-
-    QDockWidget m_worldViewDocker;
-    WorldView m_worldView;
-
-    QDockWidget m_propertyViewDocker;
-    PropertyView m_propertyView;
-
-    QDockWidget m_resourceViewDocker;
-    ResourceView m_resourceView;
-
-    QDockWidget m_outputViewDocker;
-    OutputView m_outputView;
 };
 
 VOLCANO_EDITOR_END

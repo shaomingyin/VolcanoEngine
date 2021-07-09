@@ -5,7 +5,7 @@
 VOLCANO_EDITOR_BEGIN
 
 WorldView::WorldView(QWidget *parent):
-    QTreeWidget(parent)
+    QTreeView(parent)
 {
 }
 

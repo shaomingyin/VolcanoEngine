@@ -4,6 +4,7 @@
 #define VOLCANO_GAME_WORLD_HPP
 
 #include <QList>
+#include <QString>
 #include <QObject>
 #include <QElapsedTimer>
 #include <QQmlListProperty>
@@ -53,6 +54,12 @@ public:
     void setGravity(const QVector3D &v);
     const QList<Object *> &objects(void) const;
     QQmlListProperty<Object> qmlObjects(void);
+    void appendObject(Object *object);
+    qsizetype objectCount(void);
+    Object *objectAt(qsizetype index);
+    void clearObjects(void);
+    void replaceObject(qsizetype index, Object *object);
+    void removeLastObject(void);
 
 signals:
     void stateChanged(State v);

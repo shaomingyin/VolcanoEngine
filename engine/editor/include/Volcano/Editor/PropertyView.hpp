@@ -3,13 +3,13 @@
 #ifndef VOLCANO_EDITOR_PROPERTYVIEW_HPP
 #define VOLCANO_EDITOR_PROPERTYVIEW_HPP
 
-#include <QTableWidget>
+#include <QTableView>
 
 #include <Volcano/Editor/Common.hpp>
 
 VOLCANO_EDITOR_BEGIN
 
-class PropertyView: public QTableWidget {
+class PropertyView: public QTableView {
     Q_OBJECT
 
 public:

@@ -1,11 +1,17 @@
 //
 //
+#include <memory>
+
+#include <QFile>
+#include <QFileInfo>
+#include <QScopeGuard>
+
 #include <Volcano/Editor/Project.hpp>
 
 VOLCANO_EDITOR_BEGIN
 
 Project::Project(QObject *parent):
-    QAbstractItemModel(parent)
+    QObject(parent)
 {
 }
 
@@ -13,114 +19,168 @@ Project::~Project(void)
 {
 }
 
-bool Project::canDropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent) const
+bool Project::init(const QString &rootDirName, const QString &name)
 {
-    return QAbstractItemModel::canDropMimeData(data, action, row, column, parent);
+    qDebug("Initialize project '%s' in '%s'.", qPrintable(name), qPrintable(rootDirName));
+
+    Q_ASSERT(!name.isEmpty());
+
+    QFileInfo fi(rootDirName);
+    if (!fi.isDir())
+        return false;
+
+    auto gameWorld = std::make_unique<Game::World>(this);
+    if (!gameWorld) {
+        qCritical("Failed to create game world object for project '%s'.", qPrintable(name));
+        return false;
+    }
+
+    gameWorld->setObjectName(name);
+
+    QJsonObject projectJsonObject;
+    projectJsonObject["name"] = name;
+    projectJsonObject["version"] = VOLCANO_VERSION_STR;
+    projectJsonObject["gameWorld"] = gameWorldToJsonObject(gameWorld.get());
+
+    QFile projectJsonFile(rootDirName + "/VolcanoProject.json");
+    if (!projectJsonFile.open(QFile::WriteOnly)) {
+        qCritical("Failed to create project file for project '%s'.", qPrintable(name));
+        return false;
+    }
+
+    projectJsonFile.write(QJsonDocument(projectJsonObject).toJson());
+
+    setName(name);
+
+    m_rootDir = rootDirName;
+    m_resourcesDir = rootDirName + "/Resources";
+    m_gameWorld = gameWorld.release();
+    m_resourcesModel.setRootPath(m_resourcesDir.path());
+
+    return true;
 }
 
-bool Project::canFetchMore(const QModelIndex &parent) const
+bool Project::load(const QString &rootDirName)
 {
-    return QAbstractItemModel::canFetchMore(parent);
+    QFileInfo fi(rootDirName);
+    if (!fi.isDir())
+        return false;
+
+    QDir rootDir = rootDirName;
+
+    if (!rootDir.exists("VolcanoProject.json")) {
+        qCritical("Failed to load project in '%s', no project file found.", qPrintable(rootDirName));
+        return false;
+    }
+
+    if (!rootDir.exists("Resources")) {
+        qCritical("Failed to load project without resources.");
+        return false;
+    }
+
+    // TODO loading...
+
+    return true;
 }
 
-int Project::columnCount(const QModelIndex &parent) const
+bool Project::save(const QString &rootDirName)
 {
-    return 0;
+    auto saveRootDirName = rootDirName.isEmpty() ? m_rootDir.path() : rootDirName;
+
+    // TODO
+
+    return true;
 }
 
-QVariant Project::data(const QModelIndex &index, int role) const
+const QString &Project::name(void) const
 {
-    return QVariant();
+    return m_name;
 }
 
-bool Project::dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent)
+void Project::setName(const QString &v)
 {
-    return false;
+    if (m_name != v) {
+        m_name = v;
+        emit nameChanged(v);
+    }
 }
 
-Qt::ItemFlags Project::flags(const QModelIndex &index) const
+const QDir &Project::rootDir(void) const
 {
-    return Qt::NoItemFlags;
+    return m_rootDir;
 }
 
-bool Project::hasChildren(const QModelIndex &parent = QModelIndex()) const
+WorldModel &Project::worldModel(void)
 {
-    return false;
+    return m_worldModel;
 }
 
-QVariant Project::headerData(int section, Qt::Orientation orientation, int role) const
+QFileSystemModel &Project::resourcesModel(void)
 {
-    return QVariant();
+    return m_resourcesModel;
 }
 
-QModelIndex Project::index(int row, int column, const QModelIndex &parent) const
+Game::World *Project::gameWorldFromJsonObject(const QJsonObject &jsonObject)
 {
-    return QModelIndex();
+    QJsonValue value;
+
+    auto world = std::make_unique<World>();
+
+    value = jsonObject["name"];
+    if (value.isUndefined())
+        return nullptr;
+
+    world->setObjectName(jsonObject["name"].toString());
+
+    value = jsonObject["dynamic"];
+    if (value.isUndefined())
+        world->setDynamic(false);
+    else
+        world->setDynamic(jsonObject["dynamic"].toBool());
+
+    value = jsonObject["gravity"];
+    if (value.isArray()) {
+        auto gravityArray = value.toArray();
+        if (gravityArray.size() == 3) {
+            world->m_gravity.setX(gravityArray[0].toDouble());
+            world->m_gravity.setY(gravityArray[1].toDouble());
+            world->m_gravity.setZ(gravityArray[1].toDouble());
+        }
+    }
+
+    value = jsonObject["objects"];
+    if (value.isArray()) {
+        auto objectArray = value.toArray();
+        for (auto object: objectArray) {
+
+        }
+    }
+
+    return world;
 }
 
-QMimeData *Project::mimeData(const QModelIndexList &indexes) const
+QJsonObject Project::gameWorldToJsonObject(Game::World *gameWorld)
 {
-    return QAbstractItemModel::mimeData(indexes);
-}
+    QJsonObject gameWorldObject;
 
-QStringList Project::mimeTypes(void) const
-{
-    return QAbstractItemModel::mimeTypes();
-}
+    gameWorldObject["name"] = gameWorld->objectName();
+    gameWorldObject["dynamic"] = gameWorld->isDynamic();
 
-bool Project::moveRows(const QModelIndex &sourceParent, int sourceRow, int count, const QModelIndex &destinationParent, int destinationChild)
-{
-    return QAbstractItemModel::moveRows(sourceParent, sourceRow, count, destinationParent, destinationChild);
-}
+    auto &gravity = gameWorld->gravity();
+    QJsonArray gravityArray { gravity[0], gravity[1], gravity[2] };
 
-QModelIndex Project::parent(const QModelIndex &index) const
-{
-    return QModelIndex();
-}
+    gameWorldObject["gravity"] = gravityArray;
 
-bool Project::removeRows(int row, int count, const QModelIndex &parent)
-{
-    return QAbstractItemModel::removeRows(row, count, parent);
-}
+    QJsonArray objectArray;
 
-QHash<int, QByteArray> Project::roleNames(void) const
-{
-    return QAbstractItemModel::roleNames();
-}
+    auto &objects = gameWorld->objects();
+    for (auto object: objects) {
+        objectArray.append(object->toJson());
+    }
 
-int Project::rowCount(const QModelIndex &parent) const
-{
-    return 0;
-}
+    gameWorldObject["objects"] = objectArray;
 
-bool Project::setData(const QModelIndex &index, const QVariant &value, int role)
-{
-    return false;
-}
-
-bool Project::setHeaderData(int section, Qt::Orientation orientation, const QVariant &value, int role)
-{
-    return false;
-}
-
-bool Project::setItemData(const QModelIndex &index, const QMap<int, QVariant> &roles)
-{
-    return false;
-}
-
-QModelIndex Project::sibling(int row, int column, const QModelIndex &index) const
-{
-    return QAbstractItemModel::sibling(row, column, index);
-}
-
-Qt::DropActions Project::supportedDragActions() const
-{
-    return supportedDragActions();
-}
-
-Qt::DropActions Project::supportedDropActions() const
-{
-    return supportedDropActions();
+    return gameWorldObject;
 }
 
 VOLCANO_EDITOR_END

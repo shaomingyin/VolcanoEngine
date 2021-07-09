@@ -3,13 +3,13 @@
 #ifndef VOLCANO_EDITOR_WORLDVIEW_HPP
 #define VOLCANO_EDITOR_WORLDVIEW_HPP
 
-#include <QTreeWidget>
+#include <QTreeView>
 
 #include <Volcano/Editor/Common.hpp>
 
 VOLCANO_EDITOR_BEGIN
 
-class WorldView: public QTreeWidget {
+class WorldView: public QTreeView {
     Q_OBJECT
 
 public:

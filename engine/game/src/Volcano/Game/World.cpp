@@ -1,5 +1,7 @@
 //
 //
+#include <memory>
+
 #include <Volcano/Game/Entity.hpp>
 #include <Volcano/Game/World.hpp>
 
@@ -154,6 +156,51 @@ QQmlListProperty<Object> World::qmlObjects(void)
         &World::qmlRemoveLastObject };
 }
 
+void World::appendObject(Object *object)
+{
+    m_objects.append(object);
+    handleObjectAdded(object);
+}
+
+qsizetype World::objectCount(void)
+{
+    return m_objects.count();
+}
+
+Object *World::objectAt(qsizetype index)
+{
+    if (0 <= index && index < m_objects.size())
+        return m_objects.at(index);
+
+    return nullptr;
+}
+
+void World::clearObjects(void)
+{
+    QList<Object *> objects = std::move(m_objects);
+    for (auto object: objects)
+        handleObjectRemoved(object);
+}
+
+void World::replaceObject(qsizetype index, Object *object)
+{
+    if (0 <= index && index < m_objects.size()) {
+        auto oldObject = m_objects.at(index);
+        m_objects.replace(index, object);
+        handleObjectRemoved(oldObject);
+        handleObjectAdded(object);
+    }
+}
+
+void World::removeLastObject(void)
+{
+    if (!m_objects.isEmpty()) {
+        auto object = m_objects.last();
+        m_objects.removeLast();
+        handleObjectRemoved(object);
+    }
+}
+
 void World::timerEvent(QTimerEvent *event)
 {
     auto id = event->timerId();
@@ -274,52 +321,32 @@ void World::releaseDynamicWorld(void)
 
 void World::qmlAppendObject(QQmlListProperty<Object> *list, Object *object)
 {
-    auto world = reinterpret_cast<World *>(list->data);
-    world->m_objects.append(object);
-    world->handleObjectAdded(object);
+    reinterpret_cast<World *>(list->data)->appendObject(object);
 }
 
 qsizetype World::qmlObjectCount(QQmlListProperty<Object> *list)
 {
-    auto world = reinterpret_cast<World *>(list->data);
-    return world->m_objects.count();
+    return reinterpret_cast<World *>(list->data)->objectCount();
 }
 
 Object *World::qmlObjectAt(QQmlListProperty<Object> *list, qsizetype i)
 {
-    auto world = reinterpret_cast<World *>(list->data);
-    if (0 <= i && i < world->m_objects.size())
-        return world->m_objects.at(i);
-    return nullptr;
+    return reinterpret_cast<World *>(list->data)->objectAt(i);
 }
 
 void World::qmlClearObjects(QQmlListProperty<Object> *list)
 {
-    auto world = reinterpret_cast<World *>(list->data);
-    QList<Object *> backups = std::move(world->m_objects);
-    for (auto object: backups)
-        world->handleObjectRemoved(object);
+    reinterpret_cast<World *>(list->data)->clearObjects();
 }
 
 void World::qmlReplaceObject(QQmlListProperty<Object> *list, qsizetype i, Object *object)
 {
-    auto world = reinterpret_cast<World *>(list->data);
-    if (0 <= i && i < world->m_objects.size()) {
-        auto oldObject = world->m_objects.at(i);
-        world->m_objects.replace(i, object);
-        world->handleObjectRemoved(oldObject);
-        world->handleObjectAdded(object);
-    }
+    reinterpret_cast<World *>(list->data)->replaceObject(i, object);
 }
 
 void World::qmlRemoveLastObject(QQmlListProperty<Object> *list)
 {
-    auto world = reinterpret_cast<World *>(list->data);
-    if (!world->m_objects.isEmpty()) {
-        auto object = world->m_objects.last();
-        world->m_objects.removeLast();
-        world->handleObjectRemoved(object);
-    }
+    reinterpret_cast<World *>(list->data)->removeLastObject();
 }
 
 VOLCANO_GAME_END

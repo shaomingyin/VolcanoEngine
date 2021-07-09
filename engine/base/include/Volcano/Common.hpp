@@ -7,8 +7,11 @@
 #include <QtConcurrent>
 
 #include <QDebug>
+#include <QByteArray>
 #include <QString>
+#include <QObject>
 #include <QQmlEngine>
+#include <QJsonObject>
 
 #include <Volcano/Config.hpp>
 
@@ -50,6 +53,15 @@ template <typename T>
 void registerType(const char *uri, const char *qmlName)
 {
     qmlRegisterType<T>(uri, VOLCANO_VERSION_MAJOR, VOLCANO_VERSION_MINOR, qmlName);
+}
+
+QJsonObject toJsonObject(QObject *object);
+QObject *fromJson(const QByteArray &json);
+
+template <typename T>
+QJsonValue toJsonValue(T v)
+{
+
 }
 
 void setApplicationName(const QString &name);

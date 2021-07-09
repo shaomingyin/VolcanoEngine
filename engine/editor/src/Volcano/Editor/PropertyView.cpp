@@ -5,7 +5,7 @@
 VOLCANO_EDITOR_BEGIN
 
 PropertyView::PropertyView(QWidget *parent):
-    QTableWidget(parent)
+    QTableView(parent)
 {
 }
 

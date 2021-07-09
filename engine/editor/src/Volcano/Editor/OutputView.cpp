@@ -7,6 +7,7 @@ VOLCANO_EDITOR_BEGIN
 OutputView::OutputView(QWidget *parent):
     QTextEdit(parent)
 {
+    setReadOnly(true);
 }
 
 OutputView::~OutputView(void)
