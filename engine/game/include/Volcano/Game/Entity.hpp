@@ -36,6 +36,13 @@ public:
     void setRotation(const QQuaternion &v);
     const QList<Component *> &components(void) const;
     QQmlListProperty<Component> qmlComponents(void);
+    void appendComponent(Component *component);
+    qsizetype componentCount(void) const;
+    Component *componentAt(qsizetype index);
+    const Component *componentAt(qsizetype index) const;
+    void clearComponents(void);
+    void replaceComponent(qsizetype index, Component *component);
+    void removeLastComponent(void);
 
 signals:
     void positionChanged(const QVector3D &v);

@@ -5,6 +5,7 @@
 
 #include <QDir>
 #include <QString>
+#include <QModelIndex>
 #include <QAbstractItemModel>
 
 #include <Volcano/Game/World.hpp>
@@ -49,6 +50,21 @@ public:
     bool init(const QString &path);
     bool load(const QString &path);
     const QDir &dir(void) const;
+
+signals:
+    void gameWorldChanged(Game::World *gameWorld);
+
+protected:
+    struct Node {
+        Node(const QModelIndex &p, QObject *o):
+            parent(p),
+            object(o)
+        {
+        }
+
+        QModelIndex parent;
+        QObject *object;
+    };
 
 private:
     Game::World *m_gameWorld;

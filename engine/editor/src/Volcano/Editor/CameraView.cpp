@@ -5,7 +5,7 @@
 VOLCANO_EDITOR_BEGIN
 
 CameraView::CameraView(QWidget *parent):
-    QOpenGLWidget(parent)
+    QQuickWidget(parent)
 {
 }
 
@@ -13,19 +13,9 @@ CameraView::~CameraView(void)
 {
 }
 
-void CameraView::initializeGL(void)
+bool CameraView::init(void)
 {
-
-}
-
-void CameraView::paintGL(void)
-{
-
-}
-
-void CameraView::resizeGL(int w, int h)
-{
-
+    return true;
 }
 
 VOLCANO_EDITOR_END

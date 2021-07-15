@@ -3,24 +3,22 @@
 #ifndef VOLCANO_EDITOR_CAMERAVIEW_HPP
 #define VOLCANO_EDITOR_CAMERAVIEW_HPP
 
-#include <QOpenGLWidget>
+#include <QQuickWidget>
 
 #include <Volcano/Graphics/Camera.hpp>
 #include <Volcano/Editor/Common.hpp>
 
 VOLCANO_EDITOR_BEGIN
 
-class CameraView: public QOpenGLWidget {
+class CameraView: public QQuickWidget {
     Q_OBJECT
 
 public:
     CameraView(QWidget *parent = nullptr);
     ~CameraView(void) override;
 
-private:
-    void initializeGL(void) override;
-    void paintGL(void) override;
-    void resizeGL(int w, int h) override;
+public:
+    bool init(void);
 
 private:
     Graphics::Camera m_graphicsCamera;

@@ -2,12 +2,15 @@
 //
 #include <QFileInfo>
 
+#include <Volcano/Game/Entity.hpp>
+#include <Volcano/Game/Component.hpp>
 #include <Volcano/Editor/WorldModel.hpp>
 
 VOLCANO_EDITOR_BEGIN
 
 WorldModel::WorldModel(QObject *parent):
-    QAbstractItemModel(parent)
+    QAbstractItemModel(parent),
+    m_gameWorld(nullptr)
 {
 }
 
@@ -27,12 +30,22 @@ bool WorldModel::canFetchMore(const QModelIndex &parent) const
 
 int WorldModel::columnCount(const QModelIndex &parent) const
 {
-    return 0;
+    return 1;
 }
 
 QVariant WorldModel::data(const QModelIndex &index, int role) const
 {
-    return QVariant();
+    if (!index.isValid())
+        return QVariant();
+
+    if (role != Qt::DisplayRole)
+        return QVariant();
+
+    auto node = reinterpret_cast<Node *>(index.internalPointer());
+    Q_ASSERT(node != nullptr);
+    Q_ASSERT(node->object != nullptr);
+
+    return QVariant(node->object->objectName());
 }
 
 bool WorldModel::dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent)
@@ -45,8 +58,30 @@ Qt::ItemFlags WorldModel::flags(const QModelIndex &index) const
     return QAbstractItemModel::flags(index);
 }
 
-bool WorldModel::hasChildren(const QModelIndex &parent = QModelIndex()) const
+bool WorldModel::hasChildren(const QModelIndex &parent) const
 {
+    return QAbstractItemModel::hasChildren(parent);
+
+    if (!parent.isValid())
+        return (m_gameWorld != nullptr);
+
+    auto node = reinterpret_cast<Node *>(parent.internalPointer());
+    Q_ASSERT(node != nullptr);
+    Q_ASSERT(node->object != nullptr);
+
+    auto gameWorld = qobject_cast<Game::World *>(node->object);
+    if (gameWorld != nullptr) {
+        Q_ASSERT(gameWorld == m_gameWorld);
+        return (gameWorld->objectCount() > 0);
+    }
+
+    auto gameObject = qobject_cast<Game::Object *>(node->object);
+    if (gameObject != nullptr) {
+        auto gameEntity = qobject_cast<const Game::Entity *>(gameObject);
+        if (gameEntity != nullptr)
+            return (gameEntity->componentCount() > 0);
+    }
+
     return false;
 }
 
@@ -57,6 +92,34 @@ QVariant WorldModel::headerData(int section, Qt::Orientation orientation, int ro
 
 QModelIndex WorldModel::index(int row, int column, const QModelIndex &parent) const
 {
+    Q_ASSERT(column == 0);
+
+    if (!parent.isValid()) {
+        if (m_gameWorld != nullptr)
+            return createIndex(row, column, new Node(parent, m_gameWorld));
+        return QModelIndex();
+    }
+
+    auto node = reinterpret_cast<const Node *>(parent.constInternalPointer());
+    Q_ASSERT(node != nullptr);
+    Q_ASSERT(node->object != nullptr);
+
+    auto gameWorld = qobject_cast<Game::World *>(node->object);
+    if (gameWorld != nullptr) {
+        Q_ASSERT(gameWorld == m_gameWorld);
+        if (row < gameWorld->objectCount())
+            return createIndex(row, column, new Node(parent, gameWorld->objectAt(row)));
+        return QModelIndex();
+    }
+
+    auto gameObject = qobject_cast<Game::Object *>(node->object);
+    if (gameObject != nullptr) {
+        auto gameEntity = qobject_cast<Game::Entity *>(gameObject);
+        if (gameEntity != nullptr && row < gameEntity->componentCount())
+            return createIndex(row, column, new Node(parent, gameEntity->componentAt(row)));
+        return QModelIndex();
+    }
+
     return QModelIndex();
 }
 
@@ -77,7 +140,14 @@ bool WorldModel::moveRows(const QModelIndex &sourceParent, int sourceRow, int co
 
 QModelIndex WorldModel::parent(const QModelIndex &index) const
 {
-    return QModelIndex();
+    if (!index.isValid())
+        return QModelIndex();
+
+    auto node = reinterpret_cast<Node *>(index.internalPointer());
+    Q_ASSERT(node != nullptr);
+    Q_ASSERT(node->object != nullptr);
+
+    return node->parent;
 }
 
 bool WorldModel::removeRows(int row, int count, const QModelIndex &parent)
@@ -92,6 +162,29 @@ QHash<int, QByteArray> WorldModel::roleNames(void) const
 
 int WorldModel::rowCount(const QModelIndex &parent) const
 {
+    if (!parent.isValid())
+        return (m_gameWorld != nullptr ? 1 : 0);
+
+    if (parent.column() > 0)
+        return 0;
+
+    auto node = reinterpret_cast<Node *>(parent.internalPointer());
+    Q_ASSERT(node != nullptr);
+    Q_ASSERT(node->object != nullptr);
+
+    auto gameWorld = qobject_cast<Game::World *>(node->object);
+    if (gameWorld != nullptr) {
+        Q_ASSERT(gameWorld == m_gameWorld);
+        return gameWorld->objectCount();
+    }
+
+    auto gameObject = qobject_cast<Game::Object *>(node->object);
+    if (gameObject != nullptr) {
+        auto gameEntity = qobject_cast<Game::Entity *>(gameObject);
+        if (gameEntity != nullptr)
+            return gameEntity->componentCount();
+    }
+
     return 0;
 }
 
@@ -132,7 +225,18 @@ Game::World *WorldModel::gameWorld(void)
 
 void WorldModel::setGameWorld(Game::World *gameWorld)
 {
+    if (m_gameWorld == gameWorld)
+        return;
+
+    beginResetModel();
+
+    // TODO
+
     m_gameWorld = gameWorld;
+
+    endResetModel();
+
+    emit gameWorldChanged(gameWorld);
 }
 
 VOLCANO_EDITOR_END

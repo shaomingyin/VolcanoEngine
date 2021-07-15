@@ -55,7 +55,7 @@ public:
     const QList<Object *> &objects(void) const;
     QQmlListProperty<Object> qmlObjects(void);
     void appendObject(Object *object);
-    qsizetype objectCount(void);
+    qsizetype objectCount(void) const;
     Object *objectAt(qsizetype index);
     void clearObjects(void);
     void replaceObject(qsizetype index, Object *object);

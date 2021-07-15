@@ -162,7 +162,7 @@ void World::appendObject(Object *object)
     handleObjectAdded(object);
 }
 
-qsizetype World::objectCount(void)
+qsizetype World::objectCount(void) const
 {
     return m_objects.count();
 }

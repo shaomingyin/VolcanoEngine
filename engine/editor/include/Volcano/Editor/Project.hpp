@@ -5,7 +5,7 @@
 
 #include <QDir>
 #include <QString>
-#include <QJsonObject>
+#include <QJsonValue>
 #include <QFileSystemModel>
 
 #include <Volcano/Game/World.hpp>
@@ -34,6 +34,14 @@ public:
 
 signals:
     void nameChanged(const QString &name);
+
+private:
+    QJsonDocument createBasicJsonDocument(void);
+    static Game::World *gameWorldFromJson(QJsonValue jsonValue);
+    QJsonValue gameWorldToJson(Game::World *gameWorld);
+    static Game::Object *gameObjectFromJson(QJsonValue jsonValue);
+    QJsonValue gameObjectToJson(Game::Object *gameObject);
+    static bool checkName(const QString &name);
 
 private:
     QDir m_rootDir;

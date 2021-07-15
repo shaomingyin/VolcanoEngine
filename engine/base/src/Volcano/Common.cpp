@@ -6,22 +6,6 @@
 
 VOLCANO_BEGIN
 
-QJsonObject toJsonValue(QObject *object)
-{
-    if (object == nullptr)
-        return QJsonValue(QJsonValue::Null);
-
-    QJsonObject object;
-
-    auto metaObject = object->metaObject();
-    metaObject->className()
-}
-
-QObject *fromJson(const QByteArray &json)
-{
-
-}
-
 void setApplicationName(const QString &name)
 {
     QCoreApplication::setOrganizationName("VolcanoEngine");
