@@ -16,14 +16,14 @@ static int main(int argc, char *argv[])
 
     setApplicationName("Editor");
 
+    Game::init();
+    Graphics::init();
+
     QScopedPointer<MainWindow> mainWindow(new MainWindow());
     if (!mainWindow || !mainWindow->init()) {
         qFatal("Failed to create main window.");
         return EXIT_FAILURE;
     }
-
-    Game::init();
-    Graphics::init();
 
     mainWindow->setWindowTitle("Volcano Editor");
     mainWindow->show();

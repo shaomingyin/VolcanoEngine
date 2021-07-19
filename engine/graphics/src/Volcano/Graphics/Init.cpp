@@ -4,13 +4,16 @@
 #include <QSurfaceFormat>
 
 #include <Volcano/Graphics/Camera.hpp>
+#include <Volcano/Graphics/CameraView.hpp>
 #include <Volcano/Graphics/Init.hpp>
 
 VOLCANO_GRAPHICS_BEGIN
 
 bool init(void)
 {
-    registerType<Camera>("volcano.graphics", "Camera");
+    registerUncreatableType<Camera>("volcano.graphics", "Camera");
+
+    registerType<CameraView>("volcano.graphics", "CameraView");
 
     QQuickWindow::setGraphicsApi(QSGRendererInterface::OpenGL);
 

@@ -6,101 +6,20 @@
 #include <QRunnable>
 #include <QMutexLocker>
 
-#include <Volcano/Graphics/Renderer.hpp>
 #include <Volcano/Graphics/Camera.hpp>
 
 VOLCANO_GRAPHICS_BEGIN
 
-Camera::Camera(QQuickItem *parent):
-    QQuickFramebufferObject(parent),
-    m_frameTimer(-1),
-    m_frameCountTimer(-1),
-    m_isClear(true),
-    m_clearColor(Qt::black),
+Camera::Camera(QObject *parent):
+    QObject(parent),
     m_isPerpective(false),
     m_fov(90.0f),
-    m_gameWorld(nullptr),
-    m_vsRendering(1)
+    m_gameWorld(nullptr)
 {
-    setFpsMax(60);
 }
 
 Camera::~Camera(void)
 {
-}
-
-QQuickFramebufferObject::Renderer *Camera::createRenderer(void) const
-{
-    auto renderer = std::make_unique<::Volcano::Graphics::Renderer>(const_cast<Camera &>(*this));
-    if (!renderer || !renderer->init())
-        return nullptr;
-    return renderer.release();
-}
-
-int Camera::fps(void) const
-{
-    return m_frameCountPerSecond;
-}
-
-int Camera::fpsMax(void) const
-{
-    return m_frameCountMax;
-}
-
-void Camera::setFpsMax(int v)
-{
-    if (m_frameCountMax == v)
-        return;
-
-    if (m_frameTimer >= 0) {
-        killTimer(m_frameTimer);
-        m_frameTimer = -1;
-    }
-
-    m_frameCountMax = v;
-    if (m_frameCountMax < 1)
-        m_frameCount = 1;
-
-    m_frameCount = 0;
-    m_frameCountPerSecond = 0;
-    m_frameTimer = startTimer(1000 / v, Qt::PreciseTimer);
-
-    m_frameElapsedTimer.restart();
-
-    if (m_frameCountTimer >= 0) {
-        killTimer(m_frameCountTimer);
-        m_frameCountTimer = -1;
-    }
-
-    m_frameCountTimer = startTimer(1000, Qt::PreciseTimer);
-
-    emit fpsMaxChanged(v);
-}
-
-bool Camera::isClear(void) const
-{
-    return m_isClear;
-}
-
-void Camera::setClear(bool v)
-{
-    if (m_isClear != v) {
-        m_isClear = v;
-        emit clearChanged(v);
-    }
-}
-
-const QColor &Camera::clearColor(void) const
-{
-    return m_clearColor;
-}
-
-void Camera::setClearColor(const QColor &v)
-{
-    if (m_clearColor != v) {
-        m_clearColor = v;
-        emit clearColorChanged(v);
-    }
 }
 
 const QVector3D &Camera::position(void) const
@@ -233,88 +152,11 @@ void Camera::setGameWorld(Game::World *gameWorld)
     emit gameWorldChanged(gameWorld);
 }
 
-const VisibleSet *Camera::lockVisibleSet(void)
+void Camera::buildView(View *out)
 {
-    if (m_vsState.testAndSetRelaxed(2, 3))
-        return &m_vsFlip[m_vsRendering];
-    return nullptr;
-}
+    Q_ASSERT(out != nullptr);
 
-void Camera::unlockVisibleSet(void)
-{
-    Q_ASSERT(m_vsState == 3);
-    m_vsState = 0;
-}
-
-void Camera::timerEvent(QTimerEvent *event)
-{
-    if (Q_UNLIKELY(!isVisible()))
-        return;
-
-    if (Q_LIKELY(event->timerId() == m_frameTimer)) {
-        frame();
-        m_frameCount += 1;
-        return;
-    }
-
-    if (event->timerId() == m_frameCountTimer) {
-        m_frameCountPerSecond = m_frameCount;
-        m_frameCount = 0;
-        emit fpsChanged(m_frameCountPerSecond);
-        return;
-    }
-}
-
-QSGNode *Camera::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *updatePaintNodeData)
-{
-    while (!m_addedGameObjectList.isEmpty()) {
-        auto gameObject = m_addedGameObjectList.takeFirst();
-        auto gameEntity = qobject_cast<Game::Entity *>(gameObject);
-        if (gameEntity != nullptr) {
-            addGameEntity(gameEntity);
-            continue;
-        }
-        auto gameSpotLight = qobject_cast<Game::SpotLight *>(gameObject);
-        if (gameSpotLight != nullptr) {
-            addGameSpotLight(gameSpotLight);
-            continue;
-        }
-        auto gameDirectionalLight = qobject_cast<Game::DirectionalLight *>(gameObject);
-        if (gameDirectionalLight != nullptr) {
-            addGameDirectionalLight(gameDirectionalLight);
-            continue;
-        }
-        auto gamePointLight = qobject_cast<Game::PointLight *>(gameObject);
-        if (gamePointLight != nullptr) {
-            addGamePointLight(gamePointLight);
-            continue;
-        }
-    }
-
-    return QQuickFramebufferObject::updatePaintNode(oldNode, updatePaintNodeData);
-}
-
-void Camera::frame(void)
-{
-    if (Q_UNLIKELY(!isVisible() || size().isEmpty()))
-        return;
-
-    // TODO make sure the renderer has initialized.
-
-    auto &vs = m_vsFlip[!m_vsRendering];
-    buildVisibleSet(vs);
-
-    while (!m_vsState.testAndSetRelaxed(0, 1) && !m_vsState.testAndSetRelaxed(2, 1));
-
-    m_vsRendering = !m_vsRendering;
-    m_vsState = 2;
-
-    update();
-}
-
-void Camera::buildVisibleSet(VisibleSet &out)
-{
-    out.reset();
+    out->reset();
 
     if (Q_UNLIKELY(m_gameWorld == nullptr))
         return;

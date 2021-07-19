@@ -9,8 +9,7 @@
 #include <QColor>
 #include <QVector3D>
 #include <QMatrix4x4>
-#include <QElapsedTimer>
-#include <QQuickFramebufferObject>
+#include <QObject>
 
 #include <Volcano/Game/Component.hpp>
 #include <Volcano/Game/World.hpp>
@@ -21,16 +20,12 @@
 #include <Volcano/Game/SpotLight.hpp>
 #include <Volcano/Graphics/Common.hpp>
 #include <Volcano/Graphics/Entity.hpp>
-#include <Volcano/Graphics/VisibleSet.hpp>
+#include <Volcano/Graphics/View.hpp>
 
 VOLCANO_GRAPHICS_BEGIN
 
-class Camera: public QQuickFramebufferObject {
+class Camera: public QObject {
     Q_OBJECT
-    Q_PROPERTY(int fps READ fps NOTIFY fpsChanged)
-    Q_PROPERTY(int fpsMax READ fpsMax WRITE setFpsMax NOTIFY fpsMaxChanged)
-    Q_PROPERTY(bool clear READ isClear WRITE setClear NOTIFY clearChanged)
-    Q_PROPERTY(QColor clearColor READ clearColor WRITE setClearColor NOTIFY clearColorChanged)
     Q_PROPERTY(QVector3D position READ position WRITE setPosition NOTIFY positionChanged)
     Q_PROPERTY(QVector3D direction READ direction WRITE setDirection NOTIFY directionChanged)
     Q_PROPERTY(QVector3D up READ up WRITE setUp NOTIFY upChanged)
@@ -42,18 +37,10 @@ class Camera: public QQuickFramebufferObject {
     Q_PROPERTY(Game::World *gameWorld READ gameWorld WRITE setGameWorld NOTIFY gameWorldChanged)
 
 public:
-    Camera(QQuickItem *parent = nullptr);
+    Camera(QObject *parent = nullptr);
     ~Camera(void) override;
 
 public:
-    QQuickFramebufferObject::Renderer *createRenderer(void) const override;
-    int fps(void) const;
-    int fpsMax(void) const;
-    void setFpsMax(int v);
-    bool isClear(void) const;
-    void setClear(bool v);
-    const QColor &clearColor(void) const;
-    void setClearColor(const QColor &v);
     const QVector3D &position(void) const;
     void setPosition(const QVector3D &v);
     const QVector3D &direction(void) const;
@@ -72,14 +59,9 @@ public:
     void setFarPlane(float v);
     Game::World *gameWorld(void);
     void setGameWorld(Game::World *gameWorld);
-    const VisibleSet *lockVisibleSet(void);
-    void unlockVisibleSet(void);
+    void buildView(View *out);
 
 signals:
-    void fpsChanged(int v);
-    void fpsMaxChanged(int v);
-    void clearChanged(bool v);
-    void clearColorChanged(const QColor &v);
     void positionChanged(const QVector3D &v);
     void directionChanged(const QVector3D &v);
     void upChanged(const QVector3D &v);
@@ -89,10 +71,6 @@ signals:
     void nearPlaneChanged(float v);
     void farPlaneChanged(float v);
     void gameWorldChanged(Game::World *gameWorld);
-
-protected:
-    void timerEvent(QTimerEvent *event) override;
-    QSGNode *updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *updatePaintNodeData) override;
 
 private slots:
     void addGameObject(Game::Object *gameObject);
@@ -104,8 +82,6 @@ private:
     using EntityList = QList<Entity>;
 
 private:
-    void frame(void);
-    void buildVisibleSet(VisibleSet &out);
     void reset(void);
     void addGameEntity(Game::Entity *gameEntity);
     void addGameDirectionalLight(Game::DirectionalLight *gameDirectionalLight);
@@ -114,14 +90,6 @@ private:
     void removeGameEntity(Game::Entity *gameEntity);
 
 private:
-    int m_frameTimer;
-    int m_frameCountTimer;
-    int m_frameCount;
-    int m_frameCountMax;
-    int m_frameCountPerSecond;
-    QElapsedTimer m_frameElapsedTimer;
-    bool m_isClear;
-    QColor m_clearColor;
     QVector3D m_position;
     QVector3D m_direction;
     QVector3D m_up;
@@ -134,9 +102,6 @@ private:
     GameObjectList m_addedGameObjectList;
     GameObjectList m_removedGameObjectList;
     EntityList m_entityList;
-    VisibleSet m_vsFlip[2];
-    QAtomicInt m_vsState;
-    int m_vsRendering;
 };
 
 VOLCANO_GRAPHICS_END

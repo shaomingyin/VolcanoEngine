@@ -9,7 +9,6 @@
 #include <Volcano/Game/Entity.hpp>
 #include <Volcano/Graphics/Common.hpp>
 #include <Volcano/Graphics/Mesh.hpp>
-#include <Volcano/Graphics/VisibleSet.hpp>
 
 VOLCANO_GRAPHICS_BEGIN
 
@@ -22,7 +21,6 @@ public:
 
 public:
     void synchronize(void);
-    void addToVS(VisibleSet &vs);
     Entity &operator=(Entity &&that);
     Entity &operator=(const Entity &that);
 

@@ -35,10 +35,6 @@ void Entity::synchronize(void)
 {
 }
 
-void Entity::addToVS(VisibleSet &vs)
-{
-}
-
 Entity &Entity::operator=(Entity &&that)
 {
     m_gameEntity = that.m_gameEntity;
