@@ -1,7 +1,5 @@
 //
 //
-#include <memory>
-
 #include <Volcano/Game/Mesh.hpp>
 
 VOLCANO_GAME_BEGIN

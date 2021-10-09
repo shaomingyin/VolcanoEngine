@@ -3,25 +3,28 @@
 #ifndef VOLCANO_GAME_GRAPHICS_RARENDERER_HPP
 #define VOLCANO_GAME_GRAPHICS_RARENDERER_HPP
 
-#include <QQuickFramebufferObject>
+#include <QObject>
 
 #include <Volcano/Graphics/Common.hpp>
 #include <Volcano/Graphics/View.hpp>
 
 VOLCANO_GRAPHICS_BEGIN
 
-class Renderer: public QQuickFramebufferObject::Renderer {
+class Renderer: public QObject {
+    Q_OBJECT
+
 public:
-    Renderer(void);
+    Renderer(QObject *parent = nullptr);
     ~Renderer(void) override;
 
 public:
     bool init(void);
-    void render(void) override;
-    void synchronize(QQuickFramebufferObject *item) override;
+    void resize(int width, int height);
+    void beginFrame(void);
+    void endFrame(void);
+
 
 private:
-    View *m_view;
 };
 
 VOLCANO_GRAPHICS_END

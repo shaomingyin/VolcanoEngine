@@ -12,18 +12,17 @@
 
 #include <Volcano/Game/World.hpp>
 #include <Volcano/Game/Object.hpp>
+#include <Volcano/Game/Entity.hpp>
+#include <Volcano/Game/Component.hpp>
 #include <Volcano/Game/Light.hpp>
 #include <Volcano/Game/DirectionalLight.hpp>
 #include <Volcano/Game/PointLight.hpp>
 #include <Volcano/Game/SpotLight.hpp>
-#include <Volcano/Game/Entity.hpp>
-#include <Volcano/Game/Component.hpp>
 #include <Volcano/Game/Material.hpp>
 #include <Volcano/Game/Mesh.hpp>
 
-#include <Volcano/Graphics/Camera.hpp>
-
 #include <Volcano/System/Common.hpp>
+#include <Volcano/System/GameWindow.hpp>
 
 VOLCANO_SYSTEM_BEGIN
 
@@ -31,7 +30,7 @@ template <typename T>
 static void registerQmlUncreatableType(const char *uri, const char *qmlName)
 {
     qmlRegisterUncreatableType<T>(uri, VOLCANO_VERSION_MAJOR, VOLCANO_VERSION_MINOR, qmlName,
-        QString("Cannot create %1's instance.").arg(qmlName));
+        QString("Cannot create instance of type '%1.%2'.").arg(uri).arg(qmlName));
 }
 
 template <typename T>
@@ -40,27 +39,30 @@ static void registerQmlType(const char *uri, const char *qmlName)
     qmlRegisterType<T>(uri, VOLCANO_VERSION_MAJOR, VOLCANO_VERSION_MINOR, qmlName);
 }
 
-static void initQmlTypes(void)
+static void registerQmlTypes(void)
 {
-    const char *uri = "Volcano.Game";
+    const char *uri;
+
+    ///////////////////////////////////////////////////////////////////////////
+    uri = "Volcano.Game";
 
     registerQmlUncreatableType<Game::Object>(uri, "Object");
-    registerQmlUncreatableType<Game::Light>(uri, "Light");
     registerQmlUncreatableType<Game::Component>(uri, "Component");
-
-    registerQmlType<Game::World>(uri, "World");
+    registerQmlUncreatableType<Game::Light>(uri, "Light");
     registerQmlType<Game::DirectionalLight>(uri, "DirectionalLight");
     registerQmlType<Game::PointLight>(uri, "PointLight");
     registerQmlType<Game::SpotLight>(uri, "SpotLight");
     registerQmlType<Game::Material>(uri, "Material");
     registerQmlType<Game::Mesh>(uri, "Mesh");
+    registerQmlType<Game::World>(uri, "World");
 
-    uri = "Volcano.Graphics";
+    ///////////////////////////////////////////////////////////////////////////
+    uri = "Volcano.System";
 
-    registerQmlType<Graphics::Camera>(uri, "Camera");
+    registerQmlType<GameWindow>(uri, "GameWindow");
 }
 
-static void initGraphics(void)
+static void initGraphicsSettings(void)
 {
     QSurfaceFormat fmt = QSurfaceFormat::defaultFormat();
 
@@ -115,8 +117,8 @@ static int main(int argc, char *argv[])
         return EXIT_FAILURE;
     }
 
-    initQmlTypes();
-    initGraphics();
+    registerQmlTypes();
+    initGraphicsSettings();
 
     qInfo("Startup URL: %s", qPrintable(url.toString()));
     QQmlApplicationEngine engine(url);
