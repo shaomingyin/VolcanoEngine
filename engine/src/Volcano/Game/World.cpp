@@ -9,10 +9,6 @@ VOLCANO_GAME_BEGIN
 
 World::World(QObject *parent):
     QObject(parent),
-    m_state(State::Empty),
-    m_loadingProgress(0.0f),
-    m_frameTimer(-1),
-    m_frameCountTimer(-1),
     m_btCollisionConfiguration(nullptr),
     m_btDispatcher(nullptr),
     m_btOverlappingPairCache(nullptr),
@@ -20,7 +16,6 @@ World::World(QObject *parent):
     m_btWorld(nullptr),
     m_gravity(0.0f, -9.8f, 0.0f)
 {
-    setFpsMax(20);
 }
 
 World::~World(void)
@@ -29,73 +24,15 @@ World::~World(void)
         releaseDynamicWorld();
 }
 
-World::State World::state(void) const
+void World::update(float elapsed)
 {
-    return m_state;
-}
+    for (auto object: m_objects)
+        object->update(elapsed);
 
-qreal World::loadingProgress(void) const
-{
-    qreal ret;
-
-    switch (m_state) {
-    case State::Ready:
-        ret = 1.0f;
-        break;
-    case State::Loading:
-        ret = m_loadingProgress;
-        break;
-    default:
-        ret = 0.0f;
-        break;
+    if (m_btWorld != nullptr) {
+        m_btWorld->stepSimulation(elapsed);
+        // TODO
     }
-
-    return ret;
-}
-
-int World::fps(void) const
-{
-    return m_frameCountPerSecond;
-}
-
-int World::fpsMax(void) const
-{
-    Q_ASSERT(m_elapsedMin > 0);
-
-    return (1000 / m_elapsedMin);
-}
-
-void World::setFpsMax(int v)
-{
-    int tmp = v;
-    if (tmp <= 0)
-        tmp = 1;
-
-    m_frameCount = 0;
-    m_frameCountPerSecond = 0;
-
-    if (m_frameTimer >= 0) {
-        killTimer(m_frameTimer);
-        m_frameTimer = -1;
-    }
-
-    m_elapsedMin = 1000 / tmp;
-
-    if (m_elapsedTimer.isValid())
-        m_elapsedTimer.start();
-    else
-        m_elapsedTimer.restart();
-
-    m_frameTimer = startTimer(m_elapsedMin, Qt::PreciseTimer);
-
-    if (m_frameCountTimer >= 0) {
-        killTimer(m_frameCountTimer);
-        m_frameCountTimer = -1;
-    }
-
-    m_frameCountTimer = startTimer(1000);
-
-    emit fpsMaxChanged(tmp);
 }
 
 Light *World::ambientLight(void)
@@ -199,55 +136,6 @@ void World::removeLastObject(void)
         m_objects.removeLast();
         handleObjectRemoved(object);
     }
-}
-
-void World::timerEvent(QTimerEvent *event)
-{
-    auto id = event->timerId();
-    if (id == m_frameTimer) {
-        auto elapsed = m_elapsedTimer.restart();
-        frame(float(elapsed) / 1000.0f);
-        return;
-    }
-
-    if (id == m_frameCountTimer) {
-        m_frameCountPerSecond = m_frameCount;
-        m_frameCount = 0;
-        return;
-    }
-}
-
-void World::setState(State v)
-{
-    if (m_state != v) {
-        m_state = v;
-        emit stateChanged(v);
-    }
-}
-
-void World::setLoadingProgress(qreal v)
-{
-    Q_ASSERT(m_state == State::Loading);
-
-    auto tmp = qBound(0.0f, v, 1.0f);
-
-    if (!qFuzzyCompare(m_loadingProgress, tmp)) {
-        m_loadingProgress = tmp;
-        emit loadingProgressChanged(tmp);
-    }
-}
-
-void World::frame(float elapsed)
-{
-    for (auto object: m_objects)
-        object->update(elapsed);
-
-    if (m_btWorld != nullptr) {
-        m_btWorld->stepSimulation(elapsed);
-        // TODO
-    }
-
-    m_frameCount += 1;
 }
 
 void World::handleObjectAdded(Object *object, bool emitSignal)

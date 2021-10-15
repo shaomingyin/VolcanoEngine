@@ -2,6 +2,7 @@
 //
 #include <QUrl>
 #include <QDir>
+#include <QScopedPointer>
 #include <QObject>
 #include <QQmlEngine>
 #include <QSurfaceFormat>
@@ -20,9 +21,14 @@
 #include <Volcano/Game/SpotLight.hpp>
 #include <Volcano/Game/Material.hpp>
 #include <Volcano/Game/Mesh.hpp>
+#include <Volcano/Graphics/CameraView.hpp>
 
 #include <Volcano/System/Common.hpp>
+#include <Volcano/System/Context.hpp>
+#include <Volcano/System/Client.hpp>
+#include <Volcano/System/Server.hpp>
 #include <Volcano/System/GameWindow.hpp>
+#include <Volcano/System/NetworkAccessManagerFactory.hpp>
 
 VOLCANO_SYSTEM_BEGIN
 
@@ -57,8 +63,16 @@ static void registerQmlTypes(void)
     registerQmlType<Game::World>(uri, "World");
 
     ///////////////////////////////////////////////////////////////////////////
+    uri = "Volcano.Graphics";
+
+    registerQmlType<Graphics::CameraView>(uri, "CameraView");
+
+    ///////////////////////////////////////////////////////////////////////////
     uri = "Volcano.System";
 
+    registerQmlUncreatableType<Context>(uri, "Context");
+    registerQmlType<Client>(uri, "Client");
+    registerQmlType<Server>(uri, "Server");
     registerQmlType<GameWindow>(uri, "GameWindow");
 }
 
@@ -94,39 +108,52 @@ static int main(int argc, char *argv[])
 
     qInfo("VolcanoEngine %s", VOLCANO_VERSION_STR);
 
-    QCommandLineParser cmdline;
-    cmdline.addHelpOption();
-    cmdline.addVersionOption();
-    cmdline.addPositionalArgument("url", "Startup URL");
+    QString gameDir;
+    QUrl manifestUrl;
 
-    cmdline.process(app);
+    {
+        QCommandLineParser cmdline;
+        cmdline.addHelpOption();
+        cmdline.addVersionOption();
+        cmdline.addPositionalArgument("gameDir", "Game root directory.");
+        cmdline.process(app);
 
-    auto cwd = QDir::currentPath();
-    QUrl url = QUrl::fromLocalFile(cwd + "/index.qml");
-    auto args = cmdline.positionalArguments();
-    if (args.size() > 0) {
-        if (args.size() != 1) {
-            qFatal("Too many startup url.");
+        auto args = cmdline.positionalArguments();
+        if (!args.isEmpty()) {
+            if (args.size() > 1)
+                return EXIT_FAILURE;
+            gameDir = args[0];
+        } else
+            gameDir = QDir::currentPath();
+
+        auto manifestPath = gameDir + "/Manifest.qml";
+        QFileInfo info(manifestPath);
+        if (!info.isFile()) {
+            qCritical("Invalid manifest: %s", qPrintable(manifestPath));
             return EXIT_FAILURE;
         }
-        url = QUrl::fromUserInput(args[0]);
+
+        manifestUrl = QUrl::fromLocalFile(manifestPath);
     }
 
-    if (!url.isValid()) {
-        qFatal("Invalid startup url: '%s': %s.", qPrintable(url.toString()), qPrintable(url.errorString()));
+    if (!manifestUrl.isValid())
         return EXIT_FAILURE;
-    }
 
     registerQmlTypes();
     initGraphicsSettings();
 
-    qInfo("Startup URL: %s", qPrintable(url.toString()));
-    QQmlApplicationEngine engine(url);
-    QObject::connect(&engine, &QQmlApplicationEngine::objectCreated, [](QObject *object, const QUrl &url) {
-        if (object == nullptr) {
-            qFatal("Failed to load startup URL: %s.", qPrintable(url.toString()));
-        }
-    });
+    QScopedPointer<NetworkAccessManagerFactory> namFactory(
+        new NetworkAccessManagerFactory(gameDir, QStringList()));
+    if (!namFactory)
+        return EXIT_FAILURE;
+
+    QScopedPointer<QQmlApplicationEngine> engine(new QQmlApplicationEngine());
+    if (!engine)
+        return EXIT_FAILURE;
+
+    engine->setOutputWarningsToStandardError(true);
+    engine->setNetworkAccessManagerFactory(namFactory.get());
+    engine->load(manifestUrl);
 
     return app.exec();
 }

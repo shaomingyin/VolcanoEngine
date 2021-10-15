@@ -19,10 +19,6 @@ VOLCANO_GAME_BEGIN
 
 class World: public QObject {
     Q_OBJECT
-    Q_PROPERTY(State state READ state WRITE setState NOTIFY stateChanged)
-    Q_PROPERTY(qreal loadingProgress READ loadingProgress WRITE setLoadingProgress NOTIFY loadingProgressChanged)
-    Q_PROPERTY(int fps READ fps NOTIFY fpsChanged)
-    Q_PROPERTY(int fpsMax READ fpsMax WRITE setFpsMax NOTIFY fpsMaxChanged)
     Q_PROPERTY(Light *ambientLight READ ambientLight)
     Q_PROPERTY(bool dynamic READ isDynamic WRITE setDynamic NOTIFY dynamicChanged)
     Q_PROPERTY(QVector3D gravity READ gravity WRITE setGravity NOTIFY gravityChanged)
@@ -30,23 +26,11 @@ class World: public QObject {
     Q_CLASSINFO("DefaultProperty", "objects")
 
 public:
-    enum class State {
-        Empty = 0,
-        Loading,
-        Ready,
-        Error
-    };
-
-public:
     World(QObject *parent = nullptr);
     ~World(void) override;
 
 public:
-    State state(void) const;
-    qreal loadingProgress(void) const;
-    int fps(void) const;
-    int fpsMax(void) const;
-    void setFpsMax(int v);
+    void update(float elapsed);
     Light *ambientLight(void);
     bool isDynamic(void) const;
     void setDynamic(bool v);
@@ -62,22 +46,12 @@ public:
     void removeLastObject(void);
 
 signals:
-    void stateChanged(State v);
-    void loadingProgressChanged(qreal v);
-    void fpsChanged(int v);
-    void fpsMaxChanged(int v);
     void dynamicChanged(bool v);
     void gravityChanged(const QVector3D &v);
     void objectAdded(Object *object);
     void objectRemoved(Object *object);
 
-protected:
-    void timerEvent(QTimerEvent *event) override;
-    void setState(State v);
-    void setLoadingProgress(qreal v);
-
 private:
-    void frame(float elapsed);
     void handleObjectAdded(Object *object, bool emitSignal = true);
     void handleObjectRemoved(Object *object, bool emitSignal = true);
     bool initDynamicWorld(void);
@@ -90,14 +64,6 @@ private:
     static void qmlRemoveLastObject(QQmlListProperty<Object> *list);
 
 private:
-    State m_state;
-    qreal m_loadingProgress;
-    int m_frameTimer;
-    int m_frameCount;
-    int m_frameCountPerSecond;
-    int m_frameCountTimer;
-    int m_elapsedMin;
-    QElapsedTimer m_elapsedTimer;
     Light m_ambientLight;
     btDefaultCollisionConfiguration *m_btCollisionConfiguration;
     btCollisionDispatcher *m_btDispatcher;

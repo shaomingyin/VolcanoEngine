@@ -6,17 +6,16 @@
 #include <QQuickView>
 
 #include <Volcano/Game/World.hpp>
-#include <Volcano/Graphics/Renderer.hpp>
 #include <Volcano/System/Common.hpp>
 
 VOLCANO_SYSTEM_BEGIN
 
 class GameWindow: public QQuickView {
     Q_OBJECT
-    Q_PROPERTY(Game::World *gameWorld READ gameWorld WRITE setGameWorld NOTIFY gameWorldChanged)
+    Q_PROPERTY(Game::World *gameWorld)
 
 public:
-    GameWindow(void);
+    GameWindow(QWindow *parent = nullptr);
     ~GameWindow(void) override;
 
 public:
@@ -26,15 +25,7 @@ public:
 signals:
     void gameWorldChanged(Game::World *p);
 
-private slots:
-    void onSceneGraphInitialized(void);
-    void onBeforeRendering(void);
-
 private:
-    void renderGameWorld(void);
-
-private:
-    Graphics::Renderer *m_graphicsRenderer;
     Game::World *m_gameWorld;
 };
 

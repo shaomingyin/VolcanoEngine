@@ -537,6 +537,11 @@ Buffer *allocDynamicVertexIndexBuffer(int count)
 //    return nullptr;
 //}
 
+// QOpenGLShaderProgram *shaderProgram(type ...)
+// {
+//    ...
+// }
+
 VOLCANO_GRAPHICS_END
 
 #include "Common.moc"

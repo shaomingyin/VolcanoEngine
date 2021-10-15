@@ -41,7 +41,7 @@ Buffer *allocStaticVertexIndexBuffer(int count);
 Buffer *allocDynamicVertexBuffer(int count);
 Buffer *allocDynamicVertexIndexBuffer(int count);
 // Texture *allocTexture(int width, int height, GLenum format);
-// QOpenGLShaderProgram *builtinShaderProgram(type ...)
+// QOpenGLShaderProgram *shaderProgram(type ...)
 
 VOLCANO_GRAPHICS_END
 
