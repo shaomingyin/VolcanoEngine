@@ -17,8 +17,5 @@ set(CMAKE_MODULE_PATH "${CMAKE_HOME_DIRECTORY}/cmake")
 
 include(CMakeDependentOption)
 
-set(VOLCANO_DEBUG ON CACHE BOOL "Enable debug funtions.")
-set(VOLCANO_OUT_DIR "${CMAKE_BINARY_DIR}/out" CACHE PATH "Build output directory.")
-
-add_subdirectory(engine engine)
+add_subdirectory(sources sources)
 add_subdirectory(documents documents)
