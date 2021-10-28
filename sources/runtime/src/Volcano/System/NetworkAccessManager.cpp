@@ -61,17 +61,15 @@ QString NetworkAccessManager::rootDirPath(void) const
 QNetworkReply *NetworkAccessManager::createRequest(Operation op, const QNetworkRequest &originalReq, QIODevice *outgoingData)
 {
     auto url = originalReq.url();
-    qDebug() << __FUNCTION__ << url;
     if (url.scheme() != "vfs")
         return QNetworkAccessManager::createRequest(op, originalReq, outgoingData);
 
     auto path = url.path();
     qDebug() << __FUNCTION__ << path;
-    if (!checkPath(path))
+    if (!checkVfsPath(path))
         return nullptr;
 
     QString fullPath(m_rootDir.path() + path);
-    qDebug() << __FUNCTION__ << fullPath;
     QFileInfo info(fullPath);
     if (info.isFile()) {
         qDebug() << __FUNCTION__ << QUrl::fromLocalFile(fullPath);
@@ -96,7 +94,7 @@ QNetworkReply *NetworkAccessManager::createRequest(Operation op, const QNetworkR
     return nullptr;
 }
 
-bool NetworkAccessManager::checkPath(const QString &path)
+bool NetworkAccessManager::checkVfsPath(const QString &path)
 {
     if (path.isEmpty())
         return false;
@@ -115,6 +113,8 @@ bool NetworkAccessManager::checkPath(const QString &path)
             slashed = true;
         } else if (!c.isLetterOrNumber() && c != '.' && c != '_')
             return false;
+        else
+            slashed = false;
     }
 
     return true;

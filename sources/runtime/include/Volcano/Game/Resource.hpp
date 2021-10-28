@@ -4,6 +4,8 @@
 #define VOLCANO_GAME_RESOURCE_HPP
 
 #include <QUrl>
+#include <QIODevice>
+#include <QNetworkReply>
 
 #include <Volcano/Game/Common.hpp>
 #include <Volcano/Game/Component.hpp>
@@ -24,6 +26,18 @@ public:
         Error
     };
     Q_ENUM(Status)
+
+    class Handler {
+    public:
+        Handler(void) = default;
+        virtual ~Handler(void) = default;
+
+    public:
+        QNetworkReply *createRequest(QIODevice *io);
+
+    protected:
+        virtual QNetworkReply *createRequestInternal(QIODevice *io) = 0;
+    };
 
 public:
     Resource(QObject *parent = nullptr);
