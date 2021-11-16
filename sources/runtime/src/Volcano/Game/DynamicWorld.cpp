@@ -20,14 +20,14 @@ DynamicWorld::~DynamicWorld(void)
         release();
 }
 
-void DynamicWorld::update(float elapsed)
+void DynamicWorld::tick(float elapsed)
 {
-    if (m_btWorld != nullptr) {
+    if (Q_LIKELY(m_btWorld != nullptr)) {
         m_btWorld->stepSimulation(elapsed);
         // TODO
     }
 
-    World::update(elapsed);
+    World::tick(elapsed);
 }
 
 const QVector3D &DynamicWorld::gravity(void) const

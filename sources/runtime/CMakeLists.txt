@@ -6,6 +6,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(CMAKE_AUTOMOC ON)
+SET(CMAKE_AUTORCC ON)
 
 link_libraries(Qt6::Concurrent Qt6::Gui Qt6::OpenGL Qt6::Quick)
 
@@ -23,8 +24,12 @@ include_directories(
     )
 
 file(GLOB_RECURSE RUNTIME_SOURCES LIST_DIRECTORIES false
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/*
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/*
+    ${CMAKE_CURRENT_SOURCE_DIR}/*.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/*.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/*.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/*.qrc
+    ${CMAKE_CURRENT_SOURCE_DIR}/*.in
     )
 
 qt_add_executable(runtime ${RUNTIME_SOURCES})

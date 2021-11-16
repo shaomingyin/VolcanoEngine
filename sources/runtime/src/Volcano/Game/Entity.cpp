@@ -13,10 +13,10 @@ Entity::~Entity(void)
 {
 }
 
-void Entity::update(float elapsed)
+void Entity::tick(float elapsed)
 {
     for (auto component: m_components)
-        component->update(elapsed);
+        component->tick(elapsed);
 }
 
 const QVector3D &Entity::position(void) const

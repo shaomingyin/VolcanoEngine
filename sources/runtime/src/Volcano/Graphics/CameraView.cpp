@@ -13,7 +13,7 @@ VOLCANO_GRAPHICS_BEGIN
 CameraView::CameraView(QQuickItem *parent):
     QQuickFramebufferObject(parent),
     m_isResized(false),
-    m_gameWorld(nullptr),
+    m_world(nullptr),
     m_frameTimer(0),
     m_frameCount(0),
     m_frameCountPerSecond(0),
@@ -102,16 +102,16 @@ void CameraView::setBackgroundColor(const QColor &v)
     }
 }
 
-Game::World *CameraView::gameWorld(void)
+World *CameraView::world(void)
 {
-    return m_gameWorld;
+    return m_world;
 }
 
-void CameraView::setGameWorld(Game::World *p)
+void CameraView::setWorld(World *p)
 {
-    if (m_gameWorld != p) {
-        m_gameWorld = p;
-        emit gameWorldChanged(p);
+    if (m_world != p) {
+        m_world = p;
+        emit worldChanged(p);
     }
 }
 
@@ -134,6 +134,9 @@ void CameraView::timerEvent(QTimerEvent *p)
 
 void CameraView::frame(quint64 elapsed)
 {
+//    if (Q_LIKELY(m_world != nullptr))
+//        m_world->update(elapsed);
+
     update();
 }
 

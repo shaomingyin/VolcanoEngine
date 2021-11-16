@@ -40,11 +40,13 @@ void Renderer::render(void)
     Q_ASSERT(m_gl != nullptr);
 
     if (m_clearEnabled) {
-        m_gl->glClearColor(m_clearColor.redF(), m_clearColor.greenF(), m_clearColor.blueF(), m_clearColor.alphaF());
+        m_gl->glClearColor(m_clearColor.redF(), m_clearColor.greenF(),
+                           m_clearColor.blueF(), m_clearColor.alphaF());
         m_gl->glClear(GL_COLOR_BUFFER_BIT);
     }
 
-    // TODO render visible set...
+    // TODO render drawing set...
+    // TODO render debug draw...
 
     QQuickOpenGLUtils::resetOpenGLState();
 }
@@ -61,8 +63,10 @@ void Renderer::synchronize(QQuickFramebufferObject *item)
 
     Q_ASSERT(cameraView != nullptr);
 
-    auto gameWorld = cameraView->gameWorld();
-    if (Q_UNLIKELY(gameWorld == nullptr))
+    m_drawingSet.clear();
+
+    auto world = cameraView->world();
+    if (Q_UNLIKELY(world == nullptr))
         return;
 
     m_clearEnabled = cameraView->isBackgroundEnabled();
@@ -74,7 +78,7 @@ void Renderer::synchronize(QQuickFramebufferObject *item)
     m_viewDirection = camera->direction();
     m_viewUp = camera->up();
 
-    // TODO build visible set from 'gameWorld'.
+    world->buildDrawingSet(m_drawingSet, *camera);
 }
 
 VOLCANO_GRAPHICS_END

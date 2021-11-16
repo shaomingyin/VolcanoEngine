@@ -7,7 +7,6 @@
 #include <QVector3D>
 #include <QObject>
 
-#include <Volcano/Game/Entity.hpp>
 #include <Volcano/Graphics/Common.hpp>
 
 VOLCANO_GRAPHICS_BEGIN
@@ -20,7 +19,6 @@ class Camera: public QObject {
     Q_PROPERTY(float fov READ fov WRITE setFov NOTIFY fovChanged)
     Q_PROPERTY(float nearPlane READ nearPlane WRITE setNearPlane NOTIFY nearPlaneChanged)
     Q_PROPERTY(float farPlane READ farPlane WRITE setFarPlane NOTIFY farPlaneChanged)
-    Q_PROPERTY(Game::Entity *gameEntity READ gameEntity WRITE setGameEntity NOTIFY gameEntityChanged)
 
 public:
     Camera(QObject *parent = nullptr);
@@ -39,8 +37,6 @@ public:
     void setNearPlane(float v);
     float farPlane(void) const;
     void setFarPlane(float v);
-    Game::Entity *gameEntity(void);
-    void setGameEntity(Game::Entity *p);
 
 signals:
     void positionChanged(const QVector3D &v);
@@ -49,11 +45,6 @@ signals:
     void fovChanged(float v);
     void nearPlaneChanged(float v);
     void farPlaneChanged(float v);
-    void gameEntityChanged(Game::Entity *p);
-
-private slots:
-    void onGameEntityPositionChanged(const QVector3D &v);
-    void onGameEntityRotationChanged(const QQuaternion &v);
 
 private:
     QVector3D m_position;
@@ -62,7 +53,6 @@ private:
     float m_fov;
     float m_nearPlane;
     float m_farPlane;
-    Game::Entity *m_gameEntity;
 };
 
 VOLCANO_GRAPHICS_END

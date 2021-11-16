@@ -13,10 +13,15 @@ World::~World(void)
 {
 }
 
-void World::update(float elapsed)
+void World::tick(float elapsed)
 {
     for (auto object: m_objects)
-        object->update(elapsed);
+        object->tick(elapsed);
+}
+
+Light *World::ambientLight(void)
+{
+    return &m_ambientLight;
 }
 
 const QList<Object *> &World::objects(void) const

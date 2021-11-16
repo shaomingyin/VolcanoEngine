@@ -8,32 +8,95 @@ VOLCANO_SYSTEM_BEGIN
 
 Server::Server(QObject *parent):
     QObject(parent),
-    m_isStarted(false),
+    m_tickTimer(0),
     m_host("0.0.0.0"),
     m_port(7788),
     m_gameWorld(nullptr)
 {
-    m_stream.setByteOrder(QDataStream::LittleEndian);
-    m_stream.setDevice(&m_socket);
+    //m_stream.setByteOrder(QDataStream::LittleEndian);
+    //m_stream.setDevice(&m_socket);
+
+    setTpsMax(20);
+
+    m_tickCountTimer = startTimer(1000);
 }
 
 Server::~Server(void)
 {
 }
 
-bool Server::isStarted(void) const
+int Server::tps(void) const
 {
-    return m_isStarted;
+    return m_tickCountPerSecond;
 }
 
-void Server::setStart(bool v)
+int Server::tpsMax(void) const
 {
-    if (m_isStarted != v) {
+    Q_ASSERT(m_tickElapsedMin > 0);
+
+    return 1000 / m_tickElapsedMin;
+}
+
+void Server::setTpsMax(int v)
+{
+    int tickElapsedMin = 1000 / qBound(1, v, 1000);
+    if (tickElapsedMin == m_tickElapsedMin)
+        return;
+
+    m_tickElapsedMin = tickElapsedMin;
+    tryToRestart();
+    emit tpsMaxChanged(m_tickElapsedMin);
+}
+
+bool Server::isRunning(void) const
+{
+    return (m_tickTimer > 0);
+}
+
+void Server::setRunning(bool v)
+{
+    bool isRunning = m_tickTimer > 0;
+    if (isRunning != v) {
         if (v)
             start();
         else
             stop();
     }
+}
+
+void Server::start(void)
+{
+    if (m_tickTimer > 0)
+        return;
+
+    if (!m_socket.bind(QHostAddress(m_host), m_port))
+        return;
+
+    connect(&m_socket, &QUdpSocket::readyRead, this, &Server::onReadyRead);
+    //m_stream.resetStatus();
+
+    m_tickTimer = startTimer(m_tickElapsedMin, Qt::PreciseTimer);
+    m_tickCount = 0;
+    m_tickCountPerSecond = 0;
+    m_tickElapsedTimer.restart();
+
+    emit runningChanged(true);
+}
+
+void Server::stop(void)
+{
+    if (m_tickTimer == 0)
+        return;
+
+    m_socket.close();
+
+    killTimer(m_tickTimer);
+    m_tickTimer = 0;
+    m_tickCount = 0;
+    m_tickCountPerSecond = 0;
+
+    emit tpsChanged(0);
+    emit runningChanged(false);
 }
 
 const QString &Server::host(void) const
@@ -47,12 +110,7 @@ void Server::setHost(const QString &v)
         return;
 
     m_host = v;
-
-    if (m_isStarted) {
-        stop();
-        start();
-    }
-
+    tryToRestart();
     hostChanged(v);
 }
 
@@ -67,12 +125,7 @@ void Server::setPort(quint16 v)
         return;
 
     m_port = v;
-
-    if (m_isStarted) {
-        stop();
-        start();
-    }
-
+    tryToRestart();
     emit portChanged(v);
 }
 
@@ -89,35 +142,43 @@ void Server::setGameWorld(Game::World *p)
     }
 }
 
-void Server::start(void)
+void Server::timerEvent(QTimerEvent *evt)
 {
-    Q_ASSERT(!m_socket.isOpen());
-
-    if (!m_socket.bind(QHostAddress(m_host), m_port))
+    if (Q_LIKELY(evt->timerId() == m_tickTimer)) {
+        auto elapsed = m_tickElapsedTimer.restart();
+        tick(float(elapsed) / 1000.0f);
+        m_tickCount += 1;
         return;
+    }
 
-    connect(&m_socket, &QUdpSocket::readyRead, this, &Server::onReadyRead);
-    m_stream.resetStatus();
-
-    m_isStarted = true;
-    emit startedChanged(true);
-}
-
-void Server::stop(void)
-{
-    Q_ASSERT(m_socket.isOpen());
-
-    m_socket.close();
-
-    m_isStarted = false;
-    emit startedChanged(false);
+    if (evt->timerId() == m_tickCountTimer && m_tickTimer > 0) {
+        m_tickCountPerSecond = m_tickCount;
+        m_tickCount = 0;
+        emit tpsChanged(m_tickCountPerSecond);
+    }
 }
 
 void Server::onReadyRead(void)
 {
-    auto size = m_socket.bytesAvailable();
+    auto size = m_socket.pendingDatagramSize();
     if (size < 1)
         return;
+}
+
+void Server::tick(float elapsed)
+{
+    if (Q_LIKELY(m_gameWorld != nullptr))
+        m_gameWorld->tick(elapsed);
+
+    // TODO
+}
+
+void Server::tryToRestart(void)
+{
+    if (m_tickTimer > 0) {
+        stop();
+        start();
+    }
 }
 
 VOLCANO_SYSTEM_END

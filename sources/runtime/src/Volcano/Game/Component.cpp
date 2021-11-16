@@ -13,7 +13,7 @@ Component::~Component(void)
 {
 }
 
-void Component::update(float elapsed)
+void Component::tick(float elapsed)
 {
 }
 

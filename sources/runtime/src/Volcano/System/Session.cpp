@@ -4,8 +4,9 @@
 
 VOLCANO_SYSTEM_BEGIN
 
-Session::Session(QObject *parent):
-    QUdpSocket(parent)
+Session::Session(QUdpSocket &socket, QObject *parent):
+    QUdpSocket(parent),
+    m_socket(socket)
 {
 }
 

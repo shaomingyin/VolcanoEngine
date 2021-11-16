@@ -11,37 +11,47 @@
 #include <QQuickView>
 #include <QQmlApplicationEngine>
 
+#include <Volcano/NetworkAccessManagerFactory.hpp>
+
 #include <Volcano/Game/World.hpp>
 #include <Volcano/Game/DynamicWorld.hpp>
 #include <Volcano/Game/Object.hpp>
 #include <Volcano/Game/Entity.hpp>
 #include <Volcano/Game/Component.hpp>
+#include <Volcano/Game/Light.hpp>
+#include <Volcano/Game/DirectionalLight.hpp>
+#include <Volcano/Game/PointLight.hpp>
+#include <Volcano/Game/SpotLight.hpp>
+#include <Volcano/Game/Material.hpp>
+#include <Volcano/Game/Mesh.hpp>
+
 #include <Volcano/Graphics/Light.hpp>
-#include <Volcano/Graphics/AmbientLight.hpp>
 #include <Volcano/Graphics/DirectionalLight.hpp>
 #include <Volcano/Graphics/PointLight.hpp>
 #include <Volcano/Graphics/SpotLight.hpp>
 #include <Volcano/Graphics/Material.hpp>
 #include <Volcano/Graphics/Mesh.hpp>
 #include <Volcano/Graphics/CameraView.hpp>
+#include <Volcano/Graphics/World.hpp>
 #include <Volcano/System/Common.hpp>
 #include <Volcano/System/ClientWorld.hpp>
 #include <Volcano/System/Server.hpp>
-#include <Volcano/System/NetworkAccessManagerFactory.hpp>
 
 VOLCANO_SYSTEM_BEGIN
 
 template <typename T>
 static void registerQmlUncreatableType(const char *uri, const char *qmlName)
 {
-    qmlRegisterUncreatableType<T>(uri, VOLCANO_VERSION_MAJOR, VOLCANO_VERSION_MINOR, qmlName,
+    qmlRegisterUncreatableType<T>(uri,
+        VOLCANO_VERSION_MAJOR, VOLCANO_VERSION_MINOR, qmlName,
         QString("Cannot create instance of type '%1.%2'.").arg(uri).arg(qmlName));
 }
 
 template <typename T>
 static void registerQmlType(const char *uri, const char *qmlName)
 {
-    qmlRegisterType<T>(uri, VOLCANO_VERSION_MAJOR, VOLCANO_VERSION_MINOR, qmlName);
+    qmlRegisterType<T>(uri,
+        VOLCANO_VERSION_MAJOR, VOLCANO_VERSION_MINOR, qmlName);
 }
 
 static void registerQmlTypes(void)
@@ -53,6 +63,13 @@ static void registerQmlTypes(void)
 
     registerQmlUncreatableType<Game::Object>(uri, "Object");
     registerQmlUncreatableType<Game::Component>(uri, "Component");
+    registerQmlUncreatableType<Graphics::Light>(uri, "Light");
+    registerQmlType<Game::Entity>(uri, "Entity");
+    registerQmlType<Game::DirectionalLight>(uri, "DirectionalLight");
+    registerQmlType<Game::PointLight>(uri, "PointLight");
+    registerQmlType<Game::SpotLight>(uri, "SpotLight");
+    registerQmlType<Game::Material>(uri, "Material");
+    registerQmlType<Game::Mesh>(uri, "Mesh");
     registerQmlType<Game::World>(uri, "World");
     registerQmlType<Game::DynamicWorld>(uri, "DynamicWorld");
 
@@ -60,7 +77,6 @@ static void registerQmlTypes(void)
     uri = "Volcano.Graphics";
 
     registerQmlUncreatableType<Graphics::Light>(uri, "Light");
-    registerQmlType<Graphics::AmbientLight>(uri, "AmbientLight");
     registerQmlType<Graphics::DirectionalLight>(uri, "DirectionalLight");
     registerQmlType<Graphics::PointLight>(uri, "PointLight");
     registerQmlType<Graphics::SpotLight>(uri, "SpotLight");
@@ -68,6 +84,7 @@ static void registerQmlTypes(void)
     registerQmlType<Graphics::Mesh>(uri, "Mesh");
     registerQmlUncreatableType<Graphics::Camera>(uri, "Camera");
     registerQmlType<Graphics::CameraView>(uri, "CameraView");
+    registerQmlType<Graphics::World>(uri, "World");
 
     ///////////////////////////////////////////////////////////////////////////
     uri = "Volcano.System";
@@ -76,7 +93,7 @@ static void registerQmlTypes(void)
     registerQmlType<Server>(uri, "Server");
 }
 
-static void initGraphicsSettings(void)
+static void initDefaultGraphicsSettings(void)
 {
     QSurfaceFormat fmt = QSurfaceFormat::defaultFormat();
 
@@ -129,7 +146,7 @@ static int main(int argc, char *argv[])
         auto indexPath = gameDir + "/Index.qml";
         QFileInfo info(indexPath);
         if (!info.isFile()) {
-            qCritical("Invalid manifest: %s", qPrintable(indexPath));
+            qCritical("Invalid game dir: %s", qPrintable(gameDir));
             return EXIT_FAILURE;
         }
 
@@ -140,7 +157,7 @@ static int main(int argc, char *argv[])
         return EXIT_FAILURE;
 
     registerQmlTypes();
-    initGraphicsSettings();
+    initDefaultGraphicsSettings();
 
     QScopedPointer<NetworkAccessManagerFactory> networkAccessManagerFactory(
         new NetworkAccessManagerFactory(gameDir, QStringList()));
@@ -153,6 +170,7 @@ static int main(int argc, char *argv[])
 
     engine->setOutputWarningsToStandardError(true);
     engine->setNetworkAccessManagerFactory(networkAccessManagerFactory.get());
+
     engine->load(indexUrl);
 
     return app.exec();

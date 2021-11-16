@@ -5,7 +5,7 @@
 VOLCANO_SYSTEM_BEGIN
 
 ClientWorld::ClientWorld(QObject *parent):
-    Game::World(parent)
+    Graphics::World(parent)
 {
 }
 

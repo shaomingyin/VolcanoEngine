@@ -11,11 +11,13 @@
 
 #include <Volcano/Game/Common.hpp>
 #include <Volcano/Game/Object.hpp>
+#include <Volcano/Game/Light.hpp>
 
 VOLCANO_GAME_BEGIN
 
 class World: public QObject {
     Q_OBJECT
+    Q_PROPERTY(Light *ambientLight READ ambientLight)
     Q_PROPERTY(QQmlListProperty<Object> objects READ qmlObjects)
     Q_CLASSINFO("DefaultProperty", "objects")
 
@@ -24,7 +26,8 @@ public:
     ~World(void) override;
 
 public:
-    virtual void update(float elapsed);
+    virtual void tick(float elapsed);
+    Light *ambientLight(void);
     const QList<Object *> &objects(void) const;
     QQmlListProperty<Object> qmlObjects(void);
     void appendObject(Object *object);
@@ -51,6 +54,7 @@ private:
     static void qmlRemoveLastObject(QQmlListProperty<Object> *list);
 
 private:
+    Light m_ambientLight;
     QList<Object *> m_objects;
 };
 

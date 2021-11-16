@@ -10,5 +10,5 @@ find_package(Qt6 COMPONENTS Core Concurrent Gui OpenGL Qml Quick REQUIRED)
 link_libraries(Qt6::Core Qt6::Qml)
 
 add_subdirectory(runtime runtime)
-add_subdirectory(framework framework)
+add_subdirectory(templates templates)
 add_subdirectory(packages packages)

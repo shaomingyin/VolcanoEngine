@@ -11,8 +11,7 @@ Camera::Camera(QObject *parent):
     m_up(0.0f, 1.0f, 0.0f),
     m_fov(90),
     m_nearPlane(0.1f),
-    m_farPlane(100.0f),
-    m_gameEntity(nullptr)
+    m_farPlane(100.0f)
 {
 }
 
@@ -113,40 +112,6 @@ void Camera::setFarPlane(float v)
         m_farPlane = v;
         emit farPlaneChanged(v);
     }
-}
-
-Game::Entity *Camera::gameEntity(void)
-{
-    return m_gameEntity;
-}
-
-void Camera::setGameEntity(Game::Entity *p)
-{
-    if (m_gameEntity == p)
-        return;
-
-    if (m_gameEntity != nullptr) {
-        disconnect(m_gameEntity, &Game::Entity::positionChanged, this, &Camera::onGameEntityPositionChanged);
-        disconnect(m_gameEntity, &Game::Entity::rotationChanged, this, &Camera::onGameEntityRotationChanged);
-    }
-
-    if (p != nullptr) {
-        connect(p, &Game::Entity::positionChanged, this, &Camera::onGameEntityPositionChanged);
-        connect(p, &Game::Entity::rotationChanged, this, &Camera::onGameEntityRotationChanged);
-    }
-
-    m_gameEntity = p;
-    emit gameEntityChanged(p);
-}
-
-void Camera::onGameEntityPositionChanged(const QVector3D &v)
-{
-    setPosition(v);
-}
-
-void Camera::onGameEntityRotationChanged(const QQuaternion &v)
-{
-    setDirection(v.vector());
 }
 
 VOLCANO_GRAPHICS_END

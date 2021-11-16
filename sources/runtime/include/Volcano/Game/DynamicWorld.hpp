@@ -21,7 +21,7 @@ public:
     ~DynamicWorld(void) override;
 
 public:
-    void update(float elapsed) override;
+    void tick(float elapsed) override;
     const QVector3D &gravity(void) const;
     void setGravity(const QVector3D &v);
 

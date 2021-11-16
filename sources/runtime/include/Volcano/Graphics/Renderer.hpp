@@ -8,6 +8,8 @@
 #include <QQuickFramebufferObject>
 
 #include <Volcano/Graphics/Common.hpp>
+#include <Volcano/Graphics/DrawingSet.hpp>
+#include <Volcano/Graphics/DebugDrawRenderer.hpp>
 
 VOLCANO_GRAPHICS_BEGIN
 
@@ -25,11 +27,13 @@ private:
 
 private:
     OpenGLFunctions *m_gl;
+    DebugDrawRenderer m_debugDrawRenderer;
     bool m_clearEnabled;
     QColor m_clearColor;
     QVector3D m_viewPosition;
     QVector3D m_viewDirection;
     QVector3D m_viewUp;
+    DrawingSet m_drawingSet;
 };
 
 VOLCANO_GRAPHICS_END

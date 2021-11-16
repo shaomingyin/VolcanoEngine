@@ -197,7 +197,7 @@ MeshPtr Context::getMesh(const QUrl &url)
     if (!url.isValid())
         return nullptr;
 
-
+    return nullptr;
 }
 
 VOLCANO_GRAPHICS_END

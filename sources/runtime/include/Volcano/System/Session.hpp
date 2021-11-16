@@ -13,8 +13,11 @@ class Session: public QUdpSocket {
     Q_OBJECT
 
 public:
-    Session(QObject *parent = nullptr);
+    Session(QUdpSocket &socket, QObject *parent = nullptr);
     ~Session(void) override;
+
+private:
+    QUdpSocket &m_socket;
 };
 
 VOLCANO_SYSTEM_END
