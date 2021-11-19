@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/">
+        <file>Images/Logo.png</file>
+        <file>Shaders/Default/Fragment.glsl</file>
+        <file>Shaders/Default/Vertex.glsl</file>
+    </qresource>
+</RCC>
