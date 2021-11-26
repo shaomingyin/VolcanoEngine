@@ -5,15 +5,11 @@
 VOLCANO_GAME_BEGIN
 
 Mesh::Mesh(QObject *parent):
-    Resource(parent)
+    Component(parent)
 {
 }
 
 Mesh::~Mesh(void)
-{
-}
-
-void Mesh::onSourceChanged(const QUrl &v)
 {
 }
 

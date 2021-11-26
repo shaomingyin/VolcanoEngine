@@ -4,13 +4,14 @@
 #define VOLCANO_GRAPHICS_LIGHT_HPP
 
 #include <QColor>
+#include <QObject>
 
 #include <Volcano/Game/Object.hpp>
 #include <Volcano/Graphics/Common.hpp>
 
 VOLCANO_GRAPHICS_BEGIN
 
-class Light: public Game::Object {
+class Light: public QObject {
     Q_OBJECT
     Q_PROPERTY(float strength READ strength WRITE setStrength NOTIFY strengthChanged)
     Q_PROPERTY(QColor color READ color WRITE setColor NOTIFY colorChanged)

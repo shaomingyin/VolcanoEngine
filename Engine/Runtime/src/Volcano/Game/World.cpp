@@ -5,18 +5,65 @@
 VOLCANO_GAME_BEGIN
 
 World::World(QObject *parent):
-    QObject(parent)
+    QObject(parent),
+    m_btCollisionConfiguration(nullptr),
+    m_btDispatcher(nullptr),
+    m_btOverlappingPairCache(nullptr),
+    m_btSolver(nullptr),
+    m_btWorld(nullptr),
+    m_gravity(0.0f, -9.8f, 0.0f)
 {
 }
 
 World::~World(void)
 {
+    if (m_btWorld != nullptr)
+        releaseDynamic();
 }
 
 void World::tick(float elapsed)
 {
+    if (Q_LIKELY(m_btWorld != nullptr)) {
+        m_btWorld->stepSimulation(elapsed);
+        // TODO
+    }
+
     for (auto object: m_objects)
         object->tick(elapsed);
+}
+
+bool World::isDynamic(void) const
+{
+    return  (m_btWorld != nullptr);
+}
+
+void World::setDynamic(bool v)
+{
+    if (m_btWorld != nullptr) {
+        if (!v)
+            releaseDynamic();
+    } else {
+        if (v)
+            initDynamic();
+    }
+}
+
+const QVector3D &World::gravity(void) const
+{
+    return m_gravity;
+}
+
+void World::setGravity(const QVector3D &v)
+{
+    if (qFuzzyCompare(m_gravity, v))
+        return;
+
+    m_gravity = v;
+
+    if (m_btWorld != nullptr)
+        m_btWorld->setGravity(btVector3(m_gravity[0], m_gravity[1], m_gravity[2]));
+
+    emit gravityChanged(v);
 }
 
 const QList<Object *> &World::objects(void) const
@@ -92,6 +139,67 @@ void World::handleObjectRemoved(Object *object, bool emitSignal)
     object->setParent(nullptr);
     if (emitSignal)
         emit objectRemoved(object);
+}
+
+bool World::initDynamic(void)
+{
+    Q_ASSERT(m_btWorld == nullptr);
+
+    auto btCollisionConfiguration = std::make_unique<btDefaultCollisionConfiguration>();
+    if (!btCollisionConfiguration)
+        return false;
+
+    auto btDispatcher = std::make_unique<btCollisionDispatcher>(btCollisionConfiguration.get());
+    if (!btDispatcher)
+        return false;
+
+    auto btOverlappingPairCache = std::make_unique<btDbvtBroadphase>();
+    if (!btOverlappingPairCache)
+        return false;
+
+    auto btSolver = std::make_unique<btSequentialImpulseConstraintSolver>();
+    if (!btSolver)
+        return false;
+
+    auto btWorld = std::make_unique<btDiscreteDynamicsWorld>(
+                btDispatcher.get(),
+                btOverlappingPairCache.get(),
+                btSolver.get(),
+                btCollisionConfiguration.get());
+
+    if (!btWorld)
+        return false;
+
+    btWorld->setGravity(btVector3(m_gravity.x(), m_gravity.y(), m_gravity.z()));
+
+    m_btCollisionConfiguration = btCollisionConfiguration.release();
+    m_btDispatcher = btDispatcher.release();
+    m_btOverlappingPairCache = btOverlappingPairCache.release();
+    m_btSolver = btSolver.release();
+    m_btWorld = btWorld.release();
+
+    emit dynamicChanged(true);
+
+    return true;
+}
+
+void World::releaseDynamic(void)
+{
+    Q_ASSERT(m_btWorld != nullptr);
+
+    delete m_btWorld;
+    delete m_btSolver;
+    delete m_btOverlappingPairCache;
+    delete m_btDispatcher;
+    delete m_btCollisionConfiguration;
+
+    m_btWorld = nullptr;
+    m_btSolver = nullptr;
+    m_btOverlappingPairCache = nullptr;
+    m_btDispatcher = nullptr;
+    m_btCollisionConfiguration = nullptr;
+
+    emit dynamicChanged(false);
 }
 
 void World::qmlAppendObject(QQmlListProperty<Object> *list, Object *object)

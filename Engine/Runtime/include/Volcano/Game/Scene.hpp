@@ -1,0 +1,8 @@
+//
+//
+#ifndef VOLCANO_GAME_SCENE_HPP
+#define VOLCANO_GAME_SCENE_HPP
+
+
+
+#endif // VOLCANO_GAME_SCENE_HPP

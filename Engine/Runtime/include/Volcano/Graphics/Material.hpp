@@ -3,12 +3,14 @@
 #ifndef VOLCANO_GRAPHICS_MATERIAL_HPP
 #define VOLCANO_GRAPHICS_MATERIAL_HPP
 
+#include <QObject>
+
 #include <Volcano/Game/Component.hpp>
 #include <Volcano/Graphics/Common.hpp>
 
 VOLCANO_GRAPHICS_BEGIN
 
-class Material: public Game::Component {
+class Material: public QObject {
     Q_OBJECT
 
 public:

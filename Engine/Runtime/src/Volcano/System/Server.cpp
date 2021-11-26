@@ -1,22 +1,25 @@
 //
 //
+#include <memory>
+
 #include <QHostAddress>
 
+#include <Volcano/System/Protocol.hpp>
 #include <Volcano/System/Server.hpp>
 
 VOLCANO_SYSTEM_BEGIN
 
 Server::Server(QObject *parent):
-    QObject(parent),
+    Game::World(parent),
     m_tickTimer(0),
-    m_gameWorld(nullptr)
+    m_host("0.0.0.0"),
+    m_port(Protocol::DEFAULT_PORT)
 {
     //m_stream.setByteOrder(QDataStream::LittleEndian);
     //m_stream.setDevice(&m_socket);
 
     setTpsMax(20);
     m_tickCountTimer = startTimer(1000);
-    connect(&m_socket, &QUdpSocket::readyRead, this, &Server::onReadyRead);
 }
 
 Server::~Server(void)
@@ -67,17 +70,8 @@ void Server::start(void)
     if (m_tickTimer > 0)
         return;
 
-    if (m_bind.isValid()) {
-        if (!m_bind.scheme().compare("udp", Qt::CaseInsensitive))
-            return;
-
-        if (!m_socket.bind(QHostAddress(m_bind.host()), m_bind.port(7788)))
-            return;
-    }
-
-    if (!m_loopback.isEmpty()) {
-        // TODO
-    }
+   if (!m_socket.bind(QHostAddress(m_host), m_port))
+        return;
 
     //m_stream.resetStatus();
 
@@ -105,19 +99,18 @@ void Server::stop(void)
     emit runningChanged(false);
 }
 
-const QString &Server::host(void) const
+QString Server::host(void) const
 {
     return m_host;
 }
 
-void Server::setHost(const QString &v)
+void Server::setHost(QString v)
 {
-    if (m_host == v)
-        return;
-
-    m_host = v;
-    tryToRestart();
-    hostChanged(v);
+    if (m_host != v) {
+        m_host = v;
+        tryToRestart();
+        emit hostChanged(v);
+    }
 }
 
 quint16 Server::port(void) const
@@ -127,24 +120,10 @@ quint16 Server::port(void) const
 
 void Server::setPort(quint16 v)
 {
-    if (m_port == v)
-        return;
-
-    m_port = v;
-    tryToRestart();
-    emit portChanged(v);
-}
-
-Game::World *Server::gameWorld(void)
-{
-    return m_gameWorld;
-}
-
-void Server::setGameWorld(Game::World *p)
-{
-    if (m_gameWorld != p) {
-        m_gameWorld = p;
-        emit gameWorldChanged(p);
+    if (m_port != v) {
+        m_port = v;
+        tryToRestart();
+        emit portChanged(v);
     }
 }
 
@@ -164,17 +143,9 @@ void Server::timerEvent(QTimerEvent *evt)
     }
 }
 
-void Server::onReadyRead(void)
-{
-    auto size = m_socket.pendingDatagramSize();
-    if (size < 1)
-        return;
-}
-
 void Server::tick(float elapsed)
 {
-    if (Q_LIKELY(m_gameWorld != nullptr))
-        m_gameWorld->tick(elapsed);
+    Game::World::tick(elapsed);
 
     // TODO
 }

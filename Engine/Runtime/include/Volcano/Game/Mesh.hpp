@@ -6,19 +6,16 @@
 #include <QFuture>
 
 #include <Volcano/Game/Common.hpp>
-#include <Volcano/Game/Resource.hpp>
+#include <Volcano/Game/Component.hpp>
 
 VOLCANO_GAME_BEGIN
 
-class Mesh: public Resource {
+class Mesh: public Component {
     Q_OBJECT
 
 public:
     Mesh(QObject *parent = nullptr);
-    virtual ~Mesh(void);
-
-private:
-    void onSourceChanged(const QUrl &v) override;
+    ~Mesh(void) override;
 };
 
 VOLCANO_GAME_END

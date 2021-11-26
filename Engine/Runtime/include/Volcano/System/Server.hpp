@@ -7,7 +7,6 @@
 
 #include <QString>
 #include <QUrl>
-#include <QObject>
 #include <QTimerEvent>
 #include <QElapsedTimer>
 #include <QUdpSocket>
@@ -19,14 +18,13 @@
 
 VOLCANO_SYSTEM_BEGIN
 
-class Server: public QObject {
+class Server: public Game::World {
     Q_OBJECT
     Q_PROPERTY(int tps READ tps NOTIFY tpsChanged)
     Q_PROPERTY(int tpsMax READ tpsMax WRITE setTpsMax NOTIFY tpsMaxChanged)
     Q_PROPERTY(bool running READ isRunning WRITE setRunning NOTIFY runningChanged)
-    Q_PROPERTY(QUrl bind READ bind WRITE setBind NOTIFY bindChanged)
-    Q_PROPERTY(QString loopback READ loopback WRITE setLoopback NOTIFY loopbackChanged)
-    Q_PROPERTY(Game::World *gameWorld READ gameWorld WRITE setGameWorld NOTIFY gameWorldChanged)
+    Q_PROPERTY(QString host READ host WRITE setHost NOTIFY hostChanged)
+    Q_PROPERTY(quint16 port READ port WRITE setPort NOTIFY portChanged)
 
 public:
     Server(QObject *parent = nullptr);
@@ -40,33 +38,27 @@ public:
     void setRunning(bool v);
     Q_INVOKABLE void start(void);
     Q_INVOKABLE void stop(void);
-    const QUrl &bind(void) const;
-    void setBind(const QUrl &v);
-    QString loopback(void) const;
-    void setLoopback(const QString &v);
-    Game::World *gameWorld(void);
-    void setGameWorld(Game::World *p);
+    QString host(void) const;
+    void setHost(QString v);
+    quint16 port(void) const;
+    void setPort(quint16 v);
 
 signals:
     void tpsChanged(int v);
     void tpsMaxChanged(int v);
     void runningChanged(bool v);
-    void hostChanged(const QString &v);
+    void hostChanged(QString v);
     void portChanged(quint16 v);
-    void gameWorldChanged(Game::World *p);
 
 protected:
     void timerEvent(QTimerEvent *evt) override;
-
-private slots:
-    void onReadyRead(void);
+    void tick(float elapsed) override;
 
 private:
-    void tick(float elapsed);
     void tryToRestart(void);
 
 private:
-    using SessionList = std::list<Session *>;
+    using SessionList = std::list<Session>;
 
 private:
     int m_tickTimer;
@@ -75,13 +67,12 @@ private:
     int m_tickCountTimer;
     int m_tickCountPerSecond;
     QElapsedTimer m_tickElapsedTimer;
-    QUrl m_bind;
-    QString m_loopback;
+    QString m_host;
+    quint16 m_port;
     QUdpSocket m_socket;
     QDataStream m_txStream;
     QByteArray m_txBuffer;
     SessionList m_sessionList;
-    Game::World *m_gameWorld;
 };
 
 VOLCANO_SYSTEM_END

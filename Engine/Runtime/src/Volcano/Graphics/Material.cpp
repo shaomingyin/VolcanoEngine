@@ -5,7 +5,7 @@
 VOLCANO_GRAPHICS_BEGIN
 
 Material::Material(QObject *parent):
-    Component(parent)
+    QObject(parent)
 {
 }
 

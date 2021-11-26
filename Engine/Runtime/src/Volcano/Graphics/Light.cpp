@@ -5,7 +5,7 @@
 VOLCANO_GRAPHICS_BEGIN
 
 Light::Light(QObject *parent):
-    Object(parent)
+    QObject(parent)
 {
 }
 

@@ -5,15 +5,11 @@
 VOLCANO_GRAPHICS_BEGIN
 
 Mesh::Mesh(QObject *parent):
-    Resource(parent)
+    QObject(parent)
 {
 }
 
 Mesh::~Mesh(void)
-{
-}
-
-void Mesh::onSourceChanged(const QUrl &v)
 {
 }
 
