@@ -8,15 +8,10 @@
 #include <QSurfaceFormat>
 #include <QCommandLineParser>
 #include <QGuiApplication>
-#include <QQuickView>
 #include <QQmlApplicationEngine>
 
-#include <Volcano/Net/Socket.hpp>
-#include <Volcano/Net/Connection.hpp>
-#include <Volcano/Net/Server.hpp>
-#include <Volcano/Net/Session.hpp>
-
 #include <Volcano/Game/World.hpp>
+#include <Volcano/Game/DynamicWorld.hpp>
 #include <Volcano/Game/Object.hpp>
 #include <Volcano/Game/Entity.hpp>
 #include <Volcano/Game/Component.hpp>
@@ -76,14 +71,6 @@ static void registerQmlTypes(void)
     //registerQmlAnonymousType<QAbstractSocket>(uri);
 
     ///////////////////////////////////////////////////////////////////////////
-    uri = "Volcano.Net";
-
-    registerQmlUncreatableType<Net::Socket>(uri, "Socket");
-    registerQmlType<Net::Connection>(uri, "Connection");
-    registerQmlType<Net::Server>(uri, "Server");
-    registerQmlUncreatableType<Net::Session>(uri, "Session");
-
-    ///////////////////////////////////////////////////////////////////////////
     uri = "Volcano.Game";
 
     registerQmlUncreatableType<Game::Object>(uri, "Object");
@@ -91,6 +78,7 @@ static void registerQmlTypes(void)
     registerQmlUncreatableType<Graphics::Light>(uri, "Light");
     registerQmlType<Game::Entity>(uri, "Entity");
     registerQmlType<Game::World>(uri, "World");
+    registerQmlType<Game::DynamicWorld>(uri, "DynamicWorld");
     registerQmlUncreatableType<Game::Light>(uri, "Light");
     registerQmlType<Game::DirectionalLight>(uri, "DirectionalLight");
     registerQmlType<Game::PointLight>(uri, "PointLight");
@@ -116,28 +104,6 @@ static void registerQmlTypes(void)
 
     registerQmlType<System::Client>(uri, "Client");
     registerQmlType<System::Server>(uri, "Server");
-}
-
-static void initDefaultGraphicsSettings(void)
-{
-    QSurfaceFormat fmt = QSurfaceFormat::defaultFormat();
-
-    fmt.setVersion(3, 3);
-    fmt.setProfile(QSurfaceFormat::CoreProfile);
-    fmt.setSwapBehavior(QSurfaceFormat::DoubleBuffer);
-
-#ifdef VOLCANO_DEBUG
-    fmt.setOption(QSurfaceFormat::DebugContext, true);
-#endif
-
-    fmt.setRedBufferSize(8);
-    fmt.setGreenBufferSize(8);
-    fmt.setBlueBufferSize(8);
-    fmt.setDepthBufferSize(24);
-
-    QSurfaceFormat::setDefaultFormat(fmt);
-
-    QQuickView::setGraphicsApi(QSGRendererInterface::OpenGL);
 }
 
 static int main(int argc, char *argv[])
@@ -183,7 +149,7 @@ static int main(int argc, char *argv[])
     }
 
     registerQmlTypes();
-    initDefaultGraphicsSettings();
+    Graphics::initDefaultSettings();
 
     auto networkAccessManagerFactory =
             std::make_unique<NetworkAccessManagerFactory>();

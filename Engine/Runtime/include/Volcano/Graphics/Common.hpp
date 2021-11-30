@@ -22,7 +22,7 @@ struct Vertex {
 
 using VertexIndex = quint32;
 
-void initDefaultGraphicsSettings(void);
+void initDefaultSettings(void);
 
 VOLCANO_GRAPHICS_END
 

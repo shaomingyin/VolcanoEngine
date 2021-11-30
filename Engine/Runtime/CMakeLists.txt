@@ -17,19 +17,28 @@ configure_file(
     )
 
 target_include_directories(Runtime
-	PUBLIC
-		${CMAKE_CURRENT_SOURCE_DIR}/include
-		${CMAKE_CURRENT_BINARY_DIR}/include
+    PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+        ${CMAKE_CURRENT_BINARY_DIR}/include
+    )
+
+target_compile_definitions(Runtime
+    PUBLIC
+        WIN32_LEAN_AND_MEAN
     )
 
 target_link_qt_modules(Runtime
-	PUBLIC
-		Concurrent
-		Qml
-		Gui
-		OpenGL
-		Quick
-	)
+    PUBLIC
+        Concurrent
+        Qml
+        Gui
+        OpenGL
+        Quick
+    )
+
+if(WIN32)
+    target_link_libraries(Runtime PUBLIC Winmm)
+endif()
 
 include(FindBullet)
 if(BULLET_FOUND)

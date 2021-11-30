@@ -2,6 +2,8 @@
 //
 #include <memory>
 
+#include <QScopeGuard>
+#include <QDataStream>
 #include <QHostAddress>
 
 #include <Volcano/System/Protocol.hpp>
@@ -10,13 +12,18 @@
 VOLCANO_SYSTEM_BEGIN
 
 Server::Server(QObject *parent):
-    Game::World(parent),
+    QObject(parent),
     m_tickTimer(0),
-    m_host("0.0.0.0"),
-    m_port(Protocol::DEFAULT_PORT)
+    m_maxSession(16),
+    m_url("volcano://any"),
+    m_gameWorld(nullptr),
+    m_rxNotifier(QSocketNotifier::Read),
+    m_enetHost(nullptr)
 {
     //m_stream.setByteOrder(QDataStream::LittleEndian);
     //m_stream.setDevice(&m_socket);
+
+    connect(&m_rxNotifier, &QSocketNotifier::activated, this, &Server::onSocketActivated);
 
     setTpsMax(20);
     m_tickCountTimer = startTimer(1000);
@@ -65,14 +72,60 @@ void Server::setRunning(bool v)
     }
 }
 
-void Server::start(void)
+int Server::maxSession(void) const
 {
-    if (m_tickTimer > 0)
-        return;
+    return m_maxSession;
+}
 
-   if (!m_socket.bind(QHostAddress(m_host), m_port))
-        return;
+void Server::setMaxSession(int v)
+{
+    int tmp = qBound(1, v, 256);
+    if (m_maxSession != tmp) {
+        m_maxSession = tmp;
+        tryToRestart();
+        emit maxSessionChanged(tmp);
+    }
+}
 
+const QUrl &Server::url(void) const
+{
+    return m_url;
+}
+
+void Server::setUrl(const QUrl &v)
+{
+    if (m_url!= v) {
+        m_url = v;
+        tryToRestart();
+        emit urlChanged(v);
+    }
+}
+
+bool Server::start(void)
+{
+    if (m_enetHost != nullptr)
+        return true;
+
+    if (m_url.scheme().compare("volcano", Qt::CaseInsensitive))
+        return false;
+
+    ENetAddress addr;
+
+    QString host = m_url.host();
+    if (host.compare("any", Qt::CaseInsensitive))
+        enet_address_set_host(&addr, qPrintable(m_url.host()));
+    else
+        addr.host = ENET_HOST_ANY;
+
+    addr.port = m_url.port(DEFAULT_PORT);
+
+    Q_ASSERT(m_enetHost == nullptr);
+    m_enetHost = enet_host_create(&addr, m_maxSession, 0, 0, 0);
+    if (m_enetHost == nullptr)
+        return false;
+
+    m_rxNotifier.setSocket(m_enetHost->socket);
+    m_rxNotifier.setEnabled(true);
     //m_stream.resetStatus();
 
     m_tickTimer = startTimer(m_tickElapsedMin, Qt::PreciseTimer);
@@ -81,14 +134,23 @@ void Server::start(void)
     m_tickElapsedTimer.restart();
 
     emit runningChanged(true);
+
+    return true;
 }
 
 void Server::stop(void)
 {
-    if (m_tickTimer == 0)
+    if (m_enetHost == nullptr)
         return;
 
-    m_socket.close();
+    Q_ASSERT(m_rxNotifier.isValid());
+    Q_ASSERT(m_rxNotifier.isEnabled());
+    m_rxNotifier.setSocket(-1);
+    m_rxNotifier.setEnabled(false);
+
+    Q_ASSERT(m_enetHost != nullptr);
+    enet_host_destroy(m_enetHost);
+    m_enetHost = nullptr;
 
     killTimer(m_tickTimer);
     m_tickTimer = 0;
@@ -99,32 +161,49 @@ void Server::stop(void)
     emit runningChanged(false);
 }
 
-QString Server::host(void) const
+Game::World *Server::gameWorld(void)
 {
-    return m_host;
+    return m_gameWorld;
 }
 
-void Server::setHost(QString v)
+void Server::setGameWorld(Game::World *p)
 {
-    if (m_host != v) {
-        m_host = v;
-        tryToRestart();
-        emit hostChanged(v);
+    if (m_gameWorld == p)
+        return;
+
+    if (m_gameWorld != nullptr) {
+        // TODO
     }
-}
 
-quint16 Server::port(void) const
-{
-    return m_port;
-}
+    m_gameWorld = p;
 
-void Server::setPort(quint16 v)
-{
-    if (m_port != v) {
-        m_port = v;
-        tryToRestart();
-        emit portChanged(v);
+    if (m_gameWorld != nullptr) {
+        // TODO
     }
+
+    emit gameWorldChanged(p);
+}
+
+const SessionList &Server::sessions(void) const
+{
+    return m_sessions;
+}
+
+QQmlListProperty<Session> Server::qmlSessions(void)
+{
+    return { this, this,
+        &Server::qmlSessionCount,
+        &Server::qmlSessionAt };
+}
+
+qsizetype Server::sessionCount(void) const
+{
+    return m_sessions.count();
+}
+
+Session *Server::sessionAt(qsizetype index)
+{
+    return m_sessions[index];
 }
 
 void Server::timerEvent(QTimerEvent *evt)
@@ -145,9 +224,24 @@ void Server::timerEvent(QTimerEvent *evt)
 
 void Server::tick(float elapsed)
 {
-    Game::World::tick(elapsed);
+    pollENet();
+
+    if (m_gameWorld != nullptr)
+        m_gameWorld->tick(elapsed);
 
     // TODO
+}
+
+qsizetype Server::qmlSessionCount(QQmlListProperty<Session> *list)
+{
+    auto server = reinterpret_cast<Server *>(list->data);
+    return server->sessionCount();
+}
+
+Session *Server::qmlSessionAt(QQmlListProperty<Session> *list, qsizetype index)
+{
+    auto server = reinterpret_cast<Server *>(list->data);
+    return server->sessionAt(index);
 }
 
 void Server::tryToRestart(void)
@@ -156,6 +250,80 @@ void Server::tryToRestart(void)
         stop();
         start();
     }
+}
+
+void Server::onPeerConnected(ENetPeer *enetPeer)
+{
+    auto it(findSesssion(enetPeer));
+    if (it == m_sessions.end()) {
+        auto p = new Session(enetPeer, this);
+        m_sessions.append(p);
+        // TODO
+    }
+}
+
+void Server::onPeerDisconnected(ENetPeer *enetPeer)
+{
+    auto it(findSesssion(enetPeer));
+    if (it != m_sessions.end()) {
+        Q_ASSERT(enetPeer == (*it)->toENetPeer());
+        m_sessions.erase(it);
+    }
+}
+
+void Server::onPeerReceived(ENetPeer *enetPeer, const void *p, quint64 len)
+{
+    if (isRunning()) {
+        Q_ASSERT(m_enetHost != nullptr);
+        Q_ASSERT(findSesssion(enetPeer) != m_sessions.end());
+        auto data = QByteArray::fromRawData((const char *)p, len);
+        Session::handleReceived(enetPeer, data);
+    }
+}
+
+void Server::pollENet(void)
+{
+    Q_ASSERT(m_enetHost != nullptr);
+
+    ENetEvent evt;
+    int ret = enet_host_service(m_enetHost, &evt, 0);
+    if (ret > 0) {
+        switch (evt.type) {
+        case ENET_EVENT_TYPE_RECEIVE:
+            onPeerReceived(evt.peer, evt.packet->data, evt.packet->dataLength);
+            enet_packet_destroy(evt.packet);
+            break;
+        case ENET_EVENT_TYPE_CONNECT:
+            onPeerConnected(evt.peer);
+            break;
+        case ENET_EVENT_TYPE_DISCONNECT:
+            onPeerDisconnected(evt.peer);
+            break;
+        default:
+            break;
+        }
+    }
+}
+
+SessionList::iterator Server::findSesssion(ENetPeer *enetPeer)
+{
+    Q_ASSERT(enetPeer != nullptr);
+
+    SessionList::iterator it;
+    for (it = m_sessions.begin(); it != m_sessions.end(); ++it) {
+        if ((*it)->toENetPeer() == enetPeer)
+            break;
+    }
+
+    return it;
+}
+
+void Server::onSocketActivated(QSocketDescriptor sd, QSocketNotifier::Type type)
+{
+    Q_ASSERT(m_enetHost != nullptr);
+    Q_ASSERT(m_enetHost->socket == qintptr(sd));
+
+    pollENet();
 }
 
 VOLCANO_SYSTEM_END

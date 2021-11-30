@@ -14,6 +14,8 @@
 
 VOLCANO_GAME_BEGIN
 
+using ComponentList = QList<Component *>;
+
 class Entity: public Object {
     Q_OBJECT
     Q_PROPERTY(QVector3D position READ position WRITE setPosition NOTIFY positionChanged)
@@ -34,7 +36,7 @@ public:
     void setScale(const QVector3D &v);
     const QQuaternion &rotation(void);
     void setRotation(const QQuaternion &v);
-    const QList<Component *> &components(void) const;
+    const ComponentList &components(void) const;
     QQmlListProperty<Component> qmlComponents(void);
     void appendComponent(Component *component);
     qsizetype componentCount(void) const;
@@ -65,7 +67,7 @@ private:
     QVector3D m_position;
     QVector3D m_scale;
     QQuaternion m_rotation;
-    QList<Component *> m_components;
+    ComponentList m_components;
 };
 
 VOLCANO_GAME_END

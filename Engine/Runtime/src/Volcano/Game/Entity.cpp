@@ -58,7 +58,7 @@ void Entity::setRotation(const QQuaternion &v)
     }
 }
 
-const QList<Component *> &Entity::components(void) const
+const ComponentList &Entity::components(void) const
 {
     return m_components;
 }

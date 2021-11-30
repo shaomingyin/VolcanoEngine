@@ -3,8 +3,7 @@
 #ifndef VOLCANO_SYSTEM_COMMON_HPP
 #define VOLCANO_SYSTEM_COMMON_HPP
 
-#include <QString>
-#include <QIODevice>
+#include <enet/enet.h>
 
 #include <Volcano/Common.hpp>
 
@@ -13,7 +12,7 @@
 
 VOLCANO_SYSTEM_BEGIN
 
-QAbstractSocket *openSocket(QUrl url);
+static constexpr quint16 DEFAULT_PORT = 7788;
 
 VOLCANO_SYSTEM_END
 

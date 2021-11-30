@@ -18,7 +18,7 @@ static int main(int argc, char *argv[])
 
     qInfo("VolcanoEngine %s", VOLCANO_VERSION_STR);
 
-    Graphics::initDefaultGraphicsSettings();
+    Graphics::initDefaultSettings();
 
     auto mainWindow = std::make_unique<MainWindow>();
     if (!mainWindow || !mainWindow->init()) {

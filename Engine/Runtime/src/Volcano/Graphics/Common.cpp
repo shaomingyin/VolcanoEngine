@@ -7,7 +7,7 @@
 
 VOLCANO_GRAPHICS_BEGIN
 
-void initDefaultGraphicsSettings(void)
+void initDefaultSettings(void)
 {
     QSurfaceFormat fmt = QSurfaceFormat::defaultFormat();
 
