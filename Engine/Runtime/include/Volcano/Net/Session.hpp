@@ -1,14 +1,14 @@
 //
 //
-#ifndef VOLCANO_SYSTEM_SESSION_HPP
-#define VOLCANO_SYSTEM_SESSION_HPP
+#ifndef VOLCANO_NET_SESSION_HPP
+#define VOLCANO_NET_SESSION_HPP
 
 #include <QByteArray>
 #include <QObject>
 
-#include <Volcano/System/Common.hpp>
+#include <Volcano/Net/Common.hpp>
 
-VOLCANO_SYSTEM_BEGIN
+VOLCANO_NET_BEGIN
 
 class Session: public QObject {
     Q_OBJECT
@@ -28,6 +28,6 @@ private:
     ENetPeer *m_enetPeer;
 };
 
-VOLCANO_SYSTEM_END
+VOLCANO_NET_END
 
-#endif // VOLCANO_SYSTEM_SESSION_HPP
+#endif // VOLCANO_NET_SESSION_HPP

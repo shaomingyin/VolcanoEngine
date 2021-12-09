@@ -3,39 +3,38 @@
 #include <QDataStream>
 #include <QScopeGuard>
 
-#include <Volcano/System/Protocol.hpp>
-#include <Volcano/System/Client.hpp>
+#include <Volcano/Net/ClientWorld.hpp>
 
-VOLCANO_SYSTEM_BEGIN
+VOLCANO_NET_BEGIN
 
-Client::Client(QObject *parent):
-    Graphics::Viewable(parent),
+ClientWorld::ClientWorld(QObject *parent):
+    Game::WorldBase(parent),
     m_state(STATE_DISABLED),
     m_url("volcano://localhost"),
     m_rxNotifier(QSocketNotifier::Read),
     m_enetHost(nullptr),
     m_enetPeer(nullptr)
 {
-    connect(&m_rxNotifier, &QSocketNotifier::activated, this, &Client::onSocketActivated);
+    connect(&m_rxNotifier, &QSocketNotifier::activated, this, &ClientWorld::onSocketActivated);
 }
 
-Client::~Client(void)
+ClientWorld::~ClientWorld(void)
 {
     if (m_enetHost != nullptr)
         enet_host_destroy(m_enetHost);
 }
 
-Client::State Client::state(void) const
+ClientWorld::State ClientWorld::state(void) const
 {
     return m_state;
 }
 
-bool Client::isEnabled() const
+bool ClientWorld::isEnabled() const
 {
     return (m_state == STATE_ENABLED);
 }
 
-void Client::setEnabled(bool v)
+void ClientWorld::setEnabled(bool v)
 {
     if (isEnabled()) {
         if (!v)
@@ -46,12 +45,12 @@ void Client::setEnabled(bool v)
     }
 }
 
-const QUrl &Client::url(void) const
+const QUrl &ClientWorld::url(void) const
 {
     return m_url;
 }
 
-void Client::setUrl(const QUrl &v)
+void ClientWorld::setUrl(const QUrl &v)
 {
     if (m_url == v || isEnabled()) {
         m_url = v;
@@ -59,7 +58,7 @@ void Client::setUrl(const QUrl &v)
     }
 }
 
-bool Client::enable(void)
+bool ClientWorld::enable(void)
 {
     if (m_state != STATE_DISABLED)
         return false;
@@ -92,7 +91,7 @@ bool Client::enable(void)
     return true;
 }
 
-void Client::disable(void)
+void ClientWorld::disable(void)
 {
     if (m_state != STATE_ENABLED)
         return;
@@ -104,11 +103,14 @@ void Client::disable(void)
     setState(STATE_DISABLING);
 }
 
-void Client::buildVisibleSet(Graphics::VisibleSet &out, Graphics::Camera &cam)
+QQmlListProperty<Game::Object> ClientWorld::qmlObjects(void)
 {
+    return { this, this,
+        &ClientWorld::qmlObjectCount,
+        &ClientWorld::qmlObjectAt };
 }
 
-void Client::setState(State v)
+void ClientWorld::setState(State v)
 {
     if (m_state == v)
         return;
@@ -128,7 +130,17 @@ void Client::setState(State v)
     }
 }
 
-void Client::onPeerConnected(ENetPeer *enetPeer)
+qsizetype ClientWorld::qmlObjectCount(QQmlListProperty<Game::Object> *list)
+{
+    return reinterpret_cast<ClientWorld *>(list->data)->objectCount();
+}
+
+Game::Object *ClientWorld::qmlObjectAt(QQmlListProperty<Game::Object> *list, qsizetype index)
+{
+    return reinterpret_cast<ClientWorld *>(list->data)->objectAt(index);
+}
+
+void ClientWorld::onPeerConnected(ENetPeer *enetPeer)
 {
     if (m_state != STATE_ENABLING)
         return;
@@ -140,7 +152,7 @@ void Client::onPeerConnected(ENetPeer *enetPeer)
     setState(STATE_ENABLED);
 }
 
-void Client::onPeerDisconnected(ENetPeer *enetPeer)
+void ClientWorld::onPeerDisconnected(ENetPeer *enetPeer)
 {
     if (m_state != STATE_ENABLED)
         return;
@@ -152,7 +164,7 @@ void Client::onPeerDisconnected(ENetPeer *enetPeer)
     setState(STATE_DISABLED);
 }
 
-void Client::onPeerReceived(ENetPeer *enetPeer, const void *p, quint64 len)
+void ClientWorld::onPeerReceived(ENetPeer *enetPeer, const void *p, quint64 len)
 {
     if (m_state != STATE_ENABLED)
         return;
@@ -166,7 +178,7 @@ void Client::onPeerReceived(ENetPeer *enetPeer, const void *p, quint64 len)
     // TODO
 }
 
-void Client::onSocketActivated(QSocketDescriptor sd, QSocketNotifier::Type type)
+void ClientWorld::onSocketActivated(QSocketDescriptor sd, QSocketNotifier::Type type)
 {
     Q_ASSERT(m_enetHost != nullptr);
     Q_ASSERT(m_enetHost->socket == qintptr(sd));
@@ -191,4 +203,4 @@ void Client::onSocketActivated(QSocketDescriptor sd, QSocketNotifier::Type type)
     }
 }
 
-VOLCANO_SYSTEM_END
+VOLCANO_NET_END

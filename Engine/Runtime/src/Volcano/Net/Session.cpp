@@ -2,9 +2,9 @@
 //
 #include <QDataStream>
 
-#include <Volcano/System/Session.hpp>
+#include <Volcano/Net/Session.hpp>
 
-VOLCANO_SYSTEM_BEGIN
+VOLCANO_NET_BEGIN
 
 Session::Session(ENetPeer *enetPeer, QObject *parent):
     QObject(parent),
@@ -39,4 +39,4 @@ void Session::onReceived(const QByteArray &data)
     // TODO
 }
 
-VOLCANO_SYSTEM_END
+VOLCANO_NET_END

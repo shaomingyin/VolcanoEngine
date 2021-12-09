@@ -1,21 +1,23 @@
 //
 //
-#ifndef VOLCANO_SYSTEM_CLIENT_HPP
-#define VOLCANO_SYSTEM_CLIENT_HPP
+#ifndef VOLCANO_NET_CLIENTWORLD_HPP
+#define VOLCANO_NET_CLIENTWORLD_HPP
 
 #include <QUrl>
 #include <QSocketNotifier>
 #include <QSocketDescriptor>
+#include <QQmlListProperty>
 
-#include <Volcano/Graphics/Viewable.hpp>
-#include <Volcano/System/Common.hpp>
+#include <Volcano/Game/WorldBase.hpp>
+#include <Volcano/Net/Common.hpp>
 
-VOLCANO_SYSTEM_BEGIN
+VOLCANO_NET_BEGIN
 
-class Client: public Graphics::Viewable {
+class ClientWorld: public Game::WorldBase {
     Q_OBJECT
     Q_PROPERTY(bool enabled READ isEnabled WRITE setEnabled NOTIFY enabledChanged)
     Q_PROPERTY(QUrl url READ url WRITE setUrl NOTIFY urlChanged)
+    Q_PROPERTY(QQmlListProperty<Game::Object> objects READ qmlObjects)
 
 public:
     enum State {
@@ -29,8 +31,8 @@ public:
     Q_PROPERTY(State state READ state NOTIFY stateChanged)
 
 public:
-    Client(QObject *parent = nullptr);
-    ~Client(void) override;
+    ClientWorld(QObject *parent = nullptr);
+    ~ClientWorld(void) override;
 
 public:
     State state(void) const;
@@ -40,7 +42,7 @@ public:
     void setUrl(const QUrl &v);
     Q_INVOKABLE bool enable(void);
     Q_INVOKABLE void disable(void);
-    void buildVisibleSet(Graphics::VisibleSet &out, Graphics::Camera &cam) override;
+    QQmlListProperty<Game::Object> qmlObjects(void);
 
 signals:
     void stateChanged(State v);
@@ -51,6 +53,8 @@ protected:
     void setState(State v);
 
 private:
+    static qsizetype qmlObjectCount(QQmlListProperty<Game::Object> *list);
+    static Game::Object *qmlObjectAt(QQmlListProperty<Game::Object> *list, qsizetype index);
     void onPeerConnected(ENetPeer *enetPeer);
     void onPeerDisconnected(ENetPeer *enetPeer);
     void onPeerReceived(ENetPeer *enetPeer, const void *p, quint64 len);
@@ -66,6 +70,6 @@ private:
     ENetPeer *m_enetPeer;
 };
 
-VOLCANO_SYSTEM_END
+VOLCANO_NET_END
 
-#endif // VOLCANO_SYSTEM_CLIENT_HPP
+#endif // VOLCANO_NET_CLIENTWORLD_HPP

@@ -14,7 +14,7 @@ Object::~Object(void)
 {
 }
 
-void Object::tick(float elapsed)
+void Object::tick(Duration elapsed)
 {
     Q_UNUSED(elapsed);
 }

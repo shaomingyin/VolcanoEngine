@@ -3,6 +3,8 @@
 #ifndef VOLCANO_COMMON_HPP
 #define VOLCANO_COMMON_HPP
 
+#include <chrono>
+
 #include <QtCore>
 #include <QtConcurrent>
 #include <QtQml>
@@ -37,6 +39,12 @@
 #define VOLCANO_END }
 
 VOLCANO_BEGIN
+
+using namespace std::chrono_literals;
+
+using Clock = std::chrono::high_resolution_clock;
+using TimePoint = Clock::time_point;
+using Duration = Clock::duration;
 
 void setApplicationName(const QString &name);
 

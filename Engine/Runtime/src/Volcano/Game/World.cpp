@@ -5,23 +5,12 @@
 VOLCANO_GAME_BEGIN
 
 World::World(QObject *parent):
-    QObject(parent)
+    WorldBase(parent)
 {
 }
 
 World::~World(void)
 {
-}
-
-void World::tick(float elapsed)
-{
-    for (auto object: m_objects)
-        object->tick(elapsed);
-}
-
-const QList<Object *> &World::objects(void) const
-{
-    return m_objects;
 }
 
 QQmlListProperty<Object> World::qmlObjects(void)
@@ -35,63 +24,16 @@ QQmlListProperty<Object> World::qmlObjects(void)
         &World::qmlRemoveLastObject };
 }
 
-void World::appendObject(Object *object)
-{
-    m_objects.append(object);
-    handleObjectAdded(object);
-}
-
-qsizetype World::objectCount(void) const
-{
-    return m_objects.count();
-}
-
-Object *World::objectAt(qsizetype index)
-{
-    if (0 <= index && index < m_objects.size())
-        return m_objects.at(index);
-
-    return nullptr;
-}
-
-void World::clearObjects(void)
-{
-    QList<Object *> objects = std::move(m_objects);
-    for (auto object: objects)
-        handleObjectRemoved(object);
-}
-
-void World::replaceObject(qsizetype index, Object *object)
-{
-    if (0 <= index && index < m_objects.size()) {
-        auto oldObject = m_objects.at(index);
-        m_objects.replace(index, object);
-        handleObjectRemoved(oldObject);
-        handleObjectAdded(object);
-    }
-}
-
-void World::removeLastObject(void)
-{
-    if (!m_objects.isEmpty()) {
-        auto object = m_objects.last();
-        m_objects.removeLast();
-        handleObjectRemoved(object);
-    }
-}
-
 void World::handleObjectAdded(Object *object, bool emitSignal)
 {
     object->setParent(this);
-    if (emitSignal)
-        emit objectAdded(object);
+    WorldBase::handleObjectAdded(object, emitSignal);
 }
 
 void World::handleObjectRemoved(Object *object, bool emitSignal)
 {
     object->setParent(nullptr);
-    if (emitSignal)
-        emit objectRemoved(object);
+    WorldBase::handleObjectRemoved(object, emitSignal);
 }
 
 void World::qmlAppendObject(QQmlListProperty<Object> *list, Object *object)

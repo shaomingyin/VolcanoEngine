@@ -24,10 +24,11 @@ DynamicWorld::~DynamicWorld(void)
         release();
 }
 
-void DynamicWorld::tick(float elapsed)
+void DynamicWorld::tick(Duration elapsed)
 {
     if (Q_LIKELY(m_btWorld != nullptr)) {
-        m_btWorld->stepSimulation(elapsed);
+        auto ms = std::chrono::duration_cast<std::chrono::microseconds>(elapsed);
+        m_btWorld->stepSimulation(float(ms.count()) / 1000000.0f);
         // TODO
     }
 

@@ -9,9 +9,10 @@
 #include <QElapsedTimer>
 #include <QQuickFramebufferObject>
 
+#include <Volcano/Game/WorldBase.hpp>
 #include <Volcano/Graphics/Common.hpp>
 #include <Volcano/Graphics/Camera.hpp>
-#include <Volcano/Graphics/Viewable.hpp>
+#include <Volcano/Graphics/VisibleSet.hpp>
 
 VOLCANO_GRAPHICS_BEGIN
 
@@ -22,7 +23,7 @@ class CameraView: public QQuickFramebufferObject {
     Q_PROPERTY(Camera *camera READ camera)
     Q_PROPERTY(QColor backgroundColor READ backgroundColor WRITE setBackgroundColor NOTIFY backgroundColorChanged)
     Q_PROPERTY(bool background READ isBackgroundEnabled WRITE setBackgroundEnabled NOTIFY backgroundEnabledChanged)
-    Q_PROPERTY(Viewable *viewable READ viewable WRITE setViewable NOTIFY viewableChanged)
+    Q_PROPERTY(Game::WorldBase *gameWorld READ gameWorld WRITE setGameWorld NOTIFY gameWorldChanged)
 
 public:
     CameraView(QQuickItem *parent = nullptr);
@@ -38,15 +39,16 @@ public:
     void setBackgroundEnabled(bool v);
     const QColor backgroundColor(void) const;
     void setBackgroundColor(const QColor &v);
-    Viewable *viewable(void);
-    void setViewable(Viewable *p);
+    Game::WorldBase *gameWorld(void);
+    void setGameWorld(Game::WorldBase *p);
+    void buildVisibleSet(VisibleSet *p);
 
 signals:
     void fpsChanged(int v);
     void fpsMaxChanged(int v);
     void backgroundEnabledChanged(bool v);
     void backgroundColorChanged(const QColor &v);
-    void viewableChanged(Viewable *p);
+    void gameWorldChanged(Game::WorldBase *p);
 
 protected:
     void timerEvent(QTimerEvent *p) override;
@@ -58,7 +60,7 @@ private:
     bool m_isResized;
     bool m_isBackgroundEnabled;
     QColor m_backgroundColor;
-    Viewable *m_viewable;
+    Game::WorldBase *m_gameWorld;
     QElapsedTimer m_elapsedTimer;
     int m_frameTimer;
     int m_frameCountTimer;

@@ -19,7 +19,7 @@ public:
     ~DynamicWorld(void) override;
 
 public:
-    virtual void tick(float elapsed);
+    void tick(Duration elapsed) override;
     const QVector3D &gravity(void) const;
     void setGravity(const QVector3D &v);
 

@@ -5,11 +5,11 @@
 
 #include <Volcano/Graphics/Context.hpp>
 #include <Volcano/Graphics/CameraView.hpp>
-#include <Volcano/Graphics/View.hpp>
+#include <Volcano/Graphics/Renderer.hpp>
 
 VOLCANO_GRAPHICS_BEGIN
 
-View::View(void):
+Renderer::Renderer(void):
     m_gl(nullptr),
     m_isClearEnabled(true),
     m_clearColor(QColor::fromRgbF(0.0f, 0.0f, 0.0f)),
@@ -19,12 +19,12 @@ View::View(void):
 {
 }
 
-View::~View(void)
+Renderer::~Renderer(void)
 {
     // TODO release opengl resources...
 }
 
-bool View::init(int width, int height)
+bool Renderer::init(int width, int height)
 {
     Q_ASSERT(m_gl == nullptr);
 
@@ -35,14 +35,14 @@ bool View::init(int width, int height)
     return true;
 }
 
-void View::reset(void)
+void Renderer::reset(void)
 {
     VisibleSet::reset();
 
     // TODO
 }
 
-void View::resize(const QSize &v)
+void Renderer::resize(const QSize &v)
 {
     if (Q_LIKELY(m_size == v))
         return;
@@ -52,12 +52,12 @@ void View::resize(const QSize &v)
     m_size = v;
 }
 
-void View::resize(int width, int height)
+void Renderer::resize(int width, int height)
 {
     resize(QSize(width, height));
 }
 
-void View::render(void)
+void Renderer::render(void)
 {
     Q_ASSERT(m_gl != nullptr);
 
@@ -72,22 +72,22 @@ void View::render(void)
     // TODO
 }
 
-void View::enableClear(void)
+void Renderer::enableClear(void)
 {
     m_isClearEnabled = true;
 }
 
-void View::disableClear(void)
+void Renderer::disableClear(void)
 {
     m_isClearEnabled = false;
 }
 
-void View::setClearColor(const QColor &v)
+void Renderer::setClearColor(const QColor &v)
 {
     m_clearColor = v;
 }
 
-void View::lookAt(const QVector3D &position, const QVector3D &direction, const QVector3D &up)
+void Renderer::lookAt(const QVector3D &position, const QVector3D &direction, const QVector3D &up)
 {
     m_position = position;
     m_direction = direction;

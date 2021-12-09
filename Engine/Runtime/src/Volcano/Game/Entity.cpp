@@ -13,7 +13,7 @@ Entity::~Entity(void)
 {
 }
 
-void Entity::tick(float elapsed)
+void Entity::tick(Duration elapsed)
 {
     for (auto component: m_components)
         component->tick(elapsed);

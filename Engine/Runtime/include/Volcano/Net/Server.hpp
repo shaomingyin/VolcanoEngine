@@ -1,7 +1,7 @@
 //
 //
-#ifndef VOLCANO_SYSTEM_SERVER_HPP
-#define VOLCANO_SYSTEM_SERVER_HPP
+#ifndef VOLCANO_NET_SERVER_HPP
+#define VOLCANO_NET_SERVER_HPP
 
 #include <QList>
 #include <QUrl>
@@ -11,11 +11,11 @@
 #include <QSocketDescriptor>
 #include <QQmlListProperty>
 
-#include <Volcano/Game/World.hpp>
-#include <Volcano/System/Common.hpp>
-#include <Volcano/System/Session.hpp>
+#include <Volcano/Game/WorldBase.hpp>
+#include <Volcano/Net/Common.hpp>
+#include <Volcano/Net/Session.hpp>
 
-VOLCANO_SYSTEM_BEGIN
+VOLCANO_NET_BEGIN
 
 using SessionList = QList<Session *>;
 
@@ -26,7 +26,7 @@ class Server: public QObject {
     Q_PROPERTY(bool running READ isRunning WRITE setRunning NOTIFY runningChanged)
     Q_PROPERTY(int maxSession READ maxSession WRITE setMaxSession NOTIFY maxSessionChanged)
     Q_PROPERTY(QUrl url READ url WRITE setUrl NOTIFY urlChanged)
-    Q_PROPERTY(Game::World *gameWorld READ gameWorld WRITE setGameWorld NOTIFY gameWorldChanged)
+    Q_PROPERTY(Game::WorldBase *gameWorld READ gameWorld WRITE setGameWorld NOTIFY gameWorldChanged)
     Q_PROPERTY(QQmlListProperty<Session> sessions READ qmlSessions)
 
 public:
@@ -45,8 +45,8 @@ public:
     void setUrl(const QUrl &v);
     Q_INVOKABLE bool start(void);
     Q_INVOKABLE void stop(void);
-    Game::World *gameWorld(void);
-    void setGameWorld(Game::World *p);
+    Game::WorldBase *gameWorld(void);
+    void setGameWorld(Game::WorldBase *p);
     const SessionList &sessions(void) const;
     QQmlListProperty<Session> qmlSessions(void);
     qsizetype sessionCount(void) const;
@@ -58,11 +58,11 @@ signals:
     void runningChanged(bool v);
     void maxSessionChanged(int v);
     void urlChanged(const QUrl &v);
-    void gameWorldChanged(Game::World *p);
+    void gameWorldChanged(Game::WorldBase *p);
 
 protected:
     void timerEvent(QTimerEvent *evt) override;
-    void tick(float elapsed);
+    void tick(Duration elapsed);
 
 private:
     static qsizetype qmlSessionCount(QQmlListProperty<Session> *list);
@@ -74,9 +74,6 @@ private:
     void pollENet(void);
     SessionList::iterator findSesssion(ENetPeer *enetPeer);
 
-private slots:
-    void onSocketActivated(QSocketDescriptor sd, QSocketNotifier::Type type);
-
 private:
     int m_tickTimer;
     int m_tickElapsedMin;
@@ -86,7 +83,7 @@ private:
     QElapsedTimer m_tickElapsedTimer;
     int m_maxSession;
     QUrl m_url;
-    Game::World *m_gameWorld;
+    Game::WorldBase *m_gameWorld;
     QSocketNotifier m_rxNotifier;
     ENetHost *m_enetHost;
     QDataStream m_txStream;
@@ -94,6 +91,6 @@ private:
     SessionList m_sessions;
 };
 
-VOLCANO_SYSTEM_END
+VOLCANO_NET_END
 
-#endif // VOLCANO_SYSTEM_SERVER_HPP
+#endif // VOLCANO_NET_SERVER_HPP

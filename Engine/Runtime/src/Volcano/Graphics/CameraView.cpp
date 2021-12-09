@@ -4,8 +4,9 @@
 
 #include <QOpenGLContext>
 #include <QQuickOpenGLUtils>
+#include <QQuickWindow>
 
-#include <Volcano/Graphics/View.hpp>
+#include <Volcano/Graphics/Renderer.hpp>
 #include <Volcano/Graphics/CameraView.hpp>
 
 VOLCANO_GRAPHICS_BEGIN
@@ -23,7 +24,7 @@ public:
     void synchronize(QQuickFramebufferObject *item) override;
 
 private:
-    View m_view;
+    Volcano::Graphics::Renderer m_renderer;
 };
 
 CameraRenderer::CameraRenderer(void)
@@ -36,40 +37,37 @@ CameraRenderer::~CameraRenderer(void)
 
 bool CameraRenderer::init(int width, int height)
 {
-    if (!m_view.init(width, height))
+    if (!m_renderer.init(width, height))
         return false;
     return true;
 }
 
 void CameraRenderer::render(void)
 {
-    m_view.render();
+    m_renderer.render();
     QQuickOpenGLUtils::resetOpenGLState();
 }
 
 void CameraRenderer::synchronize(QQuickFramebufferObject *item)
 {
-    m_view.reset();
-    m_view.resize(QSize(item->width(), item->height()));
+    m_renderer.reset();
+    m_renderer.resize(QSize(item->width(), item->height()));
 
     auto cameraView = static_cast<CameraView *>(item);
-    auto viewable = cameraView->viewable();
-    if (viewable != nullptr) {
-        auto camera = cameraView->camera();
-        m_view.lookAt(camera->position(), camera->direction(), camera->up());
-        if (cameraView->isBackgroundEnabled()) {
-            m_view.enableClear();
-            m_view.setClearColor(cameraView->backgroundColor());
-        } else
-            m_view.disableClear();
-        viewable->buildVisibleSet(m_view, *camera);
-    }
+    auto camera = cameraView->camera();
+    m_renderer.lookAt(camera->position(), camera->direction(), camera->up());
+    if (cameraView->isBackgroundEnabled()) {
+        m_renderer.enableClear();
+        m_renderer.setClearColor(cameraView->backgroundColor());
+    } else
+        m_renderer.disableClear();
+    cameraView->buildVisibleSet(&m_renderer);
 }
 
 CameraView::CameraView(QQuickItem *parent):
     QQuickFramebufferObject(parent),
     m_isResized(false),
-    m_viewable(nullptr),
+    m_gameWorld(nullptr),
     m_frameTimer(0),
     m_frameCount(0),
     m_frameCountPerSecond(0),
@@ -158,17 +156,32 @@ void CameraView::setBackgroundColor(const QColor &v)
     }
 }
 
-Viewable *CameraView::viewable(void)
+Game::WorldBase *CameraView::gameWorld(void)
 {
-    return m_viewable;
+    return m_gameWorld;
 }
 
-void CameraView::setViewable(Viewable *p)
+void CameraView::setGameWorld(Game::WorldBase *p)
 {
-    if (m_viewable != p) {
-        m_viewable = p;
-        emit viewableChanged(p);
+    if (m_gameWorld == p)
+        return;
+
+    if (m_gameWorld != nullptr) {
+
     }
+
+    m_gameWorld = p;
+
+    if (m_gameWorld != nullptr) {
+
+    }
+
+    emit gameWorldChanged(p);
+}
+
+void CameraView::buildVisibleSet(VisibleSet *p)
+{
+    Q_ASSERT(p != nullptr);
 }
 
 void CameraView::timerEvent(QTimerEvent *p)

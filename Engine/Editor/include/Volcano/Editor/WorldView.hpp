@@ -6,7 +6,7 @@
 #include <QOpenGLWidget>
 
 #include <Volcano/Graphics/Camera.hpp>
-#include <Volcano/Graphics/View.hpp>
+#include <Volcano/Graphics/Renderer.hpp>
 
 #include <Volcano/Editor/Common.hpp>
 
@@ -19,6 +19,9 @@ public:
     WorldView(QWidget *parent = nullptr);
     ~WorldView(void) override;
 
+public:
+    //void setGameWorld()
+
 protected:
     void initializeGL(void) override;
     void paintGL(void) override;
@@ -26,7 +29,7 @@ protected:
 
 private:
     Graphics::Camera m_graphicsCamera;
-    Graphics::View m_graphicsView;
+    Graphics::Renderer m_graphicsRenderer;
 };
 
 VOLCANO_EDITOR_END

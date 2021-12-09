@@ -17,7 +17,7 @@ public:
     ~Component(void) override;
 
 public:
-    virtual void tick(float elapsed);
+    virtual void tick(Duration elapsed);
 };
 
 VOLCANO_GAME_END

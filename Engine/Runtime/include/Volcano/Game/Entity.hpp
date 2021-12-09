@@ -29,7 +29,7 @@ public:
     ~Entity(void) override;
 
 public:
-    void tick(float elapsed) override;
+    void tick(Duration elapsed) override;
     const QVector3D &position(void) const;
     void setPosition(const QVector3D &v);
     const QVector3D &scale(void) const;

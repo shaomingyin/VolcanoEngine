@@ -1,7 +1,7 @@
 //
 //
-#ifndef VOLCANO_GRAPHICS_VIEW_HPP
-#define VOLCANO_GRAPHICS_VIEW_HPP
+#ifndef VOLCANO_GRAPHICS_RENDERER_HPP
+#define VOLCANO_GRAPHICS_RENDERER_HPP
 
 #include <QSize>
 #include <QColor>
@@ -12,10 +12,10 @@
 
 VOLCANO_GRAPHICS_BEGIN
 
-class View: public VisibleSet {
+class Renderer: public VisibleSet {
 public:
-    View(void);
-    virtual ~View(void);
+    Renderer(void);
+    virtual ~Renderer(void);
 
 public:
     bool init(int width, int height);
@@ -42,4 +42,4 @@ private:
 
 VOLCANO_GRAPHICS_END
 
-#endif // VOLCANO_GRAPHICS_VIEW_HPP
+#endif // VOLCANO_GRAPHICS_RENDERER_HPP

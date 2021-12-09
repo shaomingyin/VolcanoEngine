@@ -16,8 +16,8 @@ WorldView::~WorldView(void)
 
 void WorldView::initializeGL(void)
 {
-    if (!m_graphicsView.init(width(), height())) {
-        qCritical("Failed to create graphics view.");
+    if (!m_graphicsRenderer.init(width(), height())) {
+        qCritical("Failed to create graphics renderer.");
         return;
     }
 
@@ -26,15 +26,12 @@ void WorldView::initializeGL(void)
 
 void WorldView::paintGL(void)
 {
-    // TODO update graphics view...
-    // m_viewalbe[clientWorld?].buildVisibleSet(m_graphicsView, m_graphicsCamera);
-
-    m_graphicsView.render();
+    m_graphicsRenderer.render();
 }
 
 void WorldView::resizeGL(int w, int h)
 {
-    m_graphicsView.resize(w, h);
+    m_graphicsRenderer.resize(w, h);
 }
 
 VOLCANO_EDITOR_END

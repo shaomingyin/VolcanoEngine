@@ -6,10 +6,9 @@
 #include <QDataStream>
 #include <QHostAddress>
 
-#include <Volcano/System/Protocol.hpp>
-#include <Volcano/System/Server.hpp>
+#include <Volcano/Net/Server.hpp>
 
-VOLCANO_SYSTEM_BEGIN
+VOLCANO_NET_BEGIN
 
 Server::Server(QObject *parent):
     QObject(parent),
@@ -23,7 +22,11 @@ Server::Server(QObject *parent):
     //m_stream.setByteOrder(QDataStream::LittleEndian);
     //m_stream.setDevice(&m_socket);
 
-    connect(&m_rxNotifier, &QSocketNotifier::activated, this, &Server::onSocketActivated);
+    auto onActivated = [this](QSocketDescriptor sd, QSocketNotifier::Type type) {
+        pollENet();
+    };
+
+    connect(&m_rxNotifier, &QSocketNotifier::activated, onActivated);
 
     setTpsMax(20);
     m_tickCountTimer = startTimer(1000);
@@ -161,12 +164,12 @@ void Server::stop(void)
     emit runningChanged(false);
 }
 
-Game::World *Server::gameWorld(void)
+Game::WorldBase *Server::gameWorld(void)
 {
     return m_gameWorld;
 }
 
-void Server::setGameWorld(Game::World *p)
+void Server::setGameWorld(Game::WorldBase *p)
 {
     if (m_gameWorld == p)
         return;
@@ -209,8 +212,7 @@ Session *Server::sessionAt(qsizetype index)
 void Server::timerEvent(QTimerEvent *evt)
 {
     if (Q_LIKELY(evt->timerId() == m_tickTimer)) {
-        auto elapsed = m_tickElapsedTimer.restart();
-        tick(float(elapsed) / 1000.0f);
+        tick(std::chrono::milliseconds(m_tickElapsedTimer.restart()));
         m_tickCount += 1;
         return;
     }
@@ -222,7 +224,7 @@ void Server::timerEvent(QTimerEvent *evt)
     }
 }
 
-void Server::tick(float elapsed)
+void Server::tick(Duration elapsed)
 {
     pollENet();
 
@@ -318,12 +320,4 @@ SessionList::iterator Server::findSesssion(ENetPeer *enetPeer)
     return it;
 }
 
-void Server::onSocketActivated(QSocketDescriptor sd, QSocketNotifier::Type type)
-{
-    Q_ASSERT(m_enetHost != nullptr);
-    Q_ASSERT(m_enetHost->socket == qintptr(sd));
-
-    pollENet();
-}
-
-VOLCANO_SYSTEM_END
+VOLCANO_NET_END
