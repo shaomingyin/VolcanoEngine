@@ -5,7 +5,7 @@
 VOLCANO_GAME_BEGIN
 
 Mesh::Mesh(QObject *parent):
-    Component(parent)
+    LoadableComponent(parent)
 {
 }
 

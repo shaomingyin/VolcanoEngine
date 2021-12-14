@@ -26,6 +26,8 @@ void WorldView::initializeGL(void)
 
 void WorldView::paintGL(void)
 {
+    m_graphicsRenderer.reset();
+    m_graphicsWorld.buildView(&m_graphicsRenderer, m_graphicsCamera);
     m_graphicsRenderer.render();
 }
 

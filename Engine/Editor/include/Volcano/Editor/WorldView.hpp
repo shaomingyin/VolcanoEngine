@@ -5,8 +5,10 @@
 
 #include <QOpenGLWidget>
 
+#include <Volcano/Game/WorldBase.hpp>
 #include <Volcano/Graphics/Camera.hpp>
 #include <Volcano/Graphics/Renderer.hpp>
+#include <Volcano/Graphics/World.hpp>
 
 #include <Volcano/Editor/Common.hpp>
 
@@ -30,6 +32,7 @@ protected:
 private:
     Graphics::Camera m_graphicsCamera;
     Graphics::Renderer m_graphicsRenderer;
+    Graphics::World m_graphicsWorld;
 };
 
 VOLCANO_EDITOR_END

@@ -37,9 +37,7 @@ CameraRenderer::~CameraRenderer(void)
 
 bool CameraRenderer::init(int width, int height)
 {
-    if (!m_renderer.init(width, height))
-        return false;
-    return true;
+    return m_renderer.init(width, height);
 }
 
 void CameraRenderer::render(void)
@@ -51,22 +49,21 @@ void CameraRenderer::render(void)
 void CameraRenderer::synchronize(QQuickFramebufferObject *item)
 {
     m_renderer.reset();
-    m_renderer.resize(QSize(item->width(), item->height()));
-
+    m_renderer.resize(item->width(), item->height());
     auto cameraView = static_cast<CameraView *>(item);
-    auto camera = cameraView->camera();
-    m_renderer.lookAt(camera->position(), camera->direction(), camera->up());
-    if (cameraView->isBackgroundEnabled()) {
+    if (Q_LIKELY(cameraView->isActivate())) {
+        cameraView->buildView(&m_renderer);
+    } else {
         m_renderer.enableClear();
-        m_renderer.setClearColor(cameraView->backgroundColor());
-    } else
-        m_renderer.disableClear();
-    cameraView->buildVisibleSet(&m_renderer);
+        m_renderer.setClearColor(QColor::fromRgb(80, 80, 80));
+    }
 }
+
+// CameraView
 
 CameraView::CameraView(QQuickItem *parent):
     QQuickFramebufferObject(parent),
-    m_isResized(false),
+    m_isActivate(true),
     m_gameWorld(nullptr),
     m_frameTimer(0),
     m_frameCount(0),
@@ -88,8 +85,20 @@ CameraView::Renderer *CameraView::createRenderer(void) const
     auto renderer = std::make_unique<CameraRenderer>();
     if (!renderer || !renderer->init(width(), height()))
         return nullptr;
-
     return renderer.release();
+}
+
+bool CameraView::isActivate(void) const
+{
+    return m_isActivate;
+}
+
+void CameraView::setActivate(bool v)
+{
+    if (m_isActivate != v) {
+        m_isActivate = v;
+        emit activateChanged(v);
+    }
 }
 
 int CameraView::fps(void) const
@@ -163,32 +172,33 @@ Game::WorldBase *CameraView::gameWorld(void)
 
 void CameraView::setGameWorld(Game::WorldBase *p)
 {
-    if (m_gameWorld == p)
-        return;
-
-    if (m_gameWorld != nullptr) {
-
+    if (m_gameWorld != p) {
+        m_gameWorld = p;
+        m_world.setGameWorld(p);
+        emit gameWorldChanged(p);
     }
-
-    m_gameWorld = p;
-
-    if (m_gameWorld != nullptr) {
-
-    }
-
-    emit gameWorldChanged(p);
 }
 
-void CameraView::buildVisibleSet(VisibleSet *p)
+void CameraView::buildView(View *view)
 {
-    Q_ASSERT(p != nullptr);
+    Q_ASSERT(view != nullptr);
+
+    view->lookAt(m_camera.position(), m_camera.direction(), m_camera.up());
+
+    if (m_isBackgroundEnabled) {
+        view->enableClear();
+        view->setClearColor(m_backgroundColor);
+    } else
+        view->disableClear();
+
+    m_world.buildView(view, m_camera);
 }
 
 void CameraView::timerEvent(QTimerEvent *p)
 {
     if (Q_LIKELY(p->timerId() == m_frameTimer)) {
         auto elapsed = m_elapsedTimer.restart();
-        frame(float(elapsed) / 1000.0f);
+        frame(std::chrono::milliseconds(elapsed));
         m_frameCount += 1;
         return;
     }
@@ -201,10 +211,9 @@ void CameraView::timerEvent(QTimerEvent *p)
     }
 }
 
-void CameraView::frame(quint64 elapsed)
+void CameraView::frame(Duration elapsed)
 {
-//    if (Q_LIKELY(m_world != nullptr))
-//        m_world->update(elapsed);
+    // TODO
 
     update();
 }

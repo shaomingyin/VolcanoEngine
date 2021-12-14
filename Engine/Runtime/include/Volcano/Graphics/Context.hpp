@@ -42,7 +42,8 @@ public:
     Buffer *allocDynamicVertexIndexBuffer(GLsizeiptr count);
     // OpenGLTexture *allocTexture(GLint width, GLint height, GLenum format);
     QOpenGLShaderProgram *shaderProgram(const QUrl &url);
-    MeshPtr getMesh(const QUrl &url);
+    MeshPtr mesh(const QUrl &url);
+    void gc(int flags);
 
 private slots:
     void onDebugMessageLogged(const QOpenGLDebugMessage &msg);
@@ -51,6 +52,7 @@ private:
     using BufferHeapList = QList<BufferHeap *>;
     using ContextHashTable = QHash<QOpenGLContext *, Context *>;
     using ShaderProgramCache = QCache<QUrl, QOpenGLShaderProgram>;
+    using MeshCahce = QCache<QUrl, MeshPtr>;
 
 private:
     bool init(void);

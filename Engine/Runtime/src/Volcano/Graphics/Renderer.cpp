@@ -1,5 +1,7 @@
 //
 //
+#include <memory>
+
 #include <QThread>
 #include <QQuickOpenGLUtils>
 
@@ -11,33 +13,32 @@ VOLCANO_GRAPHICS_BEGIN
 
 Renderer::Renderer(void):
     m_gl(nullptr),
-    m_isClearEnabled(true),
-    m_clearColor(QColor::fromRgbF(0.0f, 0.0f, 0.0f)),
-    m_position(0.0f, 0.0f, 0.0f),
-    m_direction(0.0f, 0.0f, -1.0f),
-    m_up(0.0f, 1.0f, 0.0f)
+    m_fbo(nullptr)
 {
 }
 
 Renderer::~Renderer(void)
 {
-    // TODO release opengl resources...
+    if (m_fbo != nullptr)
+        delete m_fbo;
 }
 
 bool Renderer::init(int width, int height)
 {
     Q_ASSERT(m_gl == nullptr);
-
     m_gl = Context::current()->glFunctions();
     if (m_gl == nullptr)
         return false;
+
+    reset();
+    resize(width, height);
 
     return true;
 }
 
 void Renderer::reset(void)
 {
-    VisibleSet::reset();
+    View::reset();
 
     // TODO
 }
@@ -47,8 +48,18 @@ void Renderer::resize(const QSize &v)
     if (Q_LIKELY(m_size == v))
         return;
 
+    if (m_fbo != nullptr) {
+        delete m_fbo;
+        m_fbo = nullptr;
+    }
+
+    auto fbo = std::make_unique<QOpenGLFramebufferObject>(v.width(), v.height());
+    if (!fbo || !fbo->isValid())
+        return;
+
     // TODO
 
+    m_fbo = fbo.release();
     m_size = v;
 }
 
@@ -70,28 +81,6 @@ void Renderer::render(void)
     }
 
     // TODO
-}
-
-void Renderer::enableClear(void)
-{
-    m_isClearEnabled = true;
-}
-
-void Renderer::disableClear(void)
-{
-    m_isClearEnabled = false;
-}
-
-void Renderer::setClearColor(const QColor &v)
-{
-    m_clearColor = v;
-}
-
-void Renderer::lookAt(const QVector3D &position, const QVector3D &direction, const QVector3D &up)
-{
-    m_position = position;
-    m_direction = direction;
-    m_up = up;
 }
 
 VOLCANO_GRAPHICS_END

@@ -6,16 +6,17 @@
 #include <QSize>
 #include <QColor>
 #include <QVector3D>
+#include <QOpenGLFramebufferObject>
 
 #include <Volcano/Graphics/Common.hpp>
-#include <Volcano/Graphics/VisibleSet.hpp>
+#include <Volcano/Graphics/View.hpp>
 
 VOLCANO_GRAPHICS_BEGIN
 
-class Renderer: public VisibleSet {
+class Renderer: public View {
 public:
     Renderer(void);
-    virtual ~Renderer(void);
+    ~Renderer(void) override;
 
 public:
     bool init(int width, int height);
@@ -24,20 +25,10 @@ public:
     void resize(int width, int height);
     void render(void);
 
-public:
-    void enableClear(void);
-    void disableClear(void);
-    void setClearColor(const QColor &v);
-    void lookAt(const QVector3D &position, const QVector3D &direction, const QVector3D &up);
-
 private:
     QSize m_size;
     OpenGLFunctions *m_gl;
-    bool m_isClearEnabled;
-    QColor m_clearColor;
-    QVector3D m_position;
-    QVector3D m_direction;
-    QVector3D m_up;
+    QOpenGLFramebufferObject *m_fbo;
 };
 
 VOLCANO_GRAPHICS_END

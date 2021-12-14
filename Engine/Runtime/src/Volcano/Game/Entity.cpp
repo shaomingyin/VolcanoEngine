@@ -58,6 +58,32 @@ void Entity::setRotation(const QQuaternion &v)
     }
 }
 
+qreal Entity::mass(void) const
+{
+    return m_mass;
+}
+
+void Entity::setMass(qreal v)
+{
+    if (!qFuzzyCompare(m_mass, v)) {
+        m_mass = v;
+        emit massChanged(v);
+    }
+}
+
+const QVector3D &Entity::cog(void) const
+{
+    return m_cog;
+}
+
+void Entity::setCog(const QVector3D &v)
+{
+    if (!qFuzzyCompare(m_cog, v)) {
+        m_cog = v;
+        emit cogChanged(v);
+    }
+}
+
 const ComponentList &Entity::components(void) const
 {
     return m_components;

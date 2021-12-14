@@ -5,7 +5,7 @@
 VOLCANO_GAME_BEGIN
 
 Material::Material(QObject *parent):
-    Component(parent)
+    LoadableComponent(parent)
 {
 }
 

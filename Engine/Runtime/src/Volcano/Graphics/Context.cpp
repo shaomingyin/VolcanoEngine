@@ -43,7 +43,7 @@ Context *Context::current(void)
     QMutexLocker locker(&c_contextHashTableMutex);
 
     Context *context = c_contextHashTable.value(glContext, nullptr);
-    if (context != nullptr) {
+    if (Q_LIKELY(context != nullptr)) {
         Q_ASSERT(glContext == context->glContext());
         return context;
     }
@@ -185,12 +185,17 @@ QOpenGLShaderProgram *Context::shaderProgram(const QUrl &url)
     return p;
 }
 
-MeshPtr Context::getMesh(const QUrl &url)
+MeshPtr Context::mesh(const QUrl &url)
 {
     if (!url.isValid())
         return nullptr;
 
     return nullptr;
+}
+
+void Context::gc(int flags)
+{
+
 }
 
 VOLCANO_GRAPHICS_END

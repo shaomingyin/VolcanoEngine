@@ -6,11 +6,11 @@
 #include <QFuture>
 
 #include <Volcano/Game/Common.hpp>
-#include <Volcano/Game/Component.hpp>
+#include <Volcano/Game/LoadableComponent.hpp>
 
 VOLCANO_GAME_BEGIN
 
-class Mesh: public Component {
+class Mesh: public LoadableComponent {
     Q_OBJECT
 
 public:

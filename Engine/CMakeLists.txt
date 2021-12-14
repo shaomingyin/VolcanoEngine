@@ -1,4 +1,14 @@
 
+set(CMAKE_INTERPROCEDURAL_OPTIMIZATION ON)
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+#set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded")
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+
 macro(link_qt_modules)
     foreach(QT_MODULE ${ARGN})
         find_package(Qt6 COMPONENTS ${QT_MODULE} REQUIRED)
@@ -13,8 +23,7 @@ macro(target_link_qt_modules TARGET SCOPE)
     endforeach()
 endmacro()
 
-find_package(Qt6 COMPONENTS Core REQUIRED)
-link_libraries(Qt6::Core)
+link_qt_modules(Core)
 
 add_subdirectory(Runtime Runtime)
 add_subdirectory(Launcher Launcher)

@@ -21,6 +21,8 @@ class Entity: public Object {
     Q_PROPERTY(QVector3D position READ position WRITE setPosition NOTIFY positionChanged)
     Q_PROPERTY(QVector3D scale READ scale WRITE setScale NOTIFY scaleChanged)
     Q_PROPERTY(QQuaternion rotation READ rotation WRITE setRotation NOTIFY rotationChanged)
+    Q_PROPERTY(qreal mass READ mass WRITE setMass NOTIFY massChanged)
+    Q_PROPERTY(QVector3D cog READ cog WRITE setCog NOTIFY cogChanged)
     Q_PROPERTY(QQmlListProperty<Component> components READ qmlComponents)
     Q_CLASSINFO("DefaultProperty", "components")
 
@@ -36,6 +38,10 @@ public:
     void setScale(const QVector3D &v);
     const QQuaternion &rotation(void);
     void setRotation(const QQuaternion &v);
+    qreal mass(void) const;
+    void setMass(qreal v);
+    const QVector3D &cog(void) const;
+    void setCog(const QVector3D &v);
     const ComponentList &components(void) const;
     QQmlListProperty<Component> qmlComponents(void);
     void appendComponent(Component *component);
@@ -50,6 +56,8 @@ signals:
     void positionChanged(const QVector3D &v);
     void scaleChanged(const QVector3D &v);
     void rotationChanged(const QQuaternion &v);
+    void massChanged(qreal v);
+    void cogChanged(const QVector3D &v);
     void componentAdded(Component *component);
     void componentRemoved(Component *component);
 
@@ -67,6 +75,8 @@ private:
     QVector3D m_position;
     QVector3D m_scale;
     QQuaternion m_rotation;
+    qreal m_mass;
+    QVector3D m_cog;
     ComponentList m_components;
 };
 

@@ -1,4 +1,6 @@
 
+set(CMAKE_AUTOUIC ON)
+
 link_libraries(Runtime)
 link_qt_modules(Widgets OpenGLWidgets)
 
@@ -14,6 +16,7 @@ file(GLOB_RECURSE EDITOR_SOURCES LIST_DIRECTORIES false
     ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/*.qrc
     ${CMAKE_CURRENT_SOURCE_DIR}/*.in
+    ${CMAKE_CURRENT_SOURCE_DIR}/*.ui
     )
 
 qt_add_executable(Editor ${EDITOR_SOURCES})

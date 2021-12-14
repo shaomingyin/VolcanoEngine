@@ -16,12 +16,13 @@
 #include <Volcano/Game/Object.hpp>
 #include <Volcano/Game/Entity.hpp>
 #include <Volcano/Game/Component.hpp>
+#include <Volcano/Game/LoadableComponent.hpp>
+#include <Volcano/Game/Material.hpp>
+#include <Volcano/Game/Mesh.hpp>
 #include <Volcano/Game/Light.hpp>
 #include <Volcano/Game/DirectionalLight.hpp>
 #include <Volcano/Game/PointLight.hpp>
 #include <Volcano/Game/SpotLight.hpp>
-#include <Volcano/Game/Material.hpp>
-#include <Volcano/Game/Mesh.hpp>
 
 #include <Volcano/Graphics/Camera.hpp>
 #include <Volcano/Graphics/CameraView.hpp>
@@ -63,19 +64,19 @@ static void registerQmlTypes(void)
     ///////////////////////////////////////////////////////////////////////////
     uri = "Volcano.Game";
 
-    registerQmlUncreatableType<Game::Object>(uri, "Object");
     registerQmlUncreatableType<Game::WorldBase>(uri, "WorldBase");
-    registerQmlUncreatableType<Game::Component>(uri, "Component");
-    registerQmlUncreatableType<Game::Light>(uri, "Light");
-    registerQmlType<Game::Entity>(uri, "Entity");
     registerQmlType<Game::World>(uri, "World");
     registerQmlType<Game::DynamicWorld>(uri, "DynamicWorld");
+    registerQmlUncreatableType<Game::Object>(uri, "Object");
+    registerQmlType<Game::Entity>(uri, "Entity");
+    registerQmlUncreatableType<Game::Component>(uri, "Component");
+    registerQmlUncreatableType<Game::LoadableComponent>(uri, "LoadableComponent");
+    registerQmlType<Game::Material>(uri, "Material");
+    registerQmlType<Game::Mesh>(uri, "Mesh");
     registerQmlUncreatableType<Game::Light>(uri, "Light");
     registerQmlType<Game::DirectionalLight>(uri, "DirectionalLight");
     registerQmlType<Game::PointLight>(uri, "PointLight");
     registerQmlType<Game::SpotLight>(uri, "SpotLight");
-    registerQmlType<Game::Material>(uri, "Material");
-    registerQmlType<Game::Mesh>(uri, "Mesh");
 
     ///////////////////////////////////////////////////////////////////////////
     uri = "Volcano.Graphics";
