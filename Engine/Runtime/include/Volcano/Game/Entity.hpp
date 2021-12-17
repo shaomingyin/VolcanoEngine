@@ -9,14 +9,14 @@
 #include <QQmlListProperty>
 
 #include <Volcano/Game/Common.hpp>
-#include <Volcano/Game/Object.hpp>
 #include <Volcano/Game/Component.hpp>
+#include <Volcano/Game/Actor.hpp>
 
 VOLCANO_GAME_BEGIN
 
 using ComponentList = QList<Component *>;
 
-class Entity: public Object {
+class Entity: public Actor {
     Q_OBJECT
     Q_PROPERTY(QVector3D position READ position WRITE setPosition NOTIFY positionChanged)
     Q_PROPERTY(QVector3D scale READ scale WRITE setScale NOTIFY scaleChanged)

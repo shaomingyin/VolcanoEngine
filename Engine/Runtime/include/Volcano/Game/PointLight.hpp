@@ -6,11 +6,11 @@
 #include <QVector3D>
 
 #include <Volcano/Game/Common.hpp>
-#include <Volcano/Game/Light.hpp>
+#include <Volcano/Game/Actor.hpp>
 
 VOLCANO_GAME_BEGIN
 
-class PointLight: public Light {
+class PointLight: public Actor {
     Q_OBJECT
     Q_PROPERTY(QVector3D position READ position WRITE setPosition NOTIFY positionChanged)
     Q_PROPERTY(float radius READ radius WRITE setRadius NOTIFY radiusChanged)

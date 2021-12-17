@@ -5,14 +5,18 @@
 
 #include <QList>
 #include <QString>
+#include <QColor>
 #include <QObject>
 
 #include <Volcano/Game/Common.hpp>
+#include <Volcano/Game/Actor.hpp>
 #include <Volcano/Game/Object.hpp>
 
 VOLCANO_GAME_BEGIN
 
-class WorldBase: public QObject {
+using ActorList = QList<Actor *>;
+
+class WorldBase: public Object {
     Q_OBJECT
 
 public:
@@ -20,25 +24,28 @@ public:
     ~WorldBase(void) override;
 
 public:
-    virtual void tick(Duration elapsed);
-    const QList<Object *> &objects(void) const;
-    void appendObject(Object *object);
-    qsizetype objectCount(void) const;
-    Object *objectAt(qsizetype index);
-    const Object *objectAt(qsizetype index) const;
-    void clearObjects(void);
-    void replaceObject(qsizetype index, Object *object);
-    void removeLastObject(void);
+    const QColor ambientLight(void) const;
+    void tick(Duration elapsed) override;
+    const QList<Actor *> &actors(void) const;
 
 signals:
-    void objectAdded(Object *object);
-    void objectRemoved(Object *object);
+    void actorAdded(Actor *actor);
+    void actorRemoved(Actor *actor);
 
 protected:
-    virtual void handleObjectAdded(Object *object, bool emitSignal = true);
-    virtual void handleObjectRemoved(Object *object, bool emitSignal = true);
+    void setAmbientLight(const QColor &v);
+    void appendActor(Actor *actor);
+    qsizetype actorCount(void) const;
+    Actor *actorAt(qsizetype index);
+    void clearActors(void);
+    void replaceActor(qsizetype index, Actor *actor);
+    void removeLastActor(void);
+    virtual void handleActorAdded(Actor *actor);
+    virtual void handleActorRemoved(Actor *actor);
 
-    QList<Object *> m_objects;
+private:
+    QColor m_ambientLight;
+    ActorList m_actorList;
 };
 
 VOLCANO_GAME_END

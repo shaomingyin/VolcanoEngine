@@ -67,32 +67,42 @@ void View::perspective(float fov, float ratio, float nearPlane, float farPlane)
 
 void View::translate(const QVector3D &v)
 {
-    m_transformStack.top().translate(v);
+    m_transformStack.top().setTranslate(v);
 }
 
 void View::translateTo(const QVector3D &v)
 {
-    m_transformStack.top().translateTo(v);
+    m_transformStack.top().setTranslateOffset(v);
 }
 
 void View::scale(const QVector3D &v)
 {
-    m_transformStack.top().scale(v);
+    m_transformStack.top().setScale(v);
 }
 
 void View::scaleTo(const QVector3D &v)
 {
-    m_transformStack.top().scaleTo(v);
+    m_transformStack.top().setScaleOffset(v);
 }
 
 void View::rotate(const QQuaternion &v)
 {
-    m_transformStack.top().rotate(v);
+    m_transformStack.top().setRotation(v);
+}
+
+void View::rotate(const Rotation &v)
+{
+    rotate(QQuaternion::fromAxisAndAngle(v.axis(), v.angle()));
 }
 
 void View::rotateTo(const QQuaternion &v)
 {
-    m_transformStack.top().rotateTo(v);
+    m_transformStack.top().setRotationOffset(v);
+}
+
+void View::rotateTo(const Rotation &v)
+{
+    rotateTo(QQuaternion::fromAxisAndAngle(v.axis(), v.angle()));
 }
 
 void View::push(bool copyTop)
@@ -109,7 +119,51 @@ void View::pop(void)
     m_transformStack.pop();
 }
 
-Transform &View::currentTransform(void)
+void View::add(const Box *p)
+{
+}
+
+void View::add(const Cylinder *p)
+{
+
+}
+
+void View::add(const Sphere *p)
+{
+
+}
+
+void View::add(const Plane *p)
+{
+
+}
+
+void View::add(const Game::Light *p)
+{
+
+}
+
+void View::add(const Game::DirectionalLight *p)
+{
+
+}
+
+void View::add(const Game::PointLight *p)
+{
+
+}
+
+void View::add(const Game::SpotLight *p)
+{
+
+}
+
+void View::add(const Mesh *p)
+{
+
+}
+
+const Transform &View::transform(void)
 {
     return m_transformStack.top();
 }

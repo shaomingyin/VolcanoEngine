@@ -6,31 +6,44 @@
 #include <QColor>
 
 #include <Volcano/Game/Common.hpp>
-#include <Volcano/Game/Object.hpp>
+#include <Volcano/Game/Actor.hpp>
 
 VOLCANO_GAME_BEGIN
 
-class Light: public Object {
+class Light: public Actor {
     Q_OBJECT
-    Q_PROPERTY(float strength READ strength WRITE setStrength NOTIFY strengthChanged)
     Q_PROPERTY(QColor color READ color WRITE setColor NOTIFY colorChanged)
+
+public:
+    class Data {
+    public:
+        Data(void);
+        Data(const Data &that);
+        Data(const QColor &color);
+
+    public:
+        const QColor &color(void) const;
+        void setColor(const QColor &v);
+        Data &operator=(const Data &that);
+        bool operator==(const Data &that) const;
+        bool operator!=(const Data &that) const;
+
+    private:
+        QColor m_color;
+    };
 
 public:
     Light(QObject *parent = nullptr);
     ~Light(void) override;
 
 public:
-    float strength(void) const;
-    void setStrength(float v);
     const QColor &color(void) const;
     void setColor(const QColor &v);
 
 signals:
-    void strengthChanged(float v);
     void colorChanged(const QColor &v);
 
 private:
-    float m_strength;
     QColor m_color;
 };
 

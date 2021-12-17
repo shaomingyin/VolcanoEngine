@@ -6,11 +6,11 @@
 #include <QVector3D>
 
 #include <Volcano/Game/Common.hpp>
-#include <Volcano/Game/Light.hpp>
+#include <Volcano/Game/Actor.hpp>
 
 VOLCANO_GAME_BEGIN
 
-class DirectionalLight: public Light {
+class DirectionalLight: public Actor {
     Q_OBJECT
     Q_PROPERTY(QVector3D direction READ direction WRITE setDirection NOTIFY directionChanged)
 

@@ -33,18 +33,18 @@ void World::setGameWorld(Game::WorldBase *p)
         return;
 
     if (m_gameWorld != nullptr) {
-        disconnect(m_gameWorld, &Game::WorldBase::objectAdded, this, &World::onGameObjectAdded);
-        disconnect(m_gameWorld, &Game::WorldBase::objectRemoved, this, &World::onGameObjectRemoved);
+        disconnect(m_gameWorld, &Game::WorldBase::actorAdded, this, &World::onGameActorAdded);
+        disconnect(m_gameWorld, &Game::WorldBase::actorRemoved, this, &World::onGameActorRemoved);
         reset();
     }
 
     m_gameWorld = p;
 
     if (m_gameWorld != nullptr) {
-        connect(m_gameWorld, &Game::WorldBase::objectAdded, this, &World::onGameObjectAdded);
-        connect(m_gameWorld, &Game::WorldBase::objectRemoved, this, &World::onGameObjectRemoved);
-        for (auto gameObject: m_gameWorld->objects())
-            onGameObjectAdded(gameObject);
+        connect(m_gameWorld, &Game::WorldBase::actorAdded, this, &World::onGameActorAdded);
+        connect(m_gameWorld, &Game::WorldBase::actorRemoved, this, &World::onGameActorRemoved);
+        for (auto gameActor: m_gameWorld->actors())
+            onGameActorAdded(gameActor);
     }
 
     emit gameWorldChanged(p);
@@ -54,13 +54,14 @@ void World::buildView(View *view, const Camera &cam)
 {
     Q_ASSERT(view != nullptr);
 
-    // TODO use bsp/octree here?
     // TODO add lights...
 
     for (const auto &ent: m_entityList) {
         if (ent->isValid()) {
             // check bbox?
+            view->push(true);
             ent->buildView(view, cam);
+            view->pop();
         }
     }
 }
@@ -88,7 +89,23 @@ void World::onGameLightAdded(Game::Light *p)
 
 void World::onGameLightRemoved(Game::Light *p)
 {
-    // TODO
+    auto gameSpotLight = qobject_cast<Game::SpotLight *>(p);
+    if (gameSpotLight != nullptr) {
+        onGameSpotLightRemoved(gameSpotLight);
+        return;
+    }
+
+    auto gameDirectionalLight = qobject_cast<Game::DirectionalLight *>(p);
+    if (gameDirectionalLight != nullptr) {
+        onGameDirectionalLightRemoved(gameDirectionalLight);
+        return;
+    }
+
+    auto gamePointLight = qobject_cast<Game::PointLight *>(p);
+    if (gamePointLight != nullptr) {
+        onGamePointLightRemoved(gamePointLight);
+        return;
+    }
 }
 
 void World::onGameDirectionalLightAdded(Game::DirectionalLight *p)
@@ -98,7 +115,7 @@ void World::onGameDirectionalLightAdded(Game::DirectionalLight *p)
 
 void World::onGameDirectionalLightRemoved(Game::DirectionalLight *p)
 {
-
+    m_gameDirectionalLightList.removeAll(p);
 }
 
 void World::onGamePointLightAdded(Game::PointLight *p)
@@ -128,23 +145,15 @@ void World::onGameDirectionalLightEnabledChanged(Game::DirectionalLight *p, bool
 
 void World::onGameEntityAdded(Game::Entity *p)
 {
-    auto ent = std::make_unique<Entity>(p, this);
-    if (ent)
-        m_entityList.append(ent.release());
+    m_entityList.append(new Entity(p));
 }
 
 void World::onGameEntityRemoved(Game::Entity *p)
 {
-    for (auto it = m_entityList.begin(); it != m_entityList.end(); ++it) {
-        if ((*it)->gameEntity() == p) {
-            m_entityList.erase(it);
-            delete *it;
-            break;
-        }
-    }
+    m_entityList.removeIf([p](Entity *ent) { return (ent->gameEntity() == p); });
 }
 
-void World::onGameObjectAdded(Game::Object *p)
+void World::onGameActorAdded(Game::Actor *p)
 {
     auto gameLight = qobject_cast<Game::Light *>(p);
     if (gameLight != nullptr) {
@@ -159,7 +168,7 @@ void World::onGameObjectAdded(Game::Object *p)
     }
 }
 
-void World::onGameObjectRemoved(Game::Object *p)
+void World::onGameActorRemoved(Game::Actor *p)
 {
     auto gameLight = qobject_cast<Game::Light *>(p);
     if (gameLight != nullptr) {

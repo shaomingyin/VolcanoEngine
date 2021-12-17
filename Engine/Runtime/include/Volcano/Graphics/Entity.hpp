@@ -3,15 +3,16 @@
 #ifndef VOLCANO_GRAPHICS_ENTITY_HPP
 #define VOLCANO_GRAPHICS_ENTITY_HPP
 
+#include <QList>
 #include <QObject>
 
 #include <Volcano/Game/Entity.hpp>
 #include <Volcano/Game/Component.hpp>
-#include <Volcano/Game/Material.hpp>
-#include <Volcano/Game/Mesh.hpp>
+#include <Volcano/Game/Visual.hpp>
 #include <Volcano/Graphics/Common.hpp>
 #include <Volcano/Graphics/Camera.hpp>
 #include <Volcano/Graphics/View.hpp>
+#include <Volcano/Graphics/Visual.hpp>
 
 VOLCANO_GRAPHICS_BEGIN
 
@@ -28,17 +29,19 @@ public:
     void buildView(View *view, const Camera &cam) const;
 
 private:
-    void onGameMaterialAdded(Game::Material *mat);
-    void onGameMeshAdded(Game::Mesh *mesh);
-    void onGameMaterialRemoved(Game::Material *p);
-    void onGameMeshRemoved(Game::Mesh *p);
+    void onShapeChanged(Game::Visual *gameVisual, Shape *shape);
+    void onGameVisualAdded(Game::Visual *v);
+    void onGameVisualRemoved(Game::Visual *v);
 
 private slots:
     void onGameComponentAdded(Game::Component *comp);
     void onGameComponentRemoved(Game::Component *comp);
 
 private:
+    using VisualList = QList<Visual *>;
+
     Game::Entity *m_gameEntity;
+    VisualList m_visualList;
 };
 
 VOLCANO_GRAPHICS_END

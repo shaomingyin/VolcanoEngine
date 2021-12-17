@@ -9,8 +9,6 @@ Material::Material(Game::Material *p, QObject *parent):
     m_gameMaterial(p)
 {
     Q_ASSERT(p != nullptr);
-    connect(p, &Game::Material::sourceChanged, this, &Material::onSourceChanged);
-    onSourceChanged(p->source());
 }
 
 Material::~Material(void)

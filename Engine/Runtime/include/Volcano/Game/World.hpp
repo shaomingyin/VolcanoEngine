@@ -16,27 +16,27 @@ VOLCANO_GAME_BEGIN
 
 class World: public WorldBase {
     Q_OBJECT
-    Q_PROPERTY(QQmlListProperty<Object> objects READ qmlObjects)
-    Q_CLASSINFO("DefaultProperty", "objects")
+    Q_PROPERTY(QQmlListProperty<Actor> actors READ qmlActors)
+    Q_CLASSINFO("DefaultProperty", "actors")
 
 public:
     World(QObject *parent = nullptr);
     ~World(void) override;
 
 public:
-    QQmlListProperty<Object> qmlObjects(void);
+    QQmlListProperty<Actor> qmlActors(void);
 
 protected:
-    void handleObjectAdded(Object *object, bool emitSignal) override;
-    void handleObjectRemoved(Object *object, bool emitSignal) override;
+    void handleActorAdded(Actor *actor) override;
+    void handleActorRemoved(Actor *actor) override;
 
 private:
-    static void qmlAppendObject(QQmlListProperty<Object> *list, Object *object);
-    static qsizetype qmlObjectCount(QQmlListProperty<Object> *list);
-    static Object *qmlObjectAt(QQmlListProperty<Object> *list, qsizetype index);
-    static void qmlClearObjects(QQmlListProperty<Object> *list);
-    static void qmlReplaceObject(QQmlListProperty<Object> *list, qsizetype index, Object *object);
-    static void qmlRemoveLastObject(QQmlListProperty<Object> *list);
+    static void qmlAppendActor(QQmlListProperty<Actor> *list, Actor *actor);
+    static qsizetype qmlActorCount(QQmlListProperty<Actor> *list);
+    static Actor *qmlActorAt(QQmlListProperty<Actor> *list, qsizetype index);
+    static void qmlClearActors(QQmlListProperty<Actor> *list);
+    static void qmlReplaceActor(QQmlListProperty<Actor> *list, qsizetype index, Actor *actor);
+    static void qmlRemoveLastActor(QQmlListProperty<Actor> *list);
 };
 
 VOLCANO_GAME_END

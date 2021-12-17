@@ -5,7 +5,7 @@
 VOLCANO_GAME_BEGIN
 
 Entity::Entity(QObject *parent):
-    Object(parent)
+    Actor(parent)
 {
 }
 

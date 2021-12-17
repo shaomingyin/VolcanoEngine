@@ -49,8 +49,8 @@ private:
     void onGameEntityRemoved(Game::Entity *p);
 
 private slots:
-    void onGameObjectAdded(Game::Object *p);
-    void onGameObjectRemoved(Game::Object *p);
+    void onGameActorAdded(Game::Actor *p);
+    void onGameActorRemoved(Game::Actor *p);
 
 signals:
     void gameWorldChanged(Game::WorldBase *p);

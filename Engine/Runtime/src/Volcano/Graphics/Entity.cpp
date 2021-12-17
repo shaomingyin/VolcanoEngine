@@ -30,65 +30,59 @@ bool Entity::isValid(void) const
 {
     Q_ASSERT(m_gameEntity != nullptr);
 
-    // TODO return false if no visible component(s).
-    return m_gameEntity->isEnabled();
+    if (!m_gameEntity->isEnabled())
+        return false;
+
+    for (auto visual: m_visualList) {
+        if (!visual->isValid())
+            return false;
+    }
+
+    return true;
 }
 
 void Entity::buildView(View *view, const Camera &cam) const
 {
     Q_ASSERT(view != nullptr);
 
-    view->push();
-    view->translate(m_gameEntity->position());
-    view->scale(m_gameEntity->scale());
-    view->rotate(m_gameEntity->rotation());
-    // TODO add mesh...
-    view->pop();
+    if (!m_gameEntity->isEnabled())
+        return;
+
+    view->translateTo(m_gameEntity->position());
+    view->scaleTo(m_gameEntity->scale());
+    view->rotateTo(m_gameEntity->rotation());
+
+    for (const auto visual: m_visualList) {
+        view->push(true);
+        visual->buildView(view, cam);
+        view->pop();
+    }
 }
 
-void Entity::onGameMaterialAdded(Game::Material *p)
+void Entity::onGameVisualAdded(Game::Visual *p)
 {
+    m_visualList.append(new Visual(p));
 }
 
-void Entity::onGameMaterialRemoved(Game::Material *p)
+void Entity::onGameVisualRemoved(Game::Visual *p)
 {
-    auto url = p->source();
-}
-
-void Entity::onGameMeshAdded(Game::Mesh *p)
-{
-}
-
-void Entity::onGameMeshRemoved(Game::Mesh *p)
-{
+    m_visualList.removeIf([p](Visual *v) { return (v->gameVisual() == p); });
 }
 
 void Entity::onGameComponentAdded(Game::Component *p)
 {
-    auto gameMaterial = qobject_cast<Game::Material *>(p);
-    if (gameMaterial != nullptr) {
-        onGameMaterialAdded(gameMaterial);
-        return;
-    }
-
-    auto gameMesh = qobject_cast<Game::Mesh *>(p);
-    if (gameMesh != nullptr) {
-        onGameMeshAdded(gameMesh);
+    auto gameVisual = qobject_cast<Game::Visual *>(p);
+    if (gameVisual != nullptr) {
+        onGameVisualAdded(gameVisual);
         return;
     }
 }
 
 void Entity::onGameComponentRemoved(Game::Component *p)
 {
-    auto gameMaterial = qobject_cast<Game::Material *>(p);
-    if (gameMaterial != nullptr) {
-        onGameMaterialRemoved(gameMaterial);
-        return;
-    }
-
-    auto gameMesh = qobject_cast<Game::Mesh *>(p);
-    if (gameMesh != nullptr) {
-        onGameMeshRemoved(gameMesh);
+    auto gameVisual = qobject_cast<Game::Visual *>(p);
+    if (gameVisual != nullptr) {
+        onGameVisualRemoved(gameVisual);
         return;
     }
 }

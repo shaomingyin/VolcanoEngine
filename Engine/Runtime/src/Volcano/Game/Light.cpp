@@ -5,7 +5,7 @@
 VOLCANO_GAME_BEGIN
 
 Light::Light(QObject *parent):
-    Object(parent)
+    Actor(parent)
 {
 }
 

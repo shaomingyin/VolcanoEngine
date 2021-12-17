@@ -17,7 +17,6 @@ class ClientWorld: public Game::WorldBase {
     Q_OBJECT
     Q_PROPERTY(bool enabled READ isEnabled WRITE setEnabled NOTIFY enabledChanged)
     Q_PROPERTY(QUrl url READ url WRITE setUrl NOTIFY urlChanged)
-    Q_PROPERTY(QQmlListProperty<Game::Object> objects READ qmlObjects)
 
 public:
     enum State {
@@ -42,7 +41,6 @@ public:
     void setUrl(const QUrl &v);
     Q_INVOKABLE bool enable(void);
     Q_INVOKABLE void disable(void);
-    QQmlListProperty<Game::Object> qmlObjects(void);
 
 signals:
     void stateChanged(State v);
@@ -53,8 +51,6 @@ protected:
     void setState(State v);
 
 private:
-    static qsizetype qmlObjectCount(QQmlListProperty<Game::Object> *list);
-    static Game::Object *qmlObjectAt(QQmlListProperty<Game::Object> *list, qsizetype index);
     void onPeerConnected(ENetPeer *enetPeer);
     void onPeerDisconnected(ENetPeer *enetPeer);
     void onPeerReceived(ENetPeer *enetPeer, const void *p, quint64 len);

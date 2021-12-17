@@ -10,13 +10,21 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
 
+#include <Volcano/Rotation.hpp>
+#include <Volcano/Shape.hpp>
+#include <Volcano/Box.hpp>
+#include <Volcano/Cylinder.hpp>
+#include <Volcano/Plane.hpp>
+#include <Volcano/Sphere.hpp>
+
 #include <Volcano/Game/WorldBase.hpp>
 #include <Volcano/Game/World.hpp>
 #include <Volcano/Game/DynamicWorld.hpp>
 #include <Volcano/Game/Object.hpp>
 #include <Volcano/Game/Entity.hpp>
 #include <Volcano/Game/Component.hpp>
-#include <Volcano/Game/LoadableComponent.hpp>
+#include <Volcano/Game/Visual.hpp>
+#include <Volcano/Game/Collision.hpp>
 #include <Volcano/Game/Material.hpp>
 #include <Volcano/Game/Mesh.hpp>
 #include <Volcano/Game/Light.hpp>
@@ -62,6 +70,16 @@ static void registerQmlTypes(void)
     const char *uri;
 
     ///////////////////////////////////////////////////////////////////////////
+    uri = "Volcano";
+
+    registerQmlType<Rotation>(uri, "Rotation");
+    registerQmlUncreatableType<Shape>(uri, "Shape");
+    registerQmlType<Box>(uri, "Box");
+    registerQmlType<Sphere>(uri, "Sphere");
+    registerQmlType<Cylinder>(uri, "Cylinder");
+    registerQmlType<Plane>(uri, "Plane");
+
+    ///////////////////////////////////////////////////////////////////////////
     uri = "Volcano.Game";
 
     registerQmlUncreatableType<Game::WorldBase>(uri, "WorldBase");
@@ -70,9 +88,10 @@ static void registerQmlTypes(void)
     registerQmlUncreatableType<Game::Object>(uri, "Object");
     registerQmlType<Game::Entity>(uri, "Entity");
     registerQmlUncreatableType<Game::Component>(uri, "Component");
-    registerQmlUncreatableType<Game::LoadableComponent>(uri, "LoadableComponent");
+    registerQmlType<Game::Visual>(uri, "Visual");
     registerQmlType<Game::Material>(uri, "Material");
     registerQmlType<Game::Mesh>(uri, "Mesh");
+    registerQmlType<Game::Collision>(uri, "Collision");
     registerQmlUncreatableType<Game::Light>(uri, "Light");
     registerQmlType<Game::DirectionalLight>(uri, "DirectionalLight");
     registerQmlType<Game::PointLight>(uri, "PointLight");

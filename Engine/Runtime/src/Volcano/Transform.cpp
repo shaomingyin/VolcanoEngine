@@ -1,8 +1,8 @@
 //
 //
-#include <Volcano/Graphics/Transform.hpp>
+#include <Volcano/Transform.hpp>
 
-VOLCANO_GRAPHICS_BEGIN
+VOLCANO_BEGIN
 
 Transform::Transform(void)
 {
@@ -37,77 +37,92 @@ void Transform::reset(void)
     m_rotation = QQuaternion::fromAxisAndAngle(0.0f, 0.0f, 0.0f, 0.0f);
 }
 
-void Transform::translate(const QVector3D &v)
+const QVector3D &Transform::translate(void) const
+{
+    return m_translate;
+}
+
+void Transform::setTranslate(const QVector3D &v)
 {
     m_translate = v;
 }
 
-void Transform::translate(float x, float y, float z)
+void Transform::setTranslate(float x, float y, float z)
 {
-    translate(QVector3D(x, y, z));
+    setTranslate(QVector3D(x, y, z));
 }
 
-void Transform::translateTo(const QVector3D &v)
+void Transform::setTranslateOffset(const QVector3D &v)
 {
     m_translate += v;
 }
 
-void Transform::trnaslateTo(float x, float y, float z)
+void Transform::setTrnaslateOffset(float x, float y, float z)
 {
-    translateTo(QVector3D(x, y, z));
+    setTranslateOffset(QVector3D(x, y, z));
 }
 
-void Transform::scale(const QVector3D &v)
+const QVector3D &Transform::scale(void) const
+{
+    return m_scale;
+}
+
+void Transform::setScale(const QVector3D &v)
 {
     m_scale = v;
 }
 
-void Transform::scale(float x, float y, float z)
+void Transform::setScale(float x, float y, float z)
 {
-    scale(QVector3D(x, y, z));
+    setScale(QVector3D(x, y, z));
 }
 
-void Transform::scaleTo(const QVector3D &v)
+void Transform::setScaleOffset(const QVector3D &v)
 {
     m_scale *= v;
 }
 
-void Transform::scaleTo(float x, float y, float z)
+void Transform::setScaleOffset(float x, float y, float z)
 {
-    scaleTo(QVector3D(x, y, z));
+    setScaleOffset(QVector3D(x, y, z));
 }
 
-void Transform::rotate(const QQuaternion &v)
+const QQuaternion &Transform::rotation(void) const
+{
+    return m_rotation;
+}
+
+void Transform::setRotation(const QQuaternion &v)
 {
     m_rotation = v;
 }
 
-void Transform::rotate(float angle, const QVector3D &axis)
+void Transform::setRotation(float angle, const QVector3D &axis)
 {
-    rotate(QQuaternion::fromAxisAndAngle(axis, angle));
+    setRotation(QQuaternion::fromAxisAndAngle(axis, angle));
 }
 
-void Transform::rotate(float angle, float x, float y, float z)
+void Transform::setRotation(float angle, float x, float y, float z)
 {
-    rotate(QQuaternion::fromAxisAndAngle(x, y, z, angle));
+    setRotation(QQuaternion::fromAxisAndAngle(x, y, z, angle));
 }
 
-void Transform::rotateTo(const QQuaternion &v)
+void Transform::setRotationOffset(const QQuaternion &v)
 {
     m_rotation *= v;
 }
 
-void Transform::rotateTo(float angle, const QVector3D &axis)
+void Transform::setRotationOffset(float angle, const QVector3D &axis)
 {
-    rotateTo(QQuaternion::fromAxisAndAngle(axis, angle));
+    setRotationOffset(QQuaternion::fromAxisAndAngle(axis, angle));
 }
 
-void Transform::rotateTo(float angle, float x, float y, float z)
+void Transform::setRotationOffset(float angle, float x, float y, float z)
 {
-    rotateTo(QQuaternion::fromAxisAndAngle(x, y, z, angle));
+    setRotationOffset(QQuaternion::fromAxisAndAngle(x, y, z, angle));
 }
 
-void Transform::toMatrix(QMatrix4x4 &out)
+void Transform::buildMatrix4x4(QMatrix4x4 &out)
 {
     out.setToIdentity();
     out.scale(m_scale);
@@ -145,4 +160,4 @@ bool Transform::operator!=(const Transform &that) const
     return !((*this) == that);
 }
 
-VOLCANO_GRAPHICS_END
+VOLCANO_END

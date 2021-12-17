@@ -13,57 +13,57 @@ World::~World(void)
 {
 }
 
-QQmlListProperty<Object> World::qmlObjects(void)
+QQmlListProperty<Actor> World::qmlActors(void)
 {
     return { this, this,
-        &World::qmlAppendObject,
-        &World::qmlObjectCount,
-        &World::qmlObjectAt,
-        &World::qmlClearObjects,
-        &World::qmlReplaceObject,
-        &World::qmlRemoveLastObject };
+        &World::qmlAppendActor,
+        &World::qmlActorCount,
+        &World::qmlActorAt,
+        &World::qmlClearActors,
+        &World::qmlReplaceActor,
+        &World::qmlRemoveLastActor };
 }
 
-void World::handleObjectAdded(Object *object, bool emitSignal)
+void World::handleActorAdded(Actor *actor)
 {
-    object->setParent(this);
-    WorldBase::handleObjectAdded(object, emitSignal);
+    actor->setParent(this);
+    WorldBase::handleActorAdded(actor);
 }
 
-void World::handleObjectRemoved(Object *object, bool emitSignal)
+void World::handleActorRemoved(Actor *actor)
 {
-    object->setParent(nullptr);
-    WorldBase::handleObjectRemoved(object, emitSignal);
+    actor->setParent(nullptr);
+    WorldBase::handleActorRemoved(actor);
 }
 
-void World::qmlAppendObject(QQmlListProperty<Object> *list, Object *object)
+void World::qmlAppendActor(QQmlListProperty<Actor> *list, Actor *actor)
 {
-    reinterpret_cast<World *>(list->data)->appendObject(object);
+    reinterpret_cast<World *>(list->data)->appendActor(actor);
 }
 
-qsizetype World::qmlObjectCount(QQmlListProperty<Object> *list)
+qsizetype World::qmlActorCount(QQmlListProperty<Actor> *list)
 {
-    return reinterpret_cast<World *>(list->data)->objectCount();
+    return reinterpret_cast<World *>(list->data)->actorCount();
 }
 
-Object *World::qmlObjectAt(QQmlListProperty<Object> *list, qsizetype i)
+Actor *World::qmlActorAt(QQmlListProperty<Actor> *list, qsizetype i)
 {
-    return reinterpret_cast<World *>(list->data)->objectAt(i);
+    return reinterpret_cast<World *>(list->data)->actorAt(i);
 }
 
-void World::qmlClearObjects(QQmlListProperty<Object> *list)
+void World::qmlClearActors(QQmlListProperty<Actor> *list)
 {
-    reinterpret_cast<World *>(list->data)->clearObjects();
+    reinterpret_cast<World *>(list->data)->clearActors();
 }
 
-void World::qmlReplaceObject(QQmlListProperty<Object> *list, qsizetype i, Object *object)
+void World::qmlReplaceActor(QQmlListProperty<Actor> *list, qsizetype i, Actor *actor)
 {
-    reinterpret_cast<World *>(list->data)->replaceObject(i, object);
+    reinterpret_cast<World *>(list->data)->replaceActor(i, actor);
 }
 
-void World::qmlRemoveLastObject(QQmlListProperty<Object> *list)
+void World::qmlRemoveLastActor(QQmlListProperty<Actor> *list)
 {
-    reinterpret_cast<World *>(list->data)->removeLastObject();
+    reinterpret_cast<World *>(list->data)->removeLastActor();
 }
 
 VOLCANO_GAME_END

@@ -4,11 +4,11 @@
 #define VOLCANO_GAME_MATERIAL_HPP
 
 #include <Volcano/Game/Common.hpp>
-#include <Volcano/Game/LoadableComponent.hpp>
+#include <Volcano/Game/Object.hpp>
 
 VOLCANO_GAME_BEGIN
 
-class Material: public LoadableComponent {
+class Material: public Object {
     Q_OBJECT
 
 public:

@@ -5,15 +5,11 @@
 VOLCANO_GAME_BEGIN
 
 Component::Component(QObject *parent):
-    QObject(parent)
+    Object(parent)
 {
 }
 
 Component::~Component(void)
-{
-}
-
-void Component::tick(Duration elapsed)
 {
 }
 

@@ -27,8 +27,8 @@ signals:
     void gravityChanged(const QVector3D &v);
 
 protected:
-    void handleObjectAdded(Object *object, bool emitSignal) override;
-    void handleObjectRemoved(Object *object, bool emitSignal) override;
+    void handleActorAdded(Actor *actor) override;
+    void handleActorRemoved(Actor *actor) override;
 
 private:
     bool init(void);

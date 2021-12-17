@@ -5,7 +5,7 @@
 VOLCANO_GAME_BEGIN
 
 WorldBase::WorldBase(QObject *parent):
-    QObject(parent)
+    Object(parent)
 {
 }
 
@@ -15,76 +15,67 @@ WorldBase::~WorldBase(void)
 
 void WorldBase::tick(Duration elapsed)
 {
-    for (auto object: m_objects)
-        object->tick(elapsed);
+    for (auto actor: m_actorList)
+        actor->tick(elapsed);
 }
 
-const QList<Object *> &WorldBase::objects(void) const
+const QList<Actor *> &WorldBase::actors(void) const
 {
-    return m_objects;
+    return m_actorList;
 }
 
-void WorldBase::appendObject(Object *object)
+void WorldBase::appendActor(Actor *actor)
 {
-    m_objects.append(object);
-    handleObjectAdded(object);
+    m_actorList.append(actor);
+    handleActorAdded(actor);
 }
 
-qsizetype WorldBase::objectCount(void) const
+qsizetype WorldBase::actorCount(void) const
 {
-    return m_objects.count();
+    return m_actorList.count();
 }
 
-Object *WorldBase::objectAt(qsizetype index)
+Actor *WorldBase::actorAt(qsizetype index)
 {
-    if (0 <= index && index < m_objects.size())
-        return m_objects.at(index);
+    if (0 <= index && index < m_actorList.size())
+        return m_actorList.at(index);
     return nullptr;
 }
 
-const Object *WorldBase::objectAt(qsizetype index) const
+void WorldBase::clearActors(void)
 {
-    if (0 <= index && index < m_objects.size())
-        return m_objects.at(index);
-    return nullptr;
+    QList<Actor *> actors = std::move(m_actorList);
+    for (auto actor: actors)
+        handleActorRemoved(actor);
 }
 
-void WorldBase::clearObjects(void)
+void WorldBase::replaceActor(qsizetype index, Actor *actor)
 {
-    QList<Object *> objects = std::move(m_objects);
-    for (auto object: objects)
-        handleObjectRemoved(object);
-}
-
-void WorldBase::replaceObject(qsizetype index, Object *object)
-{
-    if (0 <= index && index < m_objects.size()) {
-        auto oldObject = m_objects.at(index);
-        m_objects.replace(index, object);
-        handleObjectRemoved(oldObject);
-        handleObjectAdded(object);
+    if (0 <= index && index < m_actorList.size()) {
+        auto oldActor = m_actorList.at(index);
+        m_actorList.replace(index, actor);
+        handleActorRemoved(oldActor);
+        handleActorAdded(actor);
     }
 }
 
-void WorldBase::removeLastObject(void)
+void WorldBase::removeLastActor(void)
 {
-    if (!m_objects.isEmpty()) {
-        auto object = m_objects.last();
-        m_objects.removeLast();
-        handleObjectRemoved(object);
+    if (!m_actorList.isEmpty()) {
+        auto actor = m_actorList.last();
+        m_actorList.removeLast();
+        handleActorRemoved(actor);
     }
 }
 
-void WorldBase::handleObjectAdded(Object *object, bool emitSignal)
+void WorldBase::handleActorAdded(Actor *object)
 {
-    if (emitSignal)
-        emit objectAdded(object);
+    emit actorAdded(object);
 }
 
-void WorldBase::handleObjectRemoved(Object *object, bool emitSignal)
+void WorldBase::handleActorRemoved(Actor *object)
 {
-    if (emitSignal)
-        emit objectRemoved(object);
+    emit actorRemoved(object);
 }
 
 VOLCANO_GAME_END

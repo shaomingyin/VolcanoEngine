@@ -3,21 +3,17 @@
 #ifndef VOLCANO_GAME_COMPONENT_HPP
 #define VOLCANO_GAME_COMPONENT_HPP
 
-#include <QObject>
-
 #include <Volcano/Game/Common.hpp>
+#include <Volcano/Game/Object.hpp>
 
 VOLCANO_GAME_BEGIN
 
-class Component: public QObject {
+class Component: public Object {
     Q_OBJECT
 
 public:
     Component(QObject *parent = nullptr);
     ~Component(void) override;
-
-public:
-    virtual void tick(Duration elapsed);
 };
 
 VOLCANO_GAME_END

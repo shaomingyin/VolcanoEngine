@@ -103,13 +103,6 @@ void ClientWorld::disable(void)
     setState(STATE_DISABLING);
 }
 
-QQmlListProperty<Game::Object> ClientWorld::qmlObjects(void)
-{
-    return { this, this,
-        &ClientWorld::qmlObjectCount,
-        &ClientWorld::qmlObjectAt };
-}
-
 void ClientWorld::setState(State v)
 {
     if (m_state == v)
@@ -128,16 +121,6 @@ void ClientWorld::setState(State v)
     default:
         break;
     }
-}
-
-qsizetype ClientWorld::qmlObjectCount(QQmlListProperty<Game::Object> *list)
-{
-    return reinterpret_cast<ClientWorld *>(list->data)->objectCount();
-}
-
-Game::Object *ClientWorld::qmlObjectAt(QQmlListProperty<Game::Object> *list, qsizetype index)
-{
-    return reinterpret_cast<ClientWorld *>(list->data)->objectAt(index);
 }
 
 void ClientWorld::onPeerConnected(ENetPeer *enetPeer)

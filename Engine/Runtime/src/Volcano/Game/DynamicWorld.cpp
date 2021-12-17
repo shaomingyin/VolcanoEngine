@@ -53,14 +53,14 @@ void DynamicWorld::setGravity(const QVector3D &v)
     emit gravityChanged(v);
 }
 
-void DynamicWorld::handleObjectAdded(Object *object, bool emitSignal)
+void DynamicWorld::handleActorAdded(Actor *actor)
 {
-    World::handleObjectAdded(object, emitSignal);
+    World::handleActorAdded(actor);
 }
 
-void DynamicWorld::handleObjectRemoved(Object *object, bool emitSignal)
+void DynamicWorld::handleActorRemoved(Actor *actor)
 {
-    World::handleObjectRemoved(object, emitSignal);
+    World::handleActorRemoved(actor);
 }
 
 bool DynamicWorld::init(void)
