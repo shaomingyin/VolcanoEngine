@@ -64,7 +64,7 @@ void CameraRenderer::synchronize(QQuickFramebufferObject *item)
 CameraView::CameraView(QQuickItem *parent):
     QQuickFramebufferObject(parent),
     m_isActivate(true),
-    m_gameWorld(nullptr),
+    m_gameActorSet(nullptr),
     m_frameTimer(0),
     m_frameCount(0),
     m_frameCountPerSecond(0),
@@ -165,17 +165,17 @@ void CameraView::setBackgroundColor(const QColor &v)
     }
 }
 
-Game::WorldBase *CameraView::gameWorld(void)
+Game::ActorSet *CameraView::gameActorSet(void)
 {
-    return m_gameWorld;
+    return m_gameActorSet;
 }
 
-void CameraView::setGameWorld(Game::WorldBase *p)
+void CameraView::setGameActorSet(Game::ActorSet *p)
 {
-    if (m_gameWorld != p) {
-        m_gameWorld = p;
-        m_world.setGameWorld(p);
-        emit gameWorldChanged(p);
+    if (m_gameActorSet != p) {
+        m_gameActorSet = p;
+        m_world.setGameActorSet(p);
+        emit gameActorSetChanged(p);
     }
 }
 

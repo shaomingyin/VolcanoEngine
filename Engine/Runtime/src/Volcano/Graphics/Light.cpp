@@ -1,8 +1,8 @@
 //
 //
-#include <Volcano/Game/Light.hpp>
+#include <Volcano/Graphics/Light.hpp>
 
-VOLCANO_GAME_BEGIN
+VOLCANO_GRAPHICS_BEGIN
 
 Light::Light(QObject *parent):
     Actor(parent)
@@ -11,19 +11,6 @@ Light::Light(QObject *parent):
 
 Light::~Light(void)
 {
-}
-
-float Light::strength(void) const
-{
-    return m_strength;
-}
-
-void Light::setStrength(float v)
-{
-    if (!qFuzzyCompare(m_strength, v)) {
-        m_strength = v;
-        emit strengthChanged(v);
-    }
 }
 
 const QColor &Light::color(void) const
@@ -39,4 +26,4 @@ void Light::setColor(const QColor &v)
     }
 }
 
-VOLCANO_GAME_END
+VOLCANO_GRAPHICS_END

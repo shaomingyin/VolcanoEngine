@@ -4,27 +4,26 @@
 
 VOLCANO_GRAPHICS_BEGIN
 
-Mesh::Mesh(Game::Mesh *p, QObject *parent):
-    QObject(parent),
-    m_gameMesh(p)
+Mesh::Mesh(QObject *parent):
+    Shape(parent)
 {
-    Q_ASSERT(p != nullptr);
-    connect(p, &Game::Mesh::sourceChanged, this, &Mesh::onSourceChanged);
-    onSourceChanged(p->source());
 }
 
 Mesh::~Mesh(void)
 {
 }
 
-Game::Mesh *Mesh::gameMesh(void)
+QUrl Mesh::source(void) const
 {
-    return m_gameMesh;
+    return m_source;
 }
 
-void Mesh::onSourceChanged(const QUrl &v)
+void Mesh::setSource(QUrl v)
 {
-    // TODO post a init task to renderer thread.
+    if (m_source != v) {
+        m_source = v;
+        emit sourceChanged(v);
+    }
 }
 
 VOLCANO_GRAPHICS_END

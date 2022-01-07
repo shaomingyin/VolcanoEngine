@@ -11,7 +11,7 @@
 #include <QSocketDescriptor>
 #include <QQmlListProperty>
 
-#include <Volcano/Game/WorldBase.hpp>
+#include <Volcano/Game/ActorSet.hpp>
 #include <Volcano/Net/Common.hpp>
 #include <Volcano/Net/Session.hpp>
 
@@ -26,7 +26,7 @@ class Server: public QObject {
     Q_PROPERTY(bool running READ isRunning WRITE setRunning NOTIFY runningChanged)
     Q_PROPERTY(int maxSession READ maxSession WRITE setMaxSession NOTIFY maxSessionChanged)
     Q_PROPERTY(QUrl url READ url WRITE setUrl NOTIFY urlChanged)
-    Q_PROPERTY(Game::WorldBase *gameWorld READ gameWorld WRITE setGameWorld NOTIFY gameWorldChanged)
+    Q_PROPERTY(Game::ActorSet *gameActorSet READ gameActorSet WRITE setGameActorSet NOTIFY gameActorSetChanged)
     Q_PROPERTY(QQmlListProperty<Session> sessions READ qmlSessions)
 
 public:
@@ -45,8 +45,8 @@ public:
     void setUrl(const QUrl &v);
     Q_INVOKABLE bool start(void);
     Q_INVOKABLE void stop(void);
-    Game::WorldBase *gameWorld(void);
-    void setGameWorld(Game::WorldBase *p);
+    Game::ActorSet *gameActorSet(void);
+    void setGameActorSet(Game::ActorSet *p);
     const SessionList &sessions(void) const;
     QQmlListProperty<Session> qmlSessions(void);
     qsizetype sessionCount(void) const;
@@ -58,7 +58,7 @@ signals:
     void runningChanged(bool v);
     void maxSessionChanged(int v);
     void urlChanged(const QUrl &v);
-    void gameWorldChanged(Game::WorldBase *p);
+    void gameActorSetChanged(Game::ActorSet *p);
 
 protected:
     void timerEvent(QTimerEvent *evt) override;
@@ -83,7 +83,7 @@ private:
     QElapsedTimer m_tickElapsedTimer;
     int m_maxSession;
     QUrl m_url;
-    Game::WorldBase *m_gameWorld;
+    Game::ActorSet *m_gameActorSet;
     QSocketNotifier m_rxNotifier;
     ENetHost *m_enetHost;
     QDataStream m_txStream;

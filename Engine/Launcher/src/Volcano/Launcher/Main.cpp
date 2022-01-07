@@ -23,21 +23,19 @@
 #include <Volcano/Game/Object.hpp>
 #include <Volcano/Game/Entity.hpp>
 #include <Volcano/Game/Component.hpp>
-#include <Volcano/Game/Visual.hpp>
 #include <Volcano/Game/Collision.hpp>
-#include <Volcano/Game/Material.hpp>
-#include <Volcano/Game/Mesh.hpp>
-#include <Volcano/Game/Light.hpp>
-#include <Volcano/Game/DirectionalLight.hpp>
-#include <Volcano/Game/PointLight.hpp>
-#include <Volcano/Game/SpotLight.hpp>
-
 #include <Volcano/Graphics/Camera.hpp>
 #include <Volcano/Graphics/CameraView.hpp>
-
-#include <Volcano/Net/Server.hpp>
+#include <Volcano/Graphics/Visual.hpp>
+#include <Volcano/Graphics/Material.hpp>
+#include <Volcano/Graphics/Mesh.hpp>
+#include <Volcano/Graphics/Light.hpp>
+#include <Volcano/Graphics/DirectionalLight.hpp>
+#include <Volcano/Graphics/PointLight.hpp>
+#include <Volcano/Graphics/SpotLight.hpp>
 #include <Volcano/Net/Session.hpp>
-#include <Volcano/Net/ClientWorld.hpp>
+#include <Volcano/Net/Server.hpp>
+#include <Volcano/Net/Client.hpp>
 
 #include <Volcano/Launcher/Common.hpp>
 #include <Volcano/Launcher/NetworkAccessManagerFactory.hpp>
@@ -88,27 +86,27 @@ static void registerQmlTypes(void)
     registerQmlUncreatableType<Game::Object>(uri, "Object");
     registerQmlType<Game::Entity>(uri, "Entity");
     registerQmlUncreatableType<Game::Component>(uri, "Component");
-    registerQmlType<Game::Visual>(uri, "Visual");
-    registerQmlType<Game::Material>(uri, "Material");
-    registerQmlType<Game::Mesh>(uri, "Mesh");
     registerQmlType<Game::Collision>(uri, "Collision");
-    registerQmlUncreatableType<Game::Light>(uri, "Light");
-    registerQmlType<Game::DirectionalLight>(uri, "DirectionalLight");
-    registerQmlType<Game::PointLight>(uri, "PointLight");
-    registerQmlType<Game::SpotLight>(uri, "SpotLight");
 
     ///////////////////////////////////////////////////////////////////////////
     uri = "Volcano.Graphics";
 
     registerQmlUncreatableType<Graphics::Camera>(uri, "Camera");
     registerQmlType<Graphics::CameraView>(uri, "CameraView");
+    registerQmlType<Graphics::Visual>(uri, "Visual");
+    registerQmlType<Graphics::Material>(uri, "Material");
+    registerQmlType<Graphics::Mesh>(uri, "Mesh");
+    registerQmlUncreatableType<Graphics::Light>(uri, "Light");
+    registerQmlType<Graphics::DirectionalLight>(uri, "DirectionalLight");
+    registerQmlType<Graphics::PointLight>(uri, "PointLight");
+    registerQmlType<Graphics::SpotLight>(uri, "SpotLight");
 
     ///////////////////////////////////////////////////////////////////////////
     uri = "Volcano.Net";
 
-    registerQmlType<Net::Server>(uri, "Server");
     registerQmlUncreatableType<Net::Session>(uri, "Session");
-    registerQmlType<Net::ClientWorld>(uri, "ClientWorld");
+    registerQmlType<Net::Server>(uri, "Server");
+    registerQmlType<Net::Client>(uri, "Client");
 }
 
 static int main(int argc, char *argv[])

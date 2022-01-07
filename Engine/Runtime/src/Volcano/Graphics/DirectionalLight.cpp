@@ -1,8 +1,8 @@
 //
 //
-#include <Volcano/Game/DirectionalLight.hpp>
+#include <Volcano/Graphics/DirectionalLight.hpp>
 
-VOLCANO_GAME_BEGIN
+VOLCANO_GRAPHICS_BEGIN
 
 DirectionalLight::DirectionalLight(QObject *parent):
     Light(parent)
@@ -26,4 +26,4 @@ void DirectionalLight::setDirection(const QVector3D &v)
     }
 }
 
-VOLCANO_GAME_END
+VOLCANO_GRAPHICS_END

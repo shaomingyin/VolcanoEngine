@@ -15,7 +15,7 @@ Server::Server(QObject *parent):
     m_tickTimer(0),
     m_maxSession(16),
     m_url("volcano://any"),
-    m_gameWorld(nullptr),
+    m_gameActorSet(nullptr),
     m_rxNotifier(QSocketNotifier::Read),
     m_enetHost(nullptr)
 {
@@ -164,27 +164,27 @@ void Server::stop(void)
     emit runningChanged(false);
 }
 
-Game::WorldBase *Server::gameWorld(void)
+Game::ActorSet *Server::gameActorSet(void)
 {
-    return m_gameWorld;
+    return m_gameActorSet;
 }
 
-void Server::setGameWorld(Game::WorldBase *p)
+void Server::setGameActorSet(Game::ActorSet *p)
 {
-    if (m_gameWorld == p)
+    if (m_gameActorSet == p)
         return;
 
-    if (m_gameWorld != nullptr) {
+    if (m_gameActorSet != nullptr) {
         // TODO
     }
 
-    m_gameWorld = p;
+    m_gameActorSet = p;
 
-    if (m_gameWorld != nullptr) {
+    if (m_gameActorSet != nullptr) {
         // TODO
     }
 
-    emit gameWorldChanged(p);
+    emit gameActorSetChanged(p);
 }
 
 const SessionList &Server::sessions(void) const
@@ -228,8 +228,8 @@ void Server::tick(Duration elapsed)
 {
     pollENet();
 
-    if (m_gameWorld != nullptr)
-        m_gameWorld->tick(elapsed);
+    if (m_gameActorSet != nullptr)
+        m_gameActorSet->tick(elapsed);
 
     // TODO
 }

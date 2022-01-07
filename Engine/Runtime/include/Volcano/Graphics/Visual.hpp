@@ -4,42 +4,53 @@
 #define VOLCANO_GRAPHICS_VISUAL_HPP
 
 #include <QObject>
+#include <QVector3D>
+#include <QQuaternion>
+#include <QQmlListProperty>
 
-#include <Volcano/Box.hpp>
-#include <Volcano/Sphere.hpp>
-#include <Volcano/Cylinder.hpp>
-#include <Volcano/Plane.hpp>
-#include <Volcano/Game/Visual.hpp>
-#include <Volcano/Game/Material.hpp>
-#include <Volcano/Game/Mesh.hpp>
+#include <Volcano/Rotation.hpp>
+#include <Volcano/Shape.hpp>
+#include <Volcano/Game/Component.hpp>
 #include <Volcano/Graphics/Common.hpp>
-#include <Volcano/Graphics/Camera.hpp>
-#include <Volcano/Graphics/View.hpp>
+#include <Volcano/Graphics/Material.hpp>
 
 VOLCANO_GRAPHICS_BEGIN
 
-class Visual: public QObject {
+class Visual: public Game::Component {
     Q_OBJECT
+    Q_PROPERTY(QVector3D offset READ offset WRITE setOffset NOTIFY offsetChanged)
+    Q_PROPERTY(QVector3D scale READ scale WRITE setScale NOTIFY scaleChanged)
+    Q_PROPERTY(Rotation *rotation READ rotation)
+    Q_PROPERTY(Shape *shape READ shape WRITE setShape NOTIFY shapeChanged)
+    Q_PROPERTY(Material *material READ material WRITE setMaterial NOTIFY materialChanged)
 
 public:
-    Visual(Game::Visual *p, QObject *parent = nullptr);
+    Visual(QObject *parent = nullptr);
     ~Visual(void) override;
 
 public:
-    Game::Visual *gameVisual(void);
-    bool isValid(void) const;
-    void buildView(View *view, const Camera &cam) const;
+    const QVector3D &offset(void) const;
+    void setOffset(const QVector3D &v);
+    const QVector3D &scale(void) const;
+    void setScale(const QVector3D &v);
+    Rotation *rotation(void);
+    Shape *shape(void);
+    void setShape(Shape *p);
+    Material *material(void);
+    void setMaterial(Material *p);
 
-private slots:
-    void onShapeChanged(Shape *shape);
+signals:
+    void offsetChanged(const QVector3D &v);
+    void scaleChanged(const QVector3D &v);
+    void shapeChanged(Shape *p);
+    void materialChanged(Material *p);
 
 private:
-    Game::Visual *m_gameVisual;
-    Box *m_box;
-    Cylinder *m_cylinder;
-    Sphere *m_sphere;
-    Plane *m_plane;
-    Game::Mesh *m_gameMesh;
+    QVector3D m_offset;
+    QVector3D m_scale;
+    Rotation m_rotation;
+    Shape *m_shape;
+    Material *m_material;
 };
 
 VOLCANO_GRAPHICS_END

@@ -1,30 +1,27 @@
 //
 //
-#ifndef VOLCANO_GAME_WORLDBASE_HPP
-#define VOLCANO_GAME_WORLDBASE_HPP
+#ifndef VOLCANO_GAME_ACTORSET_HPP
+#define VOLCANO_GAME_ACTORSET_HPP
 
 #include <QList>
 #include <QString>
-#include <QColor>
 #include <QObject>
 
 #include <Volcano/Game/Common.hpp>
 #include <Volcano/Game/Actor.hpp>
-#include <Volcano/Game/Object.hpp>
 
 VOLCANO_GAME_BEGIN
 
 using ActorList = QList<Actor *>;
 
-class WorldBase: public Object {
+class ActorSet: public Object {
     Q_OBJECT
 
 public:
-    WorldBase(QObject *parent = nullptr);
-    ~WorldBase(void) override;
+    ActorSet(QObject *parent = nullptr);
+    ~ActorSet(void) override;
 
 public:
-    const QColor ambientLight(void) const;
     void tick(Duration elapsed) override;
     const QList<Actor *> &actors(void) const;
 
@@ -33,7 +30,6 @@ signals:
     void actorRemoved(Actor *actor);
 
 protected:
-    void setAmbientLight(const QColor &v);
     void appendActor(Actor *actor);
     qsizetype actorCount(void) const;
     Actor *actorAt(qsizetype index);
@@ -44,10 +40,9 @@ protected:
     virtual void handleActorRemoved(Actor *actor);
 
 private:
-    QColor m_ambientLight;
     ActorList m_actorList;
 };
 
 VOLCANO_GAME_END
 
-#endif // VOLCANO_GAME_WORLDBASE_HPP
+#endif // VOLCANO_GAME_ACTORSET_HPP

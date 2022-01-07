@@ -1,16 +1,16 @@
 //
 //
-#ifndef VOLCANO_GAME_POINTLIGHT_HPP
-#define VOLCANO_GAME_POINTLIGHT_HPP
+#ifndef VOLCANO_GRAPHICS_POINTLIGHT_HPP
+#define VOLCANO_GRAPHICS_POINTLIGHT_HPP
 
 #include <QVector3D>
 
-#include <Volcano/Game/Common.hpp>
-#include <Volcano/Game/Actor.hpp>
+#include <Volcano/Graphics/Common.hpp>
+#include <Volcano/Graphics/Light.hpp>
 
-VOLCANO_GAME_BEGIN
+VOLCANO_GRAPHICS_BEGIN
 
-class PointLight: public Actor {
+class PointLight: public Light {
     Q_OBJECT
     Q_PROPERTY(QVector3D position READ position WRITE setPosition NOTIFY positionChanged)
     Q_PROPERTY(float radius READ radius WRITE setRadius NOTIFY radiusChanged)
@@ -34,6 +34,6 @@ private:
     float m_radius;
 };
 
-VOLCANO_GAME_END
+VOLCANO_GRAPHICS_END
 
-#endif // VOLCANO_GAME_POINTLIGHT_HPP
+#endif // VOLCANO_GRAPHICS_POINTLIGHT_HPP

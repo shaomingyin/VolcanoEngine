@@ -1,19 +1,19 @@
 //
 //
-#ifndef VOLCANO_NET_CLIENTWORLD_HPP
-#define VOLCANO_NET_CLIENTWORLD_HPP
+#ifndef VOLCANO_NET_CLIENT_HPP
+#define VOLCANO_NET_CLIENT_HPP
 
 #include <QUrl>
 #include <QSocketNotifier>
 #include <QSocketDescriptor>
 #include <QQmlListProperty>
 
-#include <Volcano/Game/WorldBase.hpp>
+#include <Volcano/Game/ActorSet.hpp>
 #include <Volcano/Net/Common.hpp>
 
 VOLCANO_NET_BEGIN
 
-class ClientWorld: public Game::WorldBase {
+class Client: public Game::ActorSet {
     Q_OBJECT
     Q_PROPERTY(bool enabled READ isEnabled WRITE setEnabled NOTIFY enabledChanged)
     Q_PROPERTY(QUrl url READ url WRITE setUrl NOTIFY urlChanged)
@@ -30,10 +30,11 @@ public:
     Q_PROPERTY(State state READ state NOTIFY stateChanged)
 
 public:
-    ClientWorld(QObject *parent = nullptr);
-    ~ClientWorld(void) override;
+    Client(QObject *parent = nullptr);
+    ~Client(void) override;
 
 public:
+    void tick(Duration elapsed) override;
     State state(void) const;
     bool isEnabled(void) const;
     void setEnabled(bool v);
@@ -68,4 +69,4 @@ private:
 
 VOLCANO_NET_END
 
-#endif // VOLCANO_NET_CLIENTWORLD_HPP
+#endif // VOLCANO_NET_CLIENT_HPP

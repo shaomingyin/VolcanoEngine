@@ -16,13 +16,6 @@ Transform::Transform(const Transform &that):
 {
 }
 
-Transform::Transform(Transform &&that):
-    m_translate(that.m_translate),
-    m_scale(that.m_scale),
-    m_rotation(that.m_rotation)
-{
-}
-
 Transform::Transform(const QVector3D &translate, const QVector3D &scale, const QQuaternion &rotation):
     m_translate(translate),
     m_scale(scale),
@@ -139,15 +132,6 @@ Transform &Transform::operator=(const Transform &that)
     return (*this);
 }
 
-Transform &Transform::operator=(Transform &&that)
-{
-    m_translate = that.m_translate;
-    m_scale = that.m_scale;
-    m_rotation = that.m_rotation;
-
-    return (*this);
-}
-
 bool Transform::operator==(const Transform &that) const
 {
     return (qFuzzyCompare(m_translate, that.m_translate) &&
@@ -157,7 +141,7 @@ bool Transform::operator==(const Transform &that) const
 
 bool Transform::operator!=(const Transform &that) const
 {
-    return !((*this) == that);
+    return !operator==(that);
 }
 
 VOLCANO_END

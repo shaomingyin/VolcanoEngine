@@ -1,8 +1,8 @@
 //
 //
-#include <Volcano/Game/SpotLight.hpp>
+#include <Volcano/Graphics/SpotLight.hpp>
 
-VOLCANO_GAME_BEGIN
+VOLCANO_GRAPHICS_BEGIN
 
 SpotLight::SpotLight(QObject *parent):
     DirectionalLight(parent),
@@ -40,4 +40,4 @@ void SpotLight::setDistance(qreal v)
     }
 }
 
-VOLCANO_GAME_END
+VOLCANO_GRAPHICS_END

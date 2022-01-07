@@ -1,14 +1,14 @@
 //
 //
-#ifndef VOLCANO_GAME_SPOTLIGHT_HPP
-#define VOLCANO_GAME_SPOTLIGHT_HPP
+#ifndef VOLCANO_GRAPHICS_SPOTLIGHT_HPP
+#define VOLCANO_GRAPHICS_SPOTLIGHT_HPP
 
 #include <QVector3D>
 
-#include <Volcano/Game/Common.hpp>
-#include <Volcano/Game/DirectionalLight.hpp>
+#include <Volcano/Graphics/Common.hpp>
+#include <Volcano/Graphics/DirectionalLight.hpp>
 
-VOLCANO_GAME_BEGIN
+VOLCANO_GRAPHICS_BEGIN
 
 class SpotLight: public DirectionalLight {
     Q_OBJECT
@@ -34,6 +34,6 @@ private:
     qreal m_distance;
 };
 
-VOLCANO_GAME_END
+VOLCANO_GRAPHICS_END
 
-#endif // VOLCANO_GAME_SPOTLIGHT_HPP
+#endif // VOLCANO_GRAPHICS_SPOTLIGHT_HPP

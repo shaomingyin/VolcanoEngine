@@ -1,55 +1,55 @@
 //
 //
-#include <Volcano/Game/WorldBase.hpp>
+#include <Volcano/Game/ActorSet.hpp>
 
 VOLCANO_GAME_BEGIN
 
-WorldBase::WorldBase(QObject *parent):
+ActorSet::ActorSet(QObject *parent):
     Object(parent)
 {
 }
 
-WorldBase::~WorldBase(void)
+ActorSet::~ActorSet(void)
 {
 }
 
-void WorldBase::tick(Duration elapsed)
+void ActorSet::tick(Duration elapsed)
 {
     for (auto actor: m_actorList)
         actor->tick(elapsed);
 }
 
-const QList<Actor *> &WorldBase::actors(void) const
+const QList<Actor *> &ActorSet::actors(void) const
 {
     return m_actorList;
 }
 
-void WorldBase::appendActor(Actor *actor)
+void ActorSet::appendActor(Actor *actor)
 {
     m_actorList.append(actor);
     handleActorAdded(actor);
 }
 
-qsizetype WorldBase::actorCount(void) const
+qsizetype ActorSet::actorCount(void) const
 {
     return m_actorList.count();
 }
 
-Actor *WorldBase::actorAt(qsizetype index)
+Actor *ActorSet::actorAt(qsizetype index)
 {
     if (0 <= index && index < m_actorList.size())
         return m_actorList.at(index);
     return nullptr;
 }
 
-void WorldBase::clearActors(void)
+void ActorSet::clearActors(void)
 {
     QList<Actor *> actors = std::move(m_actorList);
     for (auto actor: actors)
         handleActorRemoved(actor);
 }
 
-void WorldBase::replaceActor(qsizetype index, Actor *actor)
+void ActorSet::replaceActor(qsizetype index, Actor *actor)
 {
     if (0 <= index && index < m_actorList.size()) {
         auto oldActor = m_actorList.at(index);
@@ -59,7 +59,7 @@ void WorldBase::replaceActor(qsizetype index, Actor *actor)
     }
 }
 
-void WorldBase::removeLastActor(void)
+void ActorSet::removeLastActor(void)
 {
     if (!m_actorList.isEmpty()) {
         auto actor = m_actorList.last();
@@ -68,12 +68,12 @@ void WorldBase::removeLastActor(void)
     }
 }
 
-void WorldBase::handleActorAdded(Actor *object)
+void ActorSet::handleActorAdded(Actor *object)
 {
     emit actorAdded(object);
 }
 
-void WorldBase::handleActorRemoved(Actor *object)
+void ActorSet::handleActorRemoved(Actor *object)
 {
     emit actorRemoved(object);
 }

@@ -3,6 +3,7 @@
 #ifndef VOLCANO_TRANSFORM_HPP
 #define VOLCANO_TRANSFORM_HPP
 
+#include <QObject>
 #include <QVector3D>
 #include <QQuaternion>
 #include <QMatrix4x4>
@@ -11,12 +12,17 @@
 
 VOLCANO_BEGIN
 
-class Transform {
+class Transform: public QObject {
+    Q_OBJECT
+    Q_PROPERTY(QVector3D translate READ translate WRITE setTranslate NOTIFY translateChanged)
+    Q_PROPERTY(QVector3D scale READ scale WRITE setScale NOTIFY scaleChanged)
+    Q_PROPERTY(QQuaternion rotation READ rotation WRITE setRotation NOTIFY rotationChanged)
+
 public:
-    Transform(void);
-    Transform(const Transform &that);
-    Transform(Transform &&that);
-    Transform(const QVector3D &translate, const QVector3D &scale, const QQuaternion &rotation);
+    Transform(QObject *parent = nullptr);
+    Transform(const Transform &that, QObject *parent = nullptr);
+    Transform(const QVector3D &translate, const QVector3D &scale, const QQuaternion &rotation, QObject *parent = nullptr);
+    ~Transform(void) override;
 
 public:
     void reset(void);
@@ -39,7 +45,6 @@ public:
     void setRotationOffset(float angle, float x, float y, float z);
     void buildMatrix4x4(QMatrix4x4 &out);
     Transform &operator=(const Transform &that);
-    Transform &operator=(Transform &&that);
     bool operator==(const Transform &that) const;
     bool operator!=(const Transform &that) const;
 

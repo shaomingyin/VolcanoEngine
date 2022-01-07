@@ -8,7 +8,6 @@
 
 #include <Volcano/Game/Entity.hpp>
 #include <Volcano/Game/Component.hpp>
-#include <Volcano/Game/Visual.hpp>
 #include <Volcano/Graphics/Common.hpp>
 #include <Volcano/Graphics/Camera.hpp>
 #include <Volcano/Graphics/View.hpp>

@@ -4,93 +4,70 @@
 
 VOLCANO_GRAPHICS_BEGIN
 
-Visual::Visual(Game::Visual *p, QObject *parent):
-    QObject(parent),
-    m_gameVisual(p)
+Visual::Visual(QObject *parent):
+    Component(parent),
+    m_offset(0.0f, 0.0f, 0.0f),
+    m_scale(1.0f, 1.0f, 1.0f),
+    m_shape(nullptr),
+    m_material(nullptr)
 {
-    Q_ASSERT(p != nullptr);
-
-    onShapeChanged(p->shape());
-    connect(p, &Game::Visual::shapeChanged, this, &Visual::onShapeChanged);
 }
 
 Visual::~Visual(void)
 {
 }
 
-Game::Visual *Visual::gameVisual(void)
+const QVector3D &Visual::offset(void) const
 {
-    return m_gameVisual;
+    return m_offset;
 }
 
-bool Visual::isValid(void) const
+void Visual::setOffset(const QVector3D &v)
 {
-    return (m_box != nullptr ||
-            m_cylinder != nullptr ||
-            m_sphere != nullptr ||
-            m_plane != nullptr ||
-            m_gameMesh != nullptr);
+    m_offset = v;
+    emit offsetChanged(v);
 }
 
-void Visual::buildView(View *view, const Camera &cam) const
+const QVector3D &Visual::scale(void) const
 {
-    Q_ASSERT(view != nullptr);
+    return m_scale;
+}
 
-    view->translateTo(m_gameVisual->offset());
-    view->scaleTo(m_gameVisual->scale());
-    view->rotateTo(m_gameVisual->rotation());
+void Visual::setScale(const QVector3D &v)
+{
+    m_scale = v;
+    emit scaleChanged(v);
+}
 
-    if (m_gameMesh != nullptr) {
-        // TODO
-        return;
-    }
+Rotation *Visual::rotation(void)
+{
+    return &m_rotation;
+}
 
-    if (m_box != nullptr) {
-        // TODO
-        return;
-    }
+Shape *Visual::shape(void)
+{
+    return m_shape;
+}
 
-    if (m_cylinder != nullptr) {
-        // TODO
-        return;
-    }
-
-    if (m_sphere != nullptr) {
-        // TODO
-        return;
-    }
-
-    if (m_plane != nullptr) {
-        // TODO
-        return;
+void Visual::setShape(Shape *p)
+{
+    if (m_shape != p) {
+        m_shape = p;
+        emit shapeChanged(p);
     }
 }
 
-void Visual::onShapeChanged(Shape *shape)
+Material *Visual::material(void)
 {
-    m_box = nullptr;
-    m_cylinder = nullptr;
-    m_sphere = nullptr;
-    m_plane = nullptr;
-    m_gameMesh = nullptr;
+    return m_material;
+}
 
-    m_box = qobject_cast<Box *>(shape);
-    if (m_box != nullptr)
-        return;
-
-    m_cylinder = qobject_cast<Cylinder *>(shape);
-    if (m_cylinder != nullptr)
-        return;
-
-    m_sphere = qobject_cast<Sphere *>(shape);
-    if (m_sphere != nullptr)
-        return;
-
-    m_plane = qobject_cast<Plane *>(shape);
-    if (m_plane != nullptr)
-        return;
-
-    m_gameMesh = qobject_cast<Game::Mesh *>(shape);
+void Visual::setMaterial(Material *p)
+{
+    if (m_material != p) {
+        m_material = p;
+        emit materialChanged(p);
+    }
 }
 
 VOLCANO_GRAPHICS_END

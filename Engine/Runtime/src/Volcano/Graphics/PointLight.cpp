@@ -1,8 +1,8 @@
 //
 //
-#include <Volcano/Game/PointLight.hpp>
+#include <Volcano/Graphics/PointLight.hpp>
 
-VOLCANO_GAME_BEGIN
+VOLCANO_GRAPHICS_BEGIN
 
 PointLight::PointLight(QObject *parent):
     Light(parent),
@@ -40,4 +40,4 @@ void PointLight::setRadius(float v)
     }
 }
 
-VOLCANO_GAME_END
+VOLCANO_GRAPHICS_END

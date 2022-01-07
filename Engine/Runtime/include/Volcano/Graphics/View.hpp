@@ -9,19 +9,19 @@
 #include <QMatrix4x4>
 
 #include <Volcano/Transform.hpp>
+#include <Volcano/Rotation.hpp>
 
-#include <Volcano/Game/Rotation.hpp>
-#include <Volcano/Game/Box.hpp>
-#include <Volcano/Game/Cylinder.hpp>
-#include <Volcano/Game/Sphere.hpp>
-#include <Volcano/Game/Plane.hpp>
-#include <Volcano/Game/Light.hpp>
-#include <Volcano/Game/DirectionalLight.hpp>
-#include <Volcano/Game/PointLight.hpp>
-#include <Volcano/Game/SpotLight.hpp>
+#include <Volcano/Box.hpp>
+#include <Volcano/Cylinder.hpp>
+#include <Volcano/Sphere.hpp>
+#include <Volcano/Plane.hpp>
 
 #include <Volcano/Graphics/Common.hpp>
 #include <Volcano/Graphics/Mesh.hpp>
+#include <Volcano/Graphics/Light.hpp>
+#include <Volcano/Graphics/DirectionalLight.hpp>
+#include <Volcano/Graphics/PointLight.hpp>
+#include <Volcano/Graphics/SpotLight.hpp>
 
 VOLCANO_GRAPHICS_BEGIN
 
@@ -49,14 +49,14 @@ public:
     void pop(void);
 
 public:
-    void add(const Game::Box::Data &v);
-    void add(const Game::Cylinder::Data &v);
-    void add(const Game::Sphere::Data &v);
-    void add(const Game::Plane::Data &v);
-    void add(const Game::Light *p);
-    void add(const Game::DirectionalLight *p);
-    void add(const Game::PointLight *p);
-    void add(const Game::SpotLight *p);
+    void add(const Box::Data &v);
+    void add(const Cylinder::Data &v);
+    void add(const Sphere::Data &v);
+    void add(const Plane::Data &v);
+    void add(const Light *p);
+    void add(const DirectionalLight *p);
+    void add(const PointLight *p);
+    void add(const SpotLight *p);
     void add(const Mesh *p);
 
 protected:
