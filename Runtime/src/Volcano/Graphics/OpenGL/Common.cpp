@@ -1,0 +1,32 @@
+//
+//
+#include <QSurfaceFormat>
+#include <QQuickWindow>
+
+#include <Volcano/Graphics/OpenGL/Common.hpp>
+
+VOLCANO_GRAPHICS_OPENGL_BEGIN
+
+void initDefaultSettings(void)
+{
+    QSurfaceFormat fmt = QSurfaceFormat::defaultFormat();
+
+    fmt.setVersion(3, 3);
+    fmt.setProfile(QSurfaceFormat::CoreProfile);
+    fmt.setSwapBehavior(QSurfaceFormat::DoubleBuffer);
+
+#ifdef VOLCANO_DEBUG
+    fmt.setOption(QSurfaceFormat::DebugContext, true);
+#endif
+
+    fmt.setRedBufferSize(8);
+    fmt.setGreenBufferSize(8);
+    fmt.setBlueBufferSize(8);
+    fmt.setDepthBufferSize(24);
+
+    QSurfaceFormat::setDefaultFormat(fmt);
+
+    QQuickWindow::setGraphicsApi(QSGRendererInterface::OpenGL);
+}
+
+VOLCANO_GRAPHICS_OPENGL_END
