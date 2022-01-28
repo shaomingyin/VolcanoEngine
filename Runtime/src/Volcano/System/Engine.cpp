@@ -6,15 +6,15 @@
 #include <Volcano/Physics/Bullet/Service.hpp>
 #include <Volcano/Sound/OpenAL/Service.hpp>
 
-#include <Volcano/System/Core.hpp>
+#include <Volcano/System/Engine.hpp>
 
 VOLCANO_SYSTEM_BEGIN
 
-Core::Core(QObject *parent):
+Engine::Engine(QObject *parent):
     Game::Context(parent),
+    m_shouldQuit(false),
     m_qmlEngine(nullptr),
     m_qmlComponent(nullptr),
-    m_networkAccessManagerFactor(nullptr),
     m_gameManifest(nullptr),
     m_graphicsService(nullptr),
     m_inputService(nullptr),
@@ -23,63 +23,61 @@ Core::Core(QObject *parent):
 {
 }
 
-Core::~Core(void)
+Engine::~Engine(void)
 {
     if (m_gameManifest != nullptr)
         delete m_gameManifest;
-    if (m_networkAccessManagerFactor != nullptr)
-        delete m_networkAccessManagerFactor;
 }
 
-bool Core::init(const QUrl &url)
+bool Engine::init(const QUrl &url)
 {
     Q_ASSERT(url.isValid());
 
     Q_ASSERT(m_qmlEngine == nullptr);
-    auto engine = std::make_unique<QQmlEngine>(this);
-    if (!engine)
+    auto qmlEng = std::make_unique<QQmlEngine>(this);
+    if (!qmlEng)
         return false;
 
-    attach(engine.get());
+    attach(qmlEng.get());
 
-    Q_ASSERT(m_networkAccessManagerFactor == nullptr);
-    auto namf = std::make_unique<NetworkAccessManagerFactory>();
-    if (!namf) {
-        qFatal("Failed to create network access manager factory.");
-        return false;
-    }
+    qmlEng->setOutputWarningsToStandardError(true);
+    //qmlEng->rootContext()->setContextProperty("v", &m_globals);
+    qmlEng->rootContext()->setContextObject(this);
 
-    engine->setNetworkAccessManagerFactory(namf.get());
-    engine->setOutputWarningsToStandardError(true);
-
+    qInfo("Loading index Qml...");
     Q_ASSERT(m_qmlComponent == nullptr);
-    auto component = std::make_unique<QQmlComponent>(engine.get(), url, this);
-    if (!component)
+    auto qmlComponent = std::make_unique<QQmlComponent>(qmlEng.get(), url, this);
+    if (!qmlComponent)
         return false;
 
-    m_qmlEngine = engine.release();
-    m_qmlComponent = component.release();
-    m_networkAccessManagerFactor = namf.release();
+    m_shouldQuit = false;
+    m_qmlEngine = qmlEng.release();
+    m_qmlComponent = qmlComponent.release();
 
-    if (m_qmlComponent->status() == QQmlComponent::Ready)
-        onStatusChanged(QQmlComponent::Ready);
+    if (m_qmlComponent->isLoading())
+        connect(m_qmlComponent, &QQmlComponent::statusChanged, this, &Engine::onStatusChanged);
     else
-        connect(m_qmlComponent, &QQmlComponent::statusChanged, this, &Core::onStatusChanged);
+        onStatusChanged(m_qmlComponent->status());
 
     return true;
 }
 
-TimePoint Core::frame(void)
+bool Engine::shouldQuit(void) const
+{
+    return m_shouldQuit;
+}
+
+TimePoint Engine::frame(void)
 {
     auto curr = Clock::now();
-    if (curr < m_frameLast)
+    if (Q_UNLIKELY(curr < m_frameLast))
         return curr;
 
-    if (m_qmlComponent == nullptr || m_qmlComponent->status() != QQmlComponent::Ready)
+    if (Q_UNLIKELY(m_qmlComponent == nullptr || !m_qmlComponent->isReady()))
         return curr + m_frameElapsedMin;
 
     auto diff = curr - m_frameCountLast;
-    if (diff >= 1s) {
+    if (Q_UNLIKELY(diff >= 1s)) {
         m_frameCountPerSecond = m_frameCount;
         m_frameCount = 0;
         m_frameCountLast = curr;
@@ -87,26 +85,26 @@ TimePoint Core::frame(void)
     }
 
     auto frameNext = m_frameLast + m_frameElapsedMin;
-    if (curr < frameNext)
+    if (Q_UNLIKELY(curr < frameNext))
         return frameNext;
 
     auto elapsed = curr - m_frameLast;
 
-    if (m_physicsService != nullptr && m_physicsService->isStarted()) {
+    if (Q_LIKELY(m_physicsService != nullptr && m_physicsService->isStarted())) {
         m_physicsService->stepSimulation(elapsed);
         m_physicsService->resetTransform();
     }
 
     m_gameManifest->tick(elapsed);
 
-    if (m_soundService != nullptr && m_soundService->isStarted()) {
-        // TODO
-    }
-
-    if (m_graphicsService != nullptr && m_graphicsService->isStarted()) {
+    if (Q_LIKELY(m_graphicsService != nullptr && m_graphicsService->isStarted())) {
         m_graphicsService->beginFrame();
         m_gameManifest->draw();
         m_graphicsService->endFrame();
+    }
+
+    if (Q_LIKELY(m_soundService != nullptr && m_soundService->isStarted())) {
+        // TODO
     }
 
     m_frameLast = curr;
@@ -115,12 +113,27 @@ TimePoint Core::frame(void)
     return curr + m_frameElapsedMin;
 }
 
-QStringList Core::enumateGraphicsServices(void)
+Input::Service *Engine::inputService(void)
+{
+    return m_inputService;
+}
+
+QStringList Engine::graphicsServiceList(void)
 {
     return QStringList() << "OpenGL";
 }
 
-bool Core::useGraphicsService(const QString &name)
+Graphics::Service *Engine::graphicsService(void)
+{
+    return m_graphicsService;
+}
+
+QString Engine::graphicsServiceName(void) const
+{
+    return "OpenGL";
+}
+
+bool Engine::setGraphicsService(const QString &name)
 {
     if (m_graphicsService != nullptr) {
         if (m_graphicsService->isStarted()) {
@@ -145,22 +158,22 @@ bool Core::useGraphicsService(const QString &name)
     return true;
 }
 
-Graphics::Service *Core::graphicsService(void)
-{
-    return m_graphicsService;
-}
-
-Input::Service *Core::inputService(void)
-{
-    return m_inputService;
-}
-
-QStringList Core::enumatePhysicsServices(void)
+QStringList Engine::physicsServiceList(void)
 {
     return QStringList() << "Bullet";
 }
 
-bool Core::usePhysicsService(const QString &name)
+Physics::Service *Engine::physicsService(void)
+{
+    return m_physicsService;
+}
+
+QString Engine::physicsServiceName(void) const
+{
+    return "Bullet";
+}
+
+bool Engine::setPhysicsService(const QString &name)
 {
     if (m_physicsService != nullptr) {
         if (m_physicsService->isStarted()) {
@@ -185,17 +198,22 @@ bool Core::usePhysicsService(const QString &name)
     return true;
 }
 
-Physics::Service *Core::physicsService(void)
-{
-    return m_physicsService;
-}
-
-QStringList Core::enumateSoundServices(void)
+QStringList Engine::soundServiceList(void)
 {
     return QStringList() << "OpenAL";
 }
 
-bool Core::useSoundService(const QString &name)
+Sound::Service *Engine::soundService(void)
+{
+    return m_soundService;
+}
+
+QString Engine::soundServiceName(void) const
+{
+    return "OpenAL";
+}
+
+bool Engine::setSoundService(const QString &name)
 {
     if (m_soundService != nullptr) {
         if (m_soundService->isStarted()) {
@@ -220,16 +238,19 @@ bool Core::useSoundService(const QString &name)
     return true;
 }
 
-Sound::Service *Core::soundService(void)
+void Engine::quit(void)
 {
-    return m_soundService;
+    m_shouldQuit = true;
 }
 
-void Core::onStatusChanged(QQmlComponent::Status status)
+void Engine::onStatusChanged(QQmlComponent::Status status)
 {
-    qDebug() << __LINE__ << status;
     if (status != QQmlComponent::Ready) {
-        qCritical("Failed to load game Qml.");
+        if (status == QQmlComponent::Error) {
+            auto errList = m_qmlComponent->errors();
+            for (auto err: errList)
+                qWarning() << err;
+        }
         return;
     }
 
@@ -248,15 +269,21 @@ void Core::onStatusChanged(QQmlComponent::Status status)
     m_inputService = new Input::Service(this);
     m_inputService->start();
 
-    useGraphicsService("OpenGL");
-    usePhysicsService("Bullet");
-    useSoundService("OpenAL");
-
     m_frameLast = Clock::now();
     m_frameCount = 0;
     m_frameCountPerSecond = 0;
     m_frameCountLast = m_frameLast;
     m_frameElapsedMin = std::chrono::microseconds(16666);
+}
+
+QVersionNumber Engine::version(void) const
+{
+    return QVersionNumber(VOLCANO_VERSION_MAJOR, VOLCANO_VERSION_MINOR, VOLCANO_VERSION_PATCH);
+}
+
+QuaternionUtils *Engine::quaternionUtils(void)
+{
+    return &m_quaternionUtils;
 }
 
 VOLCANO_SYSTEM_END

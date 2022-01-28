@@ -5,12 +5,13 @@
 
 #include <QColor>
 #include <QWindow>
-#include <QQuickRenderTarget>
+#include <QQuickWindow>
 
 #include <Volcano/Service.hpp>
 #include <Volcano/Graphics/Common.hpp>
 #include <Volcano/Graphics/Mesh.hpp>
 #include <Volcano/Graphics/Material.hpp>
+#include <Volcano/Graphics/QuickSurface.hpp>
 
 #ifdef VOLCANO_GRAPHICS
 
@@ -29,7 +30,8 @@ public:
     virtual void addMesh(Mesh *p) = 0;
     virtual Material *createMaterial() = 0;
     virtual void bindMaterial(Material *p) = 0;
-    virtual QQuickRenderTarget *createQuickRenderTarget(int width, int height, int sampleCount) = 0;
+    virtual QuickSurface *createQuickSurface(QQuickWindow *window) = 0;
+    virtual void addQuickSurface(QuickSurface *surface) = 0;
     virtual void beginFrame(void) = 0;
     virtual void endFrame(void) = 0;
     void enableClear(void);

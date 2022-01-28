@@ -8,7 +8,7 @@
 #include <QCommandLineParser>
 #include <QGuiApplication>
 
-#include <Volcano/Rotation.hpp>
+#include <Volcano/Transform.hpp>
 
 #include <Volcano/Game/Object.hpp>
 #include <Volcano/Game/Manifest.hpp>
@@ -30,7 +30,7 @@
 #include <Volcano/Net/Client.hpp>
 
 #include <Volcano/System/Common.hpp>
-#include <Volcano/System/Core.hpp>
+#include <Volcano/System/Engine.hpp>
 
 VOLCANO_SYSTEM_BEGIN
 
@@ -57,12 +57,14 @@ static void registerQmlType(const char *uri, const char *qmlName)
 
 static void registerQmlTypes(void)
 {
+    qRegisterMetaType<Transform>();
+
     const char *uri;
 
     ///////////////////////////////////////////////////////////////////////////
     uri = "Volcano";
 
-    registerQmlType<Rotation>(uri, "Rotation");
+    registerQmlType<Transform>(uri, "Transform");
 
     ///////////////////////////////////////////////////////////////////////////
     uri = "Volcano.Game";
@@ -135,22 +137,21 @@ static int main(int argc, char *argv[])
     qInfo("Registering Qml types...");
     registerQmlTypes();
 
-    qInfo("Initializing game core...");
-    auto core = std::make_unique<Core>();
-    if (!core || !core->init(indexUrl)) {
-        qFatal("Failed to initialize game core.");
+    qInfo("Initializing engine...");
+    auto engine = std::make_unique<Engine>();
+    if (!engine || !engine->init(indexUrl)) {
+        qFatal("Failed to initialize engine.");
         return EXIT_FAILURE;
     }
 
     qInfo("Running....");
 
-    bool running = true;
     Duration diff;
     TimePoint curr = Clock::now();
     TimePoint next = curr;
-    auto pCore = core.get();
+    auto pEngine = engine.get();
 
-    while (running) {
+    while (!pEngine->shouldQuit()) {
         curr = Clock::now();
         if (curr < next) {
             diff = next - curr;
@@ -160,7 +161,7 @@ static int main(int argc, char *argv[])
             } else
                 QThread::yieldCurrentThread();
         }
-        next = pCore->frame();
+        next = pEngine->frame();
         QGuiApplication::processEvents();
     }
 

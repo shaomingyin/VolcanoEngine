@@ -27,9 +27,6 @@ VOLCANO_GRAPHICS_OPENGL_BEGIN
 class Context: public QObject {
     Q_OBJECT
 
-public:
-    using Job = std::function<void (Context *context)>;
-
 private:
     Context(QOpenGLContext *glContext, QObject *parent = nullptr);
     virtual ~Context(void);
@@ -45,16 +42,11 @@ public:
     Buffer *allocDynamicVertexIndexBuffer(GLsizeiptr count);
     // OpenGLTexture *allocTexture(GLint width, GLint height, GLenum format);
     QOpenGLShaderProgram *shaderProgram(const QUrl &url);
-    static void scheduleJob(Job job);
-
-protected:
-    void customEvent(QEvent *event) override;
 
 private slots:
     void onDebugMessageLogged(const QOpenGLDebugMessage &msg);
 
 private:
-    using JobList = QList<Job>;
     using ContextHashTable = QHash<QOpenGLContext *, Context *>;
     using BufferHeapList = QList<BufferHeap *>;
     using ShaderProgramCache = QCache<QUrl, QOpenGLShaderProgram>;
@@ -67,7 +59,6 @@ private:
 private:
     static ContextHashTable c_contextHashTable;
     static QMutex c_contextHashTableMutex;
-    JobList m_jobList;
     QOpenGLContext *m_context;
     QSurface *m_surface;
     QOpenGLDebugLogger *m_debugLogger;

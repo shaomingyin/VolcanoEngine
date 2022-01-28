@@ -36,11 +36,11 @@ protected:
     virtual void onDraw(void);
 
 private:
+    bool m_isEnabled;
     Context *m_context;
     Graphics::Service *m_graphicsService;
     Physics::Service *m_physicsService;
     Sound::Service *m_soundService;
-    bool m_isEnabled;
 };
 
 VOLCANO_GAME_END

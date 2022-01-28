@@ -34,6 +34,7 @@ public:
     void setOverlay(Screen *p);
 
 protected:
+    void timerEvent(QTimerEvent *event) override;
     bool event(QEvent *event) override;
     void onTick(Duration elapsed) override;
     void onDraw(void) override;
@@ -43,6 +44,7 @@ signals:
     void playerChanged(Actor *p);
     void cameraChanged(Camera *p);
     void overlayChanged(Screen *p);
+    void test(void);
 
 private:
     World *m_world;

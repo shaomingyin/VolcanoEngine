@@ -13,43 +13,9 @@ Entity::~Entity(void)
 {
 }
 
-const QVector3D &Entity::position(void) const
+Transform *Entity::transform(void)
 {
-    return m_position;
-}
-
-void Entity::setPosition(const QVector3D &v)
-{
-    if (!qFuzzyCompare(m_position, v)) {
-        m_position = v;
-        emit positionChanged(v);
-    }
-}
-
-const QVector3D &Entity::scale(void) const
-{
-    return m_scale;
-}
-
-void Entity::setScale(const QVector3D &v)
-{
-    if (!qFuzzyCompare(m_scale, v)) {
-        m_scale = v;
-        emit scaleChanged(v);
-    }
-}
-
-const QQuaternion &Entity::rotation(void)
-{
-    return m_rotation;
-}
-
-void Entity::setRotation(const QQuaternion &v)
-{
-    if (!qFuzzyCompare(m_rotation, v)) {
-        m_rotation = v;
-        emit rotationChanged(v);
-    }
+    return &m_transform;
 }
 
 qreal Entity::mass(void) const
@@ -149,15 +115,13 @@ void Entity::onTick(Duration elapsed)
 {
     auto pService = physicsService();
     if (pService != nullptr && pService->isStarted())
-        pService->pushTransform();
+        pService->pushTransform(true);
 
     for (auto component: m_components)
         component->tick(elapsed);
 
     if (pService != nullptr && pService->isStarted()) {
-        m_position = pService->transform().translate();
-        m_scale = pService->transform().scale();
-        m_rotation = pService->transform().rotation();
+        m_transform.setData(pService->transform());
         pService->popTransform();
     }
 }
@@ -167,9 +131,7 @@ void Entity::onDraw(void)
     auto gService = graphicsService();
 
     gService->pushTransform(true);
-    gService->translateTo(m_position);
-    gService->scaleTo(m_scale);
-    gService->rotateTo(m_rotation);
+    gService->setTransform(m_transform.data());
 
     for (auto component: m_components)
         component->draw();

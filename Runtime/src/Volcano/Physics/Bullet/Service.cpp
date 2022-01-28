@@ -53,9 +53,19 @@ Box *Service::createBox(float length, float width, float height)
     return nullptr;
 }
 
+void Service::updateBox(Box *p)
+{
+    Q_ASSERT(p != nullptr);
+}
+
 Cylinder *Service::createCylinder(float radius, float height)
 {
     return nullptr;
+}
+
+void Service::updateCylinder(Cylinder *p)
+{
+    Q_ASSERT(p != nullptr);
 }
 
 Plane *Service::createPlane(float x, float y, float z, float d)
@@ -63,9 +73,19 @@ Plane *Service::createPlane(float x, float y, float z, float d)
     return nullptr;
 }
 
+void Service::updatePlane(Plane *p)
+{
+    Q_ASSERT(p != nullptr);
+}
+
 Sphere *Service::createSphere(float radius)
 {
     return nullptr;
+}
+
+void Service::updateSphere(Sphere *p)
+{
+    Q_ASSERT(p != nullptr);
 }
 
 bool Service::onStart(void)

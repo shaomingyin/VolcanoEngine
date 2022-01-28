@@ -24,9 +24,13 @@ public:
     virtual const QVector3D &gravity(void) const = 0;
     virtual void setGravity(const QVector3D &v) = 0;
     virtual Box *createBox(float length, float width, float height) = 0;
+    virtual void updateBox(Box *p) = 0;
     virtual Cylinder *createCylinder(float radius, float height) = 0;
+    virtual void updateCylinder(Cylinder *p) = 0;
     virtual Plane *createPlane(float x, float y, float z, float d) = 0;
+    virtual void updatePlane(Plane *p) = 0;
     virtual Sphere *createSphere(float radius) = 0;
+    virtual void updateSphere(Sphere *p) = 0;
 };
 
 VOLCANO_PHYSICS_END

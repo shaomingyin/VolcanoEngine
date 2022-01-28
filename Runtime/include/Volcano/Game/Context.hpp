@@ -4,6 +4,7 @@
 #define VOLCANO_GAME_CONTEXT_HPP
 
 #include <QString>
+#include <QVersionNumber>
 #include <QQmlEngine>
 #include <QQmlContext>
 
@@ -24,23 +25,15 @@ public:
     ~Context(void) override;
 
 public:
-    virtual QStringList enumateGraphicsServices(void) = 0;
-    virtual bool useGraphicsService(const QString &name) = 0;
-    virtual Graphics::Service *graphicsService(void) = 0;
-
     virtual Input::Service *inputService(void) = 0;
-
-    virtual QStringList enumatePhysicsServices(void) = 0;
-    virtual bool usePhysicsService(const QString &name) = 0;
+    virtual Graphics::Service *graphicsService(void) = 0;
     virtual Physics::Service *physicsService(void) = 0;
-
-    virtual QStringList enumateSoundServices(void) = 0;
-    virtual bool useSoundService(const QString &name) = 0;
     virtual Sound::Service *soundService(void) = 0;
 
-    void attach(QQmlEngine *engine);
-    void attach(QQmlContext *context);
     static Context *fromObject(QObject *object);
+
+protected:
+    void attach(QQmlEngine *engine);
 
 signals:
     void graphicsSerivceStarted(void);

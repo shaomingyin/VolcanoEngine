@@ -11,6 +11,7 @@ Manifest::Manifest(QObject *parent):
     m_camera(nullptr),
     m_overlay(nullptr)
 {
+    startTimer(1000);
 }
 
 Manifest::~Manifest(void)
@@ -69,8 +70,15 @@ void Manifest::setOverlay(Screen *p)
     }
 }
 
+void Manifest::timerEvent(QTimerEvent *event)
+{
+    emit test();
+}
+
 bool Manifest::event(QEvent *event)
 {
+    emit test();
+    qDebug() << qmlContext(this)->contextObject();
     if (Q_LIKELY(m_player != nullptr)) {
         if (m_player->event(event))
             return true;
@@ -88,6 +96,7 @@ void Manifest::onTick(Duration elapsed)
 void Manifest::onDraw(void)
 {
     auto gService = graphicsService();
+
     if (Q_LIKELY(m_camera != nullptr)) {
         gService->lookAt(m_camera->position(), m_camera->direction(), m_camera->up());
         //gService->perspective(m_camera->fov(), m_camera->)

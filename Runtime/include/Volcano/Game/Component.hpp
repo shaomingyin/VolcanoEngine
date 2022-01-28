@@ -3,6 +3,8 @@
 #ifndef VOLCANO_GAME_COMPONENT_HPP
 #define VOLCANO_GAME_COMPONENT_HPP
 
+#include <QList>
+
 #include <Volcano/Game/Common.hpp>
 #include <Volcano/Game/Object.hpp>
 
@@ -15,6 +17,8 @@ public:
     Component(QObject *parent = nullptr);
     ~Component(void) override;
 };
+
+using ComponentList = QList<Component *>;
 
 VOLCANO_GAME_END
 

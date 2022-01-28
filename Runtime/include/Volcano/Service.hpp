@@ -24,23 +24,18 @@ public:
     bool start(void);
     void stop(void);
     bool isStarted(void) const;
-    void translate(const QVector3D &v);
-    void translateTo(const QVector3D &v);
-    void scale(const QVector3D &v);
-    void scaleTo(const QVector3D &v);
-    void rotate(const QQuaternion &v);
-    void rotateTo(const QQuaternion &v);
-    void resetTransform(void);
     void pushTransform(bool copyTop = false);
     void popTransform(void);
-    const Transform &transform(void);
+    void resetTransform(void);
+    const Transform::Data &transform(void) const;
+    void setTransform(const Transform::Data &v);
 
 protected:
     virtual bool onStart(void);
     virtual void onStop(void);
 
 private:
-    using TransformStack = QStack<Transform>;
+    using TransformStack = QStack<Transform::Data>;
 
 private:
     bool m_isStarted;

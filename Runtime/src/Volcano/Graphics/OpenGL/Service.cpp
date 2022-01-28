@@ -5,8 +5,8 @@
 #include <QThread>
 #include <QOpenGLTexture>
 
-#include <Volcano/Graphics/OpenGL/Window.hpp>
 #include <Volcano/Graphics/OpenGL/Service.hpp>
+#include <Volcano/Graphics/OpenGL/QuickSurface.hpp>
 
 VOLCANO_GRAPHICS_OPENGL_BEGIN
 
@@ -51,12 +51,27 @@ void Service::bindMaterial(Material *p)
 {
 }
 
-QQuickRenderTarget *Service::createQuickRenderTarget(int width, int height, int sampleCount)
+Volcano::Graphics::QuickSurface *Service::createQuickSurface(QQuickWindow *window)
 {
-    //QOpenGLTexture texture(QOpenGLTexture::Target2D);
-    //texture.
-    //QQuickRenderTarget *renderTarget = QQuickRenderTarget::fromOpenGLTexture()
-    return nullptr;
+    auto surface = std::make_unique<QuickSurface>();
+    if (!surface && !surface->init(window))
+        return nullptr;
+    return surface.release();
+}
+
+void Service::addQuickSurface(Volcano::Graphics::QuickSurface *surface)
+{
+#ifdef VOLCANO_DEBUG
+    auto p = qobject_cast<QuickSurface *>(surface);
+#else
+    auto p = static_cast<QuickSurface *>(surface);
+#endif
+
+    Q_ASSERT(p != nullptr);
+
+    p->update();
+
+    // TODO
 }
 
 void Service::beginFrame(void)

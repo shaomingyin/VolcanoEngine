@@ -10,6 +10,7 @@
 #include <QtQml>
 
 #include <QDebug>
+#include <QMetaType>
 
 #include <Volcano/Config.hpp>
 

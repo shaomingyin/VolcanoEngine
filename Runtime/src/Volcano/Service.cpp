@@ -18,7 +18,9 @@ bool Service::start(void)
 {
     Q_ASSERT(!m_isStarted);
 
-    resetTransform();
+    m_transformStack.clear();
+    m_transformStack.emplaceBack();
+
     m_isStarted = onStart();
 
     return m_isStarted;
@@ -30,48 +32,13 @@ void Service::stop(void)
 
     onStop();
 
+    m_transformStack.clear();
     m_isStarted = false;
 }
 
 bool Service::isStarted(void) const
 {
     return m_isStarted;
-}
-
-void Service::translate(const QVector3D &v)
-{
-    m_transformStack.top().setTranslate(v);
-}
-
-void Service::translateTo(const QVector3D &v)
-{
-    m_transformStack.top().setTranslateOffset(v);
-}
-
-void Service::scale(const QVector3D &v)
-{
-    m_transformStack.top().setScale(v);
-}
-
-void Service::scaleTo(const QVector3D &v)
-{
-    m_transformStack.top().setScaleOffset(v);
-}
-
-void Service::rotate(const QQuaternion &v)
-{
-    m_transformStack.top().setRotation(v);
-}
-
-void Service::rotateTo(const QQuaternion &v)
-{
-    m_transformStack.top().setRotationOffset(v);
-}
-
-void Service::resetTransform(void)
-{
-    m_transformStack.resize(1);
-    m_transformStack.first().reset();
 }
 
 void Service::pushTransform(bool copyTop)
@@ -88,9 +55,19 @@ void Service::popTransform(void)
     m_transformStack.pop();
 }
 
-const Transform &Service::transform(void)
+void Service::resetTransform(void)
+{
+    m_transformStack.top().reset();
+}
+
+const Transform::Data &Service::transform(void) const
 {
     return m_transformStack.top();
+}
+
+void Service::setTransform(const Transform::Data &v)
+{
+    m_transformStack.top() = v;
 }
 
 bool Service::onStart(void)

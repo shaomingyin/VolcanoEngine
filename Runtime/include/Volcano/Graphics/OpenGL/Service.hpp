@@ -8,8 +8,8 @@
 #include <QVector3D>
 
 #include <Volcano/Graphics/Service.hpp>
-#include <Volcano/Graphics/OpenGL/Common.hpp>
 #include <Volcano/Graphics/OpenGL/Window.hpp>
+#include <Volcano/Graphics/OpenGL/Common.hpp>
 
 VOLCANO_GRAPHICS_OPENGL_BEGIN
 
@@ -26,7 +26,8 @@ public:
     void addMesh(Mesh *p) override;
     Material *createMaterial() override;
     void bindMaterial(Material *p) override;
-    QQuickRenderTarget *createQuickRenderTarget(int width, int height, int sampleCount) override;
+    QuickSurface *createQuickSurface(QQuickWindow *window) override;
+    void addQuickSurface(QuickSurface *surface) override;
     void beginFrame(void) override;
     void endFrame(void) override;
 

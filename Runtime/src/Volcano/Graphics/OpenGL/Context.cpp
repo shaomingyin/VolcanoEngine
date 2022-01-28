@@ -12,7 +12,6 @@
 #include <QOpenGLVersionFunctionsFactory>
 #include <QCoreApplication>
 
-#include <Volcano/RunnableEvent.hpp>
 #include <Volcano/Graphics/OpenGL/Context.hpp>
 
 VOLCANO_GRAPHICS_OPENGL_BEGIN
@@ -192,29 +191,6 @@ QOpenGLShaderProgram *Context::shaderProgram(const QUrl &url)
     m_shaderProgramCache.insert(url, p);
 
     return p;
-}
-
-void Context::scheduleJob(Job job)
-{
-    QMutexLocker locker(&c_contextHashTableMutex);
-
-    for (auto it = c_contextHashTable.begin(); it != c_contextHashTable.end(); ++it) {
-        auto context = it.value();
-        auto runnable = QRunnable::create([job, context] () {
-            job(context);
-        });
-        runnable->setAutoDelete(true);
-        QCoreApplication::postEvent(context, new RunnableEvent(runnable));
-    }
-}
-
-void Context::customEvent(QEvent *event)
-{
-    if (event->type() == RunnableEvent::typeId()) {
-        if (m_context != nullptr && m_surface != nullptr) {
-            static_cast<RunnableEvent *>(event)->run();
-        }
-    }
 }
 
 VOLCANO_GRAPHICS_OPENGL_END

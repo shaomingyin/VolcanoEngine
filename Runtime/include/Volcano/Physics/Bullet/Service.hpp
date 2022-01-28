@@ -29,9 +29,13 @@ public:
     const QVector3D &gravity(void) const override;
     void setGravity(const QVector3D &v) override;
     Box *createBox(float length, float width, float height) override;
+    void updateBox(Box *p) override;
     Cylinder *createCylinder(float radius, float height) override;
+    void updateCylinder(Cylinder *p) override;
     Plane *createPlane(float x, float y, float z, float d) override;
+    void updatePlane(Plane *p) override;
     Sphere *createSphere(float radius) override;
+    void updateSphere(Sphere *p) override;
 
 protected:
     bool onStart(void) override;
