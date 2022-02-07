@@ -19,10 +19,6 @@ include(CMakeDependentOption)
 
 option(VOLCANO_DEBUG "Enable debug funtions." ON)
 option(VOLCANO_OUT_DIR "Build output directory." "${CMAKE_BINARY_DIR}/out")
-option(VOLCANO_GRAPHICS "Enable graphics system." ON)
-cmake_dependent_option(VOLCANO_GRAPHICS_OPENGL "Enable OpenGL graphics system." ON "VOLCANO_GRAPHICS" ON)
-option(VOLCANO_PHYSICS "Enable graphics system." ON)
-cmake_dependent_option(VOLCANO_PHYSICS_BULLET "Enable Bullet physics system." ON "VOLCANO_PHYSICS" ON)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${VOLCANO_OUT_DIR}/bin")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${VOLCANO_OUT_DIR}/lib")
