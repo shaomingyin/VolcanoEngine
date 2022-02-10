@@ -1,5 +1,6 @@
 //
 //
+#include <Volcano/Game/Mesh.hpp>
 #include <Volcano/Game/Collision.hpp>
 
 VOLCANO_GAME_BEGIN
@@ -15,17 +16,17 @@ Collision::~Collision(void)
 
 }
 
-Shape *Collision::shape(void)
+QObject *Collision::shape(void)
 {
     return m_shape;
 }
 
-void Collision::setShape(Shape *p)
+void Collision::setShape(QObject *p)
 {
     if (m_shape == p)
         return;
 
-    // TODO physics service.
+    // TODO
 
     m_shape = p;
     emit shapeChanged(p);

@@ -25,6 +25,7 @@ public:
     ~Service(void) override;
 
 public:
+    bool init(void);
     void stepSimulation(Duration elapsed) override;
     const QVector3D &gravity(void) const override;
     void setGravity(const QVector3D &v) override;
@@ -36,10 +37,6 @@ public:
     void updatePlane(Plane *p) override;
     Sphere *createSphere(float radius) override;
     void updateSphere(Sphere *p) override;
-
-protected:
-    bool onStart(void) override;
-    void onStop(void) override;
 
 private:
     btDefaultCollisionConfiguration *m_btCollisionConfiguration;

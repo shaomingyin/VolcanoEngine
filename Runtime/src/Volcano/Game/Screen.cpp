@@ -118,7 +118,7 @@ void Screen::updateSizes(void)
         m_window->setGeometry(0, 0, m_size.width(), m_size.height());
 }
 
-void Screen::onDraw(void)
+void Screen::draw(void)
 {
     if (m_surface != nullptr) {
         auto gService = graphicsService();

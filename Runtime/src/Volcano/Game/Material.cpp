@@ -16,7 +16,7 @@ Material::~Material(void)
         delete m_graphicsMaterial;
 }
 
-void Material::onDraw(void)
+void Material::draw(void)
 {
     if (m_graphicsMaterial != nullptr)
         graphicsService()->bindMaterial(m_graphicsMaterial);

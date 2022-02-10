@@ -17,10 +17,16 @@ Service::Service(QObject *parent):
 
 Service::~Service(void)
 {
+    if (m_window.isValid())
+        m_window.destroy();
 }
 
 bool Service::init(int width, int height)
 {
+    qDebug("Creating OpenGL window...");
+    m_window.create();
+    m_window.show();
+
     return true;
 }
 
@@ -80,20 +86,6 @@ void Service::beginFrame(void)
 
 void Service::endFrame(void)
 {
-}
-
-bool Service::onStart(void)
-{
-    qDebug("Creating OpenGL window...");
-    m_window.create();
-    m_window.show();
-
-    return true;
-}
-
-void Service::onStop(void)
-{
-    m_window.destroy();
 }
 
 VOLCANO_GRAPHICS_OPENGL_END

@@ -42,10 +42,6 @@ public:
     void setAmbientLight(const QColor &v);
 
 protected:
-    bool onStart(void) override;
-    void onStop(void) override;
-
-protected:
     bool m_isClearEnabled;
     QColor m_clearColor;
     QVector3D m_position;

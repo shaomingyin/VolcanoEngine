@@ -36,8 +36,8 @@ public:
 protected:
     void timerEvent(QTimerEvent *event) override;
     bool event(QEvent *event) override;
-    void onTick(Duration elapsed) override;
-    void onDraw(void) override;
+    void tick(void) override;
+    void draw(void) override;
 
 signals:
     void worldChanged(World *p);

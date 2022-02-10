@@ -21,23 +21,26 @@ public:
 public:
     bool isEnabled(void) const;
     void setEnabled(bool v);
-    void tick(Duration elapsed);
-    void draw(void);
+    void updateState(void);
+    void updateGraphics(void);
 
 signals:
     void enabledChanged(bool v);
 
 protected:
     Context *context(void);
+    Duration elapsed(void);
+    Input::Service *inputService(void);
     Graphics::Service *graphicsService(void);
     Physics::Service *physicsService(void);
     Sound::Service *soundService(void);
-    virtual void onTick(Duration elapsed);
-    virtual void onDraw(void);
+    virtual void tick(void);
+    virtual void draw(void);
 
 private:
     bool m_isEnabled;
     Context *m_context;
+    Input::Service *m_inputService;
     Graphics::Service *m_graphicsService;
     Physics::Service *m_physicsService;
     Sound::Service *m_soundService;

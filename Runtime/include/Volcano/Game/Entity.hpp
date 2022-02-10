@@ -3,8 +3,6 @@
 #ifndef VOLCANO_GAME_ENTITY_HPP
 #define VOLCANO_GAME_ENTITY_HPP
 
-#include <QVector3D>
-#include <QQuaternion>
 #include <QQmlListProperty>
 
 #include <Volcano/Transform.hpp>
@@ -17,8 +15,6 @@ VOLCANO_GAME_BEGIN
 class Entity: public Actor {
     Q_OBJECT
     Q_PROPERTY(Transform *transform READ transform)
-    Q_PROPERTY(qreal mass READ mass WRITE setMass NOTIFY massChanged)
-    Q_PROPERTY(QVector3D centerOfMass READ centerOfMass WRITE setCenterOfMass NOTIFY centerOfMassChanged)
     Q_PROPERTY(QQmlListProperty<Component> components READ qmlComponents)
     Q_CLASSINFO("DefaultProperty", "components")
 
@@ -28,10 +24,6 @@ public:
 
 public:
     Transform *transform(void);
-    qreal mass(void) const;
-    void setMass(qreal v);
-    const QVector3D &centerOfMass(void) const;
-    void setCenterOfMass(const QVector3D &v);
     const ComponentList &components(void) const;
     QQmlListProperty<Component> qmlComponents(void);
     void appendComponent(Component *component);
@@ -43,16 +35,12 @@ public:
     void removeLastComponent(void);
 
 signals:
-    void positionChanged(const QVector3D &v);
-    void scaleChanged(const QVector3D &v);
-    void massChanged(qreal v);
-    void centerOfMassChanged(const QVector3D &v);
     void componentAdded(Component *component);
     void componentRemoved(Component *component);
 
 protected:
-    void onTick(Duration elapsed) override;
-    void onDraw(void) override;
+    void tick(void) override;
+    void draw(void) override;
 
 private:
     void handleComponentAdded(Component *component);
@@ -66,8 +54,6 @@ private:
 
 private:
     Transform m_transform;
-    qreal m_mass;
-    QVector3D m_centerOfMass;
     ComponentList m_components;
 };
 

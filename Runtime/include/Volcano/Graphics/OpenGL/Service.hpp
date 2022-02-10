@@ -31,10 +31,6 @@ public:
     void beginFrame(void) override;
     void endFrame(void) override;
 
-protected:
-    bool onStart(void) override;
-    void onStop(void) override;
-
 private:
     Window m_window;
 };

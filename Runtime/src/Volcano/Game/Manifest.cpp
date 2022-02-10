@@ -87,13 +87,13 @@ bool Manifest::event(QEvent *event)
     return Object::event(event);
 }
 
-void Manifest::onTick(Duration elapsed)
+void Manifest::tick(void)
 {
     if (Q_LIKELY(m_world != nullptr))
-        m_world->tick(elapsed);
+        m_world->updateState();
 }
 
-void Manifest::onDraw(void)
+void Manifest::draw(void)
 {
     auto gService = graphicsService();
 
@@ -103,7 +103,7 @@ void Manifest::onDraw(void)
     }
 
     if (Q_LIKELY(m_world != nullptr))
-        m_world->draw();
+        m_world->updateGraphics();
 }
 
 VOLCANO_GAME_END

@@ -54,20 +54,6 @@ void Service::setAmbientLight(const QColor &v)
     m_ambientLight = v;
 }
 
-bool Service::onStart(void)
-{
-    if (!Volcano::Service::onStart())
-        return false;
-
-    return true;
-}
-
-void Service::onStop(void)
-{
-
-    Volcano::Service::onStop();
-}
-
 VOLCANO_GRAPHICS_END
 
 #endif // VOLCANO_GRAPHICS

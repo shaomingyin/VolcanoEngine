@@ -18,32 +18,6 @@ Transform *Entity::transform(void)
     return &m_transform;
 }
 
-qreal Entity::mass(void) const
-{
-    return m_mass;
-}
-
-void Entity::setMass(qreal v)
-{
-    if (!qFuzzyCompare(m_mass, v)) {
-        m_mass = v;
-        emit massChanged(v);
-    }
-}
-
-const QVector3D &Entity::centerOfMass(void) const
-{
-    return m_centerOfMass;
-}
-
-void Entity::setCenterOfMass(const QVector3D &v)
-{
-    if (!qFuzzyCompare(m_centerOfMass, v)) {
-        m_centerOfMass = v;
-        emit centerOfMassChanged(v);
-    }
-}
-
 const ComponentList &Entity::components(void) const
 {
     return m_components;
@@ -111,22 +85,22 @@ void Entity::removeLastComponent(void)
     }
 }
 
-void Entity::onTick(Duration elapsed)
+void Entity::tick(void)
 {
     auto pService = physicsService();
-    if (pService != nullptr && pService->isStarted())
+    if (pService != nullptr)
         pService->pushTransform(true);
 
     for (auto component: m_components)
-        component->tick(elapsed);
+        component->updateState();
 
-    if (pService != nullptr && pService->isStarted()) {
+    if (pService != nullptr) {
         m_transform.setData(pService->transform());
         pService->popTransform();
     }
 }
 
-void Entity::onDraw(void)
+void Entity::draw(void)
 {
     auto gService = graphicsService();
 
@@ -134,7 +108,7 @@ void Entity::onDraw(void)
     gService->setTransform(m_transform.data());
 
     for (auto component: m_components)
-        component->draw();
+        component->updateGraphics();
 
     gService->popTransform();
 }

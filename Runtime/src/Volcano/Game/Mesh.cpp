@@ -46,11 +46,11 @@ void Mesh::setMaterial(Material *p)
     }
 }
 
-void Mesh::onDraw(void)
+void Mesh::draw(void)
 {
     if (m_graphicsMesh != nullptr) {
         if (m_material != nullptr)
-            m_material->draw();
+            m_material->updateGraphics();
         graphicsService()->addMesh(m_graphicsMesh);
     }
 }

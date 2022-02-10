@@ -47,7 +47,7 @@ protected slots:
 
 protected:
     void updateSizes(void);
-    void onDraw(void) override;
+    void draw(void) override;
     bool event(QEvent *evt) override;
 
 private:

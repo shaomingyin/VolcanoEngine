@@ -5,40 +5,12 @@
 VOLCANO_BEGIN
 
 Service::Service(QObject *parent):
-    QObject(parent),
-    m_isStarted(false)
+    QObject(parent)
 {
 }
 
 Service::~Service(void)
 {
-}
-
-bool Service::start(void)
-{
-    Q_ASSERT(!m_isStarted);
-
-    m_transformStack.clear();
-    m_transformStack.emplaceBack();
-
-    m_isStarted = onStart();
-
-    return m_isStarted;
-}
-
-void Service::stop(void)
-{
-    Q_ASSERT(m_isStarted);
-
-    onStop();
-
-    m_transformStack.clear();
-    m_isStarted = false;
-}
-
-bool Service::isStarted(void) const
-{
-    return m_isStarted;
 }
 
 void Service::pushTransform(bool copyTop)
@@ -68,15 +40,6 @@ const Transform::Data &Service::transform(void) const
 void Service::setTransform(const Transform::Data &v)
 {
     m_transformStack.top() = v;
-}
-
-bool Service::onStart(void)
-{
-    return true;
-}
-
-void Service::onStop(void)
-{
 }
 
 VOLCANO_END

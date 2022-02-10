@@ -11,21 +11,21 @@ VOLCANO_GAME_BEGIN
 
 class Collision: public Component {
     Q_OBJECT
-    Q_PROPERTY(Shape *shape READ shape WRITE setShape NOTIFY shapeChanged)
+    Q_PROPERTY(QObject *shape READ shape WRITE setShape NOTIFY shapeChanged)
 
 public:
     Collision(QObject *parent = nullptr);
     ~Collision(void) override;
 
 public:
-    Shape *shape(void);
-    void setShape(Shape *p);
+    QObject *shape(void);
+    void setShape(QObject *p);
 
 signals:
-    void shapeChanged(Shape *p);
+    void shapeChanged(QObject *p);
 
 private:
-    Shape *m_shape;
+    QObject *m_shape;
 };
 
 VOLCANO_GAME_END

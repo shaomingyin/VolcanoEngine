@@ -7,7 +7,7 @@ cmake_minimum_required(VERSION 3.15)
 project(VolcanoEngine VERSION 0.1.0)
 
 if(MSVC)
-    add_definitions(-D _CRT_SECURE_NO_WARNINGS)
+    add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 endif()
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
@@ -51,5 +51,8 @@ endmacro()
 link_qt_modules(Core)
 
 add_subdirectory(Runtime Runtime)
-add_subdirectory(Templates Templates)
+add_subdirectory(Server Server)
+add_subdirectory(Launcher Launcher)
+add_subdirectory(Editor Editor)
+add_subdirectory(Framework Framework)
 add_subdirectory(Packages Packages)

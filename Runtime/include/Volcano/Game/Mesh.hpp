@@ -31,7 +31,7 @@ signals:
     void materialChanged(Material *p);
 
 protected:
-    void onDraw(void) override;
+    void draw(void) override;
 
 private:
     void reload(void);

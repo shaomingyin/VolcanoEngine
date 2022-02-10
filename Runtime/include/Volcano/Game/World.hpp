@@ -19,7 +19,6 @@ VOLCANO_GAME_BEGIN
 
 class World: public Object {
     Q_OBJECT
-    Q_PROPERTY(bool dynamic READ isDynamic WRITE setDynamic NOTIFY dynamicChanged)
     Q_PROPERTY(QVector3D gravity READ gravity WRITE setGravity NOTIFY gravityChanged)
     Q_PROPERTY(Light *ambientLight READ ambientLight)
     Q_PROPERTY(QQmlListProperty<Actor> actors READ qmlActors)
@@ -31,7 +30,6 @@ public:
 
 public:
     bool isDynamic(void);
-    void setDynamic(bool v);
     const QVector3D &gravity(void) const;
     void setGravity(const QVector3D &v);
     Light *ambientLight(void);
@@ -51,8 +49,8 @@ protected:
     void clearActors(void);
     void replaceActor(qsizetype index, Actor *actor);
     void removeLastActor(void);
-    void onTick(Duration elapsed) override;
-    void onDraw(void) override;
+    void tick(void) override;
+    void draw(void) override;
     virtual void handleActorAdded(Actor *actor);
     virtual void handleActorRemoved(Actor *actor);
 

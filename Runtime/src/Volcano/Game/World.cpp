@@ -16,20 +16,7 @@ World::~World(void)
 
 bool World::isDynamic(void)
 {
-    auto pService = physicsService();
-    return (pService != nullptr && pService->isStarted());
-}
-
-void World::setDynamic(bool v)
-{
-    auto pService = physicsService();
-    bool pServiceStarted = (pService != nullptr && pService->isStarted());
-    if (pServiceStarted != v) {
-        if (v)
-            pService->start();
-        else
-            pService->stop();
-    }
+    return (physicsService() != nullptr);
 }
 
 const QVector3D &World::gravity(void) const
@@ -43,12 +30,11 @@ void World::setGravity(const QVector3D &v)
         return;
 
     auto pService = physicsService();
-    if (pService == nullptr || !pService->isStarted())
-        return;
-
-    m_gravity = v;
-    pService->setGravity(v);
-    emit gravityChanged(v);
+    if (pService != nullptr) {
+        m_gravity = v;
+        pService->setGravity(v);
+        emit gravityChanged(v);
+    }
 }
 
 Light *World::ambientLight(void)
@@ -116,13 +102,13 @@ void World::removeLastActor(void)
     }
 }
 
-void World::onTick(Duration elapsed)
+void World::tick(void)
 {
     for (auto actor: m_actorList)
-        actor->tick(elapsed);
+        actor->updateState();
 }
 
-void World::onDraw(void)
+void World::draw(void)
 {
     auto gService = graphicsService();
 
@@ -131,7 +117,7 @@ void World::onDraw(void)
 
     for (auto &actor: m_actorList) {
         gService->pushTransform(true);
-        actor->draw();
+        actor->updateGraphics();
         gService->popTransform();
     }
 }

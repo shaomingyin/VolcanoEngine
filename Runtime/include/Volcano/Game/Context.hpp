@@ -25,6 +25,7 @@ public:
     ~Context(void) override;
 
 public:
+    virtual Duration elapsed(void) = 0;
     virtual Input::Service *inputService(void) = 0;
     virtual Graphics::Service *graphicsService(void) = 0;
     virtual Physics::Service *physicsService(void) = 0;

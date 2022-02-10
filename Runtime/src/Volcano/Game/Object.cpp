@@ -31,18 +31,18 @@ void Object::setEnabled(bool v)
     }
 }
 
-void Object::tick(Duration elapsed)
+void Object::updateState(void)
 {
     if (Q_LIKELY(m_isEnabled))
-        onTick(elapsed);
+        tick();
 }
 
-void Object::draw(void)
+void Object::updateGraphics(void)
 {
     if (Q_LIKELY(m_isEnabled)) {
         auto gService = graphicsService();
-        if (Q_LIKELY(gService != nullptr && gService->isStarted()))
-            onDraw();
+        if (Q_LIKELY(gService != nullptr))
+            draw();
     }
 }
 
@@ -56,14 +56,39 @@ Context *Object::context(void)
     return m_context;
 }
 
+Duration Object::elapsed(void)
+{
+    auto p = context();
+    if (Q_LIKELY(p != nullptr))
+        return p->elapsed();
+
+    return 0s;
+}
+
+Input::Service *Object::inputService(void)
+{
+    if (Q_LIKELY(m_inputService != nullptr))
+        return m_inputService;
+
+    auto p = context();
+    if (p != nullptr) {
+        m_inputService = p->inputService();
+        Q_ASSERT(m_inputService != nullptr);
+    }
+
+    return m_inputService;
+}
+
 Graphics::Service *Object::graphicsService(void)
 {
     if (Q_LIKELY(m_graphicsService != nullptr))
         return m_graphicsService;
 
     auto p = context();
-    if (p != nullptr)
+    if (p != nullptr) {
         m_graphicsService = p->graphicsService();
+        Q_ASSERT(m_graphicsService != nullptr);
+    }
 
     return m_graphicsService;
 }
@@ -74,8 +99,10 @@ Physics::Service *Object::physicsService(void)
         return m_physicsService;
 
     auto p = context();
-    if (p != nullptr)
+    if (p != nullptr) {
         m_physicsService = p->physicsService();
+        Q_ASSERT(m_physicsService != nullptr);
+    }
 
     return m_physicsService;
 }
@@ -86,18 +113,19 @@ Sound::Service *Object::soundService(void)
         return m_soundService;
 
     auto p = context();
-    if (p != nullptr)
+    if (p != nullptr) {
         m_soundService = p->soundService();
+        Q_ASSERT(m_soundService != nullptr);
+    }
 
     return m_soundService;
 }
 
-void Object::onTick(Duration elapsed)
+void Object::tick(void)
 {
-    Q_UNUSED(elapsed);
 }
 
-void Object::onDraw(void)
+void Object::draw(void)
 {
 }
 

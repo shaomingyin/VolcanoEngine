@@ -47,6 +47,8 @@ using Clock = std::chrono::high_resolution_clock;
 using TimePoint = Clock::time_point;
 using Duration = Clock::duration;
 
+void setApplicationName(const QString &name);
+
 VOLCANO_END
 
 #endif // VOLCANO_COMMON_HPP

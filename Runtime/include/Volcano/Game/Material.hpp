@@ -16,7 +16,7 @@ public:
     ~Material(void) override;
 
 protected:
-    void onDraw(void) override;
+    void draw(void) override;
 
 private:
     Graphics::Material *m_graphicsMaterial;
