@@ -8,8 +8,6 @@
 #include <Volcano/Graphics/Common.hpp>
 #include <Volcano/Graphics/Light.hpp>
 
-#ifdef VOLCANO_GRAPHICS
-
 VOLCANO_GRAPHICS_BEGIN
 
 class DirectionalLight: public Light {
@@ -26,7 +24,5 @@ private:
 };
 
 VOLCANO_GRAPHICS_END
-
-#endif // VOLCANO_GRAPHICS
 
 #endif // VOLCANO_GRAPHICS_DIRECTIONALLIGHT_HPP

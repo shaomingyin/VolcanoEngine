@@ -8,6 +8,7 @@
 #include <QObject>
 
 #include <Volcano/Game/Common.hpp>
+#include <Volcano/Game/Context.hpp>
 #include <Volcano/Game/Actor.hpp>
 
 VOLCANO_GAME_BEGIN
@@ -23,6 +24,7 @@ class Camera: public Actor {
 
 public:
     Camera(QObject *parent = nullptr);
+    Camera(Context *context, QObject *parent = nullptr);
     ~Camera(void) override;
 
 public:

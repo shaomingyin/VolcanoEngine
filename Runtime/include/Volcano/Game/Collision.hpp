@@ -5,6 +5,7 @@
 
 #include <Volcano/Shape.hpp>
 #include <Volcano/Game/Common.hpp>
+#include <Volcano/Game/Context.hpp>
 #include <Volcano/Game/Component.hpp>
 
 VOLCANO_GAME_BEGIN
@@ -15,6 +16,7 @@ class Collision: public Component {
 
 public:
     Collision(QObject *parent = nullptr);
+    Collision(Context *context, QObject *parent = nullptr);
     ~Collision(void) override;
 
 public:

@@ -9,6 +9,11 @@ Component::Component(QObject *parent):
 {
 }
 
+Component::Component(Context *context, QObject *parent):
+    Object(context, parent)
+{
+}
+
 Component::~Component(void)
 {
 }

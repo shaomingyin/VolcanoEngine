@@ -6,6 +6,7 @@
 #include <QList>
 
 #include <Volcano/Game/Common.hpp>
+#include <Volcano/Game/Context.hpp>
 #include <Volcano/Game/Object.hpp>
 
 VOLCANO_GAME_BEGIN
@@ -15,6 +16,7 @@ class Component: public Object {
 
 public:
     Component(QObject *parent = nullptr);
+    Component(Context *context, QObject *parent = nullptr);
     ~Component(void) override;
 };
 

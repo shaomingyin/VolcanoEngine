@@ -6,6 +6,7 @@
 #include <QUrl>
 
 #include <Volcano/Game/Common.hpp>
+#include <Volcano/Game/Context.hpp>
 #include <Volcano/Game/Component.hpp>
 #include <Volcano/Game/Material.hpp>
 
@@ -18,6 +19,7 @@ class Mesh: public Component {
 
 public:
     Mesh(QObject *parent = nullptr);
+    Mesh(Context *context, QObject *parent = nullptr);
     ~Mesh(void) override;
 
 public:

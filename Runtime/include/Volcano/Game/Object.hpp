@@ -16,6 +16,7 @@ class Object: public QObject {
 
 public:
     Object(QObject *parent = nullptr);
+    Object(Context *context, QObject *parent = nullptr);
     ~Object(void) override;
 
 public:

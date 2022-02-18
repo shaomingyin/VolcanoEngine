@@ -15,6 +15,17 @@ Camera::Camera(QObject *parent):
 {
 }
 
+Camera::Camera(Context *context, QObject *parent):
+    Actor(context, parent),
+    m_position(0.0f, 0.0f, 0.0f),
+    m_direction(0.0f, 0.0f, -1.0f),
+    m_up(0.0f, 1.0f, 0.0f),
+    m_fov(90),
+    m_nearPlane(0.1f),
+    m_farPlane(100.0f)
+{
+}
+
 Camera::~Camera(void)
 {
 }

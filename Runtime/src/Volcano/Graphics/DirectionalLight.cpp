@@ -2,8 +2,6 @@
 //
 #include <Volcano/Graphics/DirectionalLight.hpp>
 
-#ifdef VOLCANO_GRAPHICS
-
 VOLCANO_GRAPHICS_BEGIN
 
 DirectionalLight::DirectionalLight(void)
@@ -25,5 +23,3 @@ void DirectionalLight::setDirection(const QVector3D &v)
 }
 
 VOLCANO_GRAPHICS_END
-
-#endif // VOLCANO_GRAPHICS

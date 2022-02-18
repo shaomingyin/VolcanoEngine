@@ -11,6 +11,12 @@ Collision::Collision(QObject *parent):
 {
 }
 
+Collision::Collision(Context *context, QObject *parent):
+    Component(context, parent),
+    m_shape(nullptr)
+{
+}
+
 Collision::~Collision(void)
 {
 

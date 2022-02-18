@@ -9,6 +9,11 @@ Actor::Actor(QObject *parent):
 {
 }
 
+Actor::Actor(Context *context, QObject *parent):
+    Object(context, parent)
+{
+}
+
 Actor::~Actor(void)
 {
 }

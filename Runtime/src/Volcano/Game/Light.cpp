@@ -9,6 +9,11 @@ Light::Light(QObject *parent):
 {
 }
 
+Light::Light(Context *context, QObject *parent):
+    Actor(context, parent)
+{
+}
+
 Light::~Light(void)
 {
 }

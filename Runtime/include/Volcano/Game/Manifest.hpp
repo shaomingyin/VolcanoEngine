@@ -4,6 +4,7 @@
 #define VOLCANO_GAME_MANIFEST_HPP
 
 #include <Volcano/Game/Common.hpp>
+#include <Volcano/Game/Context.hpp>
 #include <Volcano/Game/Object.hpp>
 #include <Volcano/Game/World.hpp>
 #include <Volcano/Game/Actor.hpp>
@@ -21,6 +22,7 @@ class Manifest: public Object {
 
 public:
     Manifest(QObject *parent = nullptr);
+    Manifest(Context *context, QObject *parent = nullptr);
     ~Manifest(void) override;
 
 public:

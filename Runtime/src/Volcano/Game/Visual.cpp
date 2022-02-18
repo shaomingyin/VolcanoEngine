@@ -10,9 +10,14 @@ Visual::Visual(QObject *parent):
 {
 }
 
+Visual::Visual(Context *context, QObject *parent):
+    Component(context, parent),
+    m_shape(nullptr)
+{
+}
+
 Visual::~Visual(void)
 {
-
 }
 
 Shape *Visual::shape(void)

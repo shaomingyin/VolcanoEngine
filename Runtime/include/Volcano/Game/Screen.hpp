@@ -13,6 +13,7 @@
 #include <Volcano/Transform.hpp>
 #include <Volcano/Graphics/QuickSurface.hpp>
 #include <Volcano/Game/Common.hpp>
+#include <Volcano/Game/Context.hpp>
 #include <Volcano/Game/Actor.hpp>
 
 VOLCANO_GAME_BEGIN
@@ -26,6 +27,7 @@ class Screen: public Actor {
 
 public:
     Screen(QObject *parent = nullptr);
+    Screen(Context *context, QObject *parent = nullptr);
     ~Screen(void) override;
 
 public:

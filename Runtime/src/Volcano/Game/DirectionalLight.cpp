@@ -9,6 +9,11 @@ DirectionalLight::DirectionalLight(QObject *parent):
 {
 }
 
+DirectionalLight::DirectionalLight(Context *context, QObject *parent):
+    Light(context, parent)
+{
+}
+
 DirectionalLight::~DirectionalLight(void)
 {
 }

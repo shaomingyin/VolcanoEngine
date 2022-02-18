@@ -7,8 +7,6 @@
 
 #include <Volcano/Graphics/Common.hpp>
 
-#ifdef VOLCANO_GRAPHICS
-
 VOLCANO_GRAPHICS_BEGIN
 
 class Material {
@@ -18,7 +16,5 @@ public:
 };
 
 VOLCANO_GRAPHICS_END
-
-#endif // VOLCANO_GRAPHICS
 
 #endif // VOLCANO_GRAPHICS_MATERIAL_HPP

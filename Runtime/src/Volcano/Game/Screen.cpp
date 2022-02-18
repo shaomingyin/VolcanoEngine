@@ -15,6 +15,15 @@ Screen::Screen(QObject *parent):
     m_transform.reset();
 }
 
+Screen::Screen(Context *context, QObject *parent):
+    Actor(context, parent),
+    m_component(nullptr),
+    m_window(nullptr),
+    m_surface(nullptr)
+{
+    m_transform.reset();
+}
+
 Screen::~Screen(void)
 {
 }

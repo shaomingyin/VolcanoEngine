@@ -10,7 +10,7 @@ static int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
 
-    setApplicationName("Volcano");
+    setApplicationName("Launcher");
 
     return app.exec();
 }

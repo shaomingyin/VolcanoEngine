@@ -11,6 +11,13 @@ Mesh::Mesh(QObject *parent):
 {
 }
 
+Mesh::Mesh(Context *context, QObject *parent):
+    Component(context, parent),
+    m_graphicsMesh(nullptr),
+    m_material(nullptr)
+{
+}
+
 Mesh::~Mesh(void)
 {
     if (m_graphicsMesh != nullptr)

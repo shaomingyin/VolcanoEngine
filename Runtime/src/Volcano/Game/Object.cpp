@@ -14,6 +14,17 @@ Object::Object(QObject *parent):
 {
 }
 
+Object::Object(Context *context, QObject *parent):
+    QObject(parent),
+    m_isEnabled(true),
+    m_context(context),
+    m_graphicsService(nullptr),
+    m_physicsService(nullptr),
+    m_soundService(nullptr)
+{
+    Q_ASSERT(m_context != nullptr);
+}
+
 Object::~Object(void)
 {
 }
@@ -71,10 +82,9 @@ Input::Service *Object::inputService(void)
         return m_inputService;
 
     auto p = context();
-    if (p != nullptr) {
-        m_inputService = p->inputService();
-        Q_ASSERT(m_inputService != nullptr);
-    }
+    Q_ASSERT(p != nullptr);
+    m_inputService = p->inputService();
+    Q_ASSERT(m_inputService != nullptr);
 
     return m_inputService;
 }
@@ -85,10 +95,9 @@ Graphics::Service *Object::graphicsService(void)
         return m_graphicsService;
 
     auto p = context();
-    if (p != nullptr) {
-        m_graphicsService = p->graphicsService();
-        Q_ASSERT(m_graphicsService != nullptr);
-    }
+    Q_ASSERT(p != nullptr);
+    m_graphicsService = p->graphicsService();
+    Q_ASSERT(m_graphicsService != nullptr);
 
     return m_graphicsService;
 }
@@ -99,10 +108,9 @@ Physics::Service *Object::physicsService(void)
         return m_physicsService;
 
     auto p = context();
-    if (p != nullptr) {
-        m_physicsService = p->physicsService();
-        Q_ASSERT(m_physicsService != nullptr);
-    }
+    Q_ASSERT(p != nullptr);
+    m_physicsService = p->physicsService();
+    Q_ASSERT(m_physicsService != nullptr);
 
     return m_physicsService;
 }
@@ -113,10 +121,9 @@ Sound::Service *Object::soundService(void)
         return m_soundService;
 
     auto p = context();
-    if (p != nullptr) {
-        m_soundService = p->soundService();
-        Q_ASSERT(m_soundService != nullptr);
-    }
+    Q_ASSERT(p != nullptr);
+    m_soundService = p->soundService();
+    Q_ASSERT(m_soundService != nullptr);
 
     return m_soundService;
 }

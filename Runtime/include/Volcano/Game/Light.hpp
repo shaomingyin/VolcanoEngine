@@ -6,6 +6,7 @@
 #include <QColor>
 
 #include <Volcano/Game/Common.hpp>
+#include <Volcano/Game/Context.hpp>
 #include <Volcano/Game/Actor.hpp>
 
 VOLCANO_GAME_BEGIN
@@ -16,6 +17,7 @@ class Light: public Actor {
 
 public:
     Light(QObject *parent = nullptr);
+    Light(Context *context, QObject *parent = nullptr);
     ~Light(void) override;
 
 public:

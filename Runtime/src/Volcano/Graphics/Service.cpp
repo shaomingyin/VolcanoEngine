@@ -2,8 +2,6 @@
 //
 #include <Volcano/Graphics/Service.hpp>
 
-#ifdef VOLCANO_GRAPHICS
-
 VOLCANO_GRAPHICS_BEGIN
 
 Service::Service(QObject *parent):
@@ -55,5 +53,3 @@ void Service::setAmbientLight(const QColor &v)
 }
 
 VOLCANO_GRAPHICS_END
-
-#endif // VOLCANO_GRAPHICS

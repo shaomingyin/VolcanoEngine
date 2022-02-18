@@ -10,6 +10,12 @@ SpotLight::SpotLight(QObject *parent):
 {
 }
 
+SpotLight::SpotLight(Context *context, QObject *parent):
+    DirectionalLight(context, parent),
+    m_distance(1.0f)
+{
+}
+
 SpotLight::~SpotLight(void)
 {
 }

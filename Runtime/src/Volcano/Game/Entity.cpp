@@ -9,6 +9,11 @@ Entity::Entity(QObject *parent):
 {
 }
 
+Entity::Entity(Context *context, QObject *parent):
+    Actor(context, parent)
+{
+}
+
 Entity::~Entity(void)
 {
 }

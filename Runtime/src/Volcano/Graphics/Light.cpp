@@ -2,8 +2,6 @@
 //
 #include <Volcano/Graphics/Light.hpp>
 
-#ifdef VOLCANO_GRAPHICS
-
 VOLCANO_GRAPHICS_BEGIN
 
 Light::Light(void)
@@ -25,5 +23,3 @@ void Light::setColor(const QColor &v)
 }
 
 VOLCANO_GRAPHICS_END
-
-#endif // VOLCANO_GRAPHICS

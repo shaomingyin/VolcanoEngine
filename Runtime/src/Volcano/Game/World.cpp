@@ -10,6 +10,12 @@ World::World(QObject *parent):
 {
 }
 
+World::World(Context *context, QObject *parent):
+    Object(context, parent),
+    m_gravity(0.0f, -9.8f, 0.0f)
+{
+}
+
 World::~World(void)
 {
 }

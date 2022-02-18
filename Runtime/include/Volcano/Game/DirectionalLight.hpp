@@ -6,6 +6,7 @@
 #include <QVector3D>
 
 #include <Volcano/Game/Common.hpp>
+#include <Volcano/Game/Context.hpp>
 #include <Volcano/Game/Light.hpp>
 
 VOLCANO_GAME_BEGIN
@@ -16,6 +17,7 @@ class DirectionalLight: public Light {
 
 public:
     DirectionalLight(QObject *parent = nullptr);
+    DirectionalLight(Context *context, QObject *parent = nullptr);
     ~DirectionalLight(void) override;
 
 public:

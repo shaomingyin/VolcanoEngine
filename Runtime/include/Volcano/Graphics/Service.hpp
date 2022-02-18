@@ -13,8 +13,6 @@
 #include <Volcano/Graphics/Material.hpp>
 #include <Volcano/Graphics/QuickSurface.hpp>
 
-#ifdef VOLCANO_GRAPHICS
-
 VOLCANO_GRAPHICS_BEGIN
 
 class Service: public Volcano::Service {
@@ -55,7 +53,5 @@ protected:
 };
 
 VOLCANO_GRAPHICS_END
-
-#endif // VOLCANO_GRAPHICS
 
 #endif // VOLCANO_GRAPHICS_SERVICE_HPP

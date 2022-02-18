@@ -6,6 +6,7 @@
 #include <QVector3D>
 
 #include <Volcano/Game/Common.hpp>
+#include <Volcano/Game/Context.hpp>
 #include <Volcano/Game/DirectionalLight.hpp>
 
 VOLCANO_GAME_BEGIN
@@ -17,6 +18,7 @@ class SpotLight: public DirectionalLight {
 
 public:
     SpotLight(QObject *parent = nullptr);
+    SpotLight(Context *context, QObject *parent = nullptr);
     ~SpotLight(void) override;
 
 public:

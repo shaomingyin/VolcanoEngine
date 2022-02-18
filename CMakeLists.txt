@@ -13,12 +13,12 @@ endif()
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set_property(GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER "cmake")
 
-set(CMAKE_MODULE_PATH "${CMAKE_HOME_DIRECTORY}/cmake")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_HOME_DIRECTORY}/cmake")
 
 include(CMakeDependentOption)
 
-option(VOLCANO_DEBUG "Enable debug funtions." ON)
-option(VOLCANO_OUT_DIR "Build output directory." "${CMAKE_BINARY_DIR}/out")
+set(VOLCANO_DEBUG ON CACHE BOOL "Enable debug funtions.")
+set(VOLCANO_OUT_DIR "${CMAKE_BINARY_DIR}/out" CACHE FILEPATH "Build output directory.")
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${VOLCANO_OUT_DIR}/bin")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${VOLCANO_OUT_DIR}/lib")
@@ -48,7 +48,17 @@ macro(target_link_qt_modules TARGET SCOPE)
     endforeach()
 endmacro()
 
-link_qt_modules(Core)
+macro(glob_sources VAR)
+    file(GLOB_RECURSE ${VAR} LIST_DIRECTORIES false
+        ${CMAKE_CURRENT_SOURCE_DIR}/*.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/*.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/*.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/*.in
+        ${CMAKE_CURRENT_SOURCE_DIR}/*.qrc
+        ${CMAKE_CURRENT_SOURCE_DIR}/*.json
+        )
+endmacro()
 
 add_subdirectory(Runtime Runtime)
 add_subdirectory(Server Server)

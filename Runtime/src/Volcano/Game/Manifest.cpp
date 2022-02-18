@@ -11,7 +11,15 @@ Manifest::Manifest(QObject *parent):
     m_camera(nullptr),
     m_overlay(nullptr)
 {
-    startTimer(1000);
+}
+
+Manifest::Manifest(Context *context, QObject *parent):
+    Object(context, parent),
+    m_world(nullptr),
+    m_player(nullptr),
+    m_camera(nullptr),
+    m_overlay(nullptr)
+{
 }
 
 Manifest::~Manifest(void)

@@ -10,6 +10,12 @@ PointLight::PointLight(QObject *parent):
 {
 }
 
+PointLight::PointLight(Context *context, QObject *parent):
+    Light(context, parent),
+    m_radius(1.0f)
+{
+}
+
 PointLight::~PointLight(void)
 {
 }

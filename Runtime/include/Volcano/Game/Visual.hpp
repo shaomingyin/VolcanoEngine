@@ -5,6 +5,7 @@
 
 #include <Volcano/Shape.hpp>
 #include <Volcano/Game/Common.hpp>
+#include <Volcano/Game/Context.hpp>
 #include <Volcano/Game/Material.hpp>
 #include <Volcano/Game/Component.hpp>
 
@@ -16,6 +17,7 @@ class Visual: public Component {
 
 public:
     Visual(QObject *parent = nullptr);
+    Visual(Context *context, QObject *parent = nullptr);
     ~Visual(void) override;
 
 public:

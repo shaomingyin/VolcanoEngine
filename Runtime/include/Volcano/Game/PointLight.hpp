@@ -6,6 +6,7 @@
 #include <QVector3D>
 
 #include <Volcano/Game/Common.hpp>
+#include <Volcano/Game/Context.hpp>
 #include <Volcano/Game/Light.hpp>
 
 VOLCANO_GAME_BEGIN
@@ -17,6 +18,7 @@ class PointLight: public Light {
 
 public:
     PointLight(QObject *parent = nullptr);
+    PointLight(Context *context, QObject *parent = nullptr);
     ~PointLight(void) override;
 
 public:

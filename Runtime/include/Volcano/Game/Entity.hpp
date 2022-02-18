@@ -7,6 +7,7 @@
 
 #include <Volcano/Transform.hpp>
 #include <Volcano/Game/Common.hpp>
+#include <Volcano/Game/Context.hpp>
 #include <Volcano/Game/Component.hpp>
 #include <Volcano/Game/Actor.hpp>
 
@@ -20,6 +21,7 @@ class Entity: public Actor {
 
 public:
     Entity(QObject *parent = nullptr);
+    Entity(Context *context, QObject *parent = nullptr);
     ~Entity(void) override;
 
 public:

@@ -11,6 +11,7 @@
 #include <QQmlListProperty>
 
 #include <Volcano/Game/Common.hpp>
+#include <Volcano/Game/Context.hpp>
 #include <Volcano/Game/Object.hpp>
 #include <Volcano/Game/Actor.hpp>
 #include <Volcano/Game/Light.hpp>
@@ -26,6 +27,7 @@ class World: public Object {
 
 public:
     World(QObject *parent = nullptr);
+    World(Context *context, QObject *parent = nullptr);
     ~World(void) override;
 
 public:

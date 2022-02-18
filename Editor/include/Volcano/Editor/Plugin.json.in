@@ -1,0 +1,5 @@
+{
+    "Name": "VolcanoEditorPlugin",
+    "Version": "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}",
+    "CompatVersion": "6.0.0"
+}
