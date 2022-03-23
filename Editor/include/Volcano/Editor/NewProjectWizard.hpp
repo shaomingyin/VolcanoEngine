@@ -14,6 +14,13 @@ class NewProjectWizard: public Utils::Wizard {
     Q_OBJECT
 
 public:
+    enum {
+        PageIntro = 0,
+        PageBasic,
+        PageSummary
+    };
+
+public:
     NewProjectWizard(const Utils::FilePath &path, QWidget *parent = nullptr);
     ~NewProjectWizard(void) override;
 

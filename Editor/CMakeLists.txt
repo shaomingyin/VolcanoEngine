@@ -3,7 +3,10 @@ set(CMAKE_AUTOUIC ON)
 
 link_libraries(Runtime)
 
-find_package(QtCreator COMPONENTS Core REQUIRED)
+set(VOLCANO_EDITOR_QTCREATOR_CMAKE_DIR "" CACHE PATH "QtCreator cmake directory path.")
+find_package(QtCreator COMPONENTS Core ProjectExplorer REQUIRED
+    PATHS ${VOLCANO_EDITOR_QTCREATOR_CMAKE_DIR}
+    )
 
 glob_sources(EDITOR_SOURCES)
 
@@ -11,6 +14,7 @@ add_qtc_plugin(Editor
     PLUGIN_DEPENDS
         QtCreator::ExtensionSystem
         QtCreator::Core
+        QtCreator::ProjectExplorer
         Qt6::Core
     PUBLIC_INCLUDES
         ${CMAKE_CURRENT_SOURCE_DIR}/include

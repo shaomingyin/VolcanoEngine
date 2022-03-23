@@ -1,5 +1,12 @@
 {
-    "Name": "VolcanoEditorPlugin",
+    "Name": "VolcanoEditor",
+    "Description": "Volcano Game Engine Editor",
+    "Vendor": "ShaoMingyin",
+    "Category": "Game Engine",
     "Version": "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}",
-    "CompatVersion": "6.0.0"
+    "CompatVersion": "6.0.0",
+    "Dependency": [
+        { "Name": "Core", "Version": "6.0.0" },
+        { "Name": "ProjectExplorer", "Version": "6.0.0" }
+    ]
 }

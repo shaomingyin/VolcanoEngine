@@ -6,6 +6,7 @@
 #include <extensionsystem/iplugin.h>
 
 #include <Volcano/Editor/Common.hpp>
+#include <Volcano/Editor/GameWorldEditorFactory.hpp>
 
 VOLCANO_EDITOR_BEGIN
 
@@ -21,6 +22,9 @@ public:
     ShutdownFlag aboutToShutdown(void) override;
     void extensionsInitialized(void) override;
     bool initialize(const QStringList &arguments, QString *errorString) override;
+
+private:
+    GameWorldEditorFactory *m_gameWorldEditorFactory;
 };
 
 VOLCANO_EDITOR_END

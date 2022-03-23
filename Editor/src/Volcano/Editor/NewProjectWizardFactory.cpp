@@ -2,6 +2,10 @@
 //
 #include <memory>
 
+#include <QIcon>
+
+#include <projectexplorer/projectexplorerconstants.h>
+
 #include <Volcano/Editor/NewProjectWizard.hpp>
 #include <Volcano/Editor/NewProjectWizardFactory.hpp>
 
@@ -9,13 +13,13 @@ VOLCANO_EDITOR_BEGIN
 
 NewProjectWizardFactory::NewProjectWizardFactory(void)
 {
-    //setSupportedProjectTypes({Constants::GENERICPROJECT_ID});
-    //setIcon(ProjectExplorer::Icons::WIZARD_IMPORT_AS_PROJECT.icon());
+    setSupportedProjectTypes({ "vpf" });
+    setIcon(QIcon(":/Images/Logo.png"));
     setDisplayName(tr("Volcano Engine Project"));
     //setId("Z.Makefile");
     setDescription(tr("Create new project for VolcanoEngine."));
-    //setCategory(QLatin1String(ProjectExplorer::Constants::IMPORT_WIZARD_CATEGORY));
-    //setDisplayCategory(QLatin1String(ProjectExplorer::Constants::IMPORT_WIZARD_CATEGORY_DISPLAY));
+    setCategory("Volcano Engine");
+    setDisplayCategory("Volcano Engine");
     setFlags(Core::IWizardFactory::PlatformIndependent);
 }
 
