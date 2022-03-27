@@ -1,11 +1,11 @@
 {
     "version": 1,
     "supportedProjectTypes": [ "CMakeProjectManager.CMakeProject" ],
-    "id": "V.VolcanoEngine",
+    "id": "V.VolcanoEngineGame",
     "category": "G.VolcanoEngine",
     "trDescription": "Creates a volcano engine based game.",
-    "trDisplayName": "Volcano Game",
-    "trDisplayCategory": "Volcano Engine",
+    "trDisplayName": "Game",
+    "trDisplayCategory": "Volcano Engine Project",
     "iconKind": "Themed",
     "enabled": "value('Plugins').indexOf('CMakeProjectManager') >= 0",
 
@@ -33,7 +33,7 @@
                         "index": 0,
                         "items":
                         [
-                            { "trKey": "FPS", "value": "fps" }
+                            { "trKey": "FPS Game", "value": "FpsGame" }
                         ]
                     }
                 }
@@ -57,10 +57,9 @@
             "typeId": "File",
             "data":
             [
-                {
-                    "source": "CMakeLists.txt",
-                    "openAsProject": true
-                }
+                { "source": "CMakeLists.txt", "openAsProject": true },
+                { "source": "Game/Manifest.json" },
+                { "source": "Game/World1.vwf", "openInEditor": true }
             ]
         }
     ]

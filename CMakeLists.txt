@@ -56,10 +56,13 @@ macro(glob_sources VAR)
         ${CMAKE_CURRENT_SOURCE_DIR}/*.in
         ${CMAKE_CURRENT_SOURCE_DIR}/*.qrc
         ${CMAKE_CURRENT_SOURCE_DIR}/*.json
+        ${CMAKE_CURRENT_SOURCE_DIR}/*.vwp
+        ${CMAKE_CURRENT_SOURCE_DIR}/*.vwf
         )
 endmacro()
 
 add_subdirectory(Runtime Runtime)
+add_subdirectory(Tools Tools)
 add_subdirectory(Server Server)
 add_subdirectory(Launcher Launcher)
 add_subdirectory(Editor Editor)

@@ -20,6 +20,7 @@ VOLCANO_GAME_BEGIN
 
 class World: public Object {
     Q_OBJECT
+    Q_PROPERTY(bool dynamic READ isDynamic NOTIFY dynamicChanged)
     Q_PROPERTY(QVector3D gravity READ gravity WRITE setGravity NOTIFY gravityChanged)
     Q_PROPERTY(Light *ambientLight READ ambientLight)
     Q_PROPERTY(QQmlListProperty<Actor> actors READ qmlActors)

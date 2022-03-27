@@ -37,12 +37,20 @@ configure_file(
     include/Volcano/Editor/Plugin.json
     )
 
+# new project wizard
+
+set(PROJECT_WIZARDS_DIR "${CMAKE_BINARY_DIR}/share/qtcreator/templates/wizards/projects/volcanoengine")
+
 configure_file(
-    src/Volcano/Editor/Wizards/NewProject/CMakeLists.txt.in
-    ${CMAKE_BINARY_DIR}/share/qtcreator/templates/projects/CMakeLists.txt
+    src/Volcano/Editor/Wizards/Project/CMakeLists.txt.in
+    ${PROJECT_WIZARDS_DIR}/CMakeLists.txt
     )
 
 configure_file(
-    src/Volcano/Editor/Wizards/NewProject/Wizard.json.in
-    ${CMAKE_BINARY_DIR}/share/qtcreator/templates/projects/wizard.json
+    src/Volcano/Editor/Wizards/Project/Wizard.json.in
+    ${PROJECT_WIZARDS_DIR}/wizard.json
+    )
+
+file(COPY src/Volcano/Editor/Wizards/Project/Game
+    DESTINATION ${PROJECT_WIZARDS_DIR}/
     )
