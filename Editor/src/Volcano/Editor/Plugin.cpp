@@ -7,7 +7,6 @@
 #include <extensionsystem/pluginmanager.h>
 #include <coreplugin/editormanager/editormanager.h>
 
-#include <Volcano/Editor/NewProjectWizardFactory.hpp>
 #include <Volcano/Editor/Plugin.hpp>
 
 VOLCANO_EDITOR_BEGIN
@@ -34,10 +33,6 @@ void Plugin::extensionsInitialized(void)
 
 bool Plugin::initialize(const QStringList &arguments, QString *errorString)
 {
-    Core::IWizardFactory::registerFactoryCreator([] {
-        return QList<Core::IWizardFactory *> { new NewProjectWizardFactory() };
-    });
-
     auto gameWorldEditorFactory = std::make_unique<GameWorldEditorFactory>();
     if (!gameWorldEditorFactory)
         return false;

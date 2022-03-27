@@ -1,0 +1,67 @@
+{
+    "version": 1,
+    "supportedProjectTypes": [ "CMakeProjectManager.CMakeProject" ],
+    "id": "V.VolcanoEngine",
+    "category": "G.VolcanoEngine",
+    "trDescription": "Creates a volcano engine based game.",
+    "trDisplayName": "Volcano Game",
+    "trDisplayCategory": "Volcano Engine",
+    "iconKind": "Themed",
+    "enabled": "value('Plugins').indexOf('CMakeProjectManager') >= 0",
+
+    "pages":
+    [
+        {
+            "trDisplayName": "Project Location",
+            "trShortTitle": "Location",
+            "typeId": "Project",
+            "data": { "trDescription": "This wizard creates a volcano engine project." }
+        },
+        {
+            "trDisplayName": "Define Project Details",
+            "trShortTitle": "Details",
+            "typeId": "Fields",
+            "data":
+            [
+                {
+                    "name": "Type",
+                    "trDisplayName": "Project type:",
+                    "type": "ComboBox",
+                    "persistenceKey": "ProjectType",
+                    "data":
+                    {
+                        "index": 0,
+                        "items":
+                        [
+                            { "trKey": "FPS", "value": "fps" }
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "trDisplayName": "Kit Selection",
+            "trShortTitle": "Kits",
+            "typeId": "Kits",
+            "data": { "projectFilePath": "%{ProjectDirectory}/CMakeLists.txt" }
+        },
+        {
+            "trDisplayName": "Project Management",
+            "trShortTitle": "Summary",
+            "typeId": "Summary"
+        }
+    ],
+    "generators":
+    [
+        {
+            "typeId": "File",
+            "data":
+            [
+                {
+                    "source": "CMakeLists.txt",
+                    "openAsProject": true
+                }
+            ]
+        }
+    ]
+}

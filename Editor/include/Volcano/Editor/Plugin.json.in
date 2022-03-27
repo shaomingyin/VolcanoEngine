@@ -8,5 +8,14 @@
     "Dependency": [
         { "Name": "Core", "Version": "6.0.0" },
         { "Name": "ProjectExplorer", "Version": "6.0.0" }
+    ],
+    "Mimetypes": [
+        "<?xml version='1.0'?>",
+        "<mime-info xmlns='http://www.freedesktop.org/standards/shared-mime-info'>",
+        "  <mime-type type='application/x-volcano-world'>",
+        "    <comment>Volcano World File</comment>",
+        "    <glob pattern='*.vwf'/>",
+        "  </mime-type>",
+        "</mime-info>"
     ]
 }

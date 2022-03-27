@@ -36,3 +36,13 @@ configure_file(
     include/Volcano/Editor/Plugin.json.in
     include/Volcano/Editor/Plugin.json
     )
+
+configure_file(
+    src/Volcano/Editor/Wizards/NewProject/CMakeLists.txt.in
+    ${CMAKE_BINARY_DIR}/share/qtcreator/templates/projects/CMakeLists.txt
+    )
+
+configure_file(
+    src/Volcano/Editor/Wizards/NewProject/Wizard.json.in
+    ${CMAKE_BINARY_DIR}/share/qtcreator/templates/projects/wizard.json
+    )

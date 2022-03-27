@@ -9,15 +9,10 @@ VOLCANO_EDITOR_BEGIN
 
 GameWorldEditorFactory::GameWorldEditorFactory(void)
 {
-    addMimeType("vew");
-    setDisplayName("Volcano Engine World");
-
-    setEditorCreator([] () -> Core::IEditor * {
-        auto editor = std::make_unique<GameWorldEditor>();
-        if (!editor)
-            return nullptr;
-        return editor.release();
-    });
+    setId("Editors.VolcanoWorldEditor");
+    setMimeTypes({ "application/x-volcano-world" });
+    setDisplayName("Volcano World Editor");
+    setEditorCreator([] { return new GameWorldEditor(); });
 }
 
 GameWorldEditorFactory::~GameWorldEditorFactory(void)
