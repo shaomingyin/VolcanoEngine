@@ -3,6 +3,8 @@
 #ifndef VOLCANO_EDITOR_COMMON_HPP
 #define VOLCANO_EDITOR_COMMON_HPP
 
+#include <utils/qtcassert.h>
+
 #include <Volcano/Common.hpp>
 #include <Volcano/Editor/Config.hpp>
 

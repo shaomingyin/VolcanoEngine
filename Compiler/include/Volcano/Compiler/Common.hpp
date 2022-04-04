@@ -1,0 +1,11 @@
+//
+//
+#ifndef VOLCANO_COMPILER_COMMON_HPP
+#define VOLCANO_COMPILER_COMMON_HPP
+
+#include <Volcano/Common.hpp>
+
+#define VOLCANO_COMPILER_BEGIN VOLCANO_BEGIN namespace Compiler {
+#define VOLCANO_COMPILER_END } VOLCANO_END
+
+#endif // VOLCANO_COMPILER_COMMON_HPP

@@ -2,11 +2,14 @@
 set(CMAKE_AUTOUIC ON)
 
 link_libraries(Runtime)
+link_qt_modules(Widgets)
 
-set(VOLCANO_EDITOR_QTCREATOR_CMAKE_DIR "" CACHE PATH "QtCreator cmake directory path.")
-find_package(QtCreator COMPONENTS Core ProjectExplorer REQUIRED
-    PATHS ${VOLCANO_EDITOR_QTCREATOR_CMAKE_DIR}
-    )
+set(VOLCANO_EDITOR_QTC_CMAKE_DIR "" CACHE PATH "QtCreator cmake directory path.")
+find_package(QtCreator COMPONENTS Core ProjectExplorer REQUIRED PATHS ${VOLCANO_EDITOR_QTC_CMAKE_DIR})
+
+set(VOLCANO_EDITOR_PROJECT_MIMETYPE "application/x-volcano-project")
+set(VOLCANO_EDITOR_WORLD_MIMETYPE "application/x-volcano-world")
+set(VOLCANO_EDITOR_SCRIPT_MIMETYPE "application/x-volcano-script")
 
 glob_sources(EDITOR_SOURCES)
 
@@ -23,7 +26,7 @@ add_qtc_plugin(Editor
         ${EDITOR_SOURCES}
     )
 
-#add_dependencies(Editor Server Launcher)
+add_dependencies(Editor Compiler Linker Server Launcher)
 set_target_properties(Editor PROPERTIES OUTPUT_NAME "VolcanoEditor")
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${EDITOR_SOURCES})
 
@@ -37,20 +40,31 @@ configure_file(
     include/Volcano/Editor/Plugin.json
     )
 
-# new project wizard
+# custom json wizard templates
 
-set(PROJECT_WIZARDS_DIR "${CMAKE_BINARY_DIR}/share/qtcreator/templates/wizards/projects/volcanoengine")
+set(QTC_WIZARDS_DIR "${CMAKE_BINARY_DIR}/share/qtcreator/templates/wizards")
 
 configure_file(
-    src/Volcano/Editor/Wizards/Project/CMakeLists.txt.in
-    ${PROJECT_WIZARDS_DIR}/CMakeLists.txt
+    src/Volcano/Editor/Wizards/Projects/Game/Wizard.json.in
+    ${QTC_WIZARDS_DIR}/projects/volcanogame/wizard.json
     )
 
 configure_file(
-    src/Volcano/Editor/Wizards/Project/Wizard.json.in
-    ${PROJECT_WIZARDS_DIR}/wizard.json
+    src/Volcano/Editor/Wizards/Projects/Game/Manifest.vpf.in
+    ${QTC_WIZARDS_DIR}/projects/volcanogame/Manifest.vpf
     )
 
-file(COPY src/Volcano/Editor/Wizards/Project/Game
-    DESTINATION ${PROJECT_WIZARDS_DIR}/
+configure_file(
+    src/Volcano/Editor/Wizards/Projects/Module/Wizard.json.in
+    ${QTC_WIZARDS_DIR}/projects/volcanomodule/wizard.json
+    )
+
+configure_file(
+    src/Volcano/Editor/Wizards/Projects/Module/Manifest.vpf.in
+    ${QTC_WIZARDS_DIR}/projects/volcanomodule/Manifest.vpf
+    )
+
+configure_file(
+    src/Volcano/Editor/Wizards/World/Wizard.json.in
+    ${QTC_WIZARDS_DIR}/volcanoworld/wizard.json
     )

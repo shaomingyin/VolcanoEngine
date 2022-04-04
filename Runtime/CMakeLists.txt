@@ -7,23 +7,23 @@ set_target_properties(Runtime PROPERTIES OUTPUT_NAME "VolcanoRuntime")
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${RUNTIME_SOURCES})
 
 target_include_directories(Runtime
-	PUBLIC
-		${CMAKE_CURRENT_SOURCE_DIR}/include
-		${CMAKE_CURRENT_BINARY_DIR}/include
+    PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+        ${CMAKE_CURRENT_BINARY_DIR}/include
     )
 
 target_compile_definitions(Runtime
-	PUBLIC
-		WIN32_LEAN_AND_MEAN
-	)
+    PUBLIC
+        WIN32_LEAN_AND_MEAN
+    )
 
 target_link_qt_modules(Runtime
-	PUBLIC
-		Concurrent
-		Qml
-		Gui
-		OpenGL
-		Quick
+    PUBLIC
+        Concurrent
+        Qml
+        Gui
+        OpenGL
+        Quick
     )
 
 if(WIN32)

@@ -1,13 +1,12 @@
 {
     "version": 1,
-    "supportedProjectTypes": [ "CMakeProjectManager.CMakeProject" ],
-    "id": "V.VolcanoEngineGame",
-    "category": "G.VolcanoEngine",
-    "trDescription": "Creates a volcano engine based game.",
+    "id": "V.VolcanoGame",
+    "category": "G.VolcanoProject",
+    "trDescription": "Creates a volcano game project.",
     "trDisplayName": "Game",
-    "trDisplayCategory": "Volcano Engine Project",
+    "trDisplayCategory": "Volcano Project",
     "iconKind": "Themed",
-    "enabled": "value('Plugins').indexOf('CMakeProjectManager') >= 0",
+    "supportedProjectTypes": [ "UNKNOWN_PROJECT" ],
 
     "pages":
     [
@@ -15,7 +14,7 @@
             "trDisplayName": "Project Location",
             "trShortTitle": "Location",
             "typeId": "Project",
-            "data": { "trDescription": "This wizard creates a volcano engine project." }
+            "data": { "trDescription": "This wizard creates a volcano game project." }
         },
         {
             "trDisplayName": "Define Project Details",
@@ -40,12 +39,6 @@
             ]
         },
         {
-            "trDisplayName": "Kit Selection",
-            "trShortTitle": "Kits",
-            "typeId": "Kits",
-            "data": { "projectFilePath": "%{ProjectDirectory}/CMakeLists.txt" }
-        },
-        {
             "trDisplayName": "Project Management",
             "trShortTitle": "Summary",
             "typeId": "Summary"
@@ -57,9 +50,7 @@
             "typeId": "File",
             "data":
             [
-                { "source": "CMakeLists.txt", "openAsProject": true },
-                { "source": "Game/Manifest.json" },
-                { "source": "Game/World1.vwf", "openInEditor": true }
+                { "source": "Manifest.vpf", "openAsProject": true }
             ]
         }
     ]

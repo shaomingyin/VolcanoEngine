@@ -1,0 +1,57 @@
+{
+    "version": 1,
+    "id": "V.VolcanoModule",
+    "category": "G.VolcanoProject",
+    "trDescription": "Creates a volcano module project.",
+    "trDisplayName": "Module",
+    "trDisplayCategory": "Volcano Project",
+    "iconKind": "Themed",
+    "supportedProjectTypes": [ "UNKNOWN_PROJECT" ],
+
+    "pages":
+    [
+        {
+            "trDisplayName": "Project Location",
+            "trShortTitle": "Location",
+            "typeId": "Project",
+            "data": { "trDescription": "This wizard creates a volcano module project." }
+        },
+        {
+            "trDisplayName": "Define Project Details",
+            "trShortTitle": "Details",
+            "typeId": "Fields",
+            "data":
+            [
+                {
+                    "name": "Type",
+                    "trDisplayName": "Project type:",
+                    "type": "ComboBox",
+                    "persistenceKey": "ProjectType",
+                    "data":
+                    {
+                        "index": 0,
+                        "items":
+                        [
+                            { "trKey": "FPS Game", "value": "FpsGame" }
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "trDisplayName": "Project Management",
+            "trShortTitle": "Summary",
+            "typeId": "Summary"
+        }
+    ],
+    "generators":
+    [
+        {
+            "typeId": "File",
+            "data":
+            [
+                { "source": "Manifest.vpf", "openAsProject": true }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,11 @@
+//
+//
+#ifndef VOLCANO_LINKER_COMMON_HPP
+#define VOLCANO_LINKER_COMMON_HPP
+
+#include <Volcano/Common.hpp>
+
+#define VOLCANO_LINKER_BEGIN VOLCANO_BEGIN namespace Linker {
+#define VOLCANO_LINKER_END } VOLCANO_END
+
+#endif // VOLCANO_LINKER_COMMON_HPP

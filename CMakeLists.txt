@@ -24,8 +24,8 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
 
 set(CMAKE_INTERPROCEDURAL_OPTIMIZATION ON)
-set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-#set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded")
+#set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded")
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -56,13 +56,15 @@ macro(glob_sources VAR)
         ${CMAKE_CURRENT_SOURCE_DIR}/*.in
         ${CMAKE_CURRENT_SOURCE_DIR}/*.qrc
         ${CMAKE_CURRENT_SOURCE_DIR}/*.json
-        ${CMAKE_CURRENT_SOURCE_DIR}/*.vwp
+        ${CMAKE_CURRENT_SOURCE_DIR}/*.cmake
+        ${CMAKE_CURRENT_SOURCE_DIR}/*.vpf
         ${CMAKE_CURRENT_SOURCE_DIR}/*.vwf
         )
 endmacro()
 
 add_subdirectory(Runtime Runtime)
-add_subdirectory(Tools Tools)
+add_subdirectory(Compiler Compiler)
+add_subdirectory(Linker Linker)
 add_subdirectory(Server Server)
 add_subdirectory(Launcher Launcher)
 add_subdirectory(Editor Editor)

@@ -1,0 +1,7 @@
+{
+    "name": "Game1",
+    "version": [ 0, 1, 0 ],
+    "engineVersion": [ ${PROJECT_VERSION_MAJOR}, ${PROJECT_VERSION_MINOR}, ${PROJECT_VERSION_PATCH} ],
+    "gameDir": "Game",
+    "resourcesDir": "Resources"
+}

@@ -2,44 +2,33 @@
 //
 #include <memory>
 
+#include <coreplugin/icontext.h>
+#include <projectexplorer/projectexplorerconstants.h>
+
+#include <Volcano/Editor/BuildSystem.hpp>
 #include <Volcano/Editor/Project.hpp>
 
 VOLCANO_EDITOR_BEGIN
 
-Project::Project(const Utils::FilePath &fileName, Game::Context *gameContext):
-    ProjectExplorer::Project("vep", fileName),
-    m_gameContext(gameContext),
-    m_gameWorld(nullptr)
+Project::Project(const Utils::FilePath &fileName):
+    ProjectExplorer::Project(VOLCANO_EDITOR_WORLD_MIMETYPE, fileName)
 {
-    Q_ASSERT(m_gameContext != nullptr);
+    qDebug() << __FUNCTION__;
+
+    setId(ID);
+    setProjectLanguages(Core::Context(ProjectExplorer::Constants::QMLJS_LANGUAGE_ID));
+    setDisplayName(projectDirectory().fileName());
+    setCanBuildProducts();
+    setHasMakeInstallEquivalent(true);
+
+    setBuildSystemCreator([] (ProjectExplorer::Target *target) {
+        qDebug() << "__FUNCTION__ CREATE BUILD SYSTEM";
+        return new BuildSystem(target);
+    });
 }
 
 Project::~Project(void)
 {
-}
-
-bool Project::init(void)
-{
-    Q_ASSERT(m_gameContext != nullptr);
-    Q_ASSERT(m_gameWorld == nullptr);
-
-    auto gameWorld = std::make_unique<Game::World>(m_gameContext, this);
-    if (!gameWorld)
-        return false;
-
-    m_gameWorld = gameWorld.release();
-
-    return true;
-}
-
-Game::Context *Project::gameContext(void)
-{
-    return m_gameContext;
-}
-
-Game::World *Project::gameWorld(void)
-{
-    return m_gameWorld;
 }
 
 VOLCANO_EDITOR_END

@@ -12,9 +12,20 @@
     "Mimetypes": [
         "<?xml version='1.0'?>",
         "<mime-info xmlns='http://www.freedesktop.org/standards/shared-mime-info'>",
-        "  <mime-type type='application/x-volcano-world'>",
+        "  <mime-type type='${VOLCANO_EDITOR_PROJECT_MIMETYPE}'>",
+        "    <comment>Volcano Engine Project File</comment>",
+        "    <sub-class-of type='application/json'/>",
+        "    <glob pattern='*.vpf'/>",
+        "  </mime-type>",
+        "  <mime-type type='${VOLCANO_EDITOR_WORLD_MIMETYPE}'>",
+        "    <sub-class-of type='application/json'/>",
         "    <comment>Volcano World File</comment>",
         "    <glob pattern='*.vwf'/>",
+        "  </mime-type>",
+        "  <mime-type type='${VOLCANO_EDITOR_SCRIPT_MIMETYPE}'>",
+        "    <sub-class-of type='text/javascript'/>",
+        "    <comment>Volcano Script File</comment>",
+        "    <glob pattern='*.vsf'/>",
         "  </mime-type>",
         "</mime-info>"
     ]

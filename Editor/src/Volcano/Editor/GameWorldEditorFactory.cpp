@@ -2,6 +2,8 @@
 //
 #include <memory>
 
+#include <utils/mimetypes/mimedatabase.h>
+
 #include <Volcano/Editor/GameWorldEditor.hpp>
 #include <Volcano/Editor/GameWorldEditorFactory.hpp>
 
