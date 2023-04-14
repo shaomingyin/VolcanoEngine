@@ -1,0 +1,34 @@
+//
+//
+#ifndef VOLCANO_GAME_POINTLIGHT_HPP
+#define VOLCANO_GAME_POINTLIGHT_HPP
+
+#include <QVector3D>
+
+#include <Volcano/Game/Common.hpp>
+#include <Volcano/Game/Light.hpp>
+
+VOLCANO_GAME_BEGIN
+
+class PointLight: public Light {
+    Q_OBJECT
+    Q_PROPERTY(QVector3D position READ position WRITE setPosition NOTIFY positionChanged)
+
+public:
+    PointLight(QObject *parent = nullptr);
+    ~PointLight(void) override;
+
+public:
+    const QVector3D &position(void) const;
+    void setPosition(const QVector3D &v);
+
+signals:
+    void positionChanged(const QVector3D &v);
+
+private:
+    QVector3D m_position;
+};
+
+VOLCANO_GAME_END
+
+#endif // VOLCANO_GAME_POINTLIGHT_HPP
