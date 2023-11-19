@@ -3,6 +3,7 @@
 #ifndef VOLCANO_GRAPHICS_CONTEXT_HPP
 #define VOLCANO_GRAPHICS_CONTEXT_HPP
 
+#include <QSize>
 #include <QObject>
 
 #include <Volcano/Game/World.hpp>
@@ -14,20 +15,12 @@ class Context: public QObject {
     Q_OBJECT
 
 public:
-    Context(Game::World &gameWorld, QObject *parent = nullptr);
+    Context(QObject* parent = nullptr);
     ~Context(void) override;
 
 public:
-    virtual bool Init(void);
+    virtual bool Init(const QSize& size);
     virtual void Update(Duration elapsed);
-    const Game::World &gameWorld(void) const;
-
-private slots:
-    void onGameWorldSceneAdded(Game::Scene *p);
-    void onGameWorldSceneRemoved(Game::Scene *p);
-
-private:
-    Game::World &m_gameWorld;
 };
 
 VOLCANO_GRAPHICS_END

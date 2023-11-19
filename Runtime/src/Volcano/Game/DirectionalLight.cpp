@@ -4,25 +4,21 @@
 
 VOLCANO_GAME_BEGIN
 
-DirectionalLight::DirectionalLight(QObject *parent)
+DirectionalLight::DirectionalLight(QObject* parent)
     : Light(parent)
-    , m_direction(0.0f, -1.0f, 0.0f)
-{
+    , direction_(0.0f, -1.0f, 0.0f) {
 }
 
-DirectionalLight::~DirectionalLight(void)
-{
+DirectionalLight::~DirectionalLight(void) {
 }
 
-const QVector3D &DirectionalLight::direction(void) const
-{
-    return m_direction;
+const QVector3D& DirectionalLight::direction(void) const {
+    return direction_;
 }
 
-void DirectionalLight::setDirection(const QVector3D &v)
-{
-    if (!qFuzzyCompare(m_direction, v)) {
-        m_direction = v;
+void DirectionalLight::setDirection(const QVector3D& v) {
+    if (!qFuzzyCompare(direction_, v)) {
+        direction_ = v;
         emit directionChanged(v);
     }
 }

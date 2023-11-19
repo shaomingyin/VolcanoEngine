@@ -6,23 +6,19 @@ VOLCANO_GAME_BEGIN
 
 Light::Light(QObject *parent)
     : Actor(parent)
-    , m_color(QColor::fromRgb(255, 255, 255))
-{
+    , color_(QColor::fromRgb(255, 255, 255)) {
 }
 
-Light::~Light(void)
-{
+Light::~Light(void) {
 }
 
-const QColor &Light::color(void) const
-{
-    return m_color;
+const QColor &Light::color(void) const {
+    return color_;
 }
 
-void Light::setColor(const QColor &v)
-{
-    if (m_color != v) {
-        m_color = v;
+void Light::setColor(const QColor &v) {
+    if (color_ != v) {
+        color_ = v;
         emit colorChanged(v);
     }
 }

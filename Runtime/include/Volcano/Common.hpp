@@ -7,6 +7,7 @@
 
 #include <QtGlobal>
 #include <QtConcurrent>
+#include <QtQml>
 
 #include <Volcano/Config.hpp>
 

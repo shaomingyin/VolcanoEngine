@@ -15,18 +15,18 @@ class DirectionalLight: public Light {
     Q_PROPERTY(QVector3D direction READ direction WRITE setDirection NOTIFY directionChanged)
 
 public:
-    DirectionalLight(QObject *parent = nullptr);
+    DirectionalLight(QObject* parent = nullptr);
     ~DirectionalLight(void) override;
 
 public:
-    const QVector3D &direction(void) const;
-    void setDirection(const QVector3D &v);
+    const QVector3D& direction(void) const;
+    void setDirection(const QVector3D& v);
 
 signals:
-    void directionChanged(const QVector3D &v);
+    void directionChanged(const QVector3D& v);
 
 private:
-    QVector3D m_direction;
+    QVector3D direction_;
 };
 
 VOLCANO_GAME_END
