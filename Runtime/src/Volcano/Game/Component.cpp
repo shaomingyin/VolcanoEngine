@@ -5,12 +5,10 @@
 VOLCANO_GAME_BEGIN
 
 Component::Component(QObject *parent)
-    : Object(parent)
-{
+    : Object(parent) {
 }
 
-Component::~Component(void)
-{
+Component::~Component(void) {
 }
 
 VOLCANO_GAME_END

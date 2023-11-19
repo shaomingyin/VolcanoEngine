@@ -15,18 +15,18 @@ class Light: public Actor {
     Q_PROPERTY(QColor color READ color WRITE setColor NOTIFY colorChanged)
 
 public:
-    Light(QObject *parent = nullptr);
+    Light(QObject* parent = nullptr);
     ~Light(void) override;
 
 public:
-    const QColor &color(void) const;
-    void setColor(const QColor &v);
+    const QColor& color(void) const;
+    void setColor(const QColor& v);
 
 signals:
-    void colorChanged(const QColor &v);
+    void colorChanged(const QColor& v);
 
 private:
-    QColor m_color;
+    QColor color_;
 };
 
 VOLCANO_GAME_END

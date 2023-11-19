@@ -15,18 +15,18 @@ class PointLight: public Light {
     Q_PROPERTY(QVector3D position READ position WRITE setPosition NOTIFY positionChanged)
 
 public:
-    PointLight(QObject *parent = nullptr);
+    PointLight(QObject* parent = nullptr);
     ~PointLight(void) override;
 
 public:
-    const QVector3D &position(void) const;
-    void setPosition(const QVector3D &v);
+    const QVector3D& position(void) const;
+    void setPosition(const QVector3D& v);
 
 signals:
-    void positionChanged(const QVector3D &v);
+    void positionChanged(const QVector3D& v);
 
 private:
-    QVector3D m_position;
+    QVector3D position_;
 };
 
 VOLCANO_GAME_END

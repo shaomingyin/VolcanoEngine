@@ -4,6 +4,7 @@
 #define VOLCANO_GAME_ENTITY_HPP
 
 #include <QList>
+#include <QQmlListProperty>
 
 #include <Volcano/Game/Common.hpp>
 #include <Volcano/Game/Component.hpp>
@@ -13,23 +14,41 @@ VOLCANO_GAME_BEGIN
 
 class Entity: public Actor {
     Q_OBJECT
+    Q_PROPERTY(QQmlListProperty<Component> components READ qmlComponentList)
+    Q_CLASSINFO("DefaultProperty", "components")
 
 public:
-    Entity(QObject *parent = nullptr);
+    Entity(QObject* parent = nullptr);
     ~Entity(void) override;
 
 public:
-    void appendComponent(Component *p);
-    Component *componentAt(qsizetype index);
-    const Component *componentAt(qsizetype index) const;
-    void clearComponents(void);
+    const QList<Component*> &componentList(void) const;
+    void appendComponent(Component* p);
     qsizetype componentCount(void) const;
+    Component* componentAt(qsizetype index);
+    const Component* componentAt(qsizetype index) const;
+    void clearComponents(void);
+    void replaceComponent(qsizetype index, Component* p);
     void removeLastComponent(void);
-    void replaceComponent(qsizetype index, Component *p);
-    const QList<Component *> &components(void) const;
+
+public:
+    QQmlListProperty<Component> qmlComponentList() {
+        return { this, this,
+            [](QQmlListProperty<Component>* property, Component* p) { reinterpret_cast<Entity*>(property->data)->appendComponent(p); },
+            [](QQmlListProperty<Component>* property) { return reinterpret_cast<Entity*>(property->data)->componentCount(); },
+            [](QQmlListProperty<Component>* property, qsizetype index) { return reinterpret_cast<Entity*>(property->data)->componentAt(index); },
+            [](QQmlListProperty<Component>* property) { reinterpret_cast<Entity*>(property->data)->clearComponents(); },
+            [](QQmlListProperty<Component>* property, qsizetype index, Component* p) { reinterpret_cast<Entity*>(property->data)->replaceComponent(index, p); },
+            [](QQmlListProperty<Component>* property) { reinterpret_cast<Entity*>(property->data)->removeLastComponent(); }
+        };
+    }
+
+signals:
+    void componentAdded(Component* p);
+    void componentRemoved(Component* p);
 
 private:
-    QList<Component *> m_componentList;
+    QList<Component*> componentList_;
 };
 
 VOLCANO_GAME_END

@@ -5,23 +5,19 @@
 VOLCANO_GAME_BEGIN
 
 PointLight::PointLight(QObject *parent)
-    : Light(parent)
-{
+    : Light(parent) {
 }
 
-PointLight::~PointLight(void)
-{
+PointLight::~PointLight(void) {
 }
 
-const QVector3D &PointLight::position(void) const
-{
-    return m_position;
+const QVector3D &PointLight::position(void) const {
+    return position_;
 }
 
-void PointLight::setPosition(const QVector3D &v)
-{
-    if (!qFuzzyCompare(m_position, v)) {
-        m_position = v;
+void PointLight::setPosition(const QVector3D &v) {
+    if (!qFuzzyCompare(position_, v)) {
+        position_ = v;
         emit positionChanged(v);
     }
 }

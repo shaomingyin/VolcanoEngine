@@ -5,52 +5,54 @@
 VOLCANO_GAME_BEGIN
 
 Entity::Entity(QObject *parent)
-    : Actor(parent)
-{
+    : Actor(parent) {
 }
 
-Entity::~Entity(void)
-{
+Entity::~Entity(void) {
 }
 
-void Entity::appendComponent(Component *p)
-{
-    m_componentList.append(p);
+const QList<Component *> &Entity::componentList(void) const {
+    return componentList_;
 }
 
-Component *Entity::componentAt(qsizetype index)
-{
-    return m_componentList.at(index);
+void Entity::appendComponent(Component *p) {
+    componentList_.append(p);
+    emit componentAdded(p);
 }
 
-const Component *Entity::componentAt(qsizetype index) const
-{
-    return m_componentList.at(index);
+qsizetype Entity::componentCount(void) const {
+    return componentList_.count();
 }
 
-void Entity::clearComponents(void)
-{
-    m_componentList.clear();
+Component *Entity::componentAt(qsizetype index) {
+    return componentList_.at(index);
 }
 
-qsizetype Entity::componentCount(void) const
-{
-    return m_componentList.count();
+const Component *Entity::componentAt(qsizetype index) const {
+    return componentList_.at(index);
 }
 
-void Entity::removeLastComponent(void)
-{
-    m_componentList.removeLast();
+void Entity::clearComponents(void) {
+    for (Component* component: componentList_) {
+        emit componentRemoved(component);
+    }
+    componentList_.clear();
 }
 
-void Entity::replaceComponent(qsizetype index, Component *p)
-{
-    m_componentList.replace(index, p);
+void Entity::replaceComponent(qsizetype index, Component *p) {
+    if (index < componentList_.count()) {
+        emit componentRemoved(componentList_.at(index));
+        componentList_.replace(index, p);
+        emit componentAdded(p);
+    }
 }
 
-const QList<Component *> &Entity::components(void) const
-{
-    return m_componentList;
+void Entity::removeLastComponent(void) {
+    if (!componentList_.isEmpty()) {
+        Component* last = componentList_.last();
+        componentList_.removeLast();
+        emit componentRemoved(last);
+    }
 }
 
 VOLCANO_GAME_END

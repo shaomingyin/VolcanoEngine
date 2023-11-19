@@ -6,55 +6,58 @@ VOLCANO_GAME_BEGIN
 
 World::World(QObject *parent)
     : Object(parent)
-{
+    , camera_(nullptr) {
 }
 
-World::~World(void)
-{
+World::~World(void) {
 }
 
-const SceneList &World::sceneList(void) const
-{
-    return m_sceneList;
+Camera* World::camera() {
+    return camera_;
 }
 
-void World::appendScene(Scene *scene)
-{
-    m_sceneList.append(scene);
-    emit sceneAdded(scene);
-}
-
-Scene *World::sceneAt(qsizetype index)
-{
-    return m_sceneList.at(index);
-}
-
-void World::clearScenes(void)
-{
-    for (Scene *scene: m_sceneList)
-        emit sceneRemoved(scene);
-    m_sceneList.clear();
-}
-
-qsizetype World::sceneCount(void) const
-{
-    return m_sceneList.count();
-}
-
-void World::removeLastScene(void)
-{
-    if (!m_sceneList.isEmpty()) {
-        emit sceneRemoved(m_sceneList.last());
-        m_sceneList.removeLast();
+void World::setCamera(Camera* p) {
+    if (camera_ != p) {
+        camera_ = p;
+        emit cameraChanged(p);
     }
 }
 
-void World::replaceScene(qsizetype index, Scene *scene)
-{
-    if (index < m_sceneList.count()) {
-        emit sceneRemoved(m_sceneList.at(index));
-        m_sceneList.replace(index, scene);
+const SceneList &World::sceneList(void) const {
+    return sceneList_;
+}
+
+void World::appendScene(Scene* scene) {
+    sceneList_.append(scene);
+    emit sceneAdded(scene);
+}
+
+Scene* World::sceneAt(qsizetype index) {
+    return sceneList_.at(index);
+}
+
+void World::clearScenes(void) {
+    for (Scene* scene: sceneList_)
+        emit sceneRemoved(scene);
+    sceneList_.clear();
+}
+
+qsizetype World::sceneCount(void) const {
+    return sceneList_.count();
+}
+
+void World::replaceScene(qsizetype index, Scene* scene) {
+    if (index < sceneList_.count()) {
+        emit sceneRemoved(sceneList_.at(index));
+        sceneList_.replace(index, scene);
         emit sceneAdded(scene);
+    }
+}
+
+void World::removeLastScene(void) {
+    if (!sceneList_.isEmpty()) {
+        emit sceneRemoved(sceneList_.last());
+        sceneList_.removeLast();
     }
 }
 
