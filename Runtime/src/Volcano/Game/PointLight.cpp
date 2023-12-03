@@ -8,7 +8,8 @@ PointLight::PointLight(QObject *parent)
     : Light(parent) {
 }
 
-PointLight::~PointLight(void) {
+PointLight::PointLight(Context& context, QObject *parent)
+    : Light(context, parent) {
 }
 
 const QVector3D &PointLight::position(void) const {

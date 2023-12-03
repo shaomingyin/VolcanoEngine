@@ -16,7 +16,7 @@ class PointLight: public Light {
 
 public:
     PointLight(QObject* parent = nullptr);
-    ~PointLight(void) override;
+    PointLight(Context& context, QObject* parent = nullptr);
 
 public:
     const QVector3D& position(void) const;

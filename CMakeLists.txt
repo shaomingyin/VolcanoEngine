@@ -13,8 +13,6 @@ endif()
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set_property(GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER "CMake")
 
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_HOME_DIRECTORY}/CMake")
-
 include(CMakeDependentOption)
 
 set(VOLCANO_DEBUG ON CACHE BOOL "Enable debug funtions.")
@@ -34,7 +32,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
-include(VolcanoUtils)
+include(CMake/VolcanoUtils.cmake)
 
 find_package(Qt6 COMPONENTS Core)
 link_libraries(Qt6::Core)

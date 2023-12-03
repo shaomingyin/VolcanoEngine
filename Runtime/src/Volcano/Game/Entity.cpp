@@ -8,7 +8,8 @@ Entity::Entity(QObject *parent)
     : Actor(parent) {
 }
 
-Entity::~Entity(void) {
+Entity::Entity(Context& context, QObject *parent)
+    : Actor(context, parent) {
 }
 
 const QList<Component *> &Entity::componentList(void) const {

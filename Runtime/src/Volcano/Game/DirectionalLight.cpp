@@ -9,7 +9,9 @@ DirectionalLight::DirectionalLight(QObject* parent)
     , direction_(0.0f, -1.0f, 0.0f) {
 }
 
-DirectionalLight::~DirectionalLight(void) {
+DirectionalLight::DirectionalLight(Context& context, QObject* parent)
+    : Light(context, parent)
+    , direction_(0.0f, -1.0f, 0.0f) {
 }
 
 const QVector3D& DirectionalLight::direction(void) const {

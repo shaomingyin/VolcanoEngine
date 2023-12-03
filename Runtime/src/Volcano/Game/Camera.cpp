@@ -8,6 +8,10 @@ Camera::Camera(QObject *parent)
     : Object(parent) {
 }
 
+Camera::Camera(Context& context, QObject *parent)
+    : Object(context, parent) {
+}
+
 const QVector3D &Camera::position() const {
     return position_;
 }

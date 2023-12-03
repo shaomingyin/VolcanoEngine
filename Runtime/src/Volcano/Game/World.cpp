@@ -9,7 +9,9 @@ World::World(QObject *parent)
     , camera_(nullptr) {
 }
 
-World::~World(void) {
+World::World(Context& context, QObject *parent)
+    : Object(context, parent)
+    , camera_(nullptr) {
 }
 
 Camera* World::camera() {
@@ -58,6 +60,18 @@ void World::removeLastScene(void) {
     if (!sceneList_.isEmpty()) {
         emit sceneRemoved(sceneList_.last());
         sceneList_.removeLast();
+    }
+}
+
+void World::buildView() const {
+    for (auto& scene: sceneList_) {
+        scene->draw();
+    }
+}
+
+void World::updateState(Duration elapsed) const {
+    for (auto& scene: sceneList_) {
+        scene->tick(elapsed);
     }
 }
 

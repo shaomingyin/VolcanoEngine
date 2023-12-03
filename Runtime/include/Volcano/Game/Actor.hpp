@@ -3,6 +3,7 @@
 #ifndef VOLCANO_GAME_ACTOR_HPP
 #define VOLCANO_GAME_ACTOR_HPP
 
+#include <Volcano/Transform.hpp>
 #include <Volcano/Game/Common.hpp>
 #include <Volcano/Game/Object.hpp>
 
@@ -16,25 +17,72 @@ class Actor: public Object {
 
 public:
     Actor(QObject* parent = nullptr);
-    ~Actor(void) override;
+    Actor(Context& context, QObject* parent = nullptr);
 
 public:
-    const QVector3D& position() const;
-    void setPosition(const QVector3D& v);
-    const QVector3D& scale() const;
-    void setScale(const QVector3D& v);
-    const QQuaternion& rotation() const;
-    void setRotation(const QQuaternion& v);
+    Transform& transform() {
+        return transform_;
+    }
+
+    const Transform& transform() const {
+        return transform_;
+    }
+
+    const QVector3D& position() const {
+        return transform_.translation();
+    }
+
+    void setPosition(const QVector3D& v) {
+        if (!qFuzzyCompare(transform_.translation(), v)) {
+            transform_.setTranslation(v);
+            emit positionChanged(v);
+        }
+    }
+
+    void move(const QVector3D& v) {
+        transform_.translate(v);
+        emit positionChanged(transform_.translation());
+    }
+
+    const QVector3D& scaling() const {
+        return transform_.scaling();
+    }
+
+    void setScale(const QVector3D& v) {
+        if (!qFuzzyCompare(transform_.scaling(), v)) {
+            transform_.setScaling(v);
+            emit scalingChanged(v);
+        }
+    }
+
+    void scale(const QVector3D& v) {
+        transform_.scale(v);
+        emit scalingChanged(transform_.scaling());
+    }
+
+    const QQuaternion& rotation() const {
+        return transform_.rotation();
+    }
+
+    void setRotation(const QQuaternion& v) {
+        if (!qFuzzyCompare(transform_.rotation(), v)) {
+            transform_.setRotation(v);
+            emit rotationChanged(v);
+        }
+    }
+
+    void rotate(const QQuaternion& v) {
+        transform_.rotate(v);
+        emit rotationChanged(transform_.rotation());
+    }
 
 signals:
     void positionChanged(const QVector3D& v);
-    void scaleChanged(const QVector3D& v);
+    void scalingChanged(const QVector3D& v);
     void rotationChanged(const QQuaternion& v);
 
 private:
-    QVector3D position_;
-    QVector3D scale_;
-    QQuaternion rotation_;
+    Transform transform_;
 };
 
 VOLCANO_GAME_END

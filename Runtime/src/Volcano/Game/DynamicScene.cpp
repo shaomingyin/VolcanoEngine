@@ -7,9 +7,13 @@ VOLCANO_GAME_BEGIN
 DynamicScene::DynamicScene(QObject* parent)
     : Scene(parent)
     , gravity_(0.0f, -9.8f, 0.0f) {
+    // TODO create bt world.
 }
 
-DynamicScene::~DynamicScene(void) {
+DynamicScene::DynamicScene(Context& context, QObject* parent)
+    : Scene(context, parent)
+    , gravity_(0.0f, -9.8f, 0.0f) {
+    // TODO create bt world.
 }
 
 const QVector3D &DynamicScene::gravity(void) const {

@@ -23,7 +23,7 @@ class World: public Object {
 
 public:
     World(QObject *parent = nullptr);
-    ~World(void) override;
+    World(Context& context, QObject *parent = nullptr);
 
 public:
     Camera* camera();
@@ -52,6 +52,10 @@ signals:
     void cameraChanged(Camera* p);
     void sceneAdded(Scene* p);
     void sceneRemoved(Scene* p);
+
+protected:
+    void buildView() const override;
+    void updateState(Duration elapsed) const override;
 
 private:
     Camera* camera_;

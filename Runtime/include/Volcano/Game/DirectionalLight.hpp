@@ -16,7 +16,7 @@ class DirectionalLight: public Light {
 
 public:
     DirectionalLight(QObject* parent = nullptr);
-    ~DirectionalLight(void) override;
+    DirectionalLight(Context& context, QObject* parent = nullptr);
 
 public:
     const QVector3D& direction(void) const;

@@ -16,7 +16,7 @@ class Light: public Actor {
 
 public:
     Light(QObject* parent = nullptr);
-    ~Light(void) override;
+    Light(Context& context, QObject* parent = nullptr);
 
 public:
     const QColor& color(void) const;

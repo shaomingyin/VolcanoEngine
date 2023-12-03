@@ -19,7 +19,7 @@ class Entity: public Actor {
 
 public:
     Entity(QObject* parent = nullptr);
-    ~Entity(void) override;
+    Entity(Context& context, QObject* parent = nullptr);
 
 public:
     const QList<Component*> &componentList(void) const;

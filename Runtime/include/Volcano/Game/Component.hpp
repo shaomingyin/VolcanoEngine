@@ -4,16 +4,16 @@
 #define VOLCANO_GAME_COMPONENT_HPP
 
 #include <Volcano/Game/Common.hpp>
-#include <Volcano/Game/Object.hpp>
+#include <Volcano/Game/Actor.hpp>
 
 VOLCANO_GAME_BEGIN
 
-class Component: public Object {
+class Component: public Actor {
     Q_OBJECT
 
 public:
-    Component(QObject *parent = nullptr);
-    ~Component(void) override;
+    Component(QObject* parent = nullptr);
+    Component(Context& context, QObject* parent = nullptr);
 };
 
 VOLCANO_GAME_END

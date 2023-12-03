@@ -15,7 +15,7 @@ class SpotLight: public DirectionalLight {
 
 public:
     SpotLight(QObject* parent = nullptr);
-    ~SpotLight(void) override;
+    SpotLight(Context& context, QObject* parent = nullptr);
 
 public:
 

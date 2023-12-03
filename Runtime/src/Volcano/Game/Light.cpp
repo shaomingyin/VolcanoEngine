@@ -9,7 +9,9 @@ Light::Light(QObject *parent)
     , color_(QColor::fromRgb(255, 255, 255)) {
 }
 
-Light::~Light(void) {
+Light::Light(Context& context, QObject *parent)
+    : Actor(context, parent)
+    , color_(QColor::fromRgb(255, 255, 255)) {
 }
 
 const QColor &Light::color(void) const {

@@ -1,2 +1,0 @@
-[requires]
-bullet3/3.25

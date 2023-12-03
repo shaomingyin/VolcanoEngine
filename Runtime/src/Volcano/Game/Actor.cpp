@@ -8,7 +8,8 @@ Actor::Actor(QObject *parent)
     : Object(parent) {
 }
 
-Actor::~Actor(void) {
+Actor::Actor(Context& context, QObject *parent)
+    : Object(context, parent) {
 }
 
 const QVector3D &Actor::position() const {

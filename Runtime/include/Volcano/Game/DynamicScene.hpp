@@ -6,7 +6,7 @@
 #include <QVector3D>
 #include <QScopedPointer>
 
-#include <bullet/BulletDynamics/btBulletDynamicsCommon.h>
+#include <btBulletDynamicsCommon.h>
 
 #include <Volcano/Game/Common.hpp>
 #include <Volcano/Game/Scene.hpp>
@@ -19,7 +19,7 @@ class DynamicScene: public Scene {
 
 public:
     DynamicScene(QObject* parent = nullptr);
-    ~DynamicScene(void) override;
+    DynamicScene(Context& context, QObject* parent = nullptr);
 
 public:
     const QVector3D& gravity(void) const;

@@ -16,6 +16,7 @@ class Camera: public Object {
 
 public:
     Camera(QObject *parent = nullptr);
+    Camera(Context& context, QObject *parent = nullptr);
 
 public:
     const QVector3D &position() const;

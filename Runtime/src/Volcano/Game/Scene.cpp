@@ -8,7 +8,8 @@ Scene::Scene(QObject *parent)
     : Object(parent) {
 }
 
-Scene::~Scene(void) {
+Scene::Scene(Context& context, QObject *parent)
+    : Object(context, parent) {
 }
 
 const ActorList &Scene::actorList(void) const {
@@ -69,6 +70,9 @@ void Scene::removeLastActor(void) {
         actorList_.removeLast();
         handleActorRemoved(last);
     }
+}
+
+void Scene::buildView() {
 }
 
 void Scene::handleActorAdded(Actor* actor) {

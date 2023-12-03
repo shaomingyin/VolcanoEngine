@@ -32,7 +32,7 @@ class Scene: public Object {
 
 public:
     Scene(QObject* parent = nullptr);
-    ~Scene(void) override;
+    Scene(Context& context, QObject* parent = nullptr);
 
 public:
     const ActorList& actorList(void) const;
@@ -72,6 +72,7 @@ signals:
     void pointLightRemoved(PointLight* p);
 
 private:
+    void buildView() override;
     void handleActorAdded(Actor* actor);
     void handleActorRemoved(Actor* actor);
 
