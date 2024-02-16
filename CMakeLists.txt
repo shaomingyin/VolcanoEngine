@@ -34,7 +34,7 @@ set(CMAKE_AUTORCC ON)
 
 include(CMake/VolcanoUtils.cmake)
 
-find_package(Qt6 COMPONENTS Core)
+find_package(Qt6 REQUIRED COMPONENTS Core)
 link_libraries(Qt6::Core)
 
 add_subdirectory(Runtime)

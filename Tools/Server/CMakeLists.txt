@@ -8,4 +8,6 @@ volcano_define_executable(Server
     PRIVATE_INCLUDE_DIRECTORIES
         ${CMAKE_CURRENT_SOURCE_DIR}/include
         ${CMAKE_CURRENT_BINARY_DIR}/include
+    PRIVATE_LINK_LIBRARIES
+        Base
     )

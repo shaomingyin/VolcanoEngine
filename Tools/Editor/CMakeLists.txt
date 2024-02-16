@@ -8,6 +8,9 @@ volcano_define_executable(Editor
     PRIVATE_INCLUDE_DIRECTORIES
         ${CMAKE_CURRENT_SOURCE_DIR}/include
         ${CMAKE_CURRENT_BINARY_DIR}/include
+    PRIVATE_LINK_LIBRARIES
+        Graphics
+        Base
     PRIVATE_QT_MODULES
         Widgets
     )
