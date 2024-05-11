@@ -9,5 +9,5 @@ volcano_define_executable(Server
         ${CMAKE_CURRENT_SOURCE_DIR}/include
         ${CMAKE_CURRENT_BINARY_DIR}/include
     PRIVATE_LINK_LIBRARIES
-        Base
+        Game
     )

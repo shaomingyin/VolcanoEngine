@@ -1,0 +1,9 @@
+{
+    "Name": "VolcanoEditor",
+    "Version": "${PROJECT_VERSION}",
+    "Category": "Game Engine",
+    "Vendor": "Shaomy",
+    "Dependencies": [
+        { "Name": "ProjectExplorer" }
+    ]
+}

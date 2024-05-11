@@ -1,16 +1,23 @@
 
+find_package(Qt6 COMPONENTS Widgets REQUIRED)
+find_package(QtCreator COMPONENTS Core REQUIRED)
+
 volcano_glob_sources(EDITOR_SOURCES ${CMAKE_CURRENT_SOURCE_DIR})
-volcano_define_executable(Editor
-    OUTPUT_NAME
-        VolcanoEditor
-    PRIVATE_SOURCES
-        ${EDITOR_SOURCES}
-    PRIVATE_INCLUDE_DIRECTORIES
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${EDITOR_SOURCES})
+add_qtc_plugin(Editor
+    SKIP_TRANSLATION
+    SKIP_PCH
+    INCLUDES
         ${CMAKE_CURRENT_SOURCE_DIR}/include
         ${CMAKE_CURRENT_BINARY_DIR}/include
-    PRIVATE_LINK_LIBRARIES
-        Graphics
-        Base
-    PRIVATE_QT_MODULES
-        Widgets
-    )
+    PLUGIN_DEPENDS
+        Game
+        QtCreator::Core
+    DEPENDS
+        QtCreator::ProjectExplorer
+        QtCreator::ExtensionSystem
+        QtCreator::Utils
+        Qt6::Widgets
+    SOURCES
+        ${EDITOR_SOURCES}
+)

@@ -5,6 +5,12 @@
 
 #include <Volcano/Common.hpp>
 
+#ifdef VOLCANO_PHYSICS
+#   define VOLCANO_PHYSICS_API Q_DECL_EXPORT
+#else
+#   define VOLCANO_PHYSICS_API Q_DECL_IMPORT
+#endif
+
 #define VOLCANO_PHYSICS_BEGIN VOLCANO_BEGIN namespace Physics {
 #define VOLCANO_PHYSICS_END } VOLCANO_END
 

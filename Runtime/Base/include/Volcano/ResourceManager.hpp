@@ -10,7 +10,7 @@
 
 VOLCANO_BEGIN
 
-class ResourceManager: public QObject {
+class VOLCANO_API ResourceManager: public QObject {
     Q_OBJECT
 
 public:

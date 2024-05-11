@@ -6,8 +6,7 @@ volcano_define_executable(Launcher
     PRIVATE_SOURCES
         ${LAUNCHER_SOURCES}
     PRIVATE_LINK_LIBRARIES
-        Graphics
-        Base
+        Game
     PRIVATE_QT_MODULES
         Qml
         Quick

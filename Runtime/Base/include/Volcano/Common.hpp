@@ -11,6 +11,12 @@
 
 #include <Volcano/Config.hpp>
 
+#ifdef VOLCANO_BASE
+#   define VOLCANO_API Q_DECL_EXPORT
+#else
+#   define VOLCANO_API Q_DECL_IMPORT
+#endif
+
 #define VOLCANO_BEGIN namespace Volcano {
 #define VOLCANO_END }
 

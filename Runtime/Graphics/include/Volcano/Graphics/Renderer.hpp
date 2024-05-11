@@ -6,12 +6,12 @@
 #include <QSize>
 #include <QObject>
 
-#include <Volcano/View.hpp>
 #include <Volcano/Graphics/Common.hpp>
+#include <Volcano/Graphics/View.hpp>
 
 VOLCANO_GRAPHICS_BEGIN
 
-class Renderer: public View {
+class VOLCANO_GRAPHICS_API Renderer: public QObject {
     Q_OBJECT
 
 public:
@@ -19,9 +19,6 @@ public:
 
 public:
     bool init();
-    bool beginFrame() override;
-    void commitFrame() override;
-    void cancelFrame() override;
 };
 
 VOLCANO_GRAPHICS_END
