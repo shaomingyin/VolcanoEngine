@@ -1,0 +1,5 @@
+[requires]
+eigen/3.4.0
+miniz/3.0.2
+bullet3/3.25
+assimp/5.3.1

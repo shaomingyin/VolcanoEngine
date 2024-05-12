@@ -11,7 +11,7 @@ macro(volcano_glob_sources VAR DIR)
         ${DIR}/*.cmake
         ${DIR}/*.vpf
         ${DIR}/*.vwf
-        )
+    )
 endmacro()
 
 macro(volcano_setup_target TARGET)
@@ -49,6 +49,7 @@ macro(volcano_setup_target TARGET)
             file(REAL_PATH ${TARGET_SOURCE} TARGET_SOURCE_TEMPLATE)
             file(RELATIVE_PATH TARGET_SOURCE_TEMPLATE ${CMAKE_CURRENT_SOURCE_DIR} ${TARGET_SOURCE_TEMPLATE})
             string(REGEX REPLACE "\\.in$" "" TARGET_SOURCE_TEMPLATE_OUTPUT ${TARGET_SOURCE_TEMPLATE})
+			message(STATUS "Configuring ${TARGET_SOURCE_TEMPLATE} to ${TARGET_SOURCE_TEMPLATE_OUTPUT}...")
             configure_file(${TARGET_SOURCE_TEMPLATE} ${TARGET_SOURCE_TEMPLATE_OUTPUT})
         endif()
     endforeach()

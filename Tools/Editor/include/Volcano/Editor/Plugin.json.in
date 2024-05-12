@@ -4,6 +4,9 @@
     "Category": "Game Engine",
     "Vendor": "Shaomy",
     "Dependencies": [
-        { "Name": "ProjectExplorer" }
+        { "Name": "Core", "Version": "13.0.1" },
+        { "Name": "ProjectExplorer", "Version": "13.0.1" },
+        { "Name": "ResourceEditor", "Version": "13.0.1" },
+        { "Name": "TextEditor", "Version": "13.0.1" }
     ]
 }

@@ -22,7 +22,7 @@ Context* Object::context() {
     if (qml_engine != nullptr) {
         context_ = Context::fromQmlEngine(*qml_engine);
         if (context_ == nullptr) {
-            qWarning("Volcano object [%p] is not a QML object.");
+            qWarning("Failed to get context, object [%p] is not a QML object.", this);
         }
     }
     return context_;

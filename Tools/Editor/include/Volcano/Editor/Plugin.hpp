@@ -11,7 +11,12 @@ VOLCANO_EDITOR_BEGIN
 
 class Plugin: public ExtensionSystem::IPlugin {
     Q_OBJECT
-    Q_PLUGIN_METADATA(IID "shaomy.VolcanoEngine.EditorPlugin" FILE "Volcano/Editor/Plugin.json")
+    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QtCreatorPlugin" FILE "Volcano/Editor/Plugin.json")
+
+public:
+    Plugin() {
+        qDebug("Test\n");
+    }
 
 public:
     bool initialize(const QStringList &arguments, QString *error_string) override;

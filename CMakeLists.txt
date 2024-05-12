@@ -31,10 +31,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
 
 include(CMake/VolcanoUtils.cmake)
 
-find_package(Qt6 REQUIRED COMPONENTS Core)
+find_package(Qt6 COMPONENTS Core REQUIRED)
 link_libraries(Qt6::Core)
 
 add_subdirectory(Runtime)
