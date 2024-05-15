@@ -14,4 +14,6 @@ volcano_define_shared_library(Game
         Physics
         Graphics
         Base
+    PUBLIC_QT_MODULES
+        Qml
     )

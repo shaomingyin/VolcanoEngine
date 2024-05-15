@@ -13,6 +13,6 @@ volcano_define_executable(Launcher
     PRIVATE_LINK_LIBRARIES
         Game
     PRIVATE_QT_MODULES
-        Qml
         Quick
+        Qml
     )

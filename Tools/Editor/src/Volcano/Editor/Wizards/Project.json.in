@@ -1,6 +1,8 @@
 {
     "version": 1,
-    "supportedProjectTypes": [ ],
+    "supportedProjectTypes": [
+        "CMakeProjectManager.CMakeProject"
+    ],
     "id": "V.VolcanoEditor",
     "category": "VolcanoEngine",
     "trDescription": "Creates a VolcanoEngine project.",

@@ -7,9 +7,16 @@
 
 #include <QtGlobal>
 #include <QtConcurrent>
-#include <QtQml>
 
 #include <Volcano/Config.hpp>
+
+#define VOLCANO_STRIZE(x) VOLCANO_STRIZE_(x)
+#define VOLCANO_STRIZE_(x) #x
+
+#define VOLCANO_VERSION_TEXT \
+    VOLCANO_STRIZE(VOLCANO_VERSION_MAJOR) "." \
+    VOLCANO_STRIZE(VOLCANO_VERSION_MINOR) "." \
+    VOLCANO_STRIZE(VOLCANO_VERSION_PATCH)
 
 #ifdef VOLCANO_BASE
 #   define VOLCANO_API Q_DECL_EXPORT

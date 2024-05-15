@@ -3,6 +3,8 @@
 #ifndef VOLCANO_GAME_COMMON_HPP
 #define VOLCANO_GAME_COMMON_HPP
 
+#include <QtQml>
+
 #include <Volcano/Common.hpp>
 
 #ifdef VOLCANO_GAME

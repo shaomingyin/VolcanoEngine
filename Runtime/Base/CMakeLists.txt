@@ -13,5 +13,4 @@ volcano_define_shared_library(Base
     PUBLIC_QT_MODULES
         Concurrent
         Gui
-        Qml
     )
