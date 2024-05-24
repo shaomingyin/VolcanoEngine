@@ -7,6 +7,7 @@
 #include <projectexplorer/project.h>
 
 #include <Volcano/Editor/Common.hpp>
+#include <Volcano/Editor/BuildConfigurationFactory.hpp>
 #include <Volcano/Editor/SceneTreeEditorFactory.hpp>
 #include <Volcano/Editor/SceneViewEditorFactory.hpp>
 #include <Volcano/Editor/SettingsPage.hpp>
@@ -23,6 +24,7 @@ public:
     ShutdownFlag aboutToShutdown() override;
 
 private:
+    BuildConfigurationFactory build_configuration_factory_;
     SceneTreeEditorFactory scene_tree_editor_factory_;
     SceneViewEditorFactory scene_view_editor_factory_;
     SettingsPage settings_page_;
