@@ -46,7 +46,7 @@ private:
     QVersionNumber engine_version_;
 
 private:
-    Game::Context game_context_;
+    //Game::Context game_context_;
     Game::World game_world_;
 };
 

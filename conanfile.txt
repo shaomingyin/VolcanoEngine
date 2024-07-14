@@ -3,3 +3,12 @@ eigen/3.4.0
 miniz/3.0.2
 bullet3/3.25
 assimp/5.3.1
+vulkan-headers/1.3.268.0
+vulkan-loader/1.3.268.0
+
+[generators]
+CMakeToolchain
+CMakeDeps
+
+[layout]
+cmake_layout

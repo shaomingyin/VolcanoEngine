@@ -98,7 +98,7 @@ void Project::parseVersion(const QJsonObject& obj, const QString& key, QVersionN
         }
         out = QVersionNumber(major, minor, patch);
     } else if (it->isString()) {
-        out = QVersionNumber::fromString(it->toString(VOLCANO_VERSION_TEXT));
+        out = QVersionNumber::fromString(it->toString(VOLCANO_VERSION_STR));
     } else {
         out = def;
     }

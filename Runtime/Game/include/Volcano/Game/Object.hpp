@@ -3,9 +3,6 @@
 #ifndef VOLCANO_GAME_OBJECT_HPP
 #define VOLCANO_GAME_OBJECT_HPP
 
-#include <QVector3D>
-#include <QQuaternion>
-
 #include <Volcano/Game/Common.hpp>
 #include <Volcano/Game/Context.hpp>
 

@@ -3,7 +3,9 @@
 #ifndef VOLCANO_GAME_ACTOR_HPP
 #define VOLCANO_GAME_ACTOR_HPP
 
-#include <Volcano/Transform.hpp>
+#include <QVector3D>
+#include <QQuaternion>
+
 #include <Volcano/Game/Common.hpp>
 #include <Volcano/Game/Object.hpp>
 
@@ -20,60 +22,69 @@ public:
     Actor(Context& context, QObject* parent = nullptr);
 
 public:
-    Transform& transform() {
-        return transform_;
+    Eigen::Affine3f& transform() {
+        return affine_;
     }
 
-    const Transform& transform() const {
-        return transform_;
+    const Eigen::Affine3f& transform() const {
+        return affine_;
     }
 
-    const QVector3D& position() const {
-        return transform_.translation();
+    QVector3D position() const {
+        auto translation = affine_.translation();
+        return QVector3D(translation.x(), translation.y(), translation.z());
     }
 
     void setPosition(const QVector3D& v) {
-        if (!qFuzzyCompare(transform_.translation(), v)) {
-            transform_.setTranslation(v);
+        auto translation = Eigen::Vector3f(v.x(), v.y(), v.z());
+        if (affine_.translation() != translation) {
+            affine_.translate(translation);
             emit positionChanged(v);
         }
     }
 
     void move(const QVector3D& v) {
-        transform_.translate(v);
-        emit positionChanged(transform_.translation());
+        affine_.translate(Eigen::Vector3f(v.x(), v.y(), v.z()));
+        auto translation = affine_.translation();
+        emit positionChanged(QVector3D(translation.x(), translation.y(), translation.z()));
     }
 
     const QVector3D& scaling() const {
-        return transform_.scaling();
+        return scaling_;
     }
 
     void setScale(const QVector3D& v) {
-        if (!qFuzzyCompare(transform_.scaling(), v)) {
-            transform_.setScaling(v);
-            emit scalingChanged(v);
+        if (!qFuzzyCompare(scaling_, v)) {
+            affine_.scale(Eigen::Vector3f(v.x(), v.y(), v.z()));
+            scaling_ = v;
+            emit scalingChanged(scaling_);
         }
     }
 
     void scale(const QVector3D& v) {
-        transform_.scale(v);
-        emit scalingChanged(transform_.scaling());
+        affine_.scale(Eigen::Vector3f(v.x(), v.y(), v.z()));
+        scaling_ *= v;
+        emit scalingChanged(scaling_);
     }
 
-    const QQuaternion& rotation() const {
-        return transform_.rotation();
+    QQuaternion rotation() const {
+        Eigen::Quaternionf rotation(affine_.rotation());
+        return QQuaternion(rotation.x(), rotation.y(), rotation.z(), rotation.w());
     }
 
     void setRotation(const QQuaternion& v) {
-        if (!qFuzzyCompare(transform_.rotation(), v)) {
-            transform_.setRotation(v);
+        Eigen::Quaternionf target(v.scalar(), v.x(), v.y(), v.z());
+        Eigen::Quaternionf rotation(affine_.rotation());
+        if (rotation != target) {
+            affine_.rotate(target);
             emit rotationChanged(v);
         }
     }
 
     void rotate(const QQuaternion& v) {
-        transform_.rotate(v);
-        emit rotationChanged(transform_.rotation());
+        Eigen::Quaternionf target(v.scalar(), v.x(), v.y(), v.z());
+        affine_.rotate(target);
+        emit rotationChanged(QQuaternion(target.w(), target.x(), target.y(), target.z()));
     }
 
 signals:
@@ -82,7 +93,8 @@ signals:
     void rotationChanged(const QQuaternion& v);
 
 private:
-    Transform transform_;
+    Eigen::Affine3f affine_;
+    QVector3D scaling_; // cache
 };
 
 VOLCANO_GAME_END

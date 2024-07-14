@@ -5,12 +5,11 @@
 
 #include <QStack>
 
-#include <Volcano/Transform.hpp>
 #include <Volcano/Graphics/Common.hpp>
 
 VOLCANO_GRAPHICS_BEGIN
 
-class VOLCANO_GRAPHICS_API FrameData final {
+class FrameData final {
 public:
     FrameData() {
         transform_stack_.emplaceBack();
@@ -43,11 +42,11 @@ public:
         transform_stack_.emplaceBack();
     }
 
-    Transform& transform() {
+    Eigen::Affine3f& transform() {
         return transform_stack_.top();
     }
 
-    const Transform& transform() const {
+    const Eigen::Affine3f& transform() const {
         return transform_stack_.top();
     }
 
@@ -55,12 +54,12 @@ public:
         transform_stack_.push(transform_stack_.top());
     }
 
-    void pushTransform(const Transform& v) {
+    void pushTransform(const Eigen::Affine3f& v) {
         transform_stack_.push(v);
     }
 
     void pushIdentityTransform() {
-        transform_stack_.push(Transform());
+        transform_stack_.push(Eigen::Affine3f());
     }
 
     void popTransform() {
@@ -69,15 +68,15 @@ public:
         }
     }
 
-    void buildModelMatrix(QMatrix4x4& v) const {
-        transform_stack_.top().buildMatrix4x4(v);
+    auto modelMatrix() const {
+        transform_stack_.top().matrix();
     }
 
 public:
     // add drawable objects.
 
 private:
-    QStack<Transform> transform_stack_;
+    QStack<Eigen::Affine3f> transform_stack_;
     // drawable objects.
 };
 

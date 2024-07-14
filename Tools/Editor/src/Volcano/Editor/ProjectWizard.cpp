@@ -5,7 +5,10 @@
 VOLCANO_EDITOR_BEGIN
 
 ProjectWizard::ProjectWizard(const Core::BaseFileWizardFactory *factory, QWidget *parent)
-    : Core::BaseFileWizard(factory, {}, parent) {
+    : ProjectExplorer::BaseProjectWizardDialog(
+        factory, parent,
+        Core::WizardDialogParameters(Utils::FilePath::currentWorkingPath(),
+            "VOLCANO", {}, Core::WizardDialogParameters::ForceCapitalLetterForFileName, {})) {
 }
 
 VOLCANO_EDITOR_END

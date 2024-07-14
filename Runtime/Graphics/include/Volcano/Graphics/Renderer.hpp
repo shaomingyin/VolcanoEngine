@@ -18,7 +18,19 @@ public:
     Renderer(QObject* parent = nullptr);
 
 public:
-    bool init();
+    bool init(int width, int height);
+    bool isInited() const;
+
+    const QSize size() const {
+        return size_;
+    }
+
+protected:
+    virtual bool doInit(int width, int height);
+
+private:
+    bool is_inited_;
+    QSize size_;
 };
 
 VOLCANO_GRAPHICS_END

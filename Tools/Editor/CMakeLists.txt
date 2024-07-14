@@ -22,7 +22,6 @@ add_qtc_plugin(Editor
         ${CMAKE_CURRENT_SOURCE_DIR}/include
         ${CMAKE_CURRENT_BINARY_DIR}/include
     PLUGIN_DEPENDS
-        QtCreator::CMakeProjectManager
         QtCreator::ProjectExplorer
         QtCreator::Core
     DEPENDS

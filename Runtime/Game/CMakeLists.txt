@@ -16,4 +16,5 @@ volcano_define_shared_library(Game
         Base
     PUBLIC_QT_MODULES
         Qml
+        Quick
     )

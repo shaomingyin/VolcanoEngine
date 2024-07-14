@@ -18,20 +18,14 @@ public:
     Context(QObject* parent = nullptr);
 
 public:
-    ResourceManager& resourceManager() {
-        return resource_manager_;
-    }
+    virtual ResourceManager& resourceManager() = 0;
+    virtual bool beginView() = 0;
+    virtual void endView() = 0;
+    virtual Graphics::View& view() = 0;
 
-    Graphics::View& view() {
-        return view_;
-    }
-
+public:
     void attachToQmlEngine(QQmlEngine& qml_engine);
     static Context* fromQmlEngine(const QQmlEngine& qml_engine);
-
-private:
-    ResourceManager resource_manager_;
-    Graphics::View view_;
 };
 
 VOLCANO_GAME_END
