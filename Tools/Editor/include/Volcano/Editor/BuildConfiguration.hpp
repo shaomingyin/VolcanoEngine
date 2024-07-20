@@ -13,7 +13,10 @@ class BuildConfiguration: public ProjectExplorer::BuildConfiguration {
     Q_OBJECT
 
 public:
-    BuildConfiguration(ProjectExplorer::Target* target);
+    static constexpr const char Id[] = "Volcano.Editor.BuildConfiguration";
+
+public:
+    BuildConfiguration(ProjectExplorer::Target* target, Utils::Id id);
 };
 
 VOLCANO_EDITOR_END

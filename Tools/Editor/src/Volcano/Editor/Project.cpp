@@ -15,7 +15,7 @@ VOLCANO_EDITOR_BEGIN
 Project::Project(const Utils::FilePath &filename)
     : ProjectExplorer::Project(VOLCANO_EDITOR_MIME_PROJECT_FILE, filename)
     , version_(0, 0, 0) {
-    setDisplayName("Volcano Project");
+    setDisplayName("Untitled");
     setBuildSystemCreator([](ProjectExplorer::Target*){
         return nullptr;
     });
@@ -43,9 +43,16 @@ void Project::load() {
     auto root = document.object();
     parseVersion(root, "version", version_, { 0, 0, 0 });
     parseVersion(root, "engine_version", engine_version_, { 0, 0, 0 });
+
+    auto name_it = root.find("name");
+    if (name_it != root.end()) {
+        setDisplayName(name_it->toString());
+    }
+
     if (!loadGame(root)) {
         return;
     }
+
     loadExtraProjects(root);
 }
 
@@ -54,9 +61,11 @@ bool Project::loadGame(const QJsonObject& obj) {
     if (it == obj.end()) {
         return false;
     }
+
     if (!it->isObject()) {
         return false;
     }
+
     return true;
 }
 

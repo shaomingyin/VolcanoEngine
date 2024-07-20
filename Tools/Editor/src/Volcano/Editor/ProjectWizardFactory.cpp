@@ -6,21 +6,23 @@
 #include <QJsonArray>
 #include <QJsonValue>
 
+#include <projectexplorer/projectexplorer.h>
 #include <projectexplorer/projectexplorericons.h>
 #include <projectexplorer/projectexplorerconstants.h>
 #include <cmakeprojectmanager/cmakeprojectconstants.h>
 
+#include <Volcano/Editor/Project.hpp>
 #include <Volcano/Editor/ProjectWizard.hpp>
 #include <Volcano/Editor/ProjectWizardFactory.hpp>
 
 VOLCANO_EDITOR_BEGIN
 
 ProjectWizardFactory::ProjectWizardFactory()
-    /*: icon_("qrc:/icons/logo.png")*/ {
-    //setIcon(icon_);
-    setSupportedProjectTypes({ "volcano" });
+    : icon_(":/icons/logo.png") {
+    setId("Z.VolcanoProjectFile");
+    setSupportedProjectTypes({ Project::Id });
+    setIcon(icon_);
     setDisplayName("Volcano Project");
-    setId("V.VolcanoProjectFile");
     setDescription("XXX.");
     setCategory(ProjectExplorer::Constants::QT_PROJECT_WIZARD_CATEGORY);
     setDisplayCategory(ProjectExplorer::Constants::QT_PROJECT_WIZARD_CATEGORY_DISPLAY);
@@ -28,16 +30,11 @@ ProjectWizardFactory::ProjectWizardFactory()
 }
 
 Core::BaseFileWizard *ProjectWizardFactory::create(QWidget *parent, const Core::WizardDialogParameters &parameters) const {
-#if 0
-    return new class ProjectWizard(this, parent);
-#else
-    return nullptr;
-#endif
+    return new class ProjectWizard(this, parent, parameters);
 }
 
 Core::GeneratedFiles ProjectWizardFactory::generateFiles(const QWizard *wizard, QString *error_message) const {
     const class ProjectWizard* project_wizard = qobject_cast<const class ProjectWizard*>(wizard);
-#if 0
     QJsonObject scene;
     scene["graivty"] = QJsonArray({0.0f, -9.8f, 0.0f});
 
@@ -63,9 +60,23 @@ Core::GeneratedFiles ProjectWizardFactory::generateFiles(const QWizard *wizard, 
     project_file.setAttributes(Core::GeneratedFile::OpenProjectAttribute);
 
     return { project_file };
-#else
-    return {};
-#endif
+}
+
+bool ProjectWizardFactory::postGenerateFiles(const QWizard* wizard, const Core::GeneratedFiles& list, QString* errorMessage) const
+{
+    for (const auto& file: list) {
+        if (file.attributes() & Core::GeneratedFile::OpenProjectAttribute) {
+            if (file.filePath().suffix() == "vpf") {
+                auto result = ProjectExplorer::ProjectExplorerPlugin::openProject(file.filePath());
+                if (!result) {
+                    if (errorMessage)
+                        *errorMessage = result.errorMessage();
+                    return false;
+                }
+            }
+        }
+    }
+    return BaseFileWizardFactory::postGenerateFiles(wizard, list, errorMessage);
 }
 
 VOLCANO_EDITOR_END

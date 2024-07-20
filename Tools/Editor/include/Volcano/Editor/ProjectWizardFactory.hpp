@@ -17,14 +17,14 @@ class ProjectWizardFactory: public Core::BaseFileWizardFactory {
 
 public:
     ProjectWizardFactory();
-    ~ProjectWizardFactory() override = default;
 
-public:
-    Core::BaseFileWizard *create(QWidget *parent, const Core::WizardDialogParameters &parameters) const override;
-    Core::GeneratedFiles generateFiles(const QWizard *wizard, QString *error_message) const override;
+protected:
+    Core::BaseFileWizard* create(QWidget* parent, const Core::WizardDialogParameters& parameters) const override;
+    Core::GeneratedFiles generateFiles(const QWizard* wizard, QString* error_message) const override;
+    bool postGenerateFiles(const QWizard *wizard, const Core::GeneratedFiles& list, QString* errorMessage) const override;
 
 private:
-    //QIcon icon_;
+    QIcon icon_;
 };
 
 VOLCANO_EDITOR_END

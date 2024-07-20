@@ -12,10 +12,6 @@ VOLCANO_EDITOR_BEGIN
 class BuildConfigurationFactory: public ProjectExplorer::BuildConfigurationFactory {
 public:
     BuildConfigurationFactory();
-
-private:
-    QList<ProjectExplorer::BuildInfo> generator(
-        const ProjectExplorer::Kit*, const Utils::FilePath&, bool);
 };
 
 VOLCANO_EDITOR_END

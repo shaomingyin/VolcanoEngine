@@ -14,7 +14,8 @@ class ProjectWizard: public ProjectExplorer::BaseProjectWizardDialog {
     Q_OBJECT
 
 public:
-    ProjectWizard(const Core::BaseFileWizardFactory *factory, QWidget *parent = nullptr);
+    ProjectWizard(const Core::BaseFileWizardFactory *factory, QWidget *parent,
+                  const Core::WizardDialogParameters& parameters);
 };
 
 VOLCANO_EDITOR_END

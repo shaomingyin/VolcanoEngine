@@ -19,6 +19,10 @@ class Project: public ProjectExplorer::Project {
     Q_OBJECT
 
 public:
+    static constexpr const char Id[] = "Volcano.Editor.Project";
+    static constexpr const char MimeType[] = VOLCANO_EDITOR_MIME_PROJECT_FILE;
+
+public:
     Project(const Utils::FilePath &filename);
 
 public:
