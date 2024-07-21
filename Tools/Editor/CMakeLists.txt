@@ -5,7 +5,7 @@ if(NOT VOLCANO_EDITOR)
 endif()
 
 find_package(Qt6 COMPONENTS Widgets REQUIRED)
-find_package(QtCreator COMPONENTS Core ProjectExplorer REQUIRED)
+find_package(QtCreator COMPONENTS Utils ExtensionSystem Tasking Core ProjectExplorer REQUIRED)
 
 set(VOLCANO_EDITOR_MIME_PROJECT_FILE "application/volcano.project")
 set(VOLCANO_EDITOR_MIME_SCENE_FILE "application/volcano.scene")
@@ -22,6 +22,10 @@ configure_file(
 
 volcano_glob_sources(EDITOR_SOURCES ${CMAKE_CURRENT_SOURCE_DIR})
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${EDITOR_SOURCES})
+
+if(MSVC)
+    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreadedDebugDLL")
+endif()
 
 add_qtc_plugin(Editor
     PLUGIN_NAME

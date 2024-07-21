@@ -18,10 +18,10 @@
 VOLCANO_EDITOR_BEGIN
 
 ProjectWizardFactory::ProjectWizardFactory()
-    : icon_(":/icons/logo.png") {
+    /*: icon_(":/icons/logo.png")*/ {
     setId("Z.VolcanoProjectFile");
     setSupportedProjectTypes({ Project::Id });
-    setIcon(icon_);
+    //setIcon(icon_);
     setDisplayName("Volcano Project");
     setDescription("XXX.");
     setCategory(ProjectExplorer::Constants::QT_PROJECT_WIZARD_CATEGORY);
