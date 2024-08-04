@@ -8,6 +8,8 @@
 #include <QtGlobal>
 #include <QtConcurrent>
 
+#include <QVersionNumber>
+
 #include <Eigen/Eigen>
 
 #include <Volcano/Config.hpp>
@@ -36,5 +38,7 @@ using TimePoint = Clock::time_point;
 using Duration = Clock::duration;
 
 VOLCANO_END
+
+inline const QVersionNumber volcanoVersion(VOLCANO_VERSION_MAJOR, VOLCANO_VERSION_MINOR, VOLCANO_VERSION_PATCH);
 
 #endif // VOLCANO_COMMON_HPP

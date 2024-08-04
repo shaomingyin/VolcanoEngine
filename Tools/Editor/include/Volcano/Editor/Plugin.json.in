@@ -5,26 +5,19 @@
     "Vendor": "Mingyin.Shao",
     "Copyright" : "(C) XXX",
     "Dependencies": [
-        { "Name": "Core", "Version": "13.0.1" },
-        { "Name": "ProjectExplorer", "Version": "13.0.1" },
-        { "Name": "GLSLEditor", "Version": "13.0.1" },
-        { "Name": "QmlJsEditor", "Version": "13.0.1" },
-        { "Name": "QmlJsTools", "Version": "13.0.1" },
-        { "Name": "QmlPreview", "Version": "13.0.1" },
-        { "Name": "QmlProfiler", "Version": "13.0.1" },
-        { "Name": "ImageViewer", "Version": "13.0.1" }
+        ${EDITOR_PLUGIN_DEPENDS_JSON}
     ],
     "Mimetypes" : [
         "<?xml version='1.0'?>",
         "<mime-info xmlns='http://www.freedesktop.org/standards/shared-mime-info'>",
         "    <mime-type type='${VOLCANO_EDITOR_MIME_PROJECT_FILE}'>",
         "        <sub-class-of type='application/json'/>",
-        "        <comment>Volcano Project file</comment>",
+        "        <comment>Volcano project file</comment>",
         "        <glob pattern='*.vpf'/>",
         "    </mime-type>",
         "    <mime-type type='${VOLCANO_EDITOR_MIME_SCENE_FILE}'>",
         "        <sub-class-of type='application/json'/>",
-        "        <comment>Volcano Scene file</comment>",
+        "        <comment>Volcano scene file</comment>",
         "        <glob pattern='*.vsf'/>",
         "    </mime-type>",
         "</mime-info>"

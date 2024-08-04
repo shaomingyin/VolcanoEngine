@@ -24,7 +24,7 @@ protected:
     bool postGenerateFiles(const QWizard *wizard, const Core::GeneratedFiles& list, QString* errorMessage) const override;
 
 private:
-    //QIcon icon_;
+    QIcon icon_;
 };
 
 VOLCANO_EDITOR_END
