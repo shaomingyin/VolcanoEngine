@@ -1,5 +1,5 @@
 
-volcano_add_shared_library(Sound
+volcano_add_static_library(Sound
     OUTPUT_NAME
         VolcanoSound
     PUBLIC_INCLUDE_DIRECTORIES

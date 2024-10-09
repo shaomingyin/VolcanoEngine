@@ -30,3 +30,7 @@
 *.exe
 *.out
 *.app
+
+# Volcano
+/build*
+/CMake*Presets.json

@@ -1,5 +1,5 @@
 
-volcano_add_shared_library(OpenGL
+volcano_add_static_library(OpenGL
     OUTPUT_NAME
         VolcanoGraphicsOpenGL
     PUBLIC_INCLUDE_DIRECTORIES

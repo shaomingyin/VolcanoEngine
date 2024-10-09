@@ -40,11 +40,15 @@ static int main(const Options& options) {
 
 VOLCANO_LAUNCHER_END
 
-int main(int argc, char* argv[]) {
-    Volcano::Launcher::Options options;
-
+static bool parseCommandLine(Volcano::Launcher::Options& output, int argc, char* argv[]) {
     argh::parser cmdline(argv);
     // TODO
+}
 
+int main(int argc, char* argv[]) {
+    Volcano::Launcher::Options options;
+    if (!parseCommandLine(options, argc, argv)) {
+        return EXIT_FAILURE;
+    }
     return Volcano::Launcher::main(options);
 }

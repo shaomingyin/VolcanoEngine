@@ -1,5 +1,5 @@
 
-volcano_add_shared_library(Game
+volcano_add_static_library(Game
     OUTPUT_NAME
         VolcanoGame
     PUBLIC_INCLUDE_DIRECTORIES
@@ -10,8 +10,22 @@ volcano_add_shared_library(Game
         include/Volcano/Game/Common.h
         include/Volcano/Game/Object.h
         include/Volcano/Game/World.h
+        include/Volcano/Game/Actor.h
+        include/Volcano/Game/Entity.h
+        include/Volcano/Game/Component.h
+        include/Volcano/Game/Light.h
+        include/Volcano/Game/DirectionalLight.h
+        include/Volcano/Game/PointLight.h
+        include/Volcano/Game/SpotLight.h
         src/Volcano/Game/Object.cpp
         src/Volcano/Game/World.cpp
+        src/Volcano/Game/Actor.cpp
+        src/Volcano/Game/Entity.cpp
+        src/Volcano/Game/Component.cpp
+        src/Volcano/Game/Light.cpp
+        src/Volcano/Game/DirectionalLight.cpp
+        src/Volcano/Game/PointLight.cpp
+        src/Volcano/Game/SpotLight.cpp
     PUBLIC_LINK_LIBRARIES
         Base
     PUBLIC_HEADERS

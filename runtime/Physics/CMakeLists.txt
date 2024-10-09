@@ -1,5 +1,5 @@
 
-volcano_add_shared_library(Physics
+volcano_add_static_library(Physics
     OUTPUT_NAME
         VolcanoPhysics
     PUBLIC_INCLUDE_DIRECTORIES

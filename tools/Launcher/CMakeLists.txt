@@ -13,8 +13,8 @@ volcano_add_executable(Launcher
         src/Volcano/Launcher/Main.cpp
     PUBLIC_LINK_LIBRARIES
         Game
-        GraphicsOpenGL
-        PhysicsBullet
+        OpenGL
+        Bullet
         Sound
     PUBLIC_LINK_PACKAGES
         argh argh

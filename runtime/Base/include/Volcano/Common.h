@@ -12,6 +12,16 @@
 
 #include <Volcano/Config.h>
 
+#ifdef __cplusplus
+#   define VOLCANO_C extern "C"
+#   define VOLCANO_C_BEGIN extern "C" {
+#   define VOLCANO_C_END }
+#else
+#   define VOLCANO_C
+#   define VOLCANO_C_BEGIN
+#   define VOLCANO_C_END
+#endif
+
 #ifdef VOLCANO_DEBUG
 #   include <cassert>
 #   define VOLCANO_ASSERT(expr) assert(expr)
@@ -20,16 +30,23 @@
 #endif
 
 #if defined(__GNUC__)
+#   define VOLCANO_EXPORT
+#   define VOLCANO_IMPORT
 #   define VOLCANO_FORCE_INLINE __inline __attribute__ ((__always_inline__))
 #   define VOLCANO_LIKELY(expr) __builtin_expect((expr), 1)
 #   define VOLCANO_UNLIKELY(expr) __builtin_expect((expr), 0)
 #elif defined(_MSC_VER)
+#   define VOLCANO_EXPORT __declspec(dllexport)
+#   define VOLCANO_IMPORT __declspec(dllimport)
 #   define VOLCANO_FORCE_INLINE __forceinline
 #   define VOLCANO_LIKELY(expr) (expr)
 #   define VOLCANO_UNLIKELY(expr) (expr)
 #else
 #   error Unknown compiler.
 #endif
+
+#define VOLCANO_STRIZE(x) VOLCANO_STRIZE_(x)
+#define VOLCANO_STRIZE_(x) #x
 
 #define VOLCANO_BEGIN namespace Volcano {
 #define VOLCANO_END }

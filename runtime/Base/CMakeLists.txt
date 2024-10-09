@@ -1,5 +1,5 @@
 
-volcano_add_shared_library(Base
+volcano_add_static_library(Base
     OUTPUT_NAME
         VolcanoBase
     PUBLIC_INCLUDE_DIRECTORIES
@@ -8,8 +8,13 @@ volcano_add_shared_library(Base
     PRIVATE_SOURCES
         include/Volcano/Config.h.in
         include/Volcano/Common.h
+        include/Volcano/Plugin.h
+        include/Volcano/PluginHolder.h
+        include/Volcano/PluginManager.h
         include/Volcano/ScopeGuard.h
         include/Volcano/VersionNumber.h
+        src/Volcano/PluginHolder.cpp
+        src/Volcano/PluginManager.cpp
         src/Volcano/VersionNumber.cpp
     PUBLIC_LINK_PACKAGES
         Eigen3 Eigen3::Eigen

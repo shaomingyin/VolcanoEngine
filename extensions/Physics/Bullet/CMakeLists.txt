@@ -1,5 +1,5 @@
 
-volcano_add_shared_library(Bullet
+volcano_add_static_library(Bullet
     OUTPUT_NAME
         VolcanoPhysicsBullet
     PUBLIC_INCLUDE_DIRECTORIES
