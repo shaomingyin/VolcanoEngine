@@ -6,25 +6,52 @@
 #include <string>
 
 #include <Volcano/Game/Common.h>
+#include <Volcano/Game/Context.h>
 
 VOLCANO_GAME_BEGIN
 
 class Object {
 public:
-	Object();
+	Object(Context& context);
 	virtual ~Object();
 
 public:
+	Context& context() {
+		return context_;
+	}
+
+	const Context& context() const {
+		return context_;
+	}
+
+	entt::registry& registry() {
+		return context_.registry();
+	}
+
+	const entt::registry& registry() const {
+		return context_.registry();
+	}
+
+	entt::entity entity() const {
+		return entity_;
+	}
+
 	const std::string& objectName() const {
-		return object_name_;
+		return registry().get<Data>(entity_).object_name;
 	}
 
 	void setObjectName(const std::string& v) {
-		object_name_ = v;
+		registry().patch<Data>(entity_, [&v](auto& d) { d.object_name = v; });
 	}
 
 private:
-	std::string object_name_;
+	struct Data {
+		std::string object_name;
+	};
+
+private:
+	Context& context_;
+	entt::entity entity_;
 };
 
 VOLCANO_GAME_END

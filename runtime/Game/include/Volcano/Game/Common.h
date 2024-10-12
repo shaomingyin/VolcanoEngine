@@ -3,6 +3,10 @@
 #ifndef VOLCANO_GAME_COMMON_H
 #define VOLCANO_GAME_COMMON_H
 
+#include <type_traits>
+
+#include <entt/entt.hpp>
+
 #include <Volcano/Common.h>
 #include <Volcano/Game/Config.h>
 

@@ -4,7 +4,8 @@
 
 VOLCANO_GAME_BEGIN
 
-Actor::Actor() {
+Actor::Actor(Context& context)
+    : Object(context) {
 }
 
 Actor::~Actor() {

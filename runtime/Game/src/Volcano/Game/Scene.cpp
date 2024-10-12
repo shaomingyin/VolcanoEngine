@@ -4,8 +4,9 @@
 
 VOLCANO_GAME_BEGIN
 
-Scene::Scene()
-    : gravity_(0.0f, -9.8f, 0.0f) {
+Scene::Scene(Context& context)
+    : Object(context)
+    , gravity_(0.0f, -9.8f, 0.0f) {
 }
 
 Scene::~Scene() {

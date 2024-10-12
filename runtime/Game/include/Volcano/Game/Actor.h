@@ -10,7 +10,7 @@ VOLCANO_GAME_BEGIN
 
 class Actor: public Object {
 public:
-	Actor();
+	Actor(Context& context);
 	~Actor() override;
 };
 

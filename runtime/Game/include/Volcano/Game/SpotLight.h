@@ -4,13 +4,13 @@
 #define VOLCANO_GAME_SPOTLIGHT_H
 
 #include <Volcano/Game/Common.h>
-#include <Volcano/Game/Light.h>
+#include <Volcano/Game/DirectionalLight.h>
 
 VOLCANO_GAME_BEGIN
 
-class SpotLight: public Light {
+class SpotLight: public DirectionalLight {
 public:
-	SpotLight();
+	SpotLight(Context& context);
 	~SpotLight() override;
 };
 

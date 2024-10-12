@@ -14,7 +14,7 @@ VOLCANO_GAME_BEGIN
 
 class Scene: public Object {
 public:
-	Scene();
+	Scene(Context& context);
 	~Scene() override;
 
 public:

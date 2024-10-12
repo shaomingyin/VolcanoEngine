@@ -4,7 +4,8 @@
 
 VOLCANO_GAME_BEGIN
 
-Component::Component() {
+Component::Component(Context& context)
+    : Object(context) {
 }
 
 Component::~Component() {

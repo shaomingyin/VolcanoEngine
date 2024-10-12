@@ -33,6 +33,7 @@ volcano_add_static_library(Game
     PUBLIC_LINK_LIBRARIES
         Base
     PUBLIC_LINK_PACKAGES
+        EnTT EnTT::EnTT
         Bullet Bullet::Bullet
     PUBLIC_HEADERS
         include/Volcano/Game/Common.h

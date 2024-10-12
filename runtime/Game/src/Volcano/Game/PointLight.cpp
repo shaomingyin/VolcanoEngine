@@ -4,7 +4,8 @@
 
 VOLCANO_GAME_BEGIN
 
-PointLight::PointLight() {
+PointLight::PointLight(Context& context)
+    : Light(context) {
 }
 
 PointLight::~PointLight() {

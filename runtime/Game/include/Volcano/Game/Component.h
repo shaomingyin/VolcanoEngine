@@ -10,7 +10,7 @@ VOLCANO_GAME_BEGIN
 
 class Component: public Object {
 public:
-	Component();
+	Component(Context& context);
 	~Component() override;
 };
 

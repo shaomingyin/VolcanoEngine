@@ -4,7 +4,8 @@
 
 VOLCANO_GAME_BEGIN
 
-Light::Light() {
+Light::Light(Context& context)
+    : Actor(context) {
 }
 
 Light::~Light() {

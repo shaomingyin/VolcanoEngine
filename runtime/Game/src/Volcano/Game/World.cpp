@@ -4,7 +4,8 @@
 
 VOLCANO_GAME_BEGIN
 
-World::World() {
+World::World(Context& context)
+    : Object(context) {
 }
 
 World::~World() {

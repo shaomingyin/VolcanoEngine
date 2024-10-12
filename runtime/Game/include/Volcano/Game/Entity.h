@@ -10,7 +10,7 @@ VOLCANO_GAME_BEGIN
 
 class Entity: public Actor {
 public:
-	Entity();
+	Entity(Context& context);
 	~Entity() override;
 };
 

@@ -4,7 +4,8 @@
 
 VOLCANO_GAME_BEGIN
 
-DirectionalLight::DirectionalLight() {
+DirectionalLight::DirectionalLight(Context& context)
+    : Light(context) {
 }
 
 DirectionalLight::~DirectionalLight() {

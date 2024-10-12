@@ -11,6 +11,21 @@ class Context {
 public:
     Context();
     virtual ~Context();
+
+public:
+    entt::registry& registry() {
+        return registry_;
+    }
+
+    const entt::registry& registry() const {
+        return registry_;
+    }
+
+protected:
+    
+
+private:
+    entt::registry registry_;
 };
 
 VOLCANO_GAME_END

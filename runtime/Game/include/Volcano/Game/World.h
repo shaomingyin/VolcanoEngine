@@ -10,7 +10,7 @@ VOLCANO_GAME_BEGIN
 
 class World : public Object {
 public:
-	World();
+	World(Context& context);
 	~World() override;
 };
 
