@@ -8,8 +8,10 @@ volcano_add_static_library(Game
     PRIVATE_SOURCES
         include/Volcano/Game/Config.h.in
         include/Volcano/Game/Common.h
+        include/Volcano/Game/Context.h
         include/Volcano/Game/Object.h
         include/Volcano/Game/World.h
+        include/Volcano/Game/Scene.h
         include/Volcano/Game/Actor.h
         include/Volcano/Game/Entity.h
         include/Volcano/Game/Component.h
@@ -17,8 +19,10 @@ volcano_add_static_library(Game
         include/Volcano/Game/DirectionalLight.h
         include/Volcano/Game/PointLight.h
         include/Volcano/Game/SpotLight.h
+        src/Volcano/Game/Context.cpp
         src/Volcano/Game/Object.cpp
         src/Volcano/Game/World.cpp
+        src/Volcano/Game/Scene.cpp
         src/Volcano/Game/Actor.cpp
         src/Volcano/Game/Entity.cpp
         src/Volcano/Game/Component.cpp
@@ -28,6 +32,8 @@ volcano_add_static_library(Game
         src/Volcano/Game/SpotLight.cpp
     PUBLIC_LINK_LIBRARIES
         Base
+    PUBLIC_LINK_PACKAGES
+        Bullet Bullet::Bullet
     PUBLIC_HEADERS
         include/Volcano/Game/Common.h
         include/Volcano/Game/Object.h

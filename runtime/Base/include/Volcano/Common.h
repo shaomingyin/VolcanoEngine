@@ -53,6 +53,10 @@
 
 VOLCANO_BEGIN
 
+using Clock = std::chrono::steady_clock;
+using Duration = Clock::duration;
+using TimePoint = Clock::time_point;
+
 template <typename... Args>
 void log(spdlog::level::level_enum level, spdlog::format_string_t<Args...> fmt, Args&&... args) {
     spdlog::log(level, fmt, std::forward<Args>(args)...);

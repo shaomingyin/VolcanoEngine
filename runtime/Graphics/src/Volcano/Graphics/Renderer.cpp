@@ -5,22 +5,24 @@
 VOLCANO_GRAPHICS_BEGIN
 
 Renderer::Renderer()
-    : driver_(nullptr)
-    , widht_(0)
+    : widht_(0)
     , height_(0) {
 }
 
 Renderer::~Renderer() {
 }
 
-bool Renderer::init(int width, int height) {
+bool Renderer::init(GL3WGetProcAddressProc gl_address_proc, int width, int height) {
+    VOLCANO_ASSERT(gl_address_proc != nullptr);
+
+    auto ret = gl3wInit(&gl3w_, gl_address_proc);
+    if (ret != GL3W_OK) {
+        return false;
+    }
+
     widht_ = width;
     height_ = height;
-    return true;
-}
 
-bool Renderer::setDriver(Driver* p) {
-    driver_ = p;
     return true;
 }
 
@@ -32,7 +34,7 @@ void Renderer::end() {
 }
 
 void Renderer::update(std::chrono::steady_clock::duration elapsed) {
-    VOLCANO_ASSERT(driver_ != nullptr);
+    gl3wProcs = &gl3w_;
 }
 
 VOLCANO_GRAPHICS_END

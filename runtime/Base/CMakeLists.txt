@@ -19,7 +19,6 @@ volcano_add_static_library(Base
     PUBLIC_LINK_PACKAGES
         Eigen3 Eigen3::Eigen
         spdlog spdlog::spdlog
-        libuv uv
     PUBLIC_HEADERS
         include/Volcano/Common.h
         include/Volcano/ScopeGuard.h

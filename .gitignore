@@ -32,5 +32,6 @@
 *.app
 
 # Volcano
+/.idea*
 /build*
 /CMake*Presets.json

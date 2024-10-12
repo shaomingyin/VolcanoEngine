@@ -4,7 +4,6 @@
 #define VOLCANO_GRAPHICS_RENDERER_H
 
 #include <Volcano/Graphics/Common.h>
-#include <Volcano/Graphics/Driver.h>
 #include <Volcano/Graphics/View.h>
 
 VOLCANO_GRAPHICS_BEGIN
@@ -15,13 +14,7 @@ public:
     virtual ~Renderer();
 
 public:
-    virtual bool init(int width, int height);
-
-    Driver* driver() {
-        return driver_;
-    }
-
-    bool setDriver(Driver* p);
+    virtual bool init(GL3WGetProcAddressProc gl_address_proc, int width, int height);
 
 public:
     bool begin();
@@ -29,9 +22,9 @@ public:
     void update(std::chrono::steady_clock::duration elapsed);
 
 private:
+    GL3WProcs gl3w_;
     int widht_;
     int height_;
-    Driver* driver_;
 };
 
 VOLCANO_GRAPHICS_END

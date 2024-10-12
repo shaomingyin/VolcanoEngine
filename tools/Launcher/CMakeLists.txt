@@ -8,15 +8,11 @@ volcano_add_executable(Launcher
     PRIVATE_SOURCES
         include/Volcano/Launcher/Config.h.in
         include/Volcano/Launcher/Common.h
-        include/Volcano/Launcher/MainWindow.h
-        src/Volcano/Launcher/MainWindow.cpp
+        include/Volcano/Launcher/Application.h
+        src/Volcano/Launcher/Application.cpp
         src/Volcano/Launcher/Main.cpp
     PUBLIC_LINK_LIBRARIES
-        Game
-        OpenGL
-        Bullet
-        Sound
+        System
     PUBLIC_LINK_PACKAGES
         argh argh
-        glfw3 glfw
 )

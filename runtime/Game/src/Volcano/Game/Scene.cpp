@@ -1,19 +1,27 @@
 //
 //
-#ifndef VOLCANO_GAME_WORLD_H
-#define VOLCANO_GAME_WORLD_H
-
-#include <Volcano/Game/Common.h>
-#include <Volcano/Game/Object.h>
+#include <Volcano/Game/Scene.h>
 
 VOLCANO_GAME_BEGIN
 
-class World : public Object {
-public:
-	World();
-	~World() override;
-};
+Scene::Scene()
+    : gravity_(0.0f, -9.8f, 0.0f) {
+}
+
+Scene::~Scene() {
+}
+
+void Scene::enablePhysics() {
+}
+
+void Scene::disablePhysics() {
+}
+
+void Scene::setGravity(Eigen::Vector3f v) {
+    gravity_ = v;
+    if (bt_dynamics_world_) {
+        bt_dynamics_world_->setGravity(btVector3(v.x(), v.y(), v.z()));
+    }
+}
 
 VOLCANO_GAME_END
-
-#endif // VOLCANO_GAME_WORLD_H
