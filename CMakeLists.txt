@@ -12,10 +12,12 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_INTERPROCEDURAL_OPTIMIZATION ON)
 
 set(VOLCANO_DEBUG ON CACHE BOOL "Enable debug functions.")
+set(VOLCANO_PROFILE ON CACHE BOOL "Enable profile functions.")
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 include(Volcano/Utils)
 
 add_subdirectory(runtime)
 add_subdirectory(tools)
+add_subdirectory(examples)
 add_subdirectory(documents)

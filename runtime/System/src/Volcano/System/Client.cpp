@@ -5,78 +5,111 @@
 
 VOLCANO_SYSTEM_BEGIN
 
-Client::Client()
-    : window_(nullptr) {
+Client::Client(ServerBase& server_base)
+    : server_base_(server_base)
+    , flags_(0)
+    , window_(nullptr)
+    , window_id_(0)
+    , gl_context_(nullptr) {
 }
 
 Client::~Client() {
     if (window_ != nullptr) {
-        glfwMakeContextCurrent(window_);
-        graphics_renderer_.reset();
-        glfwDestroyWindow(window_);
+        if (gl_context_ != nullptr) {
+            SDL_GL_DeleteContext(gl_context_);
+        }
+        SDL_DestroyWindow(window_);
     }
 }
 
 bool Client::init(const std::string& title, int width, int height) {
-    VOLCANO_ASSERT(window_ != nullptr);
+    VOLCANO_ASSERT(window_ == nullptr);
+    VOLCANO_ASSERT(gl_context_ == nullptr);
 
-    //glfwWindowHint()
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+    SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
+    SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
+    SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
+    SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
+    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
 
-    window_ = glfwCreateWindow(width, height, title.c_str(), nullptr, nullptr);
+    window_ = SDL_CreateWindow(title.c_str(),
+        SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height,
+        SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI);
     if (window_ == nullptr) {
         return false;
     }
 
     auto window_guard = scopeGuard([this] {
-        glfwDestroyWindow(window_);
+        SDL_DestroyWindow(window_);
         window_ = nullptr;
     });
 
-    glfwShowWindow(window_);
-    glfwMakeContextCurrent(window_);
-
-    auto graphics_renderer = std::make_unique<Graphics::Renderer>();
-    if (!graphics_renderer->init(glfwGetProcAddress, width, height)) {
+    gl_context_ = SDL_GL_CreateContext(window_);
+    if (gl_context_ == nullptr) {
         return false;
     }
 
-    graphics_renderer_ = std::move(graphics_renderer);
+    auto gl_context_guard = scopeGuard([this] {
+        SDL_GL_DeleteContext(gl_context_);
+        gl_context_ = nullptr;
+    });
 
-    frame_count_ = 0;
-    frame_count_per_second_ = 0;
+    window_id_ = SDL_GetWindowID(window_);
+    SDL_ShowWindow(window_);
+    SDL_GL_MakeCurrent(window_, gl_context_);
 
+    if (!graphics_renderer_.init(width, height)) {
+        return false;
+    }
+
+    flags_ = FlagWindowVisible;
+
+    gl_context_guard.dismiss();
     window_guard.dismiss();
 
     return true;
 }
 
-bool Client::shouldQuit() {
+void Client::feedEvent(const SDL_Event& evt) {
     VOLCANO_ASSERT(window_ != nullptr);
-    return glfwWindowShouldClose(window_);
-}
 
-void Client::update(Duration elapsed) {
-    VOLCANO_ASSERT(window_ != nullptr);
-    VOLCANO_ASSERT(graphics_renderer_);
-
-    if (VOLCANO_UNLIKELY(glfwWindowShouldClose(window_))) {
+    if (evt.type != SDL_WINDOWEVENT || evt.window.windowID != window_id_) {
         return;
     }
 
+    switch (evt.window.event) {
+    case SDL_WINDOWEVENT_SHOWN:
+        flags_ |= FlagWindowVisible;
+        break;
+    case SDL_WINDOWEVENT_HIDDEN:
+        flags_ &= ~FlagWindowVisible;
+        break;
+    case SDL_WINDOWEVENT_CLOSE:
+        flags_ |= FlagQuit;
+        break;
+    default:
+        break;
+    }
+}
+
+void Client::update(Duration elapsed) {
+    server_base_.update(elapsed);
+
     frame(elapsed);
 
-    glfwMakeContextCurrent(window_);
-    graphics_renderer_->update(elapsed);
-    glfwSwapBuffers(window_);
+    VOLCANO_ASSERT(window_ != nullptr);
+    VOLCANO_ASSERT(gl_context_ != nullptr);
 
-    frame_count_ += 1;
-
-    auto curr = Clock::now();
-    if ((curr - last_frame_count_time_point_) >= std::chrono::seconds(1)) {
-        frame_count_per_second_ = frame_count_;
-        frame_count_ = 0;
-        last_frame_count_time_point_ = curr;
+    if (VOLCANO_LIKELY(flags_ & FlagWindowVisible) && (SDL_GL_MakeCurrent(window_, gl_context_) == 0)) {
+        graphics_renderer_.update(elapsed);
+        SDL_GL_SwapWindow(window_);
     }
+}
+
+void Client::frame(Duration elapsed) {
 }
 
 VOLCANO_SYSTEM_END

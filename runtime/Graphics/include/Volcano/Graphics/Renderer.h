@@ -14,12 +14,12 @@ public:
     virtual ~Renderer();
 
 public:
-    virtual bool init(GL3WGetProcAddressProc gl_address_proc, int width, int height);
+    virtual bool init(int width, int height);
 
 public:
     bool begin();
     void end();
-    void update(std::chrono::steady_clock::duration elapsed);
+    void update(Duration elapsed);
 
 private:
     GL3WProcs gl3w_;

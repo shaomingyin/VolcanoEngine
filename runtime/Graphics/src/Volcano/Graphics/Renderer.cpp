@@ -12,16 +12,19 @@ Renderer::Renderer()
 Renderer::~Renderer() {
 }
 
-bool Renderer::init(GL3WGetProcAddressProc gl_address_proc, int width, int height) {
-    VOLCANO_ASSERT(gl_address_proc != nullptr);
+bool Renderer::init(int width, int height) {
+    VOLCANO_ASSERT(SDL_GL_GetCurrentContext() != nullptr);
 
-    auto ret = gl3wInit(&gl3w_, gl_address_proc);
+    auto ret = gl3wInit(&gl3w_, GL3WGetProcAddressProc(SDL_GL_GetProcAddress));
     if (ret != GL3W_OK) {
         return false;
     }
 
     widht_ = width;
     height_ = height;
+
+    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+    glViewport(0.0f, 0.0f, width, height);
 
     return true;
 }
@@ -33,8 +36,10 @@ bool Renderer::begin() {
 void Renderer::end() {
 }
 
-void Renderer::update(std::chrono::steady_clock::duration elapsed) {
+void Renderer::update(Duration elapsed) {
     gl3wProcs = &gl3w_;
+
+    glClear(GL_COLOR_BUFFER_BIT);
 }
 
 VOLCANO_GRAPHICS_END

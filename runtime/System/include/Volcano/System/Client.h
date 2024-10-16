@@ -4,43 +4,44 @@
 #define VOLCANO_SYSTEM_CLIENT_H
 
 #include <memory>
-#include <map>
 #include <string>
 
-#include <Volcano/Game/Context.h>
 #include <Volcano/Graphics/Renderer.h>
 #include <Volcano/System/Common.h>
+#include <Volcano/System/ServerBase.h>
 
 VOLCANO_SYSTEM_BEGIN
 
-class Client: public Game::Context {
+class Client {
 public:
-    Client();
+    Client(ServerBase& server_base);
     virtual ~Client();
 
 public:
     virtual bool init(const std::string& title, int width, int height);
-    bool shouldQuit();
+    virtual void feedEvent(const SDL_Event& evt);
     void update(Duration elapsed);
 
-    uint64_t fpsMax() const {
-        return 60; // TODO
-    }
-
-    uint64_t fps() const {
-        return frame_count_per_second_;
+    bool shouldQuit() const {
+        return bool(flags_ & FlagQuit);
     }
 
 protected:
-    virtual void frame(Duration elapsed) = 0;
+    virtual void frame(Duration elapsed);
 
 private:
-    TimePoint last_frame_count_time_point_;
-    uint64_t frame_count_;
-    uint64_t frame_count_per_second_;
-    GLFWwindow* window_;
-    std::unique_ptr<Graphics::Renderer> graphics_renderer_;
-    ENetHost enet_host_;
+    enum {
+        FlagQuit = 0x1,
+        FlagWindowVisible = 0x2
+    };
+
+    ServerBase& server_base_;
+
+    int flags_;
+    SDL_Window* window_;
+    Uint32 window_id_;
+    SDL_GLContext gl_context_;
+    Graphics::Renderer graphics_renderer_;
 };
 
 VOLCANO_SYSTEM_END

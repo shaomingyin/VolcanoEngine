@@ -36,17 +36,17 @@ public:
 		return entity_;
 	}
 
-	const std::string& objectName() const {
-		return registry().get<Data>(entity_).object_name;
+	const std::string& name() const {
+		return registry().get<Data>(entity_).name;
 	}
 
-	void setObjectName(const std::string& v) {
-		registry().patch<Data>(entity_, [&v](auto& d) { d.object_name = v; });
+	void setName(const std::string& v) {
+		registry().patch<Data>(entity_, [&v](auto& d) { d.name = v; });
 	}
 
 private:
 	struct Data {
-		std::string object_name;
+		std::string name;
 	};
 
 private:
