@@ -3,13 +3,15 @@
 #ifndef VOLCANO_SYSTEM_SERVER_H
 #define VOLCANO_SYSTEM_SERVER_H
 
+#include <memory>
+
 #include <Volcano/Game/World.h>
 #include <Volcano/System/Common.h>
-#include <Volcano/System/ServerBase.h>
+#include <Volcano/System/Base.h>
 
 VOLCANO_SYSTEM_BEGIN
 
-class Server: public ServerBase {
+class Server: public Base {
 public:
     Server(int max_clients = 64);
     virtual ~Server();
@@ -25,8 +27,8 @@ protected:
     ENetHost* createHost(const ENetAddress* bind_address) override;
 
 private:
-    Game::Context game_context_;
     int max_clients_;
+    std::unique_ptr<Game::World> game_world_;
 };
 
 VOLCANO_SYSTEM_END

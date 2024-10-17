@@ -6,8 +6,10 @@ volcano_add_static_library(Base
         ${CMAKE_CURRENT_SOURCE_DIR}/include
         ${CMAKE_CURRENT_BINARY_DIR}/include
     PRIVATE_SOURCES
+        include/Volcano/Color.h
         include/Volcano/Config.h.in
         include/Volcano/Common.h
+        include/Volcano/Eigen.h
         include/Volcano/ScopeGuard.h
         include/Volcano/VersionNumber.h
         src/Volcano/VersionNumber.cpp

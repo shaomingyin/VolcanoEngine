@@ -1,20 +1,20 @@
 //
 //
-#include <Volcano/System/ServerBase.h>
+#include <Volcano/System/Base.h>
 
 VOLCANO_SYSTEM_BEGIN
 
-ServerBase::ServerBase()
+Base::Base()
     : host_(nullptr) {
 }
 
-ServerBase::~ServerBase() {
+Base::~Base() {
     if (host_ != nullptr) {
         enet_host_destroy(host_);
     }
 }
 
-bool ServerBase::start(const ENetAddress* address) {
+bool Base::start(const ENetAddress* address) {
     VOLCANO_ASSERT(host_ == nullptr);
     host_ = createHost(address);
     if (host_ == nullptr) {
@@ -23,7 +23,7 @@ bool ServerBase::start(const ENetAddress* address) {
     return true;
 }
 
-void ServerBase::update(Duration elapsed) {
+void Base::update(Duration elapsed) {
     if (host_ != nullptr) {
         pollHost();
     }
@@ -31,7 +31,7 @@ void ServerBase::update(Duration elapsed) {
     frame(elapsed);
 }
 
-void ServerBase::pollHost() {
+void Base::pollHost() {
     VOLCANO_ASSERT(host_ != nullptr);
 
     ENetEvent evt;

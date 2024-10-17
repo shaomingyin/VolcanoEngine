@@ -24,34 +24,47 @@ public:
 		return context_;
 	}
 
-	entt::registry& registry() {
-		return context_.registry();
-	}
-
-	const entt::registry& registry() const {
-		return context_.registry();
-	}
-
-	entt::entity entity() const {
-		return entity_;
-	}
-
 	const std::string& name() const {
-		return registry().get<Data>(entity_).name;
+		return name_;
 	}
 
 	void setName(const std::string& v) {
-		registry().patch<Data>(entity_, [&v](auto& d) { d.name = v; });
+		name_ = v;
+	}
+
+	bool isEnabled() const {
+		return (flags_ & FlagEnabled);
+	}
+
+	void enable() {
+		flags_ |= FlagEnabled;
+	}
+
+	void disable() {
+		flags_ &= ~FlagEnabled;
+	}
+
+	bool isVisible() const {
+		return (flags_ & FlagVisible);
+	}
+
+	void show() {
+		flags_ |= FlagVisible;
+	}
+
+	void hide() {
+		flags_ &= ~FlagVisible;
 	}
 
 private:
-	struct Data {
-		std::string name;
+	enum {
+		FlagEnabled = 0x1,
+		FlagVisible = 0x2
 	};
 
-private:
 	Context& context_;
-	entt::entity entity_;
+	std::string name_;
+	int flags_;
 };
 
 VOLCANO_GAME_END

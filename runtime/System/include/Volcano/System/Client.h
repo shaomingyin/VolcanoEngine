@@ -3,45 +3,25 @@
 #ifndef VOLCANO_SYSTEM_CLIENT_H
 #define VOLCANO_SYSTEM_CLIENT_H
 
-#include <memory>
-#include <string>
-
-#include <Volcano/Graphics/Renderer.h>
 #include <Volcano/System/Common.h>
-#include <Volcano/System/ServerBase.h>
+#include <Volcano/System/Base.h>
 
 VOLCANO_SYSTEM_BEGIN
 
-class Client {
+class Client: public Base {
 public:
-    Client(ServerBase& server_base);
-    virtual ~Client();
-
-public:
-    virtual bool init(const std::string& title, int width, int height);
-    virtual void feedEvent(const SDL_Event& evt);
-    void update(Duration elapsed);
-
-    bool shouldQuit() const {
-        return bool(flags_ & FlagQuit);
-    }
+    Client();
+    ~Client() override;
 
 protected:
-    virtual void frame(Duration elapsed);
+    void frame(Duration elapsed) override;
+    void handlePackage(const ENetPacket& package) override;
+    void handleConnect(ENetPeer& peer) override;
+    void handleDisconnect(ENetPeer& peer) override;
+    ENetHost* createHost(const ENetAddress* address) override;
 
 private:
-    enum {
-        FlagQuit = 0x1,
-        FlagWindowVisible = 0x2
-    };
-
-    ServerBase& server_base_;
-
-    int flags_;
-    SDL_Window* window_;
-    Uint32 window_id_;
-    SDL_GLContext gl_context_;
-    Graphics::Renderer graphics_renderer_;
+    ENetPeer* peer_;
 };
 
 VOLCANO_SYSTEM_END

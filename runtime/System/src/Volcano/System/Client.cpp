@@ -5,111 +5,44 @@
 
 VOLCANO_SYSTEM_BEGIN
 
-Client::Client(ServerBase& server_base)
-    : server_base_(server_base)
-    , flags_(0)
-    , window_(nullptr)
-    , window_id_(0)
-    , gl_context_(nullptr) {
-}
-
-Client::~Client() {
-    if (window_ != nullptr) {
-        if (gl_context_ != nullptr) {
-            SDL_GL_DeleteContext(gl_context_);
-        }
-        SDL_DestroyWindow(window_);
-    }
-}
-
-bool Client::init(const std::string& title, int width, int height) {
-    VOLCANO_ASSERT(window_ == nullptr);
-    VOLCANO_ASSERT(gl_context_ == nullptr);
-
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
-    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-    SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
-    SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
-    SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
-    SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
-    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
-
-    window_ = SDL_CreateWindow(title.c_str(),
-        SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height,
-        SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI);
-    if (window_ == nullptr) {
-        return false;
-    }
-
-    auto window_guard = scopeGuard([this] {
-        SDL_DestroyWindow(window_);
-        window_ = nullptr;
-    });
-
-    gl_context_ = SDL_GL_CreateContext(window_);
-    if (gl_context_ == nullptr) {
-        return false;
-    }
-
-    auto gl_context_guard = scopeGuard([this] {
-        SDL_GL_DeleteContext(gl_context_);
-        gl_context_ = nullptr;
-    });
-
-    window_id_ = SDL_GetWindowID(window_);
-    SDL_ShowWindow(window_);
-    SDL_GL_MakeCurrent(window_, gl_context_);
-
-    if (!graphics_renderer_.init(width, height)) {
-        return false;
-    }
-
-    flags_ = FlagWindowVisible;
-
-    gl_context_guard.dismiss();
-    window_guard.dismiss();
-
-    return true;
-}
-
-void Client::feedEvent(const SDL_Event& evt) {
-    VOLCANO_ASSERT(window_ != nullptr);
-
-    if (evt.type != SDL_WINDOWEVENT || evt.window.windowID != window_id_) {
-        return;
-    }
-
-    switch (evt.window.event) {
-    case SDL_WINDOWEVENT_SHOWN:
-        flags_ |= FlagWindowVisible;
-        break;
-    case SDL_WINDOWEVENT_HIDDEN:
-        flags_ &= ~FlagWindowVisible;
-        break;
-    case SDL_WINDOWEVENT_CLOSE:
-        flags_ |= FlagQuit;
-        break;
-    default:
-        break;
-    }
-}
-
-void Client::update(Duration elapsed) {
-    server_base_.update(elapsed);
-
-    frame(elapsed);
-
-    VOLCANO_ASSERT(window_ != nullptr);
-    VOLCANO_ASSERT(gl_context_ != nullptr);
-
-    if (VOLCANO_LIKELY(flags_ & FlagWindowVisible) && (SDL_GL_MakeCurrent(window_, gl_context_) == 0)) {
-        graphics_renderer_.update(elapsed);
-        SDL_GL_SwapWindow(window_);
-    }
-}
-
 void Client::frame(Duration elapsed) {
+
+}
+
+void Client::handlePackage(const ENetPacket& package) {
+
+}
+
+void Client::handleConnect(ENetPeer& peer) {
+
+}
+
+void Client::handleDisconnect(ENetPeer& peer) {
+
+}
+
+ENetHost* Client::createHost(const ENetAddress* address) {
+    if (address == nullptr) {
+        return nullptr;
+    }
+
+    auto host = enet_host_create(nullptr, 1, 2, 0, 0);
+    if (host == nullptr) {
+        return nullptr;
+    }
+
+    auto host_guard = scopeGuard([host] {
+        enet_host_destroy(host);
+    });
+
+    peer_ = enet_host_connect(host, address, 2, 0);
+    if (peer_ == nullptr) {
+        return nullptr;
+    }
+
+    host_guard.dismiss();
+
+    return host;
 }
 
 VOLCANO_SYSTEM_END

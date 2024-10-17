@@ -4,6 +4,7 @@
 #define VOLCANO_GAME_WORLD_H
 
 #include <Volcano/Game/Common.h>
+#include <Volcano/Game/Scene.h>
 #include <Volcano/Game/Object.h>
 
 VOLCANO_GAME_BEGIN

@@ -2,34 +2,36 @@
 //
 #include <SDL_main.h>
 
-#include <Volcano/System/Server.h>
-#include <Volcano/System/Client.h>
+#include <Volcano/Game/Context.h>
+#include <Volcano/System/Frontend.h>
 
 #include "Volcano/Demo/Common.h"
 
 VOLCANO_DEMO_BEGIN
 
-static bool pollEvents(System::Client& client) {
+static bool pollEvents(System::Frontend& frontend) {
     SDL_Event evt;
 
     while (SDL_PollEvent(&evt)) {
         if (evt.type == SDL_QUIT) {
             return false;
         }
-        client.feedEvent(evt);
+        frontend.feedEvent(evt);
     }
+
+    return true;
 }
 
 static int run(int argc, char* argv[]) {
-    System::Server server;
-    System::Client client(server);
+    Game::Context game_context;
+    System::Frontend frontend(game_context);
 
-    server.init();
-    client.init("VolcanoDemo", 800, 600);
+    //game_context.init();
+    frontend.init("VolcanoDemo", 800, 600);
 
-    while (!client.shouldQuit()) {
-        pollEvents(client);
-        client.update(10ms);
+    while (!frontend.shouldQuit()) {
+        pollEvents(frontend);
+        frontend.update(10ms);
         SDL_Delay(10);
     }
 

@@ -12,6 +12,18 @@ class DirectionalLight: public Light {
 public:
 	DirectionalLight(Context& context);
 	~DirectionalLight() override;
+
+public:
+	Eigen::Vector3f direction() const {
+		return direction_;
+	}
+
+	void setDirection(Eigen::Vector3f v) {
+		direction_ = v;
+	}
+
+private:
+	Eigen::Vector3f direction_;
 };
 
 VOLCANO_GAME_END

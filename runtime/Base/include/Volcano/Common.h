@@ -14,10 +14,10 @@
 
 #include <SDL.h>
 #include <fmt/core.h>
-#include <Eigen/Core>
 #include <sigslot/signal.hpp>
 
 #include <Volcano/Config.h>
+#include <Volcano/Eigen.h>
 
 #ifdef VOLCANO_PROFILE
 #   include <microprofile.h>

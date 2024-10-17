@@ -245,7 +245,11 @@ endmacro()
 
 macro(volcano_add_executable TARGET)
 	message(STATUS "Add executable: ${CMAKE_CURRENT_SOURCE_DIR} - ${TARGET}")
-    add_executable(${TARGET})
+	if(WIN32)
+		add_executable(${TARGET} WIN32)
+	else()
+		add_executable(${TARGET})
+	endif()
     volcano_setup_target(${TARGET} ${ARGN})
 endmacro()
 

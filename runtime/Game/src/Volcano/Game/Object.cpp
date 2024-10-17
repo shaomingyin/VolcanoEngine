@@ -5,8 +5,7 @@
 VOLCANO_GAME_BEGIN
 
 Object::Object(Context& context)
-    : context_(context)
-    , entity_(context.registry().create()) {
+    : context_(context) {
 }
 
 Object::~Object() {
