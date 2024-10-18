@@ -10,7 +10,7 @@ VOLCANO_GAME_BEGIN
 
 class PointLight: public Light {
 public:
-	PointLight(Context& context);
+	PointLight();
 	~PointLight() override;
 };
 

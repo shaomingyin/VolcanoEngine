@@ -4,8 +4,7 @@
 
 VOLCANO_GAME_BEGIN
 
-SpotLight::SpotLight(Context& context)
-    : DirectionalLight(context) {
+SpotLight::SpotLight() {
 }
 
 SpotLight::~SpotLight() {

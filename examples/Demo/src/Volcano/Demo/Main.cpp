@@ -2,7 +2,7 @@
 //
 #include <SDL_main.h>
 
-#include <Volcano/Game/Context.h>
+#include <Volcano/Game/World.h>
 #include <Volcano/System/Frontend.h>
 
 #include "Volcano/Demo/Common.h"
@@ -23,8 +23,8 @@ static bool pollEvents(System::Frontend& frontend) {
 }
 
 static int run(int argc, char* argv[]) {
-    Game::Context game_context;
-    System::Frontend frontend(game_context);
+    Game::World game_world;
+    System::Frontend frontend(game_world);
 
     //game_context.init();
     frontend.init("VolcanoDemo", 800, 600);

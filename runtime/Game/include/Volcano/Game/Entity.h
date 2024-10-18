@@ -3,45 +3,37 @@
 #ifndef VOLCANO_GAME_ENTITY_H
 #define VOLCANO_GAME_ENTITY_H
 
+#include <string>
+
 #include <Volcano/Game/Common.h>
-#include <Volcano/Game/Actor.h>
+#include <Volcano/Game/Basic.h>
 
 VOLCANO_GAME_BEGIN
 
-class Entity: public Actor {
+class Entity {
 public:
-	Entity(Context& context);
-	~Entity() override;
+	Entity(entt::registry& registry, int flags = 0);
+	Entity(entt::registry& registry, std::string name, int flags = 0);
+	Entity(const Entity& other) = delete;
+	Entity(Entity&& other);
+	virtual ~Entity();
 
 public:
-	entt::registry& registry() {
-		return context().registry();
-	}
-
-	const entt::registry& registry() const {
-		return context().registry();
-	}
-
-	entt::entity id() const {
-		return id_;
-	}
-
-	template <typename Component>
-	Component& component() {
-		return registry().get<Component>(id_);
-	}
+	Entity& operator=(const Entity&) = delete;
+	Entity& operator=(Entity&&);
 
 	template <typename Component, typename... Args>
 	Component& emplaceComponent(Args... args) {
-		registry().emplace<Component>(id_, std::forward<Args>(args)...);
+		return registry_->emplace<Component>(id_, std::forward<Args>(args)...);
 	}
 
 	template <typename Component>
 	void removeComponent() {
-		registry().remove<Component>(id_);
+		return registry_->remove<Component>(id_);
 	}
 
 private:
+	entt::registry* registry_;
 	entt::entity id_;
 };
 

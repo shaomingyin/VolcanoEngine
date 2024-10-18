@@ -3,12 +3,12 @@
 #ifndef VOLCANO_SYSTEM_BASE_H
 #define VOLCANO_SYSTEM_BASE_H
 
-#include <Volcano/Game/Context.h>
+#include <Volcano/Game/World.h>
 #include <Volcano/System/Common.h>
 
 VOLCANO_SYSTEM_BEGIN
 
-class Base: public Game::Context {
+class Base: public Game::World {
 public:
     Base();
     virtual ~Base();

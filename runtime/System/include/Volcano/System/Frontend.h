@@ -6,7 +6,7 @@
 #include <memory>
 #include <string>
 
-#include <Volcano/Game/Context.h>
+#include <Volcano/Game/World.h>
 #include <Volcano/Graphics/Renderer.h>
 #include <Volcano/System/Common.h>
 
@@ -14,7 +14,7 @@ VOLCANO_SYSTEM_BEGIN
 
 class Frontend {
 public:
-    Frontend(Game::Context& game_context);
+    Frontend(Game::World& game_world);
     virtual ~Frontend();
 
 public:
@@ -35,7 +35,7 @@ private:
         FlagWindowVisible = 0x2
     };
 
-    Game::Context& game_context_;
+    Game::World& game_world_;
 
     int flags_;
     SDL_Window* window_;

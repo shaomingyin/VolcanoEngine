@@ -6,6 +6,7 @@
 #include <type_traits>
 
 #include <entt/entt.hpp>
+#include <bullet/btBulletDynamicsCommon.h>
 
 #include <Volcano/Common.h>
 #include <Volcano/Game/Config.h>

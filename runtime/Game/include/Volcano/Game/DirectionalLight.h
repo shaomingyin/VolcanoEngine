@@ -10,7 +10,7 @@ VOLCANO_GAME_BEGIN
 
 class DirectionalLight: public Light {
 public:
-	DirectionalLight(Context& context);
+	DirectionalLight();
 	~DirectionalLight() override;
 
 public:

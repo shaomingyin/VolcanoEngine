@@ -9,6 +9,7 @@ assimp/5.4.2
 bullet3/3.25
 enet/1.3.18
 entt/3.13.2
+taskflow/3.8.0
 
 [generators]
 CMakeDeps

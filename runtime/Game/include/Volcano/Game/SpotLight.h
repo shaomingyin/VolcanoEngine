@@ -10,7 +10,7 @@ VOLCANO_GAME_BEGIN
 
 class SpotLight: public DirectionalLight {
 public:
-	SpotLight(Context& context);
+	SpotLight();
 	~SpotLight() override;
 };
 

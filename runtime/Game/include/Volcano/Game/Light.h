@@ -5,14 +5,13 @@
 
 #include <Volcano/Color.h>
 #include <Volcano/Game/Common.h>
-#include <Volcano/Game/Actor.h>
 
 VOLCANO_GAME_BEGIN
 
-class Light: public Actor {
+class Light {
 public:
-	Light(Context& context);
-	~Light() override;
+	Light();
+	virtual ~Light();
 
 public:
 	const Color& color() const {
@@ -23,8 +22,17 @@ public:
 		color_ = v;
 	}
 
+	float strength() const {
+		return strength_;
+	}
+
+	void setStrength(float v) {
+		strength_ = std::clamp(v, 0.0f, 1.0f);
+	}
+
 private:
 	Color color_;
+	float strength_;
 };
 
 VOLCANO_GAME_END
