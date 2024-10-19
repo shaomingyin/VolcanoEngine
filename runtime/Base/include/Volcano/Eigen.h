@@ -9,7 +9,6 @@
 
 namespace Eigen {
 	using Quaternionf = Quaternion<float>;
-	using Transform3f = Transform<float, 3, Affine>;
 }
 
 #endif // VOLCANO_EIGEN_H

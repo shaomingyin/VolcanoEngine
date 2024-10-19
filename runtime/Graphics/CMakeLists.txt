@@ -20,8 +20,10 @@ volcano_add_static_library(Graphics
         src/nanovg/stb_truetype.h
         include/Volcano/Graphics/Config.h.in
         include/Volcano/Graphics/Common.h
+        include/Volcano/Graphics/Mesh.h
         include/Volcano/Graphics/Renderer.h
         include/Volcano/Graphics/View.h
+        src/Volcano/Graphics/Mesh.cpp
         src/Volcano/Graphics/Renderer.cpp
         src/Volcano/Graphics/View.cpp
     PUBLIC_LINK_LIBRARIES

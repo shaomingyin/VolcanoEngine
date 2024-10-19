@@ -16,10 +16,12 @@ class World {
 public:
 	World();
 	World(const World&) = delete;
+	World(World&&) = delete;
 	virtual ~World();
 
 public:
 	World& operator=(const World&) = delete;
+	World& operator=(World&&) = delete;
 
 	void update(Duration elapsed);
 
@@ -38,33 +40,41 @@ public:
 	}
 
 	Light& ambientLight() {
-		return registry_.get<Light>(builtin_);
+		return registry_.get_or_emplace<Light>(global_);
 	}
 
 	const Light& ambientLight() const {
-		return registry_.get<Light>(builtin_);
+		return registry_.get<Light>(global_);
 	}
 
 	Camera& camera() {
-		return registry_.get_or_emplace<Camera>(builtin_);
+		return registry_.get_or_emplace<Camera>(global_);
 	}
 
 	const Camera& camera() const {
-		return registry_.get<Camera>(builtin_);
+		return registry_.get<Camera>(global_);
 	}
 
 	bool isPhysicsEnabled() {
-		return bool(bt_dynamics_world_);
+		return physics_enabled_;
 	}
 
-	void enablePhysics();
-	void disablePhysics();
+	void enablePhysics() {
+		physics_enabled_ = true;
+	}
+
+	void disablePhysics() {
+		physics_enabled_ = false;
+	}
 
 	Eigen::Vector3f gravity() const {
-		return gravity_;
+		btVector3 v = bt_dynamics_world_->getGravity();
+		return Eigen::Vector3f(v.x(), v.y(), v.z());
 	}
 
-	void setGravity(Eigen::Vector3f v);
+	void setGravity(Eigen::Vector3f v) {
+		bt_dynamics_world_->setGravity(btVector3(v.x(), v.y(), v.z()));
+	}
 
 protected:
 	entt::registry& registry() {
@@ -76,13 +86,35 @@ protected:
 	}
 
 private:
-	void rigidBodyCreated(entt::registry& reg, entt::entity ent);
-	void rigidBodyDestroyed(entt::registry& reg, entt::entity ent);
+	void boxRigidBodyAdded(entt::registry& reg, entt::entity ent);
+	void boxRigidBodyRemoved(entt::registry& reg, entt::entity ent);
+
+	void capsuleRigidBodyAdded(entt::registry& reg, entt::entity ent);
+	void capsuleRigidBodyRemoved(entt::registry& reg, entt::entity ent);
+
+	void coneRigidBodyAdded(entt::registry& reg, entt::entity ent);
+	void coneRigidBodyRemoved(entt::registry& reg, entt::entity ent);
+
+	void cylinderRigidBodyAdded(entt::registry& reg, entt::entity ent);
+	void cylinderRigidBodyRemoved(entt::registry& reg, entt::entity ent);
+
+	void sphereRigidBodyAdded(entt::registry& reg, entt::entity ent);
+	void sphereRigidBodyRemoved(entt::registry& reg, entt::entity ent);
+
+	void staticPlaneRigidBodyAdded(entt::registry& reg, entt::entity ent);
+	void staticPlaneRigidBodyRemoved(entt::registry& reg, entt::entity ent);
+
+	void triangleMeshRigidBodyAdded(entt::registry& reg, entt::entity ent);
+	void triangleMeshRigidBodyRemoved(entt::registry& reg, entt::entity ent);
 
 private:
 	entt::registry registry_;
-	entt::entity builtin_;
-	Eigen::Vector3f gravity_;
+	entt::entity global_;
+	bool physics_enabled_;
+	std::unique_ptr<btDefaultCollisionConfiguration> bt_collision_configuration_;
+	std::unique_ptr<btCollisionDispatcher>  bt_collision_dispatcher_;
+	std::unique_ptr<btBroadphaseInterface> bt_overlapping_pair_cache_;
+	std::unique_ptr<btSequentialImpulseConstraintSolver> bt_sequential_impulse_constraint_solver_;
 	std::unique_ptr<btDynamicsWorld> bt_dynamics_world_;
 };
 

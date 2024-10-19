@@ -12,6 +12,8 @@ volcano_add_static_library(Base
         include/Volcano/Eigen.h
         include/Volcano/ScopeGuard.h
         include/Volcano/VersionNumber.h
+        src/Volcano/PluginHolder.cpp
+        src/Volcano/PluginManager.cpp
         src/Volcano/VersionNumber.cpp
     PUBLIC_LINK_PACKAGES
         Eigen3 Eigen3::Eigen

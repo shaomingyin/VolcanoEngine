@@ -9,9 +9,9 @@
 
 VOLCANO_GAME_BEGIN
 
-class Basic {
+class Basic: public btMotionState {
 public:
-	Basic(std::string name, int flags = 0);
+	Basic(std::string name, Eigen::Affine3f transform = Eigen::Affine3f::Identity());
 	virtual ~Basic() = default;
 
 public:
@@ -47,13 +47,17 @@ public:
 		name_ = std::move(v);
 	}
 
-	Eigen::Transform3f& transform() {
+	Eigen::Affine3f transform() const {
 		return transform_;
 	}
 
-	const Eigen::Transform3f& transform() const {
-		return transform_;
+	void setTransform(Eigen::Affine3f v) {
+		transform_ = v;
 	}
+
+public:
+	void getWorldTransform(btTransform& world_trans) const override;
+	void setWorldTransform(const btTransform& world_trans) override;
 
 private:
 	enum {
@@ -64,7 +68,7 @@ private:
 private:
 	int flags_;
 	std::string name_;
-	Eigen::Transform3f transform_;
+	Eigen::Affine3f transform_;
 };
 
 VOLCANO_GAME_END

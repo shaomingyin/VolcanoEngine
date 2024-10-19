@@ -1,5 +1,5 @@
 
-volcano_add_executable(Demo
+volcano_add_auto_executable(Demo
     OUTPUT_NAME
         VolcanoDemo
     PUBLIC_INCLUDE_DIRECTORIES
