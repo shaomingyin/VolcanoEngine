@@ -2,6 +2,7 @@
 //
 #include <SDL_main.h>
 
+#include <Volcano/ScopeGuard.h>
 #include <Volcano/Game/World.h>
 #include <Volcano/System/Frontend.h>
 
@@ -23,10 +24,22 @@ static bool pollEvents(System::Frontend& frontend) {
 }
 
 static int run(int argc, char* argv[]) {
+    int ret = SDL_Init(SDL_INIT_EVERYTHING);
+    if (ret < 0) {
+        return EXIT_FAILURE;
+    }
+
+    auto sdl_guard = scopeGuard([] {
+        SDL_Quit();
+    });
+
+#ifdef VOLCANO_DEBUG
+    SDL_LogSetAllPriority(SDL_LOG_PRIORITY_DEBUG);
+#endif
+
     Game::World game_world;
     System::Frontend frontend(game_world);
 
-    //game_context.init();
     frontend.init("VolcanoDemo", 800, 600);
 
     while (!frontend.shouldQuit()) {

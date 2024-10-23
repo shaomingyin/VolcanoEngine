@@ -13,13 +13,21 @@ VOLCANO_GAME_BEGIN
 class Entity {
 public:
 	Entity(entt::registry& registry, std::string name = std::string());
-	Entity(const Entity& other) = delete;
-	Entity(Entity&& other);
+	Entity(const Entity& other);
 	virtual ~Entity();
 
 public:
-	Entity& operator=(const Entity&) = delete;
-	Entity& operator=(Entity&&);
+	Entity& operator=(const Entity& other);
+
+	Basic& base() {
+		VOLCANO_ASSERT(basic_ != nullptr);
+		return (*basic_);
+	}
+
+	Basic& base() const {
+		VOLCANO_ASSERT(basic_ != nullptr);
+		return (*basic_);
+	}
 
 	bool isEnabled() const {
 		VOLCANO_ASSERT(basic_ != nullptr);

@@ -7,8 +7,9 @@
 #include <cstdint>
 #include <cstdarg>
 
-#include <vector>
+#include <set>
 #include <list>
+#include <vector>
 #include <string>
 #include <chrono>
 
@@ -78,6 +79,11 @@
     VOLCANO_STRIZE(VOLCANO_VERSION_MINOR) "." \
     VOLCANO_STRIZE(VOLCANO_VERSION_PATCH)
 
+#define VOLCANO_PMOVB(p, offset) \
+    (((uint8_t*)p) + (offset))
+
+#define VOLCANO_DIMOF(a) (sizeof(a) / sizeof(a[0]))
+
 #define VOLCANO_BEGIN namespace Volcano {
 #define VOLCANO_END }
 
@@ -86,6 +92,7 @@ VOLCANO_BEGIN
 using namespace std::chrono_literals;
 
 using Buffer = std::vector<uint8_t>;
+using StringSet = std::set<std::string>;
 using StringList = std::list<std::string>;
 using StringVector = std::vector<std::string>;
 

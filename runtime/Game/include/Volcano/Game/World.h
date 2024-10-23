@@ -4,11 +4,13 @@
 #define VOLCANO_GAME_WORLD_H
 
 #include <memory>
+#include <type_traits>
 
 #include <Volcano/Game/Common.h>
 #include <Volcano/Game/Entity.h>
 #include <Volcano/Game/Light.h>
 #include <Volcano/Game/Camera.h>
+#include <Volcano/Game/Context.h>
 
 VOLCANO_GAME_BEGIN
 
@@ -76,6 +78,10 @@ public:
 		bt_dynamics_world_->setGravity(btVector3(v.x(), v.y(), v.z()));
 	}
 
+public:
+	sigslot::signal_st<Entity> entityCreated;
+	sigslot::signal_st<Light> lightCreated;
+
 protected:
 	entt::registry& registry() {
 		return registry_;
@@ -86,26 +92,24 @@ protected:
 	}
 
 private:
-	void boxRigidBodyAdded(entt::registry& reg, entt::entity ent);
-	void boxRigidBodyRemoved(entt::registry& reg, entt::entity ent);
+	template <typename RigidBody>
+	void rigidBodyAdded(entt::registry& registry, entt::entity entity) {
+		static_assert(std::is_base_of<btRigidBody, RigidBody>::value);
+		VOLCANO_ASSERT(&registry_ == &registry);
+		auto& basic = registry.get<Basic>(entity);
+		auto& rigid_body = registry.get<RigidBody>(entity);
+		rigid_body.setMotionState(&basic);
+		bt_dynamics_world_->addRigidBody(&rigid_body);
+	}
 
-	void capsuleRigidBodyAdded(entt::registry& reg, entt::entity ent);
-	void capsuleRigidBodyRemoved(entt::registry& reg, entt::entity ent);
-
-	void coneRigidBodyAdded(entt::registry& reg, entt::entity ent);
-	void coneRigidBodyRemoved(entt::registry& reg, entt::entity ent);
-
-	void cylinderRigidBodyAdded(entt::registry& reg, entt::entity ent);
-	void cylinderRigidBodyRemoved(entt::registry& reg, entt::entity ent);
-
-	void sphereRigidBodyAdded(entt::registry& reg, entt::entity ent);
-	void sphereRigidBodyRemoved(entt::registry& reg, entt::entity ent);
-
-	void staticPlaneRigidBodyAdded(entt::registry& reg, entt::entity ent);
-	void staticPlaneRigidBodyRemoved(entt::registry& reg, entt::entity ent);
-
-	void triangleMeshRigidBodyAdded(entt::registry& reg, entt::entity ent);
-	void triangleMeshRigidBodyRemoved(entt::registry& reg, entt::entity ent);
+	template <typename RigidBody>
+	void rigidBodyRemoved(entt::registry& registry, entt::entity entity) {
+		static_assert(std::is_base_of<btRigidBody, RigidBody>::value);
+		VOLCANO_ASSERT(&registry_ == &registry);
+		auto& rigid_body = registry.get<RigidBody>(entity);
+		rigid_body.setMotionState(nullptr);
+		bt_dynamics_world_->removeRigidBody(&rigid_body);
+	}
 
 private:
 	entt::registry registry_;

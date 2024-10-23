@@ -10,21 +10,28 @@ volcano_add_static_library(Base
         include/Volcano/Config.h.in
         include/Volcano/Common.h
         include/Volcano/Eigen.h
+        include/Volcano/Error.h
+		include/Volcano/ResourceManager.h
         include/Volcano/ScopeGuard.h
         include/Volcano/VersionNumber.h
-        src/Volcano/PluginHolder.cpp
-        src/Volcano/PluginManager.cpp
+        src/Volcano/Error.cpp
+        src/Volcano/ResourceManager.cpp
         src/Volcano/VersionNumber.cpp
+    PUBLIC_DEFINITIONS
+        VFSPP_ENABLE_MULTITHREADING
     PUBLIC_LINK_PACKAGES
         Eigen3 Eigen3::Eigen
         fmt fmt::fmt
         PalSigslot Pal::Sigslot
         SDL2 SDL2::SDL2
         microprofile microprofile::microprofile
+        Taskflow Taskflow::Taskflow
+        miniz miniz::miniz
     PUBLIC_HEADERS
         include/Volcano/Common.h
         include/Volcano/ScopeGuard.h
         include/Volcano/VersionNumber.h
+        include/Volcano/ResourceManager.h
         ${CMAKE_CURRENT_BINARY_DIR}/include/Volcano/Config.h
         DESTINATION include/Volcano
 )
