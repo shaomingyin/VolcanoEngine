@@ -13,6 +13,7 @@ volcano_add_static_library(Base
         include/Volcano/Error.h
 		include/Volcano/ResourceManager.h
         include/Volcano/ScopeGuard.h
+        include/Volcano/SDL_Initializer.h
         include/Volcano/VersionNumber.h
         src/Volcano/Error.cpp
         src/Volcano/ResourceManager.cpp
@@ -25,7 +26,6 @@ volcano_add_static_library(Base
         PalSigslot Pal::Sigslot
         SDL2 SDL2::SDL2
         microprofile microprofile::microprofile
-        Taskflow Taskflow::Taskflow
         miniz miniz::miniz
     PUBLIC_HEADERS
         include/Volcano/Common.h

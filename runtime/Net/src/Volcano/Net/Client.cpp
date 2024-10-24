@@ -1,9 +1,9 @@
 //
 //
 #include <Volcano/ScopeGuard.h>
-#include <Volcano/System/Client.h>
+#include <Volcano/Net/Client.h>
 
-VOLCANO_SYSTEM_BEGIN
+VOLCANO_NET_BEGIN
 
 void Client::frame(Duration elapsed) {
 
@@ -45,4 +45,4 @@ ENetHost* Client::createHost(const ENetAddress* address) {
     return host;
 }
 
-VOLCANO_SYSTEM_END
+VOLCANO_NET_END

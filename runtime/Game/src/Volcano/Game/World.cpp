@@ -24,6 +24,7 @@ World::World()
         bt_overlapping_pair_cache_.get(),
         bt_sequential_impulse_constraint_solver_.get(),
         bt_collision_configuration_.get())) {
+    registry_.on_construct<btRigidBody>().connect<&World::rigidBodyAdded<btRigidBody>>(this);
     registry_.on_construct<BoxRigidBody>().connect<&World::rigidBodyAdded<BoxRigidBody>>(this);
     registry_.on_construct<CapsuleRigidBody>().connect<&World::rigidBodyAdded<CapsuleRigidBody>>(this);
     registry_.on_construct<ConeRigidBody>().connect<&World::rigidBodyAdded<ConeRigidBody>>(this);
@@ -32,6 +33,7 @@ World::World()
     registry_.on_construct<StaticPlaneRigidBody>().connect<&World::rigidBodyAdded<StaticPlaneRigidBody>>(this);
     registry_.on_construct<TriangleMeshRigidBody>().connect<&World::rigidBodyAdded<TriangleMeshRigidBody>>(this);
 
+    registry_.on_destroy<btRigidBody>().connect<&World::rigidBodyRemoved<btRigidBody>>(this);
     registry_.on_destroy<BoxRigidBody>().connect<&World::rigidBodyRemoved<BoxRigidBody>>(this);
     registry_.on_destroy<CapsuleRigidBody>().connect<&World::rigidBodyRemoved<CapsuleRigidBody>>(this);
     registry_.on_destroy<ConeRigidBody>().connect<&World::rigidBodyRemoved<ConeRigidBody>>(this);
@@ -39,9 +41,12 @@ World::World()
     registry_.on_destroy<SphereRigidBody>().connect<&World::rigidBodyRemoved<SphereRigidBody>>(this);
     registry_.on_destroy<StaticPlaneRigidBody>().connect<&World::rigidBodyRemoved<StaticPlaneRigidBody>>(this);
     registry_.on_destroy<TriangleMeshRigidBody>().connect<&World::rigidBodyRemoved<TriangleMeshRigidBody>>(this);
+
+    bt_dynamics_world_->setGravity(btVector3(0.0f, -9.8f, 0.0f));
 }
 
 World::~World() {
+    registry_.on_construct<btRigidBody>().disconnect<&World::rigidBodyAdded<btRigidBody>>(this);
     registry_.on_construct<BoxRigidBody>().disconnect<&World::rigidBodyAdded<BoxRigidBody>>(this);
     registry_.on_construct<CapsuleRigidBody>().disconnect<&World::rigidBodyAdded<CapsuleRigidBody>>(this);
     registry_.on_construct<ConeRigidBody>().disconnect<&World::rigidBodyAdded<ConeRigidBody>>(this);
@@ -50,6 +55,7 @@ World::~World() {
     registry_.on_construct<StaticPlaneRigidBody>().disconnect<&World::rigidBodyAdded<StaticPlaneRigidBody>>(this);
     registry_.on_construct<TriangleMeshRigidBody>().disconnect<&World::rigidBodyAdded<TriangleMeshRigidBody>>(this);
 
+    registry_.on_destroy<btRigidBody>().disconnect<&World::rigidBodyRemoved<btRigidBody>>(this);
     registry_.on_destroy<BoxRigidBody>().disconnect<&World::rigidBodyRemoved<BoxRigidBody>>(this);
     registry_.on_destroy<CapsuleRigidBody>().disconnect<&World::rigidBodyRemoved<CapsuleRigidBody>>(this);
     registry_.on_destroy<ConeRigidBody>().disconnect<&World::rigidBodyRemoved<ConeRigidBody>>(this);

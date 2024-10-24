@@ -131,6 +131,7 @@ void ResourceManager::MountInfo::enumDir(const std::filesystem::path& path, DirE
 }
 
 std::shared_ptr<Resource> ResourceManager::MountInfo::get(const std::filesystem::path& path) {
+	return nullptr;
 }
 
 void ResourceManager::MountInfo::enumNativeDir(const std::filesystem::path& path, DirEntrySet& output) const {

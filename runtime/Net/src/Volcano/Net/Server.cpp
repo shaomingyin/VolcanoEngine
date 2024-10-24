@@ -1,8 +1,8 @@
 //
 //
-#include <Volcano/System/Server.h>
+#include <Volcano/Net/Server.h>
 
-VOLCANO_SYSTEM_BEGIN
+VOLCANO_NET_BEGIN
 
 Server::Server(int max_clients)
     : max_clients_(max_clients) {
@@ -35,9 +35,9 @@ ENetHost* Server::createHost(const ENetAddress* address) {
         return enet_host_create(address, max_clients_, 2, 0, 0);
     }
 
-    ENetAddress bind_address = { ENET_HOST_ANY, VOLCANO_SYSTEM_DEFAULT_PORT };
+    ENetAddress bind_address = { ENET_HOST_ANY, VOLCANO_NET_DEFAULT_PORT };
 
     return enet_host_create(&bind_address, max_clients_, 2, 0, 0);
 }
 
-VOLCANO_SYSTEM_END
+VOLCANO_NET_END

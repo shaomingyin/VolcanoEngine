@@ -7,39 +7,37 @@ volcano_add_static_library(Game
         ${CMAKE_CURRENT_BINARY_DIR}/include
     PRIVATE_SOURCES
         include/Volcano/Game/Basic.h
-        include/Volcano/Game/Camera.h
-        include/Volcano/Game/Config.h.in
-        include/Volcano/Game/Common.h
-        include/Volcano/Game/Context.h
-        include/Volcano/Game/World.h
-        include/Volcano/Game/Entity.h
-        include/Volcano/Game/Light.h
-        include/Volcano/Game/DirectionalLight.h
-        include/Volcano/Game/PointLight.h
-        include/Volcano/Game/SpotLight.h
         include/Volcano/Game/BoxRigidBody.h
+        include/Volcano/Game/Camera.h
         include/Volcano/Game/CapsuleRigidBody.h
+        include/Volcano/Game/Common.h
+        include/Volcano/Game/Config.h.in
         include/Volcano/Game/ConeRigidBody.h
         include/Volcano/Game/CylinderRigidBody.h
+        include/Volcano/Game/DirectionalLight.h
+        include/Volcano/Game/Light.h
+        include/Volcano/Game/PointLight.h
+		include/Volcano/Game/Screen.h
         include/Volcano/Game/SphereRigidBody.h
+        include/Volcano/Game/SpotLight.h
         include/Volcano/Game/StaticPlaneRigidBody.h
         include/Volcano/game/TriangleMeshRigidBody.h
+        include/Volcano/Game/World.h
         src/Volcano/Game/Basic.cpp
-        src/Volcano/Game/Camera.cpp
-        src/Volcano/Game/Context.cpp
-        src/Volcano/Game/World.cpp
-        src/Volcano/Game/Entity.cpp
-        src/Volcano/Game/Light.cpp
-        src/Volcano/Game/DirectionalLight.cpp
-        src/Volcano/Game/PointLight.cpp
-        src/Volcano/Game/SpotLight.cpp
         src/Volcano/Game/BoxRigidBody.cpp
+        src/Volcano/Game/Camera.cpp
         src/Volcano/Game/CapsuleRigidBody.cpp
         src/Volcano/Game/ConeRigidBody.cpp
         src/Volcano/Game/CylinderRigidBody.cpp
+        src/Volcano/Game/DirectionalLight.cpp
+        src/Volcano/Game/Light.cpp
+        src/Volcano/Game/PointLight.cpp
+		src/Volcano/Game/Screen.cpp
+        src/Volcano/Game/SpotLight.cpp
         src/Volcano/Game/SphereRigidBody.cpp
         src/Volcano/Game/StaticPlaneRigidBody.cpp
         src/Volcano/Game/TriangleMeshRigidBody.cpp
+        src/Volcano/Game/World.cpp
     PUBLIC_LINK_LIBRARIES
         Base
     PUBLIC_LINK_PACKAGES

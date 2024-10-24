@@ -1,12 +1,12 @@
 //
 //
-#ifndef VOLCANO_SYSTEM_CLIENT_H
-#define VOLCANO_SYSTEM_CLIENT_H
+#ifndef VOLCANO_NET_CLIENT_H
+#define VOLCANO_NET_CLIENT_H
 
-#include <Volcano/System/Common.h>
-#include <Volcano/System/Base.h>
+#include <Volcano/Net/Common.h>
+#include <Volcano/Net/Base.h>
 
-VOLCANO_SYSTEM_BEGIN
+VOLCANO_NET_BEGIN
 
 class Client: public Base {
 public:
@@ -24,6 +24,6 @@ private:
     ENetPeer* peer_;
 };
 
-VOLCANO_SYSTEM_END
+VOLCANO_NET_END
 
-#endif // VOLCANO_SYSTEM_CLIENT_H
+#endif // VOLCANO_NET_CLIENT_H

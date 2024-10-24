@@ -7,10 +7,9 @@
 #include <type_traits>
 
 #include <Volcano/Game/Common.h>
-#include <Volcano/Game/Entity.h>
+#include <Volcano/Game/Basic.h>
 #include <Volcano/Game/Light.h>
 #include <Volcano/Game/Camera.h>
-#include <Volcano/Game/Context.h>
 
 VOLCANO_GAME_BEGIN
 
@@ -27,8 +26,10 @@ public:
 
 	void update(Duration elapsed);
 
-	[[nodiscard]] Entity createEntity(std::string name = std::string()) {
-		return Entity(registry_, std::move(name));
+	entt::handle create(std::string name = std::string()) {
+		auto id = registry_.create();
+		registry_.emplace<Basic>(id, std::move(name));
+		return entt::handle(registry_, id);
 	}
 
 	template <typename Component>
@@ -36,9 +37,19 @@ public:
 		return registry_.view<Component>();
 	}
 
+	template <typename Component, typename... Exclude>
+	auto view(entt::exclude_t<Exclude...> exclude) {
+		return registry_.view<Component>(std::forward<Exclude...>(exclude));
+	}
+
 	template <typename... Components>
 	auto view() {
 		return registry_.view<Components...>();
+	}
+
+	template <typename... Components, typename... Exclude>
+	auto view(entt::exclude_t<Exclude...> exclude) {
+		return registry_.view<Components...>(std::forward<Exclude...>(exclude));
 	}
 
 	Light& ambientLight() {
@@ -77,10 +88,6 @@ public:
 	void setGravity(Eigen::Vector3f v) {
 		bt_dynamics_world_->setGravity(btVector3(v.x(), v.y(), v.z()));
 	}
-
-public:
-	sigslot::signal_st<Entity> entityCreated;
-	sigslot::signal_st<Light> lightCreated;
 
 protected:
 	entt::registry& registry() {

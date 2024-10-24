@@ -5,8 +5,9 @@
 
 VOLCANO_SYSTEM_BEGIN
 
-Frontend::Frontend(Game::World& game_world)
-    : game_world_(game_world)
+Frontend::Frontend(ResourceManager& resource_manager, Game::World& game_world)
+    : resource_manager_(resource_manager)
+    , game_world_(game_world)
     , flags_(0)
     , window_(nullptr)
     , window_id_(0)

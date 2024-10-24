@@ -1,15 +1,14 @@
 //
 //
-#ifndef VOLCANO_SYSTEM_SERVER_H
-#define VOLCANO_SYSTEM_SERVER_H
+#ifndef VOLCANO_NET_SERVER_H
+#define VOLCANO_NET_SERVER_H
 
 #include <memory>
 
-#include <Volcano/Game/World.h>
-#include <Volcano/System/Common.h>
-#include <Volcano/System/Base.h>
+#include <Volcano/Net/Common.h>
+#include <Volcano/Net/Base.h>
 
-VOLCANO_SYSTEM_BEGIN
+VOLCANO_NET_BEGIN
 
 class Server: public Base {
 public:
@@ -28,9 +27,8 @@ protected:
 
 private:
     int max_clients_;
-    std::unique_ptr<Game::World> game_world_;
 };
 
-VOLCANO_SYSTEM_END
+VOLCANO_NET_END
 
-#endif // VOLCANO_SYSTEM_SERVER_H
+#endif // VOLCANO_NET_SERVER_H
