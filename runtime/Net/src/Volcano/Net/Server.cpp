@@ -16,18 +16,16 @@ bool Server::init() {
 }
 
 void Server::frame(Duration elapsed) {
+    Base::frame(elapsed);
 }
 
 void Server::handlePackage(const ENetPacket& package) {
-
 }
 
 void Server::handleConnect(ENetPeer& peer) {
-
 }
 
 void Server::handleDisconnect(ENetPeer& peer) {
-
 }
 
 ENetHost* Server::createHost(const ENetAddress* address) {

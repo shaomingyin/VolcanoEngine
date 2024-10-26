@@ -24,7 +24,7 @@ public:
 	World& operator=(const World&) = delete;
 	World& operator=(World&&) = delete;
 
-	void update(Duration elapsed);
+	virtual void frame(Duration elapsed);
 
 	entt::handle create(std::string name = std::string()) {
 		auto id = registry_.create();

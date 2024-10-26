@@ -6,18 +6,20 @@
 #include <Volcano/Net/Client.h>
 #include <Volcano/System/Common.h>
 #include <Volcano/System/FrontEnd.h>
-#include <Volcano/System/Base.h>
+#include <Volcano/System/LocalPlayer.h>
 
 VOLCANO_SYSTEM_BEGIN
 
-class MultiPlayerClient: public Base {
+class MultiPlayerClient: public LocalPlayer {
 public:
 	MultiPlayerClient();
 	virtual ~MultiPlayerClient() = default;
 
+protected:
+	Game::World* gameWorld() override;
+
 private:
 	Net::Client net_client_;
-	Frontend frontend_;
 };
 
 VOLCANO_SYSTEM_END

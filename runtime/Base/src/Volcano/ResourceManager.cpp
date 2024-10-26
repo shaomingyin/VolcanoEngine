@@ -9,8 +9,10 @@ VOLCANO_BEGIN
 
 class NativeFile: public Resource {
 public:
-	NativeFile(const std::filesystem::path& path, int mode)
-		: fp_(SDL_RWFromFile(path.u8string().c_str(), "r")) {
+	NativeFile(const std::filesystem::path& path)
+		: fp_(SDL_RWFromFile(path.lexically_normal().string().c_str(), "r")) {
+		auto t1 = path.lexically_normal();
+		auto t2 = std::filesystem::weakly_canonical(path);
 		if (fp_ == nullptr) {
 			throw Error(Errc::Unknown);
 		}
@@ -25,7 +27,7 @@ public:
 		if (SDL_RWseek(fp_, 0, RW_SEEK_SET) < 0) {
 			return false;
 		}
-		auto read_size = SDL_RWread(fp_, buf, buf_size, 1);
+		auto read_size = SDL_RWread(fp_, buf, 1, buf_size);
 		return (read_size == buf_size);
 	}
 
@@ -86,8 +88,8 @@ private:
 // ResourceManager::MountInfo
 
 ResourceManager::MountInfo::MountInfo(const std::filesystem::path& path, const std::filesystem::path& native_path)
-	: path_(std::filesystem::canonical(path))
-	, native_path_(std::filesystem::canonical(native_path)) {
+	: path_(path)
+	, native_path_(native_path) {
 	if (std::filesystem::is_directory(native_path)) {
 		native_.emplace<std::filesystem::path>(native_path);
 	} else if (std::filesystem::is_regular_file(native_path) && native_path.extension() == ".zip") {
@@ -131,7 +133,15 @@ void ResourceManager::MountInfo::enumDir(const std::filesystem::path& path, DirE
 }
 
 std::shared_ptr<Resource> ResourceManager::MountInfo::get(const std::filesystem::path& path) {
-	return nullptr;
+	std::shared_ptr<Resource> p;
+	if (std::holds_alternative<std::shared_ptr<mz_zip_archive>>(native_)) {
+		auto zip_archive = std::get<std::shared_ptr<mz_zip_archive>>(native_);
+		p = std::make_shared<ZipFile>(zip_archive, path);
+	} else {
+		auto npath = std::get<std::filesystem::path>(native_);
+		p = std::make_shared<NativeFile>(npath/path);
+	}
+	return p;
 }
 
 void ResourceManager::MountInfo::enumNativeDir(const std::filesystem::path& path, DirEntrySet& output) const {
@@ -159,25 +169,25 @@ void ResourceManager::MountInfo::enumZipDir(const std::filesystem::path& path, D
 	if (!bret || !st.m_is_directory) {
 		return;
 	}
-#if 0
+	mz_uint n = mz_zip_reader_get_num_files(p.get());
 	for (mz_uint i = 0; i < n; ++i) {
-		char filename[512] = { 0 };
-		mz_uint filename_len = mz_zip_reader_get_filename(p.get(), i, filename, 510);
-		if (filename_len > 0) {
-			auto rpath = std::filesystem::relative(path, std::filesystem::path(filename));
+		mz_zip_archive_file_stat st;
+		mz_bool ret = mz_zip_reader_file_stat(p.get(), i, &st);
+		if (ret) {
+			auto rpath = std::filesystem::path(st.m_filename).lexically_relative(path);
 			if (!rpath.empty()) {
-				//output.emplace(DirEntry::Type::File, rpat);
+				auto name = rpath.begin()->filename().string();
+				output.emplace(st.m_is_directory ? DirEntry::Type::Directory : DirEntry::Type::File, std::move(name));
 			}
 		}
 	}
-#endif
 }
 
 // ResourceManager
 
-void ResourceManager::mount(std::string path, std::string native_path) {
+void ResourceManager::mount(const std::filesystem::path& path, const std::filesystem::path& native_path) {
 	auto gpath = toGenericPath(path);
-	if (!gpath.is_absolute()) {
+	if (!isAbsolute(gpath)) {
 		throw Error(Errc::InvalidParameter);
 	}
 	auto npath = std::filesystem::absolute(std::filesystem::canonical(native_path));
@@ -185,7 +195,7 @@ void ResourceManager::mount(std::string path, std::string native_path) {
 	mount_info_list_.emplace_front(gpath, npath.generic_string());
 }
 
-void ResourceManager::umount(std::string path) {
+void ResourceManager::umount(const std::filesystem::path& path) {
 	std::filesystem::path gpath = toGenericPath(path);
 	std::unique_lock<std::mutex> locker(mutex_);
 	for (auto it = mount_info_list_.begin(); it != mount_info_list_.end(); ++it) {
@@ -196,14 +206,14 @@ void ResourceManager::umount(std::string path) {
 	}
 }
 
-bool ResourceManager::exists(std::string path) const {
+bool ResourceManager::exists(const std::filesystem::path& path) const {
 	auto gpath = toGenericPath(path);
-	if (!gpath.is_absolute()) {
+	if (!isAbsolute(gpath)) {
 		throw Error(Errc::InvalidParameter);
 	}
 	std::unique_lock<std::mutex> locker(mutex_);
 	for (const auto& mi: mount_info_list_) {
-		auto rpath = std::filesystem::relative(gpath, mi.path());
+		auto rpath = gpath.lexically_relative(mi.path());
 		if (!rpath.empty()) {
 			if (mi.exists(rpath)) {
 				return true;
@@ -213,37 +223,45 @@ bool ResourceManager::exists(std::string path) const {
 	return false;
 }
 
-void ResourceManager::enumDir(std::string path, DirEntrySet& output) const {
+void ResourceManager::enumDir(const std::filesystem::path& path, DirEntrySet& output) const {
 	auto gpath = toGenericPath(path);
-	if (!gpath.is_absolute()) {
+	if (!isAbsolute(gpath)) {
 		throw Error(Errc::InvalidParameter);
 	}
 	output.clear();
 	std::unique_lock<std::mutex> locker(mutex_);
 	for (auto it = mount_info_list_.rbegin(); it != mount_info_list_.rend(); ++it) {
-		auto rpath = std::filesystem::relative(gpath, it->path());
+		auto rpath = gpath.lexically_relative(it->path());
 		if (!rpath.empty()) {
 			it->enumDir(rpath, output);
 		}
 	}
 }
 
-std::shared_ptr<Resource> ResourceManager::get(std::string path) {
+std::shared_ptr<Resource> ResourceManager::get(const std::filesystem::path& path) {
 	auto gpath = toGenericPath(path);
-	if (!gpath.is_absolute()) {
+	if (!isAbsolute(gpath)) {
 		throw Error(Errc::InvalidParameter);
 	}
 	std::unique_lock<std::mutex> locker(mutex_);
+	auto p = resource_cache_.get(gpath);
+	if (p) {
+		return p.value();
+	}
 	for (auto& mi : mount_info_list_) {
-		auto rpath = std::filesystem::relative(gpath, mi.path());
+		auto rpath = gpath.lexically_relative(mi.path());
 		if (!rpath.empty()) {
 			auto p = mi.get(rpath);
 			if (p) {
+				resource_cache_.insert(std::move(gpath), p);
 				return p;
 			}
 		}
 	}
 	return nullptr;
+}
+
+void ResourceManager::update() {
 }
 
 VOLCANO_END

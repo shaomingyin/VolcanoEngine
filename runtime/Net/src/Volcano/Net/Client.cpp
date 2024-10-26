@@ -5,8 +5,14 @@
 
 VOLCANO_NET_BEGIN
 
-void Client::frame(Duration elapsed) {
+Client::Client() {
+}
 
+Client::~Client() {
+}
+
+void Client::frame(Duration elapsed) {
+    Base::frame(elapsed);
 }
 
 void Client::handlePackage(const ENetPacket& package) {

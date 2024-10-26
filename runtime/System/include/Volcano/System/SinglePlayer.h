@@ -6,18 +6,20 @@
 #include <Volcano/Game/World.h>
 #include <Volcano/System/Common.h>
 #include <Volcano/System/FrontEnd.h>
-#include <Volcano/System/Base.h>
+#include <Volcano/System/LocalPlayer.h>
 
 VOLCANO_SYSTEM_BEGIN
 
-class SinglePlayer: public Base {
+class SinglePlayer: public LocalPlayer {
 public:
 	SinglePlayer();
 	virtual ~SinglePlayer() = default;
 
+protected:
+	Game::World* gameWorld() override;
+
 private:
 	Game::World game_world_;
-	Frontend frontend_;
 };
 
 VOLCANO_SYSTEM_END

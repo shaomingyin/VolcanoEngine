@@ -16,7 +16,7 @@ public:
 public:
     bool start(const ENetAddress* address = nullptr);
     void stop();
-    void update(Duration elapsed);
+    void frame(Duration elapsed) override;
 
     bool isStarted() const {
         return (host_ != nullptr);
@@ -28,14 +28,10 @@ public:
     }
 
 protected:
-    virtual void frame(Duration elapsed) = 0;
     virtual void handlePackage(const ENetPacket& package) = 0;
     virtual void handleConnect(ENetPeer& peer) = 0;
     virtual void handleDisconnect(ENetPeer& peer) = 0;
     virtual ENetHost* createHost(const ENetAddress* address) = 0;
-
-private:
-    void pollHost();
 
 private:
     ENetHost* host_;

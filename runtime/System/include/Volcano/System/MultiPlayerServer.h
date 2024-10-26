@@ -11,8 +11,12 @@ VOLCANO_SYSTEM_BEGIN
 
 class MultiPlayerServer: public Base {
 public:
-	MultiPlayerServer() = default;
+	MultiPlayerServer();
 	virtual ~MultiPlayerServer() = default;
+
+protected:
+	void mainLoop() override;
+	void frame(Duration elapsed) override;
 
 private:
 	Net::Server net_server_;

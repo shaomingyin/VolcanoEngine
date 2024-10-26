@@ -5,13 +5,14 @@
 
 VOLCANO_SYSTEM_BEGIN
 
-Frontend::Frontend(ResourceManager& resource_manager, Game::World& game_world)
+Frontend::Frontend(ResourceManager& resource_manager)
     : resource_manager_(resource_manager)
-    , game_world_(game_world)
+    , game_world_(nullptr)
     , flags_(0)
     , window_(nullptr)
     , window_id_(0)
-    , gl_context_(nullptr) {
+    , gl_context_(nullptr)
+    , current_view_(0) {
 }
 
 Frontend::~Frontend() {
@@ -74,7 +75,11 @@ bool Frontend::init(const std::string& title, int width, int height) {
     return true;
 }
 
-void Frontend::feedEvent(const SDL_Event& evt) {
+void Frontend::bind(Game::World* game_world) {
+    game_world_ = game_world;
+}
+
+void Frontend::handleEvent(const SDL_Event& evt) {
     VOLCANO_ASSERT(window_ != nullptr);
 
     if (evt.type != SDL_WINDOWEVENT || evt.window.windowID != window_id_) {
@@ -96,19 +101,27 @@ void Frontend::feedEvent(const SDL_Event& evt) {
     }
 }
 
-void Frontend::update(Duration elapsed) {
-    frame(elapsed);
-
+void Frontend::frame(Duration elapsed) {
     VOLCANO_ASSERT(window_ != nullptr);
     VOLCANO_ASSERT(gl_context_ != nullptr);
 
+    buildGraphicsView();
+
     if (VOLCANO_LIKELY(flags_ & FlagWindowVisible) && (SDL_GL_MakeCurrent(window_, gl_context_) == 0)) {
-        graphics_renderer_.update(elapsed);
+        graphics_renderer_.render(views_[current_view_], elapsed);
         SDL_GL_SwapWindow(window_);
+        //int exp = current_view_;
+        //while (current_view_.compare_exchange_strong(exp, !current_view_));
     }
 }
 
-void Frontend::frame(Duration elapsed) {
+void Frontend::buildGraphicsView() {
+    if (VOLCANO_UNLIKELY(game_world_ == nullptr)) {
+        return;
+    }
+
+    //int exp = current_view_;
+    //while (current_view_.compare_exchange_strong(exp, !current_view_));
 }
 
 VOLCANO_SYSTEM_END

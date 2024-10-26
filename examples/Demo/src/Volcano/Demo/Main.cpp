@@ -1,44 +1,68 @@
 //
 //
+#include <memory>
+
+#include <argh.h>
 #include <SDL_main.h>
 
-#include <Volcano/SDL_Initializer.h>
 #include <Volcano/ScopeGuard.h>
 #include <Volcano/System/SinglePlayer.h>
+#include <Volcano/System/MultiPlayerClient.h>
+#include <Volcano/System/MultiPlayerServer.h>
 
 #include "Volcano/Demo/Common.h"
 
 VOLCANO_DEMO_BEGIN
 
-static bool pollEvents(System::Frontend& frontend) {
-    SDL_Event evt;
+static void printBanner() {
+    logInfo("VolcanoEngine Demo v" VOLCANO_VERSION_STR);
+}
 
-    while (SDL_PollEvent(&evt)) {
-        if (evt.type == SDL_QUIT) {
-            return false;
-        }
-        frontend.feedEvent(evt);
-    }
-
-    return true;
+static void printHelp() {
 }
 
 static int run(int argc, char* argv[]) {
-    SDL_Initializer sdl;
+    argh::parser cmdline(argv);
 
 #ifdef VOLCANO_DEBUG
     SDL_LogSetAllPriority(SDL_LOG_PRIORITY_DEBUG);
+#else
+    SDL_LogSetAllPriority(SDL_LOG_PRIORITY_INFO);
 #endif
 
-    System::SinglePlayer sp;
+    printBanner();
 
-#if 0
-    while (!frontend.shouldQuit()) {
-        pollEvents(frontend);
-        frontend.update(10ms);
-        SDL_Delay(10);
+    if (cmdline[{ "-v", "--version" }]) {
+        return EXIT_SUCCESS;
     }
-#endif
+
+    if (cmdline[{ "-h", "--help" }]) {
+        printHelp();
+        return EXIT_SUCCESS;
+    }
+
+    std::string mode;
+    cmdline("mode") >> mode;
+
+    std::unique_ptr<System::Base> system;
+    if (mode == "singleplayer") {
+        logInfo("Creating single player system...");
+        system = std::make_unique<System::SinglePlayer>();
+    } else if (mode == "multiplayerclient") {
+        logInfo("Creating multi-player client system...");
+        system = std::make_unique<System::MultiPlayerClient>();
+    } else if (mode == "multiplayerserver") {
+        logInfo("Creating multi-player server system...");
+        system = std::make_unique<System::MultiPlayerServer>();
+    } else {
+        if (!mode.empty()) {
+            logWarning("Unknown mode: '{}'", mode);
+        }
+        logWarning("Fallback to 'singleplayer'.");
+        system = std::make_unique<System::SinglePlayer>();
+    }
+
+    system->run();
 
     return EXIT_SUCCESS;
 }

@@ -17,9 +17,7 @@ public:
     virtual bool init(int width, int height);
 
 public:
-    bool begin();
-    void end();
-    void update(Duration elapsed);
+    void render(const View& view, Duration elapsed);
 
 private:
     GL3WProcs gl3w_;

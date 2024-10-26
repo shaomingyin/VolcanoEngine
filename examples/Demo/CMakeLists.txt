@@ -11,5 +11,6 @@ volcano_add_auto_executable(Demo
     PUBLIC_LINK_LIBRARIES
         System
     PUBLIC_LINK_PACKAGES
+        argh argh
         SDL2 SDL2::SDL2main
 )

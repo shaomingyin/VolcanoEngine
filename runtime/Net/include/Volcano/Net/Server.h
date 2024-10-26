@@ -17,9 +17,9 @@ public:
 
 public:
     bool init();
+    void frame(Duration elapsed) override;
 
 protected:
-    void frame(Duration elapsed) override;
     void handlePackage(const ENetPacket& package) override;
     void handleConnect(ENetPeer& peer) override;
     void handleDisconnect(ENetPeer& peer) override;

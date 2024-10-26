@@ -67,7 +67,7 @@ World::~World() {
     registry_.destroy(global_);
 }
 
-void World::update(Duration elapsed) {
+void World::frame(Duration elapsed) {
     if (physics_enabled_) {
         bt_dynamics_world_->stepSimulation(durationToMicroseconds(elapsed) / 1000000.0);
     }

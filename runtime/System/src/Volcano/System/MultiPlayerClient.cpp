@@ -4,8 +4,11 @@
 
 VOLCANO_SYSTEM_BEGIN
 
-MultiPlayerClient::MultiPlayerClient()
-	: frontend_(resourceManager(), net_client_) {
+MultiPlayerClient::MultiPlayerClient() {
+}
+
+Game::World* MultiPlayerClient::gameWorld() {
+	return &net_client_;
 }
 
 VOLCANO_SYSTEM_END

@@ -23,20 +23,13 @@ bool Renderer::init(int width, int height) {
     widht_ = width;
     height_ = height;
 
-    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     glViewport(0.0f, 0.0f, width, height);
 
     return true;
 }
 
-bool Renderer::begin() {
-    return true;
-}
-
-void Renderer::end() {
-}
-
-void Renderer::update(Duration elapsed) {
+void Renderer::render(const View& view, Duration elapsed) {
     gl3wProcs = &gl3w_;
 
     glClear(GL_COLOR_BUFFER_BIT);

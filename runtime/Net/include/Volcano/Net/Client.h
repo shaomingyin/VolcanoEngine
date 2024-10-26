@@ -13,8 +13,10 @@ public:
     Client();
     ~Client() override;
 
-protected:
+public:
     void frame(Duration elapsed) override;
+
+protected:
     void handlePackage(const ENetPacket& package) override;
     void handleConnect(ENetPeer& peer) override;
     void handleDisconnect(ENetPeer& peer) override;

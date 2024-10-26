@@ -6,6 +6,7 @@ volcano_add_static_library(Base
         ${CMAKE_CURRENT_SOURCE_DIR}/include
         ${CMAKE_CURRENT_BINARY_DIR}/include
     PRIVATE_SOURCES
+        include/Volcano/Cache.h
         include/Volcano/Color.h
         include/Volcano/Config.h.in
         include/Volcano/Common.h
@@ -13,12 +14,12 @@ volcano_add_static_library(Base
         include/Volcano/Error.h
 		include/Volcano/ResourceManager.h
         include/Volcano/ScopeGuard.h
-        include/Volcano/SDL_Initializer.h
         include/Volcano/VersionNumber.h
         src/Volcano/Error.cpp
         src/Volcano/ResourceManager.cpp
         src/Volcano/VersionNumber.cpp
     PUBLIC_DEFINITIONS
+        NOMINMAX
         VFSPP_ENABLE_MULTITHREADING
     PUBLIC_LINK_PACKAGES
         Eigen3 Eigen3::Eigen
@@ -27,6 +28,7 @@ volcano_add_static_library(Base
         SDL2 SDL2::SDL2
         microprofile microprofile::microprofile
         miniz miniz::miniz
+        Taskflow Taskflow::Taskflow
     PUBLIC_HEADERS
         include/Volcano/Common.h
         include/Volcano/ScopeGuard.h

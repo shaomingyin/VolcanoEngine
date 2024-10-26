@@ -11,7 +11,7 @@ enet/1.3.18
 entt/3.13.2
 taskflow/3.8.0
 miniz/3.0.2
-cwalk/1.2.8
+nlohmann_json/3.11.3
 
 [generators]
 CMakeDeps
