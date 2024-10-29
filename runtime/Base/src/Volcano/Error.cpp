@@ -13,9 +13,15 @@ const char* ErrorCategory::name() const noexcept {
 std::string ErrorCategory::message(int condition) const {
     static const char* errc_messages[] = {
         "Ok",
+        "InvalidContext",
         "Invalid Parameter",
         "Invalid State",
-        "Timeout"
+        "Timeout",
+        "Existed",
+        "NotExisted",
+        "NotSupported",
+        "OutOfMemory",
+        "OutOfResource"
     };
 
     if (0 <= condition && condition < VOLCANO_DIMOF(errc_messages)) {

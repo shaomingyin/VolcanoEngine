@@ -1,5 +1,6 @@
 //
 //
+#include <Volcano/Error.h>
 #include <Volcano/Graphics/Renderer.h>
 
 VOLCANO_GRAPHICS_BEGIN
@@ -12,12 +13,10 @@ Renderer::Renderer()
 Renderer::~Renderer() {
 }
 
-bool Renderer::init(int width, int height) {
-    VOLCANO_ASSERT(SDL_GL_GetCurrentContext() != nullptr);
-
-    auto ret = gl3wInit(&gl3w_, GL3WGetProcAddressProc(SDL_GL_GetProcAddress));
+void Renderer::init(GL3WGetProcAddressProc get_proc, int width, int height) {
+    auto ret = gl3wInit(&gl3w_, get_proc);
     if (ret != GL3W_OK) {
-        return false;
+        throw Error(Errc::InvalidContext);
     }
 
     widht_ = width;
@@ -25,8 +24,6 @@ bool Renderer::init(int width, int height) {
 
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     glViewport(0.0f, 0.0f, width, height);
-
-    return true;
 }
 
 void Renderer::render(const View& view, Duration elapsed) {

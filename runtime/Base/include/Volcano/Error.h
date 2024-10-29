@@ -20,6 +20,8 @@ enum class Errc {
     Existed,
     NotExisted,
     NotSupported,
+    OutOfMemory,
+    OutOfResource,
 
     Unknown
 };

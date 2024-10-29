@@ -12,9 +12,9 @@
 #include <vector>
 #include <string>
 #include <chrono>
+#include <filesystem>
 
-#include <SDL.h>
-#include <fmt/core.h>
+#include <spdlog/spdlog.h>
 #include <sigslot/signal.hpp>
 
 #include <Volcano/Config.h>
@@ -35,8 +35,8 @@
 #endif
 
 #ifdef VOLCANO_DEBUG
-#   include <SDL_assert.h>
-#   define VOLCANO_ASSERT(expr) SDL_assert(expr)
+#   include <cassert>
+#   define VOLCANO_ASSERT(expr) assert(expr)
 #else
 #   define VOLCANO_ASSERT(expr)
 #endif
@@ -125,30 +125,34 @@ VOLCANO_FORCE_INLINE int64_t timePointToMicroseconds(TimePoint tp) {
 }
 
 template <typename... Args>
-void log(SDL_LogPriority priority, fmt::format_string<Args...> fmt, Args&&... args) {
-    SDL_LogMessage(SDL_LOG_CATEGORY_APPLICATION, priority, fmt::format(fmt, std::forward<Args>(args)...).c_str());
+void log(spdlog::level::level_enum level, spdlog::format_string_t<Args...> fmt, Args&&... args) {
+    spdlog::log(level, fmt, std::forward<Args>(args)...);
 }
 
 template <typename... Args>
-void logError(fmt::format_string<Args...> fmt, Args&&... args) {
-    log(SDL_LOG_PRIORITY_ERROR, fmt, std::forward<Args>(args)...);
+void logError(spdlog::format_string_t<Args...> fmt, Args&&... args) {
+    log(spdlog::level::err, fmt, std::forward<Args>(args)...);
 }
 
 template <typename... Args>
-void logWarning(fmt::format_string<Args...> fmt, Args&&... args) {
-    log(SDL_LOG_PRIORITY_WARN, fmt, std::forward<Args>(args)...);
+void logWarning(spdlog::format_string_t<Args...> fmt, Args&&... args) {
+    log(spdlog::level::warn, fmt, std::forward<Args>(args)...);
 }
 
 template <typename... Args>
-void logInfo(fmt::format_string<Args...> fmt, Args&&... args) {
-    log(SDL_LOG_PRIORITY_INFO, fmt, std::forward<Args>(args)...);
+void logInfo(spdlog::format_string_t<Args...> fmt, Args&&... args) {
+    log(spdlog::level::info, fmt, std::forward<Args>(args)...);
 }
 
 template <typename... Args>
-void logDebug(fmt::format_string<Args...> fmt, Args&&... args) {
+void logDebug(spdlog::format_string_t<Args...> fmt, Args&&... args) {
 #ifdef VOLCANO_DEBUG
-    log(SDL_LOG_PRIORITY_DEBUG, fmt, std::forward<Args>(args)...);
+    log(spdlog::level::debug, fmt, std::forward<Args>(args)...);
 #endif
+}
+
+VOLCANO_FORCE_INLINE std::filesystem::path normalizedPath(const std::filesystem::path& path) {
+    return std::filesystem::path(path.lexically_normal().generic_string());
 }
 
 VOLCANO_END

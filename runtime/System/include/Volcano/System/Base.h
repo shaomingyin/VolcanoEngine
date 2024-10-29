@@ -5,21 +5,25 @@
 
 #include <filesystem>
 
-#include <Volcano/ResourceManager.h>
+#include <Volcano/Resources.h>
+#include <Volcano/World/Scene.h>
 #include <Volcano/System/Common.h>
-#include <Volcano/System/JsonUtils.h>
+#include <Volcano/System/Settings.h>
 
 VOLCANO_SYSTEM_BEGIN
 
-class Base {
+class Base: public World::Scene {
 public:
-	Base(int sdl_init_flags = SDL_INIT_EVERYTHING,
-		 const std::filesystem::path& root = std::filesystem::path(),
-		 const std::filesystem::path& init = std::filesystem::path());
+	Base(const std::filesystem::path& root = std::filesystem::path(),
+		 const std::filesystem::path& init = std::filesystem::path(),
+		 int sdl_init_flags = SDL_INIT_EVERYTHING);
 
 	virtual ~Base();
 
 public:
+	virtual void init();
+	void run();
+
 	int fps() const {
 		return frame_count_per_second_;
 	}
@@ -33,44 +37,29 @@ public:
 		frame_elapsed_min_ = std::chrono::microseconds(1000000) / max_fps;
 	}
 
-	ResourceManager& resourceManager() {
-		return resource_manager_;
+	Resources& resources() {
+		return resources_;
 	}
 
-	const ResourceManager& resourceManager() const {
-		return resource_manager_;
+	const Resources& resources() const {
+		return resources_;
 	}
 
-	void run();
-
-protected:
-	nlohmann::json& config() {
-		return config_;
+	Settings& settings() {
+		return settings_;
 	}
 
-	const nlohmann::json& config() const {
-		return config_;
-	}
-
-	template <typename T>
-	auto readConfig(const std::filesystem::path& path) const {
-		return JsonUtils::read<T>(config_, path);
-	}
-
-	template <typename T>
-	auto readConfig(const std::filesystem::path& path, T&& def) const {
-		return JsonUtils::read<T>(config_, path, std::move(def));
+	const Settings& settings() const {
+		return settings_;
 	}
 
 	void stop() {
 		running_ = false;
 	}
 
+protected:
 	void pollEvents();
-
-	virtual void mainLoop();
 	virtual void handleEvent(const SDL_Event& evnt) {};
-	virtual void frame(Duration elapsed) {};
 
 private:
 	std::filesystem::path root_;
@@ -82,8 +71,8 @@ private:
 	Duration frame_elapsed_min_;
 	uint64_t frame_count_;
 	uint64_t frame_count_per_second_;
-	ResourceManager resource_manager_;
-	nlohmann::json config_;
+	Settings settings_;
+	Resources resources_;
 };
 
 VOLCANO_SYSTEM_END

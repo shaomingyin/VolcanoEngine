@@ -14,7 +14,7 @@ public:
     virtual ~Renderer();
 
 public:
-    virtual bool init(int width, int height);
+    virtual void init(GL3WGetProcAddressProc get_proc, int width, int height);
 
 public:
     void render(const View& view, Duration elapsed);
