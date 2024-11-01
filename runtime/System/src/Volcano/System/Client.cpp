@@ -27,27 +27,6 @@ Client::~Client() {
 	}
 }
 
-void Client::init() {
-	Local::init();
-
-	enet_host_ = enet_host_create(nullptr, 1, 0, 0, 0);
-	if (enet_host_ == nullptr) {
-		throw Error(Errc::OutOfResource);
-	}
-
-	auto enet_host_guard = scopeGuard([this] {
-		enet_host_destroy(enet_host_);
-		enet_host_ = nullptr;
-	});
-
-	enet_peer_ = enet_host_connect(enet_host_, &enet_address_, sizeof(ENetAddress), 0);
-	if (enet_peer_ == nullptr) {
-		throw Error(Errc::OutOfResource);
-	}
-
-	enet_host_guard.dismiss();
-}
-
 void Client::frame(Duration elapsed) {
 	ENetEvent evt;
 	int ret = enet_host_service(enet_host_, &evt, 0);
@@ -75,6 +54,25 @@ void Client::handleConnect(ENetPeer* peer) {
 }
 
 void Client::handleDisconnect(ENetPeer* peer) {
+}
+
+void Client::init() {
+	enet_host_ = enet_host_create(nullptr, 1, 0, 0, 0);
+	if (enet_host_ == nullptr) {
+		throw Error(Errc::OutOfResource);
+	}
+
+	auto enet_host_guard = scopeGuard([this] {
+		enet_host_destroy(enet_host_);
+		enet_host_ = nullptr;
+		});
+
+	enet_peer_ = enet_host_connect(enet_host_, &enet_address_, sizeof(ENetAddress), 0);
+	if (enet_peer_ == nullptr) {
+		throw Error(Errc::OutOfResource);
+	}
+
+	enet_host_guard.dismiss();
 }
 
 VOLCANO_SYSTEM_END

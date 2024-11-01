@@ -10,17 +10,13 @@ VOLCANO_GRAPHICS_BEGIN
 
 class Renderer {
 public:
-    Renderer();
+    Renderer(GL3WGetProcAddressProc get_proc, int width, int height);
     virtual ~Renderer();
-
-public:
-    virtual void init(GL3WGetProcAddressProc get_proc, int width, int height);
 
 public:
     void render(const View& view, Duration elapsed);
 
 private:
-    GL3WProcs gl3w_;
     int widht_;
     int height_;
 };

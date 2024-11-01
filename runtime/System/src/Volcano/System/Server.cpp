@@ -10,12 +10,14 @@ Server::Server(const std::filesystem::path& root, const std::filesystem::path& i
 	, max_clients_(max_clients) {
 	enet_bind_address_.host = ENET_HOST_ANY;
 	enet_bind_address_.port = VOLCANO_SYSTEM_DEFAULT_PORT;
+	this->init();
 }
 
 Server::Server(const std::filesystem::path& root, const std::filesystem::path& init, const ENetAddress& bind_address, int max_clients)
 	: Base(root, init, 0)
 	, enet_bind_address_(bind_address)
 	, max_clients_(max_clients) {
+	this->init();
 }
 
 Server::Server(const std::filesystem::path& root, const std::filesystem::path& init, const std::string& host, int port, int max_clients)
@@ -27,14 +29,7 @@ Server::Server(const std::filesystem::path& root, const std::filesystem::path& i
 		enet_bind_address_.host = ENET_HOST_ANY;
 	}
 	enet_bind_address_.port = port;
-}
-
-void Server::init() {
-	Base::init();
-	enet_host_ = enet_host_create(&enet_bind_address_, max_clients_, 1, 0, 0);
-	if (enet_host_ == nullptr) {
-		throw Error(Errc::OutOfResource);
-	}
+	this->init();
 }
 
 void Server::frame(Duration elapsed) {
@@ -64,6 +59,13 @@ void Server::handleConnect(ENetPeer* peer) {
 }
 
 void Server::handleDisconnect(ENetPeer* peer) {
+}
+
+void Server::init() {
+	enet_host_ = enet_host_create(&enet_bind_address_, max_clients_, 1, 0, 0);
+	if (enet_host_ == nullptr) {
+		throw Error(Errc::OutOfResource);
+	}
 }
 
 VOLCANO_SYSTEM_END

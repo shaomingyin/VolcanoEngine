@@ -21,7 +21,6 @@ public:
 	virtual ~Base();
 
 public:
-	virtual void init();
 	void run();
 
 	int fps() const {

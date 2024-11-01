@@ -12,8 +12,10 @@ volcano_add_static_library(Base
         include/Volcano/Common.h
         include/Volcano/Eigen.h
         include/Volcano/Error.h
+        include/Volcano/Rect.h
 		include/Volcano/Resources.h
         include/Volcano/ScopeGuard.h
+        include/Volcano/Size.h
         include/Volcano/VersionNumber.h
         src/Volcano/Error.cpp
         src/Volcano/Resources.cpp

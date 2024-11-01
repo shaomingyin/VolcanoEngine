@@ -3,6 +3,9 @@
 #ifndef VOLCANO_SOUND_COMMON_H
 #define VOLCANO_SOUND_COMMON_H
 
+#include <AL/al.h>
+#include <AL/alc.h>
+
 #include <Volcano/Common.h>
 #include <Volcano/Sound/Config.h>
 

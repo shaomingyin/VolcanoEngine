@@ -12,15 +12,6 @@ Base::Base(const std::filesystem::path& root, const std::filesystem::path& init,
 	if (sdl_init_result_ != 0) {
 		throw Error(Errc::OutOfResource);
 	}
-}
-
-Base::~Base() {
-	if (sdl_init_result_ == 0) {
-		SDL_Quit();
-	}
-}
-
-void Base::init() {
 	resources_.mount("/", root_);
 	auto initrc = resources_.get(init_);
 	Buffer json_data(initrc->size());
@@ -28,6 +19,12 @@ void Base::init() {
 		//settings_.nlohmann::json::parse(std::move(json_data));
 	}
 	setMaxFps(settings_.get<int>("/fpsMax", 60));
+}
+
+Base::~Base() {
+	if (sdl_init_result_ == 0) {
+		SDL_Quit();
+	}
 }
 
 void Base::run() {

@@ -4,10 +4,7 @@
 
 VOLCANO_SOUND_BEGIN
 
-Space::Space() {
-}
-
-Space::~Space() {
+void Space::frame(Duration elapsed) {
 }
 
 VOLCANO_SOUND_END

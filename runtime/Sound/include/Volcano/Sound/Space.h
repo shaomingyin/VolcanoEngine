@@ -9,8 +9,11 @@ VOLCANO_SOUND_BEGIN
 
 class Space {
 public:
-    Space();
-    virtual ~Space();
+    Space() = default;
+    virtual ~Space() = default;
+
+public:
+    void frame(Duration elapsed);
 };
 
 VOLCANO_SOUND_END

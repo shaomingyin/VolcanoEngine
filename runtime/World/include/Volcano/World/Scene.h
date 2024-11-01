@@ -6,6 +6,8 @@
 #include <memory>
 #include <type_traits>
 
+#include <taskflow/taskflow.hpp>
+
 #include <Volcano/World/Common.h>
 #include <Volcano/World/Basic.h>
 #include <Volcano/World/Light.h>
@@ -24,29 +26,33 @@ public:
 	Scene& operator=(const Scene&) = delete;
 	Scene& operator=(Scene&&) = delete;
 
-	entt::handle create(std::string name = std::string()) {
+	tf::Executor& executor() {
+		return executor_;
+	}
+
+	entt::handle createEntity(std::string name = std::string()) {
 		auto id = registry_.create();
 		registry_.emplace<Basic>(id, std::move(name));
 		return entt::handle(registry_, id);
 	}
 
 	template <typename Component>
-	auto view() {
+	auto componentView() {
 		return registry_.view<Component>();
 	}
 
 	template <typename Component, typename... Exclude>
-	auto view(entt::exclude_t<Exclude...> exclude) {
+	auto componentView(entt::exclude_t<Exclude...> exclude) {
 		return registry_.view<Component>(std::forward<Exclude...>(exclude));
 	}
 
 	template <typename... Components>
-	auto view() {
+	auto componentView() {
 		return registry_.view<Components...>();
 	}
 
 	template <typename... Components, typename... Exclude>
-	auto view(entt::exclude_t<Exclude...> exclude) {
+	auto componentView(entt::exclude_t<Exclude...> exclude) {
 		return registry_.view<Components...>(std::forward<Exclude...>(exclude));
 	}
 
@@ -87,6 +93,22 @@ public:
 		bt_dynamics_world_->setGravity(btVector3(v.x(), v.y(), v.z()));
 	}
 
+	void drawPhysicsDebug() {
+		bt_dynamics_world_->debugDrawWorld();
+	}
+
+	btIDebugDraw* physicsDebugDrawer() {
+		return bt_dynamics_world_->getDebugDrawer();
+	}
+
+	const btIDebugDraw* physicsDebugDrawer() const {
+		return bt_dynamics_world_->getDebugDrawer();
+	}
+
+	void setPhysicsDebugDrawer(btIDebugDraw* p) {
+		bt_dynamics_world_->setDebugDrawer(p);
+	}
+
 protected:
 	entt::registry& registry() {
 		return registry_;
@@ -119,6 +141,7 @@ private:
 	}
 
 private:
+	tf::Executor executor_;
 	entt::registry registry_;
 	entt::entity global_;
 	bool physics_enabled_;

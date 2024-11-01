@@ -1,6 +1,5 @@
 //
 //
-#include <Volcano/World/Basic.h>
 #include <Volcano/World/BoxRigidBody.h>
 #include <Volcano/World/CapsuleRigidBody.h>
 #include <Volcano/World/ConeRigidBody.h>

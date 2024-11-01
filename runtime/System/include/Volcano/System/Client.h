@@ -16,14 +16,14 @@ public:
     Client(const std::filesystem::path& root, const std::filesystem::path& init, const std::string& host, int port = VOLCANO_SYSTEM_DEFAULT_PORT);
 	virtual ~Client();
 
-public:
-    void init() override;
-
 protected:
     void frame(Duration elapsed) override;
     virtual void handlePackage(ENetPeer* peer, ENetPacket* package);
     virtual void handleConnect(ENetPeer* peer) ;
     virtual void handleDisconnect(ENetPeer* peer);
+
+private:
+    void init();
 
 private:
     ENetAddress enet_address_;

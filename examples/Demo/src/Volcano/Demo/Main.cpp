@@ -47,17 +47,17 @@ static int run(const argh::parser& cmdline) {
     cmdline({ "-m", "--mode" }) >> mode;
 
     std::unique_ptr<System::Base> system;
-    if (mode == "singleplayer") {
+    if (mode == "local") {
         logInfo("Creating single player system...");
         system = std::make_unique<System::Local>(root, init);
-    } else if (mode == "multiplayerclient") {
+    } else if (mode == "client") {
         std::string remote_host("127.0.0.1");
         cmdline("--remote-host") >> remote_host;
         int remote_port = VOLCANO_SYSTEM_DEFAULT_PORT;
         cmdline("--remote-port") >> remote_port;
         logInfo("Creating multi-player client system...");
         system = std::make_unique<System::Client>(root, init, remote_host, remote_port);
-    } else if (mode == "multiplayerserver") {
+    } else if (mode == "server") {
         std::string bind_host("any");
         cmdline("--bind-host") >> bind_host;
         int bind_port = VOLCANO_SYSTEM_DEFAULT_PORT;
@@ -68,11 +68,10 @@ static int run(const argh::parser& cmdline) {
         if (!mode.empty()) {
             logWarning("Unknown mode: '{}'", mode);
         }
-        logWarning("Fallback to 'singleplayer'.");
+        logWarning("Fallback to 'local'.");
         system = std::make_unique<System::Local>(root, init);
     }
 
-    system->init();
     system->run();
 
     return EXIT_SUCCESS;

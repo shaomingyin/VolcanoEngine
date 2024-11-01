@@ -12,6 +12,8 @@ volcano_add_static_library(Sound
         src/Volcano/Sound/Space.cpp
     PUBLIC_LINK_LIBRARIES
         Base
+    PUBLIC_LINK_PACKAGES
+        OpenAL OpenAL::OpenAL
     PUBLIC_HEADERS
         include/Volcano/Sound/Common.h
         include/Volcano/Sound/Space.h

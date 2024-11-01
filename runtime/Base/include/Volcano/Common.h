@@ -100,6 +100,24 @@ using Clock = std::chrono::steady_clock;
 using Duration = Clock::duration;
 using TimePoint = Clock::time_point;
 
+constexpr auto Epsilon = 0.000001f;
+
+VOLCANO_FORCE_INLINE bool fuzzyCompare(float a, float b) {
+    return (abs(a - b) < Epsilon);
+}
+
+VOLCANO_FORCE_INLINE bool fuzzyCompare(double a, double b) {
+    return (abs(a - b) < Epsilon);
+}
+
+VOLCANO_FORCE_INLINE bool fuzzyIsZero(float x) {
+    return fuzzyCompare(x, 0.0f);
+}
+
+VOLCANO_FORCE_INLINE bool fuzzyIsZero(double x) {
+    return fuzzyCompare(x, 0.0);
+}
+
 VOLCANO_FORCE_INLINE int64_t durationToSeconds(Duration d) {
     return std::chrono::duration_cast<std::chrono::seconds>(d).count();
 }
