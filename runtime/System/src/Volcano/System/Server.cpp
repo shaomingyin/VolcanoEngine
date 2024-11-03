@@ -5,31 +5,28 @@
 
 VOLCANO_SYSTEM_BEGIN
 
-Server::Server(const std::filesystem::path& root, const std::filesystem::path& init, int max_clients)
-	: Base(root, init, 0)
-	, max_clients_(max_clients) {
+Server::Server(int max_clients)
+	: max_clients_(max_clients) {
 	enet_bind_address_.host = ENET_HOST_ANY;
 	enet_bind_address_.port = VOLCANO_SYSTEM_DEFAULT_PORT;
-	this->init();
+	init();
 }
 
-Server::Server(const std::filesystem::path& root, const std::filesystem::path& init, const ENetAddress& bind_address, int max_clients)
-	: Base(root, init, 0)
-	, enet_bind_address_(bind_address)
+Server::Server(const ENetAddress& bind_address, int max_clients)
+	: enet_bind_address_(bind_address)
 	, max_clients_(max_clients) {
-	this->init();
+	init();
 }
 
-Server::Server(const std::filesystem::path& root, const std::filesystem::path& init, const std::string& host, int port, int max_clients)
-	: Base(root, init, 0)
-	, max_clients_(max_clients) {
+Server::Server(const std::string& host, int port, int max_clients)
+	: max_clients_(max_clients) {
 	if (host != "any") {
 		enet_address_set_host(&enet_bind_address_, host.c_str());
 	} else {
 		enet_bind_address_.host = ENET_HOST_ANY;
 	}
 	enet_bind_address_.port = port;
-	this->init();
+	init();
 }
 
 void Server::frame(Duration elapsed) {

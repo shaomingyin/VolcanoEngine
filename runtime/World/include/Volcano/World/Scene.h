@@ -26,6 +26,8 @@ public:
 	Scene& operator=(const Scene&) = delete;
 	Scene& operator=(Scene&&) = delete;
 
+	virtual void frame(Duration elapsed);
+
 	tf::Executor& executor() {
 		return executor_;
 	}
@@ -117,8 +119,6 @@ protected:
 	const entt::registry& registry() const {
 		return registry_;
 	}
-
-	virtual void frame(Duration elapsed);
 
 private:
 	template <typename RigidBody>

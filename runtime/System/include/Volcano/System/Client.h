@@ -12,8 +12,8 @@ VOLCANO_SYSTEM_BEGIN
 
 class Client: public Local {
 public:
-    Client(const std::filesystem::path& root, const std::filesystem::path& init, const ENetAddress& address);
-    Client(const std::filesystem::path& root, const std::filesystem::path& init, const std::string& host, int port = VOLCANO_SYSTEM_DEFAULT_PORT);
+    Client(const ENetAddress& address);
+    Client(const std::string& host, int port = VOLCANO_SYSTEM_DEFAULT_PORT);
 	virtual ~Client();
 
 protected:

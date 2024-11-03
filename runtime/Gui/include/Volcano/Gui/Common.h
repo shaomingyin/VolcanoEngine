@@ -4,7 +4,8 @@
 #define VOLCANO_GUI_COMMON_H
 
 #include <SDL.h>
-#include <nanovg.h>
+
+#include <imgui.h>
 
 #include <Volcano/Common.h>
 #include <Volcano/Gui/Config.h>

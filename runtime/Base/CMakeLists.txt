@@ -10,26 +10,21 @@ volcano_add_static_library(Base
         include/Volcano/Color.h
         include/Volcano/Config.h.in
         include/Volcano/Common.h
-        include/Volcano/Eigen.h
         include/Volcano/Error.h
-        include/Volcano/Rect.h
-		include/Volcano/Resources.h
         include/Volcano/ScopeGuard.h
-        include/Volcano/Size.h
         include/Volcano/VersionNumber.h
         src/Volcano/Error.cpp
-        src/Volcano/Resources.cpp
         src/Volcano/VersionNumber.cpp
     PUBLIC_DEFINITIONS
         NOMINMAX
         VFSPP_ENABLE_MULTITHREADING
     PUBLIC_LINK_PACKAGES
+        SDL2 SDL2::SDL2
         Eigen3 Eigen3::Eigen
         spdlog spdlog::spdlog
-        PalSigslot Pal::Sigslot
         microprofile microprofile::microprofile
-        miniz miniz::miniz
         Taskflow Taskflow::Taskflow
+        PhysFS physfs-static
     PUBLIC_HEADERS
         include/Volcano/Common.h
         include/Volcano/ScopeGuard.h

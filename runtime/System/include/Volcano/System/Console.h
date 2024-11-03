@@ -10,8 +10,18 @@ VOLCANO_SYSTEM_BEGIN
 
 class Console: public Gui::Window {
 public:
-	Console(NVGcontext* nvg);
+	Console(Gui::Rect rect);
 	virtual ~Console() = default;
+
+public:
+	void update() override;
+
+	void toggle() {
+		toggle_ = !toggle_;
+	}
+
+private:
+	bool toggle_;
 };
 
 VOLCANO_SYSTEM_END

@@ -1,39 +1,22 @@
 //
 //
-#define NANOVG_GL3_IMPLEMENTATION
-
-#include <Volcano/Error.h>
 #include <Volcano/ScopeGuard.h>
 #include <Volcano/System/Local.h>
 
-#include <nanovg_gl.h>
-#include <nanovg_gl_utils.h>
+#include <imgui_impl_sdl2.h>
+#include <imgui_impl_opengl3.h>
 
 VOLCANO_SYSTEM_BEGIN
 
-Local::Local(const std::filesystem::path& root, const std::filesystem::path& init)
-    : Base(root, init)
-    , window_(
-        settings().get<std::string>("/local/title", "Untitled"),
-        settings().get<int>("/local/width", 1024),
-        settings().get<int>("/local/height", 768))
+Local::Local()
+    : window_("Untitled", 1024, 768, Window::FlagResizable | Window::FlagClear)
     , input_(window_.id())
-    , nvg_(nvgCreateGL3(0))
-    , renderer_(
-        GL3WGetProcAddressProc(SDL_GL_GetProcAddress),
-        window_.width(),
-        window_.height())
-    , hud_(nvg_)
-    , console_(nvg_)
+    , hud_("HUD", { 0, 0, 1024.0f, 768.0f })
+    , console_({ 0, 0, 1024.0f, 768.0f / 2.0f })
     , current_view_(0) {
-    if (nvg_ == nullptr) {
-        throw Error(Errc::OutOfResource);
-    }
 }
 
 Local::~Local() {
-    window_.makeCurrent();
-    nvgDeleteGL3(nvg_);
 }
 
 void Local::handleEvent(const SDL_Event& evt) {
@@ -43,24 +26,39 @@ void Local::handleEvent(const SDL_Event& evt) {
 
 void Local::frame(Duration elapsed) {
 	Base::frame(elapsed);
+
     sound_space_.frame(elapsed);
 
-    if (window_.beginDraw()) {
-        {
-            auto end_draw = scopeGuard([this] {
-                window_.endDraw();
-            });
-            
-            buildView();
-            renderer_.render(views_[current_view_], elapsed);
+    buildView();
+    renderer_.render(views_[current_view_], window_);
+}
 
-            drawPhysicsDebug();
-            hud_.render();
-            console_.render();
+void Local::loadingFrame(Duration elapsed) {
+    int progress = loadingProgress();
+    const std::string& text = loadingText();
+
+    if (window_.beginFrame()) {
+        auto frame_guard = scopeGuard([this] {
+            window_.endFrame();
+        });
+
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        ImGui::SetWindowPos({ 0.0f, 0.0f });
+        ImGui::SetWindowSize({ float(window_.width()), float(window_.height()) });
+
+        std::string title;
+        if (text.empty()) {
+            title = fmt::format("Loading... {}%", progress);
+        } else {
+            title = fmt::format("{} {}%", text, progress);
         }
-
-        //int exp = current_view_;
-        //while (current_view_.compare_exchange_strong(exp, !current_view_));
+        ImGui::SetNextWindowPos({ 0.0f, 0.0f });
+        ImGui::SetNextWindowSize({ float(window_.width()), float(window_.height()) });
+        if (ImGui::Begin("Loading", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBackground)) {
+            ImGui::Text(title.c_str());
+            ImGui::End();
+        }
     }
 }
 

@@ -6,13 +6,11 @@
 
 VOLCANO_SYSTEM_BEGIN
 
-Client::Client(const std::filesystem::path& root, const std::filesystem::path& init, const ENetAddress& address)
-	: Local(root, init)
-	, enet_address_(address) {
+Client::Client(const ENetAddress& address)
+	: enet_address_(address) {
 }
 
-Client::Client(const std::filesystem::path& root, const std::filesystem::path& init, const std::string& host, int port)
-	: Local(root, init) {
+Client::Client(const std::string& host, int port) {
 	enet_address_set_host(&enet_address_, host.c_str());
 	enet_address_.port = port;
 }
@@ -28,6 +26,8 @@ Client::~Client() {
 }
 
 void Client::frame(Duration elapsed) {
+	Local::frame(elapsed);
+
 	ENetEvent evt;
 	int ret = enet_host_service(enet_host_, &evt, 0);
 	if (ret == 0) {
@@ -43,8 +43,6 @@ void Client::frame(Duration elapsed) {
 			break;
 		}
 	}
-
-	Local::frame(elapsed);
 }
 
 void Client::handlePackage(ENetPeer* peer, ENetPacket* package) {

@@ -6,6 +6,7 @@
 #include <atomic>
 #include <memory>
 
+#include <Volcano/Error.h>
 #include <Volcano/Graphics/View.h>
 #include <Volcano/Graphics/Renderer.h>
 #include <Volcano/Graphics/BulletDebugDrawer.h>
@@ -21,7 +22,7 @@ VOLCANO_SYSTEM_BEGIN
 
 class Local: public Base {
 public:
-	Local(const std::filesystem::path& root, const std::filesystem::path& init);
+	Local();
 	virtual ~Local();
 
 public:
@@ -40,6 +41,7 @@ public:
 protected:
 	void handleEvent(const SDL_Event& evt) override;
 	void frame(Duration elapsed) override;
+    void loadingFrame(Duration elapsed) override;
 
 private:
     void buildView();
@@ -47,7 +49,6 @@ private:
 private:
     Window window_;
     Input input_;
-    NVGcontext* nvg_;
     Graphics::Renderer renderer_;
     Graphics::BulletDebugDrawer bullet_debug_drawer_;
     Sound::Space sound_space_;

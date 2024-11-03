@@ -25,7 +25,6 @@ public:
 	virtual ~Context() = default;
 
 public:
-	virtual NVGcontext* nvg() = 0;
 	virtual void addWidget(WidgetBase* p);
 	virtual void removeWidget(WidgetBase* p);
 

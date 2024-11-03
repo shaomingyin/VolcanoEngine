@@ -13,22 +13,16 @@ volcano_add_static_library(Graphics
         include/debug_draw.hpp
         src/debug_draw/debug_draw.cpp
 		
-        include/nanovg.h
-        include/nanovg_gl.h
-        include/nanovg_gl_utils.h
-        src/nanovg/fontstash.h
-        src/nanovg/nanovg.c
-        src/nanovg/stb_image.h
-        src/nanovg/stb_truetype.h
-		
 		include/Volcano/Graphics/BulletDebugDrawer.h
         include/Volcano/Graphics/Config.h.in
         include/Volcano/Graphics/Common.h
         include/Volcano/Graphics/Mesh.h
         include/Volcano/Graphics/Renderer.h
+        include/Volcano/Graphics/Target.h
         include/Volcano/Graphics/View.h
 		src/Volcano/Graphics/BulletDebugDrawer.cpp
         src/Volcano/Graphics/Mesh.cpp
+        src/Volcano/Graphics/Target.cpp
         src/Volcano/Graphics/Renderer.cpp
         src/Volcano/Graphics/View.cpp
     PUBLIC_LINK_LIBRARIES

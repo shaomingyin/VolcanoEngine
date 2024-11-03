@@ -25,11 +25,6 @@ public:
 
     void handleEvent(const SDL_Event& evt);
 
-protected:
-    NVGcontext* nvg() {
-        return context_.nvg();
-    }
-
 private:
     Context& context_;
     Widget* parent_;

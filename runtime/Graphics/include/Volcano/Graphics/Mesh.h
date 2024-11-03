@@ -3,6 +3,8 @@
 #ifndef VOLCANO_GRAPHICS_MESH_H
 #define VOLCANO_GRAPHICS_MESH_H
 
+#include <string>
+
 #include <assimp/mesh.h>
 
 #include <Volcano/Graphics/Common.h>
@@ -12,6 +14,7 @@ VOLCANO_GRAPHICS_BEGIN
 class Mesh {
 public:
 	Mesh();
+	Mesh(const std::string& path);
 	virtual ~Mesh();
 
 public:

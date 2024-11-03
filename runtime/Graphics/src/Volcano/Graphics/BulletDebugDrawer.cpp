@@ -3,9 +3,6 @@
 #include <Volcano/Error.h>
 #include <Volcano/Graphics/BulletDebugDrawer.h>
 
-#include <nanovg_gl.h>
-#include <nanovg_gl_utils.h>
-
 VOLCANO_GRAPHICS_BEGIN
 
 BulletDebugDrawer::BulletDebugDrawer()

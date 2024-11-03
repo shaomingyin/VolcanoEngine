@@ -4,6 +4,7 @@
 #define VOLCANO_SYSTEM_COMMON_H
 
 #include <SDL.h>
+#include <physfs.h>
 #include <enet/enet.h>
 
 #include <Volcano/Common.h>

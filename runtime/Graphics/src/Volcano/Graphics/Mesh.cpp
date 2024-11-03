@@ -10,6 +10,9 @@ Mesh::Mesh()
 	, ebo_(0) {
 }
 
+Mesh::Mesh(const std::string& path) {
+}
+
 Mesh::~Mesh() {
 	if (vao_ > 0) {
 		glDeleteVertexArrays(1, &vao_);

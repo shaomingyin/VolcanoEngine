@@ -12,23 +12,22 @@ volcano_add_static_library(System
 		include/Volcano/System/Console.h
         include/Volcano/System/Common.h
         include/Volcano/System/Input.h
+        include/Volcano/System/Loader.h
         include/Volcano/System/Local.h
-        include/Volcano/System/Persistence.h
         include/Volcano/System/Server.h
-		include/Volcano/System/Settings.h
         include/Volcano/System/Window.h
         src/Volcano/System/Base.cpp
         src/Volcano/System/Client.cpp
 		src/Volcano/System/Console.cpp
         src/Volcano/System/Input.cpp
+        src/Volcano/System/Loader.cpp
         src/Volcano/System/Local.cpp
-        src/Volcano/System/Persistence.cpp
         src/Volcano/System/Server.cpp
-		src/Volcano/System/Settings.cpp
         src/Volcano/System/Window.cpp
     PUBLIC_LINK_LIBRARIES
         World
         Gui
+        Graphics
     PUBLIC_LINK_PACKAGES
         enet enet::enet
         nlohmann_json nlohmann_json::nlohmann_json

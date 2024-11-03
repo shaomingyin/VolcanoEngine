@@ -5,27 +5,13 @@
 
 VOLCANO_GUI_BEGIN
 
-Window::Window(NVGcontext* nvg)
-	: nvg_(nvg) {
-	if (nvg_ == nullptr) {
-		throw Error(Errc::OutOfResource);
-	}
+Window::Window(const std::string& title, Rect rect, int flags)
+	: title_(title)
+	, flags_(flags)
+	, rect_(rect) {
 }
 
-void Window::render() {
-}
-
-NVGcontext* Window::nvg() {
-	return nvg_;
-}
-
-void Window::handleEvent(const SDL_Event& evt) {
-	switch (evt.type) {
-	}
-
-	auto& ws = widgets();
-	for (auto& w: ws) {
-	}
+void Window::update() {
 }
 
 VOLCANO_GUI_END

@@ -5,22 +5,40 @@
 
 #include <string>
 
-#include <GL/gl3w.h>
+#include <imgui.h>
 
+#include <Volcano/Graphics/Target.h>
 #include <Volcano/System/Common.h>
 
 VOLCANO_SYSTEM_BEGIN
 
-class Window {
+class Window: public Graphics::Target {
 public:
-	Window(const std::string& title, int width, int height);
+	enum {
+		FlagResizable = 0x1,
+		FlagClear = 0x2
+	};
+
+public:
+	Window(const std::string& title, int width, int height, int flags = 0);
 	virtual ~Window();
 
 public:
 	void handleEvent(const SDL_Event& evt);
+	bool beginFrame() override;
+	void endFrame() override;
+	void resize(int width, int height) override;
+
+	SDL_Window* handle() {
+		return handle_;
+	}
 
 	Uint32 id() const {
 		return id_;
+	}
+
+	SDL_GLContext glContext() {
+		return gl_context_;
 	}
 
 	bool isVisible() const {
@@ -38,55 +56,29 @@ public:
 	}
 
 	int width() const {
-		VOLCANO_ASSERT(handle_ != nullptr);
-		int w, h;
-		SDL_GetWindowSize(handle_, &w, &h);
-		return w;
+		return width_;
 	}
 
 	int height() const {
-		VOLCANO_ASSERT(handle_ != nullptr);
-		int w, h;
-		SDL_GetWindowSize(handle_, &w, &h);
-		return h;
-	}
-
-	bool makeCurrent() {
-		VOLCANO_ASSERT(handle_ != nullptr);
-		VOLCANO_ASSERT(gl_context_ != nullptr);
-		if (SDL_GL_MakeCurrent(handle_, gl_context_) == 0) {
-			gl3wProcs = &gl3w_;
-			return true;
-		}
-		return false;
-	}
-
-	bool beginDraw() {
-		VOLCANO_ASSERT(handle_ != nullptr);
-		VOLCANO_ASSERT(gl_context_ != nullptr);
-		if ((flags_ & FlagVisible) && (SDL_GL_MakeCurrent(handle_, gl_context_) == 0)) {
-			gl3wProcs = &gl3w_;
-			return true;
-		}
-		return false;
-	}
-
-	void endDraw() {
-		VOLCANO_ASSERT(handle_ != nullptr);
-		SDL_GL_SwapWindow(handle_);
-		gl3wProcs = nullptr;
+		return height_;
 	}
 
 private:
+	// Internal flags
 	enum {
-		FlagVisible = 0x1
+		FlagVisible = 0x1000,
+		FlagDrawing = 0x2000
 	};
 
+private:
 	int flags_;
+	int width_;
+	int height_;
 	SDL_Window* handle_;
 	Uint32 id_;
 	SDL_GLContext gl_context_;
 	GL3WProcs gl3w_;
+	ImGuiContext* imgui_;
 };
 
 VOLCANO_SYSTEM_END
