@@ -5,7 +5,8 @@
 VOLCANO_WORLD_BEGIN
 
 BoxRigidBody::BoxRigidBody(float mass, Eigen::Vector3f h)
-	: btRigidBody(mass, nullptr, nullptr)
+	: RigidBody(mass)
+	, offset_(Eigen::Affine3f::Identity())
 	, shape_(btVector3(h.x(), h.y(), h.z())) {
 	setCollisionShape(&shape_);
 }

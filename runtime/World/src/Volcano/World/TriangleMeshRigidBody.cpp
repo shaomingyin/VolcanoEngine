@@ -5,7 +5,7 @@
 VOLCANO_WORLD_BEGIN
 
 TriangleMeshRigidBody::TriangleMeshRigidBody(float mass)
-	: btRigidBody(mass, nullptr, nullptr)
+	: RigidBody(mass)
 	, shape_(nullptr, false) /* TODO */ {
 	setCollisionShape(&shape_);
 }

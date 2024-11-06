@@ -9,9 +9,8 @@
 #include <taskflow/taskflow.hpp>
 
 #include <Volcano/World/Common.h>
-#include <Volcano/World/Basic.h>
-#include <Volcano/World/Light.h>
-#include <Volcano/World/Camera.h>
+#include <Volcano/World/Component.h>
+#include <Volcano/World/Inherency.h>
 
 VOLCANO_WORLD_BEGIN
 
@@ -32,10 +31,26 @@ public:
 		return executor_;
 	}
 
-	entt::handle createEntity(std::string name = std::string()) {
+	entt::handle emplaceEntity() {
 		auto id = registry_.create();
-		registry_.emplace<Basic>(id, std::move(name));
+		registry_.emplace<Inherency>(id, "entity_" + std::to_string(static_cast<uint32_t>(id)));
 		return entt::handle(registry_, id);
+	}
+
+	entt::handle emplaceEntity(std::string name) {
+		auto id = registry_.create();
+		registry_.emplace<Inherency>(id, std::move(name));
+		return entt::handle(registry_, id);
+	}
+
+	entt::handle emplaceEntity(std::string name, const Eigen::Affine3f& transform) {
+		auto id = registry_.create();
+		registry_.emplace<Inherency>(id, std::move(name), transform);
+		return entt::handle(registry_, id);
+	}
+
+	entt::handle global() {
+		return entt::handle(registry_, global_);
 	}
 
 	template <typename Component>
@@ -56,22 +71,6 @@ public:
 	template <typename... Components, typename... Exclude>
 	auto componentView(entt::exclude_t<Exclude...> exclude) {
 		return registry_.view<Components...>(std::forward<Exclude...>(exclude));
-	}
-
-	Light& ambientLight() {
-		return registry_.get_or_emplace<Light>(global_);
-	}
-
-	const Light& ambientLight() const {
-		return registry_.get<Light>(global_);
-	}
-
-	Camera& camera() {
-		return registry_.get_or_emplace<Camera>(global_);
-	}
-
-	const Camera& camera() const {
-		return registry_.get<Camera>(global_);
 	}
 
 	bool isPhysicsEnabled() {
@@ -121,22 +120,20 @@ protected:
 	}
 
 private:
-	template <typename RigidBody>
+	template <RigidBodyType RigidBody>
 	void rigidBodyAdded(entt::registry& registry, entt::entity entity) {
-		static_assert(std::is_base_of<btRigidBody, RigidBody>::value);
 		VOLCANO_ASSERT(&registry_ == &registry);
-		auto& basic = registry.get<Basic>(entity);
+		auto& inherency = registry.get<Inherency>(entity);
 		auto& rigid_body = registry.get<RigidBody>(entity);
-		rigid_body.setMotionState(&basic);
+		rigid_body.setTransform(inherency.transform());
 		bt_dynamics_world_->addRigidBody(&rigid_body);
 	}
 
-	template <typename RigidBody>
+	template <RigidBodyType RigidBody>
 	void rigidBodyRemoved(entt::registry& registry, entt::entity entity) {
-		static_assert(std::is_base_of<btRigidBody, RigidBody>::value);
 		VOLCANO_ASSERT(&registry_ == &registry);
 		auto& rigid_body = registry.get<RigidBody>(entity);
-		rigid_body.setMotionState(nullptr);
+		rigid_body.resetTransform();
 		bt_dynamics_world_->removeRigidBody(&rigid_body);
 	}
 

@@ -19,9 +19,7 @@ Base::Base(int sdl_init_flags)
 }
 
 Base::~Base() {
-	if (sdl_init_result_ == 0) {
-		SDL_Quit();
-	}
+	SDL_Quit();
 }
 
 void Base::run() {

@@ -39,12 +39,28 @@ public:
     }
 
 protected:
-	void handleEvent(const SDL_Event& evt) override;
 	void frame(Duration elapsed) override;
     void loadingFrame(Duration elapsed) override;
 
+protected:
+    virtual void onWindowMoved(int x, int y) {}
+    virtual void onWindowResized(int w, int h) {}
+    virtual void onWindowShown() {}
+    virtual void onWindowHidden() {}
+    virtual void onWindowFocusIn(bool focused) {}
+    virtual void onWindowFocusOut(bool focused) {}
+    virtual void onWindowCursorEnter() {}
+    virtual void onWindowCursorLeave() {}
+    virtual void onWindowKeyDown(int key, int modifier = 0) {}
+    virtual void onWindowKeyUp(int key, int modifier = 0) {}
+    virtual void onWindowMouseMove(double x, double y) {}
+    virtual void onWindowMouseButtonDown(int button, int modifier = 0) {}
+    virtual void onWindowMouseButtonUp(int button, int modifier = 0) {}
+    virtual void onWindowScroll(double x, double y) {}
+
 private:
     void buildView();
+    virtual void handleEvent(const SDL_Event& evt);
 
 private:
     Window window_;
@@ -52,7 +68,6 @@ private:
     Graphics::Renderer renderer_;
     Graphics::BulletDebugDrawer bullet_debug_drawer_;
     Sound::Space sound_space_;
-    Gui::Window hud_;
     Console console_;
     Graphics::View views_[2];
     std::atomic_int current_view_;

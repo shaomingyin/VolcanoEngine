@@ -1,12 +1,12 @@
 //
 //
-#ifndef VOLCANO_WORLD_DIRECTIONALLIGHT_H
-#define VOLCANO_WORLD_DIRECTIONALLIGHT_H
+#ifndef VOLCANO_GRAPHICS_DIRECTIONALLIGHT_H
+#define VOLCANO_GRAPHICS_DIRECTIONALLIGHT_H
 
-#include <Volcano/World/Common.h>
-#include <Volcano/World/Light.h>
+#include <Volcano/Graphics/Common.h>
+#include <Volcano/Graphics/Light.h>
 
-VOLCANO_WORLD_BEGIN
+VOLCANO_GRAPHICS_BEGIN
 
 class DirectionalLight: public Light {
 public:
@@ -26,6 +26,6 @@ private:
 	Eigen::Vector3f direction_;
 };
 
-VOLCANO_WORLD_END
+VOLCANO_GRAPHICS_END
 
-#endif // VOLCANO_WORLD_DIRECTIONALLIGHT_H
+#endif // VOLCANO_GRAPHICS_DIRECTIONALLIGHT_H

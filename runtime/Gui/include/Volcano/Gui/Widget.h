@@ -12,7 +12,7 @@ class Widget: public Context::WidgetBase {
 public:
     Widget(Widget& parent);
     Widget(Context& context);
-    ~Widget() override ;
+    ~Widget() override;
 
 public:
     Context& context() {
@@ -22,8 +22,6 @@ public:
     const Context& context() const {
         return context_;
     }
-
-    void handleEvent(const SDL_Event& evt);
 
 private:
     Context& context_;

@@ -1,7 +1,7 @@
 //
 //
-#ifndef VOLCANO_WORLD_BASIC_H
-#define VOLCANO_WORLD_BASIC_H
+#ifndef VOLCANO_WORLD_INHERENCY_H
+#define VOLCANO_WORLD_INHERENCY_H
 
 #include <string>
 
@@ -9,10 +9,9 @@
 
 VOLCANO_WORLD_BEGIN
 
-class Basic: public btMotionState {
+class Inherency final {
 public:
-	Basic(std::string name, Eigen::Affine3f transform = Eigen::Affine3f::Identity());
-	virtual ~Basic() = default;
+	Inherency(std::string name, Eigen::Affine3f transform = Eigen::Affine3f::Identity());
 
 public:
 	bool isEnabled() const {
@@ -39,6 +38,10 @@ public:
 		flags_ &= ~FlagVisible;
 	}
 
+	std::string& name() {
+		return name_;
+	}
+
 	const std::string& name() const {
 		return name_;
 	}
@@ -47,17 +50,17 @@ public:
 		name_ = std::move(v);
 	}
 
-	Eigen::Affine3f transform() const {
+	Eigen::Affine3f& transform() {
+		return transform_;
+	}
+
+	const Eigen::Affine3f& transform() const {
 		return transform_;
 	}
 
 	void setTransform(Eigen::Affine3f v) {
 		transform_ = v;
 	}
-
-public:
-	void getWorldTransform(btTransform& world_trans) const override;
-	void setWorldTransform(const btTransform& world_trans) override;
 
 private:
 	enum {
@@ -73,4 +76,4 @@ private:
 
 VOLCANO_WORLD_END
 
-#endif // VOLCANO_WORLD_BASIC_H
+#endif // VOLCANO_WORLD_INHERENCY_H

@@ -6,34 +6,25 @@ volcano_add_static_library(World
         ${CMAKE_CURRENT_SOURCE_DIR}/include
         ${CMAKE_CURRENT_BINARY_DIR}/include
     PRIVATE_SOURCES
-        include/Volcano/World/Basic.h
         include/Volcano/World/BoxRigidBody.h
-        include/Volcano/World/Camera.h
         include/Volcano/World/CapsuleRigidBody.h
         include/Volcano/World/Common.h
+        include/Volcano/World/Component.h
         include/Volcano/World/Config.h.in
         include/Volcano/World/ConeRigidBody.h
         include/Volcano/World/CylinderRigidBody.h
-        include/Volcano/World/DirectionalLight.h
-        include/Volcano/World/Light.h
-        include/Volcano/World/PointLight.h
-		include/Volcano/World/Screen.h
+        include/Volcano/World/Inherency.h
+        include/Volcano/World/RigidBody.h
         include/Volcano/World/SphereRigidBody.h
-        include/Volcano/World/SpotLight.h
         include/Volcano/World/StaticPlaneRigidBody.h
         include/Volcano/World/TriangleMeshRigidBody.h
         include/Volcano/World/Scene.h
-        src/Volcano/World/Basic.cpp
         src/Volcano/World/BoxRigidBody.cpp
-        src/Volcano/World/Camera.cpp
         src/Volcano/World/CapsuleRigidBody.cpp
         src/Volcano/World/ConeRigidBody.cpp
         src/Volcano/World/CylinderRigidBody.cpp
-        src/Volcano/World/DirectionalLight.cpp
-        src/Volcano/World/Light.cpp
-        src/Volcano/World/PointLight.cpp
-		src/Volcano/World/Screen.cpp
-        src/Volcano/World/SpotLight.cpp
+        src/Volcano/World/Inherency.cpp
+        src/Volcano/World/RigidBody.cpp
         src/Volcano/World/SphereRigidBody.cpp
         src/Volcano/World/StaticPlaneRigidBody.cpp
         src/Volcano/World/TriangleMeshRigidBody.cpp

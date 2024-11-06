@@ -23,7 +23,6 @@ Scene::Scene()
         bt_overlapping_pair_cache_.get(),
         bt_sequential_impulse_constraint_solver_.get(),
         bt_collision_configuration_.get())) {
-    registry_.on_construct<btRigidBody>().connect<&Scene::rigidBodyAdded<btRigidBody>>(this);
     registry_.on_construct<BoxRigidBody>().connect<&Scene::rigidBodyAdded<BoxRigidBody>>(this);
     registry_.on_construct<CapsuleRigidBody>().connect<&Scene::rigidBodyAdded<CapsuleRigidBody>>(this);
     registry_.on_construct<ConeRigidBody>().connect<&Scene::rigidBodyAdded<ConeRigidBody>>(this);
@@ -32,7 +31,6 @@ Scene::Scene()
     registry_.on_construct<StaticPlaneRigidBody>().connect<&Scene::rigidBodyAdded<StaticPlaneRigidBody>>(this);
     registry_.on_construct<TriangleMeshRigidBody>().connect<&Scene::rigidBodyAdded<TriangleMeshRigidBody>>(this);
 
-    registry_.on_destroy<btRigidBody>().connect<&Scene::rigidBodyRemoved<btRigidBody>>(this);
     registry_.on_destroy<BoxRigidBody>().connect<&Scene::rigidBodyRemoved<BoxRigidBody>>(this);
     registry_.on_destroy<CapsuleRigidBody>().connect<&Scene::rigidBodyRemoved<CapsuleRigidBody>>(this);
     registry_.on_destroy<ConeRigidBody>().connect<&Scene::rigidBodyRemoved<ConeRigidBody>>(this);
@@ -45,7 +43,6 @@ Scene::Scene()
 }
 
 Scene::~Scene() {
-    registry_.on_construct<btRigidBody>().disconnect<&Scene::rigidBodyAdded<btRigidBody>>(this);
     registry_.on_construct<BoxRigidBody>().disconnect<&Scene::rigidBodyAdded<BoxRigidBody>>(this);
     registry_.on_construct<CapsuleRigidBody>().disconnect<&Scene::rigidBodyAdded<CapsuleRigidBody>>(this);
     registry_.on_construct<ConeRigidBody>().disconnect<&Scene::rigidBodyAdded<ConeRigidBody>>(this);
@@ -54,7 +51,6 @@ Scene::~Scene() {
     registry_.on_construct<StaticPlaneRigidBody>().disconnect<&Scene::rigidBodyAdded<StaticPlaneRigidBody>>(this);
     registry_.on_construct<TriangleMeshRigidBody>().disconnect<&Scene::rigidBodyAdded<TriangleMeshRigidBody>>(this);
 
-    registry_.on_destroy<btRigidBody>().disconnect<&Scene::rigidBodyRemoved<btRigidBody>>(this);
     registry_.on_destroy<BoxRigidBody>().disconnect<&Scene::rigidBodyRemoved<BoxRigidBody>>(this);
     registry_.on_destroy<CapsuleRigidBody>().disconnect<&Scene::rigidBodyRemoved<CapsuleRigidBody>>(this);
     registry_.on_destroy<ConeRigidBody>().disconnect<&Scene::rigidBodyRemoved<ConeRigidBody>>(this);

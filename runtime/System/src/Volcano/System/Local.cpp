@@ -11,7 +11,6 @@ VOLCANO_SYSTEM_BEGIN
 Local::Local()
     : window_("Untitled", 1024, 768, Window::FlagResizable | Window::FlagClear)
     , input_(window_.id())
-    , hud_("HUD", { 0, 0, 1024.0f, 768.0f })
     , console_({ 0, 0, 1024.0f, 768.0f / 2.0f })
     , current_view_(0) {
 }

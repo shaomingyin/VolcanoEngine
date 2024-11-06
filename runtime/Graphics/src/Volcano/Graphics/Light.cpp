@@ -1,8 +1,8 @@
 //
 //
-#include <Volcano/World/Light.h>
+#include <Volcano/Graphics/Light.h>
 
-VOLCANO_WORLD_BEGIN
+VOLCANO_GRAPHICS_BEGIN
 
 Light::Light()
     : color_(1.0f, 1.0f, 1.0f)
@@ -12,4 +12,4 @@ Light::Light()
 Light::~Light() {
 }
 
-VOLCANO_WORLD_END
+VOLCANO_GRAPHICS_END

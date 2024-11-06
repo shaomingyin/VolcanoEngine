@@ -1,14 +1,15 @@
 //
 //
-#ifndef VOLCANO_WORLD_LIGHT_H
-#define VOLCANO_WORLD_LIGHT_H
+#ifndef VOLCANO_GRAHPICS_LIGHT_H
+#define VOLCANO_GRAHPICS_LIGHT_H
 
 #include <Volcano/Color.h>
-#include <Volcano/World/Common.h>
+#include <Volcano/World/Component.h>
+#include <Volcano/Graphics/Common.h>
 
-VOLCANO_WORLD_BEGIN
+VOLCANO_GRAPHICS_BEGIN
 
-class Light {
+class Light: public World::Movable {
 public:
 	Light();
 	virtual ~Light();
@@ -35,6 +36,6 @@ private:
 	float strength_;
 };
 
-VOLCANO_WORLD_END
+VOLCANO_GRAPHICS_END
 
-#endif // VOLCANO_WORLD_LIGHT_H
+#endif // VOLCANO_GRAHPICS_LIGHT_H

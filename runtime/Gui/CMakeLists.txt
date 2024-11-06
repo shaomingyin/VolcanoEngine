@@ -7,6 +7,11 @@ volcano_add_static_library(Gui
         ${CMAKE_CURRENT_BINARY_DIR}/include
     PRIVATE_SOURCES
         include/portable-file-dialogs.h
+
+        include/GL/gl3w.h
+        include/GL/glcorearb.h
+        include/KHR/khrplatform.h
+        src/gl3w/gl3w.c
 		
 		include/imconfig.h
 		include/imgui.h
@@ -39,6 +44,8 @@ volcano_add_static_library(Gui
     PUBLIC_LINK_LIBRARIES
         Base
         Sound
+    PUBLIC_LINK_PACKAGES
+        SDL2 SDL2::SDL2-static
     PUBLIC_HEADERS
         include/Volcano/Gui/Common.h
         include/Volcano/Gui/Widget.h

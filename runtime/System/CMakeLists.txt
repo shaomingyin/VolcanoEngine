@@ -26,7 +26,6 @@ volcano_add_static_library(System
         src/Volcano/System/Window.cpp
     PUBLIC_LINK_LIBRARIES
         World
-        Gui
         Graphics
     PUBLIC_LINK_PACKAGES
         enet enet::enet

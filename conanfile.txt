@@ -1,8 +1,7 @@
 [requires]
 glm/cci.20230113
 spdlog/1.14.1
-sigslot/1.2.2
-sdl/2.30.8
+glfw/3.4
 microprofile/4.0
 argh/1.3.2
 assimp/5.4.2

@@ -21,7 +21,4 @@ Widget::~Widget() {
 	}
 }
 
-void Widget::handleEvent(const SDL_Event& evt) {
-}
-
 VOLCANO_GUI_END
