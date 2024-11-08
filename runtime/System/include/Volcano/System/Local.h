@@ -26,41 +26,32 @@ public:
 	virtual ~Local();
 
 public:
-    bool isPhysicsDebugDrawEnabled() const {
-        return (physicsDebugDrawer() != nullptr);
+    bool isPhysicsDebugEnabled() const {
+        return (scene().physicsDebugDrawer() != nullptr);
     }
 
-    void enablePhysicsDebugDraw() {
-        setPhysicsDebugDrawer(&bullet_debug_drawer_);
+    void enablePhysicsDebug() {
+        scene().setPhysicsDebugDrawer(&bullet_debug_drawer_);
     }
 
-    void disablePhysicsDebugDraw() {
-        setPhysicsDebugDrawer(nullptr);
+    void disablePhysicsDebug() {
+        scene().setPhysicsDebugDrawer(nullptr);
     }
 
 protected:
-	void frame(Duration elapsed) override;
+    void handleEvent(const SDL_Event& evt);
+    bool beginFrame() override;
+    void endFrame() override;
     void loadingFrame(Duration elapsed) override;
-
-protected:
-    virtual void onWindowMoved(int x, int y) {}
-    virtual void onWindowResized(int w, int h) {}
-    virtual void onWindowShown() {}
-    virtual void onWindowHidden() {}
-    virtual void onWindowFocusIn(bool focused) {}
-    virtual void onWindowFocusOut(bool focused) {}
-    virtual void onWindowCursorEnter() {}
-    virtual void onWindowCursorLeave() {}
-    virtual void onWindowKeyDown(int key, int modifier = 0) {}
-    virtual void onWindowKeyUp(int key, int modifier = 0) {}
-    virtual void onWindowMouseMove(double x, double y) {}
-    virtual void onWindowMouseButtonDown(int button, int modifier = 0) {}
-    virtual void onWindowMouseButtonUp(int button, int modifier = 0) {}
-    virtual void onWindowScroll(double x, double y) {}
+    void readyFrame(Duration elapsed) override;
+	void playingFrame(Duration elapsed) override;
+    void pausedFrame(Duration elapsed) override;
+    void stoppingFrame(Duration elapsed) override;
+    void errorFrame(Duration elapsed) override;
+    void loadEntity(World::Entity ent) override;
 
 private:
     void buildView();
-    virtual void handleEvent(const SDL_Event& evt);
 
 private:
     Window window_;

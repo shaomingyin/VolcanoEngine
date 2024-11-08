@@ -23,42 +23,62 @@ void Local::handleEvent(const SDL_Event& evt) {
     input_.handleEvent(evt);
 }
 
-void Local::frame(Duration elapsed) {
-	Base::frame(elapsed);
+bool Local::beginFrame() {
+    if (window_.beginFrame()) {
+        // TODO
+        return true;
+    }
 
-    sound_space_.frame(elapsed);
+    return false;
+}
 
-    buildView();
-    renderer_.render(views_[current_view_], window_);
+void Local::endFrame() {
+    window_.endFrame();
 }
 
 void Local::loadingFrame(Duration elapsed) {
     int progress = loadingProgress();
     const std::string& text = loadingText();
 
-    if (window_.beginFrame()) {
-        auto frame_guard = scopeGuard([this] {
-            window_.endFrame();
-        });
+    glClear(GL_COLOR_BUFFER_BIT);
 
-        glClear(GL_COLOR_BUFFER_BIT);
+    ImGui::SetWindowPos({ 0.0f, 0.0f });
+    ImGui::SetWindowSize({ float(window_.width()), float(window_.height()) });
 
-        ImGui::SetWindowPos({ 0.0f, 0.0f });
-        ImGui::SetWindowSize({ float(window_.width()), float(window_.height()) });
-
-        std::string title;
-        if (text.empty()) {
-            title = fmt::format("Loading... {}%", progress);
-        } else {
-            title = fmt::format("{} {}%", text, progress);
-        }
-        ImGui::SetNextWindowPos({ 0.0f, 0.0f });
-        ImGui::SetNextWindowSize({ float(window_.width()), float(window_.height()) });
-        if (ImGui::Begin("Loading", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBackground)) {
-            ImGui::Text(title.c_str());
-            ImGui::End();
-        }
+    std::string title;
+    if (text.empty()) {
+        title = fmt::format("Loading... {}%", progress);
+    } else {
+        title = fmt::format("{} {}%", text, progress);
     }
+
+    ImGui::SetNextWindowPos({ 0.0f, 0.0f });
+    ImGui::SetNextWindowSize({ float(window_.width()), float(window_.height()) });
+    if (ImGui::Begin("Loading", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBackground)) {
+        ImGui::Text(title.c_str());
+        ImGui::End();
+    }
+}
+
+void Local::readyFrame(Duration elapsed) {
+}
+
+void Local::playingFrame(Duration elapsed) {
+    sound_space_.frame(elapsed);
+    buildView();
+    renderer_.render(views_[current_view_], window_);
+}
+
+void Local::pausedFrame(Duration elapsed) {
+}
+
+void Local::stoppingFrame(Duration elapsed) {
+}
+
+void Local::errorFrame(Duration elapsed) {
+}
+
+void Local::loadEntity(World::Entity ent) {
 }
 
 void Local::buildView() {

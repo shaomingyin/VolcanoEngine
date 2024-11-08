@@ -8,41 +8,22 @@
 #include <Volcano/Gui/Window.h>
 #include <Volcano/World/Component.h>
 #include <Volcano/Graphics/Common.h>
+#include <Volcano/Graphics/FrameBuffer.h>
 
 VOLCANO_GRAPHICS_BEGIN
 
-class Screen: public World::Movable {
+class Screen: public FrameBuffer {
 public:
-	Screen(int w = 800, int h = 600);
+	Screen(int w, int h);
 	virtual ~Screen() = default;
 
 public:
-	void resize(int w, int h);
-
-	int width() const {
-		return width_;
-	}
-
-	int height() const {
-		return height_;
-	}
-
-	void beginFrame() {
-		ImGui::SetCurrentContext(imgui_);
-		ImGui_ImplOpenGL3_NewFrame();
-		ImGui::NewFrame();
-	}
-
-	void endFrame() {
-		ImGui::Render();
-		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-	}
+	void resize(int w, int h) override;
+	bool beginFrame() override;
+	void endFrame() override;
 
 private:
 	ImGuiContext* imgui_;
-	int width_;
-	int height_;
-	// TODO frame buffer
 };
 
 VOLCANO_GRAPHICS_END

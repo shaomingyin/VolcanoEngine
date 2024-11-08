@@ -10,7 +10,7 @@ VOLCANO_SYSTEM_BEGIN
 
 Base::Base(int sdl_init_flags)
 	: sdl_init_result_(SDL_Init(sdl_init_flags))
-	, state_(State::Stopped)
+	, state_(State::Idle)
 	, loading_progress_(0) {
 	if (sdl_init_result_ != 0) {
 		throw Error(Errc::OutOfResource);
@@ -23,21 +23,15 @@ Base::~Base() {
 }
 
 void Base::run() {
-	if (state_ != State::Stopped) {
-		throw Error(Errc::InvalidState);
-	}
-
 	startLoading();
 
 	frame_count_ = 0;
 	frame_count_per_second_ = 0;
 	last_frame_timestamp_ = Clock::now();
 	last_frame_count_timestamp_ = last_frame_timestamp_;
-	bool running = true;
 
-	while (running) {
+	while (state_ != State::Idle) {
 		pollEvents();
-
 		TimePoint curr = Clock::now();
 		auto elapsed = curr - last_frame_timestamp_;
 		if (elapsed < frame_elapsed_min_) {
@@ -49,27 +43,43 @@ void Base::run() {
 			}
 			continue;
 		}
-
-		switch (state_) {
-		case State::Running:
-			frame(elapsed);
-			break;
-		case State::Loading:
-			loadingFrame(elapsed);
-			break;
-		default:
-			running = false;
-			break;
-		}
-
+		frame(elapsed);
 		frame_count_ += 1;
 		last_frame_timestamp_ = curr;
-
 		if ((curr - last_frame_count_timestamp_) >= std::chrono::seconds(1)) {
 			frame_count_per_second_ = frame_count_;
 			frame_count_ = 0;
 			last_frame_count_timestamp_ = curr;
 			logDebug("FPS: {}", frame_count_per_second_);
+		}
+	}
+}
+
+void Base::frame(Duration elapsed) {
+	if (beginFrame()) {
+		auto frame_guard = scopeGuard([this] {
+			endFrame();
+		});
+		scene_.frame(elapsed);
+		switch (state_) {
+		case State::Playing:
+			playingFrame(elapsed);
+			break;
+		case State::Loading:
+			loadingFrame(elapsed);
+			break;
+		case State::Ready:
+			readyFrame(elapsed);
+			break;
+		case State::Paused:
+			pausedFrame(elapsed);
+			break;
+		case State::Stopping:
+			stoppingFrame(elapsed);
+			break;
+		default:
+			errorFrame(elapsed);
+			break;
 		}
 	}
 }
@@ -87,13 +97,19 @@ void Base::pollEvents() {
 	}
 }
 
-void Base::startLoading() {
-	state_ = State::Loading;
-	loading_progress_ = 0;
-	loading_text_ = "Initializing...";
+void Base::loadEntity(World::Entity ent) {
+}
 
-	tf::Taskflow taskflow;
+void Base::startLoading() {
+	if (state_ != State::Idle && state_ != State::Playing && state_ != State::Paused) {
+		throw Error(Errc::InvalidState);
+	}
+
+	state_ = State::Loading;
+
+	//tf::Taskflow taskflow;
 	//taskflow.emplace()
+
 }
 
 VOLCANO_SYSTEM_END

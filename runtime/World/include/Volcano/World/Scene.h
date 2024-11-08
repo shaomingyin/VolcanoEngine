@@ -9,8 +9,8 @@
 #include <taskflow/taskflow.hpp>
 
 #include <Volcano/World/Common.h>
+#include <Volcano/World/Entity.h>
 #include <Volcano/World/Component.h>
-#include <Volcano/World/Inherency.h>
 
 VOLCANO_WORLD_BEGIN
 
@@ -31,26 +31,18 @@ public:
 		return executor_;
 	}
 
-	entt::handle emplaceEntity() {
+	Entity emplaceEntity() {
 		auto id = registry_.create();
-		registry_.emplace<Inherency>(id, "entity_" + std::to_string(static_cast<uint32_t>(id)));
-		return entt::handle(registry_, id);
+		return Entity(registry_, id);
 	}
 
-	entt::handle emplaceEntity(std::string name) {
+	Entity emplaceEntity(std::string name) {
 		auto id = registry_.create();
-		registry_.emplace<Inherency>(id, std::move(name));
-		return entt::handle(registry_, id);
+		return Entity(registry_, id, std::move(name));
 	}
 
-	entt::handle emplaceEntity(std::string name, const Eigen::Affine3f& transform) {
-		auto id = registry_.create();
-		registry_.emplace<Inherency>(id, std::move(name), transform);
-		return entt::handle(registry_, id);
-	}
-
-	entt::handle global() {
-		return entt::handle(registry_, global_);
+	Entity global() {
+		return global_;
 	}
 
 	template <typename Component>
@@ -123,10 +115,12 @@ private:
 	template <RigidBodyType RigidBody>
 	void rigidBodyAdded(entt::registry& registry, entt::entity entity) {
 		VOLCANO_ASSERT(&registry_ == &registry);
-		auto& inherency = registry.get<Inherency>(entity);
-		auto& rigid_body = registry.get<RigidBody>(entity);
-		rigid_body.setTransform(inherency.transform());
-		bt_dynamics_world_->addRigidBody(&rigid_body);
+		Entity ent(registry, entity);
+		if (ent.isValid()) {
+			auto& rigid_body = registry.get<RigidBody>(entity);
+			rigid_body.setTransform(ent.transform());
+			bt_dynamics_world_->addRigidBody(&rigid_body);
+		}
 	}
 
 	template <RigidBodyType RigidBody>
@@ -140,7 +134,7 @@ private:
 private:
 	tf::Executor executor_;
 	entt::registry registry_;
-	entt::entity global_;
+	Entity global_;
 	bool physics_enabled_;
 	std::unique_ptr<btDefaultCollisionConfiguration> bt_collision_configuration_;
 	std::unique_ptr<btCollisionDispatcher>  bt_collision_dispatcher_;

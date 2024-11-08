@@ -12,7 +12,7 @@
 VOLCANO_WORLD_BEGIN
 
 Scene::Scene()
-    : global_(registry_.create())
+    : global_(registry_, registry_.create(), "<Global>")
     , physics_enabled_(true)
     , bt_collision_configuration_(new btDefaultCollisionConfiguration())
     , bt_collision_dispatcher_(new btCollisionDispatcher(bt_collision_configuration_.get()))
@@ -59,7 +59,7 @@ Scene::~Scene() {
     registry_.on_destroy<StaticPlaneRigidBody>().disconnect<&Scene::rigidBodyRemoved<StaticPlaneRigidBody>>(this);
     registry_.on_destroy<TriangleMeshRigidBody>().disconnect<&Scene::rigidBodyRemoved<TriangleMeshRigidBody>>(this);
 
-    registry_.destroy(global_);
+    global_.destroy();
 }
 
 void Scene::frame(Duration elapsed) {

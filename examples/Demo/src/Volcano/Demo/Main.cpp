@@ -26,7 +26,6 @@ static void printBanner() {
 static void printHelp() {
 }
 
-
 static int run(int argc, char* argv[]) {
     argh::parser cmdline(argv);
 
@@ -123,10 +122,10 @@ VOLCANO_DEMO_END
 
 int main(int argc, char* argv[]) {
     int exit_code = EXIT_FAILURE;
-    try {
+    //try {
         exit_code = Volcano::Demo::run(argc, argv);
-    } catch (std::exception& e) {
-        spdlog::error(e.what());
-    }
+    //} catch (std::exception& e) {
+    //    spdlog::error(e.what());
+    //}
     return exit_code;
 }

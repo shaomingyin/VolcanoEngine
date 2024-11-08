@@ -13,7 +13,7 @@ volcano_add_static_library(World
         include/Volcano/World/Config.h.in
         include/Volcano/World/ConeRigidBody.h
         include/Volcano/World/CylinderRigidBody.h
-        include/Volcano/World/Inherency.h
+        include/Volcano/World/Entity.h
         include/Volcano/World/RigidBody.h
         include/Volcano/World/SphereRigidBody.h
         include/Volcano/World/StaticPlaneRigidBody.h
@@ -23,7 +23,7 @@ volcano_add_static_library(World
         src/Volcano/World/CapsuleRigidBody.cpp
         src/Volcano/World/ConeRigidBody.cpp
         src/Volcano/World/CylinderRigidBody.cpp
-        src/Volcano/World/Inherency.cpp
+        src/Volcano/World/Entity.cpp
         src/Volcano/World/RigidBody.cpp
         src/Volcano/World/SphereRigidBody.cpp
         src/Volcano/World/StaticPlaneRigidBody.cpp

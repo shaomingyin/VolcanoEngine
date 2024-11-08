@@ -14,22 +14,30 @@ volcano_add_static_library(Graphics
         include/Volcano/Graphics/Config.h.in
         include/Volcano/Graphics/Common.h
         include/Volcano/Graphics/DirectionalLight.h
+        include/Volcano/Graphics/FrameBuffer.h
         include/Volcano/Graphics/Light.h
         include/Volcano/Graphics/Mesh.h
         include/Volcano/Graphics/PointLight.h
+        include/Volcano/Graphics/Program.h
+        include/Volcano/Graphics/RenderBuffer.h
         include/Volcano/Graphics/Renderer.h
         include/Volcano/Graphics/Screen.h
+        include/Volcano/Graphics/Shader.h
         include/Volcano/Graphics/SpotLight.h
         include/Volcano/Graphics/Target.h
         include/Volcano/Graphics/View.h
 		src/Volcano/Graphics/BulletDebugDrawer.cpp
         src/Volcano/Graphics/Camera.cpp
         src/Volcano/Graphics/DirectionalLight.cpp
+        src/Volcano/Graphics/FrameBuffer.cpp
         src/Volcano/Graphics/Light.cpp
         src/Volcano/Graphics/Mesh.cpp
         src/Volcano/Graphics/PointLight.cpp
+        src/Volcano/Graphics/Program.cpp
+        src/Volcano/Graphics/RenderBuffer.cpp
         src/Volcano/Graphics/Renderer.cpp
         src/Volcano/Graphics/Screen.cpp
+        src/Volcano/Graphics/Shader.cpp
         src/Volcano/Graphics/SpotLight.cpp
         src/Volcano/Graphics/Target.cpp
         src/Volcano/Graphics/View.cpp

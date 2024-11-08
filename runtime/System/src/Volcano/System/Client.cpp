@@ -25,6 +25,7 @@ Client::~Client() {
 	}
 }
 
+#if 0
 void Client::frame(Duration elapsed) {
 	Local::frame(elapsed);
 
@@ -44,6 +45,7 @@ void Client::frame(Duration elapsed) {
 		}
 	}
 }
+#endif
 
 void Client::handlePackage(ENetPeer* peer, ENetPacket* package) {
 }

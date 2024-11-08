@@ -29,6 +29,7 @@ Server::Server(const std::string& host, int port, int max_clients)
 	init();
 }
 
+#if 0
 void Server::frame(Duration elapsed) {
 	ENetEvent evt;
 	int ret = enet_host_service(enet_host_, &evt, 0);
@@ -48,6 +49,7 @@ void Server::frame(Duration elapsed) {
 
 	Base::frame(elapsed);
 }
+#endif
 
 void Server::handlePackage(ENetPeer* peer, ENetPacket* package) {
 }

@@ -18,7 +18,7 @@ public:
 	virtual ~Server() = default;
 
 protected:
-	void frame(Duration elapsed) override;
+	//void frame(Duration elapsed) override;
 	virtual void handlePackage(ENetPeer* peer, ENetPacket* package);
 	virtual void handleConnect(ENetPeer* peer);
 	virtual void handleDisconnect(ENetPeer* peer);
