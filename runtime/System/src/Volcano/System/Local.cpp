@@ -1,6 +1,7 @@
 //
 //
 #include <Volcano/ScopeGuard.h>
+#include <Volcano/Graphics/Mesh.h>
 #include <Volcano/System/Local.h>
 
 #include <imgui_impl_sdl2.h>
@@ -24,23 +25,29 @@ void Local::handleEvent(const SDL_Event& evt) {
 }
 
 bool Local::beginFrame() {
-    if (window_.beginFrame()) {
-        // TODO
-        return true;
+    if (!Base::beginFrame()) {
+        return false;
     }
+
+    if (!window_.beginFrame()) {
+        return false;
+    }
+
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    // TODO
 
     return false;
 }
 
 void Local::endFrame() {
     window_.endFrame();
+    Base::endFrame();
 }
 
 void Local::loadingFrame(Duration elapsed) {
     int progress = loadingProgress();
     const std::string& text = loadingText();
-
-    glClear(GL_COLOR_BUFFER_BIT);
 
     ImGui::SetWindowPos({ 0.0f, 0.0f });
     ImGui::SetWindowSize({ float(window_.width()), float(window_.height()) });
@@ -78,7 +85,20 @@ void Local::stoppingFrame(Duration elapsed) {
 void Local::errorFrame(Duration elapsed) {
 }
 
-void Local::loadEntity(World::Entity ent) {
+void Local::loadEntity(World::Entity ent, const nlohmann::json& json) {
+    Base::loadEntity(ent, json);
+
+    auto mesh_it = json.find("mesh");
+    if (mesh_it != json.end()) {
+        if (!mesh_it->is_object()) {
+            throw Error(Errc::InvalidType);
+        }
+        auto mesh_source_it = mesh_it->find("source");
+        if (mesh_source_it == mesh_it->end() || !mesh_source_it->is_string()) {
+            throw Error(Errc::NotExisted);
+        }
+        //ent.emplaceOrReplace<Graphics::Mesh>(mesh_source_it->get<std::string>());
+    }
 }
 
 void Local::buildView() {

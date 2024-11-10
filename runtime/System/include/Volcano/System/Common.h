@@ -6,6 +6,7 @@
 #include <SDL.h>
 #include <physfs.h>
 #include <enet/enet.h>
+#include <nlohmann/json.hpp>
 
 #include <Volcano/Common.h>
 #include <Volcano/System/Config.h>

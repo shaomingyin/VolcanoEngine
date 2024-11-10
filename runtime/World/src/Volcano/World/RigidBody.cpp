@@ -23,7 +23,9 @@ void RigidBody::MotionState::setWorldTransform(const btTransform& world_trans) {
 }
 
 RigidBody::RigidBody(float mass, btCollisionShape* shape)
-	: btRigidBody(mass, &motion_state_, shape) {
+	: btRigidBody(mass, nullptr, nullptr) {
+	setCollisionShape(shape);
+	setMotionState(&motion_state_);
 }
 
 void RigidBody::resetTransform() {

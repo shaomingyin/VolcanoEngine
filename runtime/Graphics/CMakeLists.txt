@@ -15,6 +15,7 @@ volcano_add_static_library(Graphics
         include/Volcano/Graphics/Common.h
         include/Volcano/Graphics/DirectionalLight.h
         include/Volcano/Graphics/FrameBuffer.h
+        include/Volcano/Graphics/IOSystem.h
         include/Volcano/Graphics/Light.h
         include/Volcano/Graphics/Mesh.h
         include/Volcano/Graphics/PointLight.h
@@ -30,6 +31,7 @@ volcano_add_static_library(Graphics
         src/Volcano/Graphics/Camera.cpp
         src/Volcano/Graphics/DirectionalLight.cpp
         src/Volcano/Graphics/FrameBuffer.cpp
+        src/Volcano/Graphics/IOSystem.cpp
         src/Volcano/Graphics/Light.cpp
         src/Volcano/Graphics/Mesh.cpp
         src/Volcano/Graphics/PointLight.cpp

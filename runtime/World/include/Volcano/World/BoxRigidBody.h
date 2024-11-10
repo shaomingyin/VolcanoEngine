@@ -10,7 +10,7 @@ VOLCANO_WORLD_BEGIN
 
 class BoxRigidBody: public RigidBody {
 public:
-	BoxRigidBody(float mass, Eigen::Vector3f h);
+	BoxRigidBody(float mass, const Eigen::Vector3f& h);
 	~BoxRigidBody() override = default;
 
 public:

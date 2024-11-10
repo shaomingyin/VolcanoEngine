@@ -6,8 +6,6 @@
 #include <memory>
 #include <type_traits>
 
-#include <taskflow/taskflow.hpp>
-
 #include <Volcano/World/Common.h>
 #include <Volcano/World/Entity.h>
 #include <Volcano/World/Component.h>
@@ -27,18 +25,16 @@ public:
 
 	virtual void frame(Duration elapsed);
 
-	tf::Executor& executor() {
-		return executor_;
-	}
-
 	Entity emplaceEntity() {
-		auto id = registry_.create();
-		return Entity(registry_, id);
+		return Entity(registry_, registry_.create());
 	}
 
 	Entity emplaceEntity(std::string name) {
-		auto id = registry_.create();
-		return Entity(registry_, id, std::move(name));
+		return Entity(registry_, registry_.create(), std::move(name), Eigen::Affine3f::Identity());
+	}
+
+	Entity emplaceEntity(std::string name, const Eigen::Affine3f& transform) {
+		return Entity(registry_, registry_.create(), std::move(name), transform);
 	}
 
 	Entity global() {
@@ -132,7 +128,6 @@ private:
 	}
 
 private:
-	tf::Executor executor_;
 	entt::registry registry_;
 	Entity global_;
 	bool physics_enabled_;

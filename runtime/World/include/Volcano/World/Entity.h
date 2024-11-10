@@ -3,6 +3,8 @@
 #ifndef VOLCANO_WORLD_ENTITY_H
 #define VOLCANO_WORLD_ENTITY_H
 
+#include <string>
+
 #include <Volcano/Error.h>
 #include <Volcano/World/Common.h>
 
@@ -32,69 +34,69 @@ public:
     }
 
     template<typename Component, typename... Args>
-    decltype(auto) emplace(Args &&...args) const {
+    decltype(auto) emplace(Args&&... args) const {
         VOLCANO_ASSERT(isValid());
-        return handle_.emplace<Component>(entt, std::forward<Args>(args)...);
+        return handle_.emplace<Component>(std::forward<Args>(args)...);
     }
 
     template<typename Component, typename... Args>
-    decltype(auto) emplaceOrReplace(Args &&...args) const {
+    decltype(auto) emplaceOrReplace(Args&&... args) const {
         VOLCANO_ASSERT(isValid());
-        return handle_.emplace_or_replace<Component>(entt, std::forward<Args>(args)...);
+        return handle_.emplace_or_replace<Component>(std::forward<Args>(args)...);
     }
 
     template<typename Component, typename... Func>
-    decltype(auto) patch(Func &&...func) const {
+    decltype(auto) patch(Func&&... func) const {
         VOLCANO_ASSERT(isValid());
-        return handle_.patch<Component>(entt, std::forward<Func>(func)...);
+        return handle_.patch<Component>(std::forward<Func>(func)...);
     }
 
     template<typename Component, typename... Args>
-    decltype(auto) replace(Args &&...args) const {
+    decltype(auto) replace(Args&&... args) const {
         VOLCANO_ASSERT(isValid());
-        return handle_.replace<Component>(entt, std::forward<Args>(args)...);
+        return handle_.replace<Component>(std::forward<Args>(args)...);
     }
 
     template<typename... Component>
     size_type remove() const {
         VOLCANO_ASSERT(isValid());
-        return handle_.remove<Component...>(entt);
+        return handle_.remove<Component...>();
     }
 
     template<typename... Component>
     void erase() const {
         VOLCANO_ASSERT(isValid());
-        handle_.erase<Component...>(entt);
+        handle_.erase<Component...>();
     }
 
     template<typename... Component>
     [[nodiscard]] decltype(auto) allOf() const {
         VOLCANO_ASSERT(isValid());
-        return handle_.all_of<Component...>(entt);
+        return handle_.all_of<Component...>();
     }
 
     template<typename... Component>
     [[nodiscard]] decltype(auto) anyOf() const {
         VOLCANO_ASSERT(isValid());
-        return handle_.any_of<Component...>(entt);
+        return handle_.any_of<Component...>();
     }
 
     template<typename... Component>
     [[nodiscard]] decltype(auto) get() const {
         VOLCANO_ASSERT(isValid());
-        return handle_.get<Component...>(entt);
+        return handle_.get<Component...>();
     }
 
     template<typename Component, typename... Args>
     [[nodiscard]] decltype(auto) getOrEmplace(Args &&...args) const {
         VOLCANO_ASSERT(isValid());
-        return handle_.get_or_emplace<Component>(entt, std::forward<Args>(args)...);
+        return handle_.get_or_emplace<Component>(std::forward<Args>(args)...);
     }
 
     template<typename... Component>
     [[nodiscard]] auto tryGet() const {
         VOLCANO_ASSERT(isValid());
-        return handle_.try_get<Component...>(entt);
+        return handle_.try_get<Component...>();
     }
 
     [[nodiscard]] bool orphan() const {
@@ -117,7 +119,12 @@ public:
         return false;
     }
 
-    const std::string& name() {
+    std::string& name() {
+        VOLCANO_ASSERT(isValid());
+        return inherency_->name;
+    }
+
+    const std::string& name() const {
         VOLCANO_ASSERT(isValid());
         return inherency_->name;
     }
@@ -145,16 +152,32 @@ private:
         std::string name;
         Eigen::Affine3f transform;
 
-        Inherency(std::string n)
+        Inherency(std::string n, Eigen::Affine3f tr)
             : flags(FlagEnabled | FlagVisible)
             , name(std::move(n))
-            , transform(Eigen::Affine3f::Identity()) {
+            , transform(tr) {
         }
     };
 
-    Entity(entt::registry& reg, entt::entity ent, std::string name = std::string())
+    Entity(entt::registry& reg, entt::entity ent)
         : handle_(reg, ent)
-        , inherency_(&reg.get_or_emplace<Inherency>(ent, std::move(name))) {
+        , inherency_(&reg.get_or_emplace<Inherency>(ent, std::format("Entity#{}", static_cast<uint32_t>(ent)), Eigen::Affine3f::Identity())) {
+        if (inherency_ == nullptr) {
+            throw Error(Errc::OutOfResource);
+        }
+    }
+
+    Entity(entt::registry& reg, entt::entity ent, std::string name)
+        : handle_(reg, ent)
+        , inherency_(&reg.get_or_emplace<Inherency>(ent, std::move(name), Eigen::Affine3f::Identity())) {
+        if (inherency_ == nullptr) {
+            throw Error(Errc::OutOfResource);
+        }
+    }
+
+    Entity(entt::registry& reg, entt::entity ent, std::string name, Eigen::Affine3f transform)
+        : handle_(reg, ent)
+        , inherency_(&reg.get_or_emplace<Inherency>(ent, std::move(name), transform)) {
         if (inherency_ == nullptr) {
             throw Error(Errc::OutOfResource);
         }

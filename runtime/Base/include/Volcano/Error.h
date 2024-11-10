@@ -13,6 +13,7 @@ VOLCANO_BEGIN
 enum class Errc {
     Ok,
 
+    InvalidType,
     InvalidContext,
     InvalidParameter,
     InvalidState,

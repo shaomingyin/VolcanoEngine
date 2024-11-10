@@ -13,6 +13,7 @@ const char* ErrorCategory::name() const noexcept {
 std::string ErrorCategory::message(int condition) const {
     static const char* errc_messages[] = {
         "Ok",
+        "InvalidType",
         "InvalidContext",
         "Invalid Parameter",
         "Invalid State",

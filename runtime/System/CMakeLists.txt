@@ -12,7 +12,6 @@ volcano_add_static_library(System
 		include/Volcano/System/Console.h
         include/Volcano/System/Common.h
         include/Volcano/System/Input.h
-        include/Volcano/System/Loader.h
         include/Volcano/System/Local.h
         include/Volcano/System/Server.h
         include/Volcano/System/Window.h
@@ -20,7 +19,6 @@ volcano_add_static_library(System
         src/Volcano/System/Client.cpp
 		src/Volcano/System/Console.cpp
         src/Volcano/System/Input.cpp
-        src/Volcano/System/Loader.cpp
         src/Volcano/System/Local.cpp
         src/Volcano/System/Server.cpp
         src/Volcano/System/Window.cpp

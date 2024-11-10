@@ -12,7 +12,7 @@
 VOLCANO_WORLD_BEGIN
 
 Scene::Scene()
-    : global_(registry_, registry_.create(), "<Global>")
+    : global_(registry_, registry_.create(), "<Global>", Eigen::Affine3f::Identity())
     , physics_enabled_(true)
     , bt_collision_configuration_(new btDefaultCollisionConfiguration())
     , bt_collision_dispatcher_(new btCollisionDispatcher(bt_collision_configuration_.get()))

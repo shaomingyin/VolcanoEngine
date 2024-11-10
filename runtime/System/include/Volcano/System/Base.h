@@ -38,6 +38,34 @@ public:
 	}
 
 protected:
+	void transferToReady() {
+		if (state_ == State::Loading) {
+			state_ = State::Ready;
+		}
+	}
+
+	void transferToPlaying() {
+		if (state_ == State::Ready || state_ == State::Paused) {
+			state_ = State::Playing;
+		}
+	}
+
+	void transferToPaused() {
+		if (state_ == State::Playing) {
+			state_ = State::Paused;
+		}
+	}
+
+	void transferToStopping() {
+		// TODO
+	}
+
+	void transferToIdle() {
+		if (state_ == State::Stopping) {
+			state_ = State::Idle;
+		}
+	}
+
 	int loadingProgress() const {
 		VOLCANO_ASSERT(state_ == State::Loading);
 		return loading_progress_;
@@ -57,20 +85,31 @@ protected:
 	}
 
 	virtual void handleEvent(const SDL_Event& evnt) {}
+
 	virtual bool beginFrame() { return true; }
 	virtual void endFrame() {}
+
 	virtual void loadingFrame(Duration elapsed) {}
 	virtual void readyFrame(Duration elapsed) {}
 	virtual void playingFrame(Duration elapsed) {}
 	virtual void pausedFrame(Duration elapsed) {}
 	virtual void stoppingFrame(Duration elapsed) {}
 	virtual void errorFrame(Duration elapsed) {}
-	virtual void loadEntity(World::Entity ent);
+
+	virtual void loadManifest();
+	virtual void loadScene(const std::string& path);
+	virtual void loadEntity(World::Entity ent, const nlohmann::json& json);
 
 private:
 	void frame(Duration elapsed);
 	void pollEvents();
 	void startLoading();
+
+private:
+	static nlohmann::json loadJson(const std::string& path);
+	static Eigen::Affine3f parseTransform(const nlohmann::json& json);
+	static Eigen::Vector3f parseVector3f(const nlohmann::json& json);
+	static Eigen::Vector4f parseVector4f(const nlohmann::json& json);
 
 private:
 	enum class State {
@@ -93,6 +132,7 @@ private:
 	uint64_t frame_count_per_second_;
 	int loading_progress_;
 	std::string loading_text_;
+	std::future<void> loading_future_;
 };
 
 VOLCANO_SYSTEM_END

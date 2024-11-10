@@ -14,7 +14,9 @@
 #include <chrono>
 #include <filesystem>
 
+#include <physfs.h>
 #include <spdlog/spdlog.h>
+#include <taskflow/taskflow.hpp>
 
 #include <Eigen/Core>
 #include <Eigen/Dense>
@@ -102,6 +104,8 @@ using Clock = std::chrono::steady_clock;
 using Duration = Clock::duration;
 using TimePoint = Clock::time_point;
 
+extern tf::Executor defaultExecutor;
+
 VOLCANO_FORCE_INLINE int64_t durationToSeconds(Duration d) {
     return std::chrono::duration_cast<std::chrono::seconds>(d).count();
 }
@@ -151,10 +155,6 @@ void logDebug(spdlog::format_string_t<Args...> fmt, Args&&... args) {
 #ifdef VOLCANO_DEBUG
     log(spdlog::level::debug, fmt, std::forward<Args>(args)...);
 #endif
-}
-
-VOLCANO_FORCE_INLINE std::filesystem::path normalizedPath(const std::filesystem::path& path) {
-    return std::filesystem::path(path.lexically_normal().generic_string());
 }
 
 VOLCANO_END

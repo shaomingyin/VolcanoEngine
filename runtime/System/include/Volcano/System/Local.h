@@ -48,7 +48,7 @@ protected:
     void pausedFrame(Duration elapsed) override;
     void stoppingFrame(Duration elapsed) override;
     void errorFrame(Duration elapsed) override;
-    void loadEntity(World::Entity ent) override;
+    void loadEntity(World::Entity ent, const nlohmann::json& json) override;
 
 private:
     void buildView();

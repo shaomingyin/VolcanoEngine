@@ -13,6 +13,7 @@ volcano_add_static_library(Base
         include/Volcano/Error.h
         include/Volcano/ScopeGuard.h
         include/Volcano/VersionNumber.h
+        src/Volcano/Common.cpp
         src/Volcano/Error.cpp
         src/Volcano/VersionNumber.cpp
     PUBLIC_DEFINITIONS
