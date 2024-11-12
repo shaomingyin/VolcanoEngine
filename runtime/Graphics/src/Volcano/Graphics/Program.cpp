@@ -12,6 +12,18 @@ Program::Program()
 	}
 }
 
+Program::Program(GLuint id)
+	: id_(id) {
+}
+
+Program::Program(std::initializer_list<std::pair<GLenum, std::string>> shader_infos) {
+	for (const auto& shader_info: shader_infos) {
+		Shader shader(shader_info.first, shader_info.second);
+		shader.compile();
+		glAttachShader(id_, shader.id());
+	}
+}
+
 Program::~Program() {
 	glDeleteProgram(id_);
 }

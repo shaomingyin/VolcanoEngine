@@ -1,12 +1,7 @@
 //
 //
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
-#include <assimp/postprocess.h>
-
 #include <Volcano/Error.h>
 #include <Volcano/ScopeGuard.h>
-#include <Volcano/Graphics/IOSystem.h>
 #include <Volcano/Graphics/Mesh.h>
 
 VOLCANO_GRAPHICS_BEGIN
@@ -68,6 +63,9 @@ void Mesh::load() {
 		const aiScene* scene = importer.ReadFile()
 	});
 #endif
+}
+
+void Mesh::render() {
 }
 
 VOLCANO_GRAPHICS_END

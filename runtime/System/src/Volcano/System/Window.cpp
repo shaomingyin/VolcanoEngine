@@ -1,9 +1,5 @@
 //
 //
-#include <GL/gl3w.h>
-#include <imgui_impl_sdl2.h>
-#include <imgui_impl_opengl3.h>
-
 #include <Volcano/Error.h>
 #include <Volcano/ScopeGuard.h>
 #include <Volcano/System/Window.h>
@@ -65,53 +61,14 @@ Window::Window(const std::string& title, int width, int height, int flags)
     gl3wProcs = &gl3w_;
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
-    imgui_ = ImGui::CreateContext();
-    if (imgui_ == nullptr) {
-        throw Error(Errc::OutOfResource);
-    }
-
-    ImGui::SetCurrentContext(imgui_);
-
-    if (!ImGui_ImplSDL2_InitForOpenGL(handle_, gl_context_)) {
-        throw Error(Errc::OutOfResource);
-    }
-
-    auto imgui_sdl2_guard = scopeGuard([] {
-        ImGui_ImplSDL2_Shutdown();
-    });
-
-    if (!ImGui_ImplOpenGL3_Init("#version 130")) {
-        throw Error(Errc::OutOfResource);
-    }
-
-    auto imgui_gl3_guard = scopeGuard([] {
-        ImGui_ImplOpenGL3_Shutdown();
-    });
-
-    ImGuiIO& io = ImGui::GetIO();
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
-    io.IniFilename = nullptr;
-    io.LogFilename = nullptr;
-    ImGui::StyleColorsDark();
-
     window_guard.dismiss();
     gl_context_guard.dismiss();
-    imgui_sdl2_guard.dismiss();
-    imgui_gl3_guard.dismiss();
 }
 
 Window::~Window() {
     if (flags_ & FlagDrawing) {
         endFrame();
     }
-
-    gl3wProcs = &gl3w_;
-    ImGui::SetCurrentContext(imgui_);
-    ImGui_ImplOpenGL3_Shutdown();
-    ImGui_ImplSDL2_Shutdown();
-    ImGui::DestroyContext(imgui_);
-    gl3wProcs = nullptr;
 
     SDL_GL_DeleteContext(gl_context_);
     SDL_DestroyWindow(handle_);
@@ -135,8 +92,6 @@ void Window::handleEvent(const SDL_Event& evt) {
     default:
         break;
     }
-
-    ImGui_ImplSDL2_ProcessEvent(&evt);
 }
 
 bool Window::beginFrame() {
@@ -155,12 +110,6 @@ bool Window::beginFrame() {
     gl3wProcs = &gl3w_;
     glViewport(0.0f, 0.0f, width_, height_);
 
-    ImGui::SetCurrentContext(imgui_);
-    ImGui_ImplOpenGL3_NewFrame();
-    ImGui_ImplSDL2_NewFrame();
-    ImGui::NewFrame();
-    ImGui::ShowDemoWindow();
-
     flags_ |= FlagDrawing;
 
     return true;
@@ -168,8 +117,6 @@ bool Window::beginFrame() {
 
 void Window::endFrame() {
     if (flags_ & FlagDrawing) {
-        ImGui::Render();
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         SDL_GL_SwapWindow(handle_);
         gl3wProcs = nullptr;
         flags_ &= ~FlagDrawing;

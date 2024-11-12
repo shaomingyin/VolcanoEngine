@@ -5,30 +5,33 @@
 
 VOLCANO_GRAPHICS_BEGIN
 
-Shader::Shader(GLenum type)
-	: Shader(type, nullptr, 0) {
+Shader::Shader(GLuint id)
+	: id_(id) {
 }
 
-Shader::Shader(GLenum type, const GLchar* src)
-	: Shader(type, src, strlen(src)) {
-}
-
-Shader::Shader(GLenum type, const GLchar* src, GLint src_length)
-	: type_(type)
-	, id_(glCreateShader(type)) {
+Shader::Shader(GLenum type, std::string_view src)
+	: id_(glCreateShader(type)) {
 	if (id_ == 0) {
 		throw Error(Errc::OutOfResource);
 	}
-	setSource(src, src_length);
+	if (!src.empty()) {
+		const GLchar* data = src.data();
+		const GLsizei size = src.size();
+		glShaderSource(id_, 1, &data, &size);
+	}
 }
 
 Shader::~Shader() {
-	glDeleteShader(id_);
+	if (id_ > 0) {
+		glDeleteShader(id_);
+	}
 }
 
-void Shader::setSource(const GLchar* src, GLint src_length) {
-	if (src != nullptr && src_length > 0) {
-		glShaderSource(id_, 1, &src, &src_length);
+void Shader::setSource(std::string_view src) {
+	if (!src.empty()) {
+		const GLchar* data = src.data();
+		const GLsizei size = src.size();
+		glShaderSource(id_, 1, &data, &size);
 	}
 }
 

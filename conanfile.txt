@@ -12,6 +12,11 @@ taskflow/3.8.0
 physfs/3.2.0
 openal/1.22.2
 nlohmann_json/3.11.3
+protobuf/5.27.0
+freetype/2.13.3
+
+[tool_requires]
+protobuf/5.27.0
 
 [generators]
 CMakeDeps

@@ -17,7 +17,7 @@ public:
 		virtual ~WidgetBase() = default;
 
 	public:
-		virtual void handleEvent(const SDL_Event& evt) {}
+		//virtual void handleEvent(const SDL_Event& evt) {}
 	};
 
 public:

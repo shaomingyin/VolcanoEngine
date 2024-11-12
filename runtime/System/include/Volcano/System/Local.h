@@ -9,7 +9,7 @@
 #include <Volcano/Error.h>
 #include <Volcano/Graphics/View.h>
 #include <Volcano/Graphics/Renderer.h>
-#include <Volcano/Graphics/BulletDebugDrawer.h>
+//#include <Volcano/Graphics/BulletDebugDrawer.h>
 #include <Volcano/Sound/Space.h>
 #include <Volcano/Gui/Window.h>
 #include <Volcano/System/Common.h>
@@ -31,7 +31,7 @@ public:
     }
 
     void enablePhysicsDebug() {
-        scene().setPhysicsDebugDrawer(&bullet_debug_drawer_);
+        //scene().setPhysicsDebugDrawer(&bullet_debug_drawer_);
     }
 
     void disablePhysicsDebug() {
@@ -40,8 +40,6 @@ public:
 
 protected:
     void handleEvent(const SDL_Event& evt);
-    bool beginFrame() override;
-    void endFrame() override;
     void loadingFrame(Duration elapsed) override;
     void readyFrame(Duration elapsed) override;
 	void playingFrame(Duration elapsed) override;
@@ -57,10 +55,10 @@ private:
     Window window_;
     Input input_;
     Graphics::Renderer renderer_;
-    Graphics::BulletDebugDrawer bullet_debug_drawer_;
+    //Graphics::BulletDebugDrawer bullet_debug_drawer_;
     Sound::Space sound_space_;
     Console console_;
-    Graphics::View views_[2];
+    //Graphics::View views_[2];
     std::atomic_int current_view_;
 };
 

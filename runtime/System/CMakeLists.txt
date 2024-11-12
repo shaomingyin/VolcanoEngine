@@ -23,9 +23,9 @@ volcano_add_static_library(System
         src/Volcano/System/Server.cpp
         src/Volcano/System/Window.cpp
     PUBLIC_LINK_LIBRARIES
-        World
-        Graphics
+        Gui
     PUBLIC_LINK_PACKAGES
+        SDL2 SDL2::SDL2-static
         enet enet::enet
         nlohmann_json nlohmann_json::nlohmann_json
     PUBLIC_HEADERS

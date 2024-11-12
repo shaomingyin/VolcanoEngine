@@ -15,8 +15,9 @@
 
 VOLCANO_SYSTEM_BEGIN
 
-Base::Base(int sdl_init_flags)
-	: sdl_init_result_(SDL_Init(sdl_init_flags))
+Base::Base(const std::string& manifest_path, int sdl_init_flags)
+	: manifest_path_(manifest_path)
+	, sdl_init_result_(SDL_Init(sdl_init_flags))
 	, state_(State::Idle)
 	, loading_progress_(0) {
 	if (sdl_init_result_ != 0) {
@@ -63,35 +64,31 @@ void Base::run() {
 }
 
 void Base::frame(Duration elapsed) {
-	if (beginFrame()) {
-		auto frame_guard = scopeGuard([this] {
-			endFrame();
-		});
-		scene_.frame(elapsed);
-		switch (state_) {
-		case State::Playing:
-			playingFrame(elapsed);
-			break;
-		case State::Loading:
-			loadingFrame(elapsed);
-			if (loading_future_.wait_for(0s) == std::future_status::ready) {
-				loading_future_.get();
-				state_ = State::Ready;
-			}
-			break;
-		case State::Ready:
-			readyFrame(elapsed);
-			break;
-		case State::Paused:
-			pausedFrame(elapsed);
-			break;
-		case State::Stopping:
-			stoppingFrame(elapsed);
-			break;
-		default:
-			errorFrame(elapsed);
-			break;
+	scene_.frame(elapsed);
+
+	switch (state_) {
+	case State::Playing:
+		playingFrame(elapsed);
+		break;
+	case State::Loading:
+		loadingFrame(elapsed);
+		if (loading_future_.wait_for(0s) == std::future_status::ready) {
+			loading_future_.get();
+			state_ = State::Ready;
 		}
+		break;
+	case State::Ready:
+		readyFrame(elapsed);
+		break;
+	case State::Paused:
+		pausedFrame(elapsed);
+		break;
+	case State::Stopping:
+		stoppingFrame(elapsed);
+		break;
+	default:
+		errorFrame(elapsed);
+		break;
 	}
 }
 
@@ -126,7 +123,7 @@ void Base::loadManifest() {
 	}
 
 	loading_text_ = "Loading manifest...";
-	auto manifest = loadJson("/Manifest.json");
+	auto manifest = loadJson(manifest_path_);
 
 	auto name_it = manifest.find("name");
 	if (name_it != manifest.end()) {

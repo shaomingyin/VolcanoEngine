@@ -6,51 +6,61 @@ volcano_add_static_library(Graphics
         ${CMAKE_CURRENT_SOURCE_DIR}/include
         ${CMAKE_CURRENT_BINARY_DIR}/include
     PRIVATE_SOURCES
+        include/GL/gl3w.h
+        include/GL/glcorearb.h
+        include/KHR/khrplatform.h
+        src/gl3w/gl3w.c
+
         include/debug_draw.hpp
         src/debug_draw/debug_draw.cpp
 		
-		include/Volcano/Graphics/BulletDebugDrawer.h
         include/Volcano/Graphics/Camera.h
-        include/Volcano/Graphics/Config.h.in
+        include/Volcano/Graphics/Canvas.h
         include/Volcano/Graphics/Common.h
+        include/Volcano/Graphics/Config.h.in
+        include/Volcano/Graphics/Context.h
         include/Volcano/Graphics/DirectionalLight.h
         include/Volcano/Graphics/FrameBuffer.h
-        include/Volcano/Graphics/IOSystem.h
         include/Volcano/Graphics/Light.h
+        include/Volcano/Graphics/Material.h
         include/Volcano/Graphics/Mesh.h
         include/Volcano/Graphics/PointLight.h
         include/Volcano/Graphics/Program.h
+        include/Volcano/Graphics/RenderableObject.h
         include/Volcano/Graphics/RenderBuffer.h
-        include/Volcano/Graphics/Renderer.h
-        include/Volcano/Graphics/Screen.h
+		include/Volcano/Graphics/Renderer.h
+        include/Volcano/Graphics/Pipeline.h
         include/Volcano/Graphics/Shader.h
         include/Volcano/Graphics/SpotLight.h
         include/Volcano/Graphics/Target.h
+        include/Volcano/Graphics/Texture.h
         include/Volcano/Graphics/View.h
-		src/Volcano/Graphics/BulletDebugDrawer.cpp
+        include/Volcano/Graphics/VirtualTexture.h
         src/Volcano/Graphics/Camera.cpp
+        src/Volcano/Graphics/Canvas.cpp
+        src/Volcano/Graphics/Context.cpp
         src/Volcano/Graphics/DirectionalLight.cpp
         src/Volcano/Graphics/FrameBuffer.cpp
-        src/Volcano/Graphics/IOSystem.cpp
         src/Volcano/Graphics/Light.cpp
+        src/Volcano/Graphics/Material.cpp
         src/Volcano/Graphics/Mesh.cpp
         src/Volcano/Graphics/PointLight.cpp
         src/Volcano/Graphics/Program.cpp
         src/Volcano/Graphics/RenderBuffer.cpp
-        src/Volcano/Graphics/Renderer.cpp
-        src/Volcano/Graphics/Screen.cpp
+		src/Volcano/Graphics/Renderer.cpp
+        src/Volcano/Graphics/Pipeline.cpp
         src/Volcano/Graphics/Shader.cpp
         src/Volcano/Graphics/SpotLight.cpp
         src/Volcano/Graphics/Target.cpp
+        src/Volcano/Graphics/Texture.cpp
         src/Volcano/Graphics/View.cpp
+        src/Volcano/Graphics/VirtualTexture.cpp
     PUBLIC_LINK_LIBRARIES
-        Gui
+        Base
         World
-    PUBLIC_LINK_PACKAGES
-        assimp assimp::assimp
     PUBLIC_HEADERS
         include/Volcano/Graphics/Common.h
-        include/Volcano/Graphics/Renderer.h
+        include/Volcano/Graphics/Graphics.h
         include/Volcano/Graphics/View.h
         ${CMAKE_CURRENT_BINARY_DIR}/include/Volcano/Graphics/Config.h
         DESTINATION include/Volcano/Graphics

@@ -4,9 +4,6 @@
 #include <Volcano/Graphics/Mesh.h>
 #include <Volcano/System/Local.h>
 
-#include <imgui_impl_sdl2.h>
-#include <imgui_impl_opengl3.h>
-
 VOLCANO_SYSTEM_BEGIN
 
 Local::Local()
@@ -24,47 +21,9 @@ void Local::handleEvent(const SDL_Event& evt) {
     input_.handleEvent(evt);
 }
 
-bool Local::beginFrame() {
-    if (!Base::beginFrame()) {
-        return false;
-    }
-
-    if (!window_.beginFrame()) {
-        return false;
-    }
-
-    glClear(GL_COLOR_BUFFER_BIT);
-
-    // TODO
-
-    return false;
-}
-
-void Local::endFrame() {
-    window_.endFrame();
-    Base::endFrame();
-}
-
 void Local::loadingFrame(Duration elapsed) {
     int progress = loadingProgress();
     const std::string& text = loadingText();
-
-    ImGui::SetWindowPos({ 0.0f, 0.0f });
-    ImGui::SetWindowSize({ float(window_.width()), float(window_.height()) });
-
-    std::string title;
-    if (text.empty()) {
-        title = fmt::format("Loading... {}%", progress);
-    } else {
-        title = fmt::format("{} {}%", text, progress);
-    }
-
-    ImGui::SetNextWindowPos({ 0.0f, 0.0f });
-    ImGui::SetNextWindowSize({ float(window_.width()), float(window_.height()) });
-    if (ImGui::Begin("Loading", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBackground)) {
-        ImGui::Text(title.c_str());
-        ImGui::End();
-    }
 }
 
 void Local::readyFrame(Duration elapsed) {
@@ -73,7 +32,11 @@ void Local::readyFrame(Duration elapsed) {
 void Local::playingFrame(Duration elapsed) {
     sound_space_.frame(elapsed);
     buildView();
-    renderer_.render(views_[current_view_], window_);
+
+    if (window_.beginFrame()) {
+        //renderer_.render(views_[current_view_]);
+        window_.endFrame();
+    }
 }
 
 void Local::pausedFrame(Duration elapsed) {

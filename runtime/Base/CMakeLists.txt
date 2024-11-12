@@ -6,6 +6,9 @@ volcano_add_static_library(Base
         ${CMAKE_CURRENT_SOURCE_DIR}/include
         ${CMAKE_CURRENT_BINARY_DIR}/include
     PRIVATE_SOURCES
+		include/buddy_alloc.h
+        src/buddy_alloc/buddy_alloc.c
+
         include/Volcano/Cache.h
         include/Volcano/Color.h
         include/Volcano/Config.h.in

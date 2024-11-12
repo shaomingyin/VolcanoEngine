@@ -5,19 +5,19 @@
 
 #include <string>
 
-#include <assimp/mesh.h>
-
 #include <Volcano/Graphics/Common.h>
+#include <Volcano/Graphics/RenderableObject.h>
 
 VOLCANO_GRAPHICS_BEGIN
 
-class Mesh {
+class Mesh: public RenderableObject {
 public:
 	Mesh(const std::string& path);
-	virtual ~Mesh();
+	~Mesh() override;
 
 public:
 	void load();
+	void render() override;
 
 private:
 	std::string path_;

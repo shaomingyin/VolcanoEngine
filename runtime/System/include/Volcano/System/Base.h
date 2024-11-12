@@ -12,11 +12,15 @@ VOLCANO_SYSTEM_BEGIN
 
 class Base {
 public:
-	Base(int sdl_init_flags = SDL_INIT_EVERYTHING);
+	Base(const std::string& manifest_path = "/Manifest.json", int sdl_init_flags = SDL_INIT_EVERYTHING);
 	virtual ~Base();
 
 public:
 	void run();
+
+	const std::string& manifestPath() const {
+		return manifest_path_;
+	}
 
 	int fps() const {
 		return frame_count_per_second_;
@@ -86,9 +90,6 @@ protected:
 
 	virtual void handleEvent(const SDL_Event& evnt) {}
 
-	virtual bool beginFrame() { return true; }
-	virtual void endFrame() {}
-
 	virtual void loadingFrame(Duration elapsed) {}
 	virtual void readyFrame(Duration elapsed) {}
 	virtual void playingFrame(Duration elapsed) {}
@@ -122,6 +123,7 @@ private:
 		Error
 	};
 
+	std::string manifest_path_;
 	int sdl_init_result_;
 	State state_;
 	World::Scene scene_;

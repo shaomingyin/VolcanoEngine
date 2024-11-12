@@ -11,13 +11,13 @@ VOLCANO_GRAPHICS_BEGIN
 class FrameBuffer: public Target {
 public:
 	enum {
-		FlagAttachTexture = 0x1,
+		FlagAttachColor = 0x1,
 		FlagAttachDepth = 0x2,
 		FlagAttachStencil = 0x4
 	};
 
 public:
-	FrameBuffer(int w, int h, int flags = FlagAttachTexture);
+	FrameBuffer(int w, int h, int flags = FlagAttachColor);
 	~FrameBuffer() override;
 
 public:

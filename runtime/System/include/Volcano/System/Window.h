@@ -5,8 +5,6 @@
 
 #include <string>
 
-#include <imgui.h>
-
 #include <Volcano/Graphics/Target.h>
 #include <Volcano/System/Common.h>
 
@@ -78,7 +76,6 @@ private:
 	Uint32 id_;
 	SDL_GLContext gl_context_;
 	GL3WProcs gl3w_;
-	ImGuiContext* imgui_;
 };
 
 VOLCANO_SYSTEM_END

@@ -3,7 +3,7 @@
 #ifndef VOLCANO_GRAPHICS_SHADER_H
 #define VOLCANO_GRAPHICS_SHADER_H
 
-#include <string>
+#include <string_view>
 
 #include <Volcano/Graphics/Common.h>
 
@@ -11,29 +11,38 @@ VOLCANO_GRAPHICS_BEGIN
 
 class Shader {
 public:
-	Shader(GLenum type);
-	Shader(GLenum type, const GLchar* src);
-	Shader(GLenum type, const GLchar* src, GLint src_length);
+	Shader(GLuint id = 0);
+	Shader(GLenum type, std::string_view src);
+	Shader(const Shader&) = delete;
 	virtual ~Shader();
 
+	Shader(Shader&& other)
+		: id_(other.id_) {
+		other.id_ = 0;
+	}
+
 public:
-	void setSource(const GLchar* src, GLint src_length);
+	void setSource(std::string_view src);
 	void compile();
 
 	GLenum type() const {
-		return type_;
+		GLint type;
+		glGetShaderiv(id_, GL_SHADER_TYPE, &type);
+		return type;
 	}
 
 	GLuint id() const {
 		return id_;
 	}
 
-	void setSource(const GLchar* src) {
-		setSource(src, strlen(src));
+	Shader& operator=(const Shader&) = delete;
+
+	Shader& operator=(Shader&& other) {
+		id_ = other.id_;
+		other.id_ = 0;
 	}
 
 public:
-	GLenum type_;
 	GLuint id_;
 };
 

@@ -7,7 +7,7 @@ VOLCANO_GRAPHICS_BEGIN
 
 FrameBuffer::FrameBuffer(int w, int h, int flags)
 	: Target(w, h)
-	, flags_(flags & (FlagAttachTexture | FlagAttachDepth | FlagAttachStencil)) {
+	, flags_(flags & (FlagAttachColor | FlagAttachDepth | FlagAttachStencil)) {
 	if (flags_ == 0) {
 		throw Error(Errc::InvalidParameter);
 	}
@@ -16,8 +16,11 @@ FrameBuffer::FrameBuffer(int w, int h, int flags)
 		throw Error(Errc::OutOfResource);
 	}
 	glBindFramebuffer(GL_FRAMEBUFFER, id_);
-	if (flags_ & FlagAttachTexture) {
+	if (flags_ & FlagAttachColor) {
 		glGenTextures(1, &texture_);
+		if (texture_ == 0) {
+			throw Error(Errc::OutOfResource);
+		}
 		glBindTexture(GL_TEXTURE_2D, texture_);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
