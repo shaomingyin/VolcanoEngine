@@ -8,7 +8,7 @@
 
 #include <Volcano/World/Common.h>
 #include <Volcano/World/Entity.h>
-#include <Volcano/World/Component.h>
+#include <Volcano/World/RigidBody.h>
 
 VOLCANO_WORLD_BEGIN
 
@@ -25,6 +25,10 @@ public:
 
 	virtual void frame(Duration elapsed);
 
+	Entity global() {
+		return global_;
+	}
+
 	Entity emplaceEntity() {
 		return Entity(registry_, registry_.create());
 	}
@@ -37,28 +41,99 @@ public:
 		return Entity(registry_, registry_.create(), std::move(name), transform);
 	}
 
-	Entity global() {
-		return global_;
+	template <typename Component, typename... Args>
+	Component& emplaceGlobalComponent(Args... args) {
+		return global_.emplace<Component>(std::forward<Args>(args)...);
+	}
+
+	template <typename... Components>
+	void removeGlobalComponents() {
+		return global_.erase<Components...>();
 	}
 
 	template <typename Component>
-	auto componentView() {
+	[[nodiscard]] auto componentView() {
 		return registry_.view<Component>();
 	}
 
 	template <typename Component, typename... Exclude>
-	auto componentView(entt::exclude_t<Exclude...> exclude) {
+	[[nodiscard]] auto componentView(entt::exclude_t<Exclude...> exclude) {
 		return registry_.view<Component>(std::forward<Exclude...>(exclude));
 	}
 
 	template <typename... Components>
-	auto componentView() {
+	[[nodiscard]] auto componentView() {
 		return registry_.view<Components...>();
 	}
 
 	template <typename... Components, typename... Exclude>
-	auto componentView(entt::exclude_t<Exclude...> exclude) {
+	[[nodiscard]] auto componentView(entt::exclude_t<Exclude...> exclude) {
 		return registry_.view<Components...>(std::forward<Exclude...>(exclude));
+	}
+
+	template <typename Component>
+	[[nodiscard]] auto componentAddedSignal(Entity ent = Entity()) {
+		return registry_.on_construct<Component>(ent.handle_);
+	}
+
+	template <typename Component>
+	[[nodiscard]] auto globalComponentAddedSignal() {
+		return componentAddedSignal(global_.handle_);
+	}
+
+	template <typename Component, typename Candidate, typename... Type>
+	[[nodiscard]] auto onComponentAdded(Entity ent, Type&&... value_or_instance) {
+		return componentAddedSignal<Component>(ent).connect<Candidate>(std::forward<Type>(value_or_instance)...);
+	}
+
+	template <typename Component, typename Candidate, typename... Type>
+	[[nodiscard]] auto onComponentAdded(Type&&... value_or_instance) {
+		return onComponentAdded<Component>(Entity(), std::forward<Type>(value_or_instance)...);
+	}
+
+	template <typename Component, typename Candidate, typename... Type>
+	[[nodiscard]] auto onGlobalComponentAdded(Type&&... value_or_instance) {
+		return onComponentAdded<Component>(global_, std::forward<Type>(value_or_instance)...);
+	}
+
+	template <typename Component>
+	[[nodiscard]] auto componentRemovedSignal(Entity ent = Entity()) {
+		return registry_.on_destroy<Component>(ent.handle_);
+	}
+
+	template <typename Component, typename Candidate, typename... Type>
+	[[nodiscard]] auto onComponentRemoved(Entity ent, Type&&... value_or_instance) {
+		return componentRemovedSignal<Component>(ent).connect<Candidate>(std::forward<Type>(value_or_instance)...);
+	}
+
+	template <typename Component, typename Candidate, typename... Type>
+	[[nodiscard]] auto onComponentRemoved(Type&&... value_or_instance) {
+		return onComponentRemoved(Entity(), std::forward<Type>(value_or_instance)...);
+	}
+
+	template <typename Component, typename Candidate, typename... Type>
+	[[nodiscard]] auto onGlobalComponentRemoved(Type&&... value_or_instance) {
+		return onComponentRemoved(global_, std::forward<Type>(value_or_instance)...);
+	}
+
+	template <typename Component>
+	[[nodiscard]] auto componentUpdatedSignal(Entity ent = Entity()) {
+		return registry_.on_update<Component>(ent.handle_);
+	}
+
+	template <typename Component, typename Candidate, typename... Type>
+	[[nodiscard]] auto onComponentUpdated(Entity ent, Type... value_or_instance) {
+		return componentUpdatedSignal<Component>(ent.handle_).connect<Candidate>(std::forward<Type>(value_or_instance)...);
+	}
+
+	template <typename Component, typename Candidate, typename... Type>
+	[[nodiscard]] auto onComponentUpdated(Type... value_or_instance) {
+		return onComponentUpdated(Entity(), std::forward<Type>(value_or_instance)...);
+	}
+
+	template <typename Component, typename Candidate, typename... Type>
+	[[nodiscard]] auto onGlobalComponentUpdated(Type... value_or_instance) {
+		return onComponentUpdated(global_, std::forward<Type>(value_or_instance)...);
 	}
 
 	bool isPhysicsEnabled() {
@@ -78,7 +153,7 @@ public:
 		return Eigen::Vector3f(v.x(), v.y(), v.z());
 	}
 
-	void setGravity(Eigen::Vector3f v) {
+	void setGravity(const Eigen::Vector3f& v) {
 		bt_dynamics_world_->setGravity(btVector3(v.x(), v.y(), v.z()));
 	}
 
@@ -108,21 +183,23 @@ protected:
 	}
 
 private:
-	template <RigidBodyType RigidBody>
+	template <typename T>
 	void rigidBodyAdded(entt::registry& registry, entt::entity entity) {
 		VOLCANO_ASSERT(&registry_ == &registry);
+		static_assert(std::is_base_of_v<RigidBody, T>);
 		Entity ent(registry, entity);
 		if (ent.isValid()) {
-			auto& rigid_body = registry.get<RigidBody>(entity);
+			auto& rigid_body = registry.get<T>(entity);
 			rigid_body.setTransform(ent.transform());
 			bt_dynamics_world_->addRigidBody(&rigid_body);
 		}
 	}
 
-	template <RigidBodyType RigidBody>
+	template <typename T>
 	void rigidBodyRemoved(entt::registry& registry, entt::entity entity) {
 		VOLCANO_ASSERT(&registry_ == &registry);
-		auto& rigid_body = registry.get<RigidBody>(entity);
+		static_assert(std::is_base_of_v<RigidBody, T>);
+		auto& rigid_body = registry.get<T>(entity);
 		rigid_body.resetTransform();
 		bt_dynamics_world_->removeRigidBody(&rigid_body);
 	}

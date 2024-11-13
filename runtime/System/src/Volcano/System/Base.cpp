@@ -106,7 +106,7 @@ void Base::pollEvents() {
 }
 
 void Base::startLoading() {
-	if (state_ != State::Idle && state_ != State::Playing && state_ != State::Paused) {
+	if (state_ != State::Idle) {
 		throw Error(Errc::InvalidState);
 	}
 

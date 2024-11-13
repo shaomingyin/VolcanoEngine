@@ -60,6 +60,7 @@ Scene::~Scene() {
     registry_.on_destroy<TriangleMeshRigidBody>().disconnect<&Scene::rigidBodyRemoved<TriangleMeshRigidBody>>(this);
 
     global_.destroy();
+    registry_.clear();
 }
 
 void Scene::frame(Duration elapsed) {

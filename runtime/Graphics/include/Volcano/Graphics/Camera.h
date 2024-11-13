@@ -3,17 +3,19 @@
 #ifndef VOLCANO_GRAPHICS_CAMERA_H
 #define VOLCANO_GRAPHICS_CAMERA_H
 
-#include <Volcano/World/Component.h>
 #include <Volcano/Graphics/Common.h>
 
 VOLCANO_GRAPHICS_BEGIN
 
-class Camera: public World::Movable {
+class Camera {
 public:
 	Camera();
-	~Camera() override;
+	virtual ~Camera();
 
 public:
+	void resetWorldTransform();
+	void setWorldTransform(Eigen::Affine3f& v);
+
 	Eigen::Affine3f& view() {
 		return view_;
 	}
@@ -47,7 +49,7 @@ public:
 	}
 
 	void lookTo(Eigen::Vector3f pos, Eigen::Vector3f direction, Eigen::Vector3f up) {
-		auto eye = offset() * pos;
+		auto eye = worldTransform() * pos;
 		auto f = direction.normalized();
 		auto u = up.normalized();
 		auto s = f.cross(u).normalized();
@@ -91,7 +93,16 @@ public:
 		view_(3, 2) = -(2.0f * zFar * zNear) / (zFar - zNear);
 	}
 
+protected:
+	Eigen::Affine3f worldTransform() const {
+		if (world_ != nullptr) {
+			return *world_ * view_;
+		}
+		return Eigen::Affine3f::Identity();
+	}
+
 private:
+	Eigen::Affine3f* world_;
 	Eigen::Affine3f view_;
 	Eigen::Projective3f projection_;
 };

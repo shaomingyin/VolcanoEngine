@@ -14,11 +14,11 @@ public:
 
 public:
 	Eigen::Affine3f& offset() {
-		return motion_state_.offset_;
+		return motion_state_.offset;
 	}
 
 	const Eigen::Affine3f& offset() const {
-		return motion_state_.offset_;
+		return motion_state_.offset;
 	}
 
 	void resetTransform();
@@ -26,10 +26,10 @@ public:
 
 private:
 	struct MotionState final: public btMotionState {
-		Eigen::Affine3f* world_ = nullptr;
-		Eigen::Affine3f offset_ = Eigen::Affine3f::Identity();
-		void getWorldTransform(btTransform& worldTrans) const override;
-		void setWorldTransform(const btTransform& worldTrans) override;
+		Eigen::Affine3f* world = nullptr;
+		Eigen::Affine3f offset = Eigen::Affine3f::Identity();
+		void getWorldTransform(btTransform& world_trans) const override;
+		void setWorldTransform(const btTransform& world_trans) override;
 	};
 	
 	MotionState motion_state_;

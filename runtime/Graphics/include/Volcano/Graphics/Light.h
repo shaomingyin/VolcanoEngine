@@ -4,12 +4,11 @@
 #define VOLCANO_GRAHPICS_LIGHT_H
 
 #include <Volcano/Color.h>
-#include <Volcano/World/Component.h>
 #include <Volcano/Graphics/Common.h>
 
 VOLCANO_GRAPHICS_BEGIN
 
-class Light: public World::Movable {
+class Light {
 public:
 	Light();
 	virtual ~Light();

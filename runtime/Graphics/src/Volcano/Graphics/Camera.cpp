@@ -12,4 +12,16 @@ Camera::Camera()
 Camera::~Camera() {
 }
 
+void Camera::resetWorldTransform() {
+	if (world_ != nullptr) {
+		world_ = nullptr;
+	}
+}
+
+void Camera::setWorldTransform(Eigen::Affine3f& v) {
+	resetWorldTransform();
+	world_ = &v;
+
+}
+
 VOLCANO_GRAPHICS_END
