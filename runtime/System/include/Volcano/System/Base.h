@@ -6,6 +6,7 @@
 #include <string>
 
 #include <Volcano/World/Scene.h>
+#include <Volcano/Physics/World.h>
 #include <Volcano/System/Common.h>
 
 VOLCANO_SYSTEM_BEGIN
@@ -39,6 +40,16 @@ public:
 		if (state_ == State::Playing) {
 			state_ = State::Stopping;
 		}
+	}
+
+	bool isPhysicsDebugEnabled() const {
+		return false;
+	}
+
+	void enablePhysicsDebug() {
+	}
+
+	void disablePhysicsDebug() {
 	}
 
 protected:
@@ -99,7 +110,7 @@ protected:
 
 	virtual void loadManifest();
 	virtual void loadScene(const std::string& path);
-	virtual void loadEntity(World::Entity ent, const nlohmann::json& json);
+	virtual void loadEntity(entt::handle ent, const nlohmann::json& json);
 
 private:
 	void frame(Duration elapsed);
@@ -127,6 +138,7 @@ private:
 	int sdl_init_result_;
 	State state_;
 	World::Scene scene_;
+	Physics::World physics_world_;
 	TimePoint last_frame_timestamp_;
 	TimePoint last_frame_count_timestamp_;
 	Duration frame_elapsed_min_;

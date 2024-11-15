@@ -14,14 +14,17 @@ Camera::~Camera() {
 
 void Camera::resetWorldTransform() {
 	if (world_ != nullptr) {
+		auto offset = view_;
+		view_ = (*world) * offset;
 		world_ = nullptr;
 	}
 }
 
-void Camera::setWorldTransform(Eigen::Affine3f& v) {
+void Camera::attachWorldTransform(Eigen::Affine3f& v) {
 	resetWorldTransform();
 	world_ = &v;
-
+	auto offset = view_;
+	view_ = v.inverse() * offset;
 }
 
 VOLCANO_GRAPHICS_END

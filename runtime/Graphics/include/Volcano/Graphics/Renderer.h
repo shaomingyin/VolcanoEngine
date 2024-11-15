@@ -15,13 +15,17 @@ VOLCANO_GRAPHICS_BEGIN
 
 class Renderer {
 public:
-    Renderer();
+    Renderer(entt::registry& registry);
     virtual ~Renderer();
 
 public:
-    void render(const View& view);
+    void frame(Duration elapsed);
 
 private:
+    void buildView(View& view) const;
+
+private:
+    entt::registry& registry_;
     Pipeline vector_graphics_pipeline_;
     Pipeline gbuffer_pipeline_;
 };

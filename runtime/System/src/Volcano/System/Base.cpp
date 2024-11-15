@@ -4,13 +4,13 @@
 
 #include <Volcano/Error.h>
 #include <Volcano/ScopeGuard.h>
-#include <Volcano/World/BoxRigidBody.h>
-#include <Volcano/World/CapsuleRigidBody.h>
-#include <Volcano/World/ConeRigidBody.h>
-#include <Volcano/World/CylinderRigidBody.h>
-#include <Volcano/World/SphereRigidBody.h>
-#include <Volcano/World/StaticPlaneRigidBody.h>
-#include <Volcano/World/TriangleMeshRigidBody.h>
+#include <Volcano/Physics/BoxRigidBody.h>
+#include <Volcano/Physics/CapsuleRigidBody.h>
+#include <Volcano/Physics/ConeRigidBody.h>
+#include <Volcano/Physics/CylinderRigidBody.h>
+#include <Volcano/Physics/SphereRigidBody.h>
+#include <Volcano/Physics/StaticPlaneRigidBody.h>
+#include <Volcano/Physics/TriangleMeshRigidBody.h>
 #include <Volcano/System/Base.h>
 
 VOLCANO_SYSTEM_BEGIN
@@ -19,6 +19,7 @@ Base::Base(const std::string& manifest_path, int sdl_init_flags)
 	: manifest_path_(manifest_path)
 	, sdl_init_result_(SDL_Init(sdl_init_flags))
 	, state_(State::Idle)
+	, physics_world_(scene_)
 	, loading_progress_(0) {
 	if (sdl_init_result_ != 0) {
 		throw Error(Errc::OutOfResource);
@@ -64,8 +65,7 @@ void Base::run() {
 }
 
 void Base::frame(Duration elapsed) {
-	scene_.frame(elapsed);
-
+	physics_world_.frame(elapsed);
 	switch (state_) {
 	case State::Playing:
 		playingFrame(elapsed);
@@ -167,9 +167,9 @@ void Base::loadScene(const std::string& path) {
 	auto physics_it = json.find("physics");
 	if (physics_it != json.end() && physics_it->is_boolean()) {
 		if (physics_it->get<bool>()) {
-			scene().enablePhysics();
+			//physics_world_.enablePhysics();
 		} else {
-			scene().disablePhysics();
+			//physics_world_.disablePhysics();
 		}
 	}
 
@@ -178,7 +178,7 @@ void Base::loadScene(const std::string& path) {
 		if (!gravity_it->is_array() || gravity_it->size() != 3) {
 			throw Error(Errc::InvalidType);
 		}
-		scene().setGravity(parseVector3f(*gravity_it));
+		physics_world_.setGravity(parseVector3f(*gravity_it));
 	}
 
 	auto next_it = json.find("next");
@@ -194,25 +194,26 @@ void Base::loadScene(const std::string& path) {
 		size_t n = entities_it->size();
 		for (size_t i = 0; i < n; ++i) {
 			loading_progress_ = i * 100 / n;
-			loadEntity(scene().emplaceEntity(), entities_it->at(i));
+			loadEntity(scene_.createEntity(), entities_it->at(i));
 		}
 	}
 }
 
-void Base::loadEntity(World::Entity ent, const nlohmann::json& json) {
+void Base::loadEntity(entt::handle ent, const nlohmann::json& json) {
 	if (!json.is_object()) {
 		throw Error(Errc::InvalidType);
 	}
 
 	std::string name;
 	auto name_it = json.find("name");
-	if (name_it == json.end()) {
-		throw Error(Errc::NotExisted);
+	if (name_it != json.end()) {
+		std::string name = name_it->get<std::string>();
+		//ent.<World::Inherency>().name() = name;
+		//ent.patch<World::Inherency>([name_it])
+		loading_text_ = std::format("Loading entity {}...", name);
 	}
-	ent.name() = name_it->get<std::string>();
-	loading_text_ = std::format("Loading entity {}...", ent.name());
 
-	ent.transform() = parseTransform(json);
+	//ent.getOrEmplace<World::Inherency>().transform() = parseTransform(json);
 
 	auto rigid_body_it = json.find("rigid_body");
 	if (rigid_body_it != json.end()) {
@@ -228,14 +229,14 @@ void Base::loadEntity(World::Entity ent, const nlohmann::json& json) {
 		if (shape_it == rigid_body_it->end() || !shape_it->is_string()) {
 			throw Error(Errc::NotExisted);
 		}
-		World::RigidBody* rigid_body = nullptr;
+		Physics::RigidBody* rigid_body = nullptr;
 		auto shape = shape_it->get<std::string>();
 		if (shape == "Box") {
 			auto box_size_it = rigid_body_it->find("size");
 			if (box_size_it == rigid_body_it->end() || !box_size_it->is_array() || box_size_it->size() != 3) {
 				throw Error(Errc::InvalidType);
 			}
-			rigid_body = &ent.emplaceOrReplace<World::BoxRigidBody>(mass, parseVector3f(*box_size_it));
+			//rigid_body = &ent.emplaceOrReplace<Physics::BoxRigidBody>(mass, parseVector3f(*box_size_it));
 		}
 		else if (shape == "Capsule") {
 

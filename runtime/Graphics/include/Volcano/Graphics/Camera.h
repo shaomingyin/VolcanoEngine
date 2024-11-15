@@ -3,19 +3,17 @@
 #ifndef VOLCANO_GRAPHICS_CAMERA_H
 #define VOLCANO_GRAPHICS_CAMERA_H
 
+#include <Volcano/World/Transformable.h>
 #include <Volcano/Graphics/Common.h>
 
 VOLCANO_GRAPHICS_BEGIN
 
-class Camera {
+class Camera: public World::Transformable {
 public:
 	Camera();
 	virtual ~Camera();
 
 public:
-	void resetWorldTransform();
-	void setWorldTransform(Eigen::Affine3f& v);
-
 	Eigen::Affine3f& view() {
 		return view_;
 	}
@@ -74,16 +72,20 @@ public:
 	}
 
 	void ortho(float left, float right, float top, float bottom, float zNear, float zFar) {
-		view_ = Eigen::Matrix4f::Identity();
-		view_(0, 0) = 2.0f / (right - left);
-		view_(1, 1) = 2.0f / (top - bottom);
-		view_(2, 2) = -2.0f / (zFar - zNear);
-		view_(0, 3) = -(right + left) / (right - left);
-		view_(1, 3) = -(top + bottom) / (top - bottom);
-		view_(2, 3) = -(zFar + zNear) / (zFar - zNear);
+#if 0
+		auto& view = Eigen::Affine3f::Identity();
+		view(0, 0) = 2.0f / (right - left);
+		view(1, 1) = 2.0f / (top - bottom);
+		view(2, 2) = -2.0f / (zFar - zNear);
+		view(0, 3) = -(right + left) / (right - left);
+		view(1, 3) = -(top + bottom) / (top - bottom);
+		view(2, 3) = -(zFar + zNear) / (zFar - zNear);
+		localTransform() = view;
+#endif
 	}
 
 	void perspective(float fov, float aspect, float zNear, float zFar) {
+#if 0
 		view_ = Eigen::Matrix4f::Zero();
 		float tanHalfFov = tan(fov / 2.0f);
 		view_(0, 0) = 1.0f / (aspect * tanHalfFov);
@@ -91,19 +93,10 @@ public:
 		view_(2, 2) = -(zFar + zNear) / (zFar - zNear);
 		view_(2, 3) = -1.0f;
 		view_(3, 2) = -(2.0f * zFar * zNear) / (zFar - zNear);
-	}
-
-protected:
-	Eigen::Affine3f worldTransform() const {
-		if (world_ != nullptr) {
-			return *world_ * view_;
-		}
-		return Eigen::Affine3f::Identity();
+#endif
 	}
 
 private:
-	Eigen::Affine3f* world_;
-	Eigen::Affine3f view_;
 	Eigen::Projective3f projection_;
 };
 

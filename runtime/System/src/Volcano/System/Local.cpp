@@ -9,8 +9,9 @@ VOLCANO_SYSTEM_BEGIN
 Local::Local()
     : window_("Untitled", 1024, 768, Window::FlagResizable | Window::FlagClear)
     , input_(window_.id())
-    , console_({ 0, 0, 1024.0f, 768.0f / 2.0f })
-    , current_view_(0) {
+    , graphics_renderer_(scene())
+    , acoustics_space_(scene())
+    , console_({ 0, 0, 1024.0f, 768.0f / 2.0f }) {
 }
 
 Local::~Local() {
@@ -30,11 +31,9 @@ void Local::readyFrame(Duration elapsed) {
 }
 
 void Local::playingFrame(Duration elapsed) {
-    sound_space_.frame(elapsed);
-    buildView();
-
+    acoustics_space_.frame(elapsed);
     if (window_.beginFrame()) {
-        //renderer_.render(views_[current_view_]);
+        graphics_renderer_.frame(elapsed);
         window_.endFrame();
     }
 }
@@ -48,7 +47,7 @@ void Local::stoppingFrame(Duration elapsed) {
 void Local::errorFrame(Duration elapsed) {
 }
 
-void Local::loadEntity(World::Entity ent, const nlohmann::json& json) {
+void Local::loadEntity(entt::handle ent, const nlohmann::json& json) {
     Base::loadEntity(ent, json);
 
     auto mesh_it = json.find("mesh");
@@ -62,11 +61,6 @@ void Local::loadEntity(World::Entity ent, const nlohmann::json& json) {
         }
         //ent.emplaceOrReplace<Graphics::Mesh>(mesh_source_it->get<std::string>());
     }
-}
-
-void Local::buildView() {
-    //int exp = current_view_;
-    //while (current_view_.compare_exchange_strong(exp, !current_view_));
 }
 
 VOLCANO_SYSTEM_END

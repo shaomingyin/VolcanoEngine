@@ -3,10 +3,7 @@
 #ifndef VOLCANO_WORLD_COMMON_H
 #define VOLCANO_WORLD_COMMON_H
 
-#include <type_traits>
-
 #include <entt/entt.hpp>
-#include <bullet/btBulletDynamicsCommon.h>
 
 #include <Volcano/Common.h>
 #include <Volcano/World/Config.h>

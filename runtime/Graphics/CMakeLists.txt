@@ -56,7 +56,6 @@ volcano_add_static_library(Graphics
         src/Volcano/Graphics/View.cpp
         src/Volcano/Graphics/VirtualTexture.cpp
     PUBLIC_LINK_LIBRARIES
-        Base
         World
     PUBLIC_HEADERS
         include/Volcano/Graphics/Common.h

@@ -6,16 +6,17 @@
 
 VOLCANO_GRAPHICS_BEGIN
 
-Renderer::Renderer() {
+Renderer::Renderer(entt::registry& registry)
+	: registry_(registry) {
 }
 
 Renderer::~Renderer() {
 }
 
-void Renderer::render(const View& view) {
+void Renderer::frame(Duration elapsed) {
+}
 
-	vector_graphics_pipeline_.apply();
-	//view.hud().render();
+void Renderer::buildView(View& view) const {
 }
 
 VOLCANO_GRAPHICS_END

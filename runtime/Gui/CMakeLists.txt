@@ -21,7 +21,7 @@ volcano_add_static_library(Gui
         src/Volcano/Gui/Window.cpp
     PUBLIC_LINK_LIBRARIES
         Graphics
-        Sound
+        Acoustics
     PUBLIC_HEADERS
         include/Volcano/Gui/Common.h
         include/Volcano/Gui/Widget.h

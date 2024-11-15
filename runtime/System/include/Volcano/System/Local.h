@@ -3,14 +3,12 @@
 #ifndef VOLCANO_SYSTEM_LOCAL_H
 #define VOLCANO_SYSTEM_LOCAL_H
 
-#include <atomic>
 #include <memory>
 
 #include <Volcano/Error.h>
-#include <Volcano/Graphics/View.h>
 #include <Volcano/Graphics/Renderer.h>
 //#include <Volcano/Graphics/BulletDebugDrawer.h>
-#include <Volcano/Sound/Space.h>
+#include <Volcano/Acoustics/Space.h>
 #include <Volcano/Gui/Window.h>
 #include <Volcano/System/Common.h>
 #include <Volcano/System/Window.h>
@@ -25,19 +23,6 @@ public:
 	Local();
 	virtual ~Local();
 
-public:
-    bool isPhysicsDebugEnabled() const {
-        return (scene().physicsDebugDrawer() != nullptr);
-    }
-
-    void enablePhysicsDebug() {
-        //scene().setPhysicsDebugDrawer(&bullet_debug_drawer_);
-    }
-
-    void disablePhysicsDebug() {
-        scene().setPhysicsDebugDrawer(nullptr);
-    }
-
 protected:
     void handleEvent(const SDL_Event& evt);
     void loadingFrame(Duration elapsed) override;
@@ -46,20 +31,15 @@ protected:
     void pausedFrame(Duration elapsed) override;
     void stoppingFrame(Duration elapsed) override;
     void errorFrame(Duration elapsed) override;
-    void loadEntity(World::Entity ent, const nlohmann::json& json) override;
-
-private:
-    void buildView();
+    void loadEntity(entt::handle ent, const nlohmann::json& json) override;
 
 private:
     Window window_;
     Input input_;
-    Graphics::Renderer renderer_;
+    Graphics::Renderer graphics_renderer_;
     //Graphics::BulletDebugDrawer bullet_debug_drawer_;
-    Sound::Space sound_space_;
+    Acoustics::Space acoustics_space_;
     Console console_;
-    //Graphics::View views_[2];
-    std::atomic_int current_view_;
 };
 
 VOLCANO_SYSTEM_END

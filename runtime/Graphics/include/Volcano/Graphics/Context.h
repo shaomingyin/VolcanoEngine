@@ -6,7 +6,6 @@
 #include <array>
 
 #include <Volcano/Graphics/Common.h>
-#include <Volcano/Graphics/Program.h>
 
 VOLCANO_GRAPHICS_BEGIN
 
