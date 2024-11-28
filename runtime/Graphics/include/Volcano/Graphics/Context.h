@@ -11,7 +11,7 @@ VOLCANO_GRAPHICS_BEGIN
 
 class Context {
 public:
-	Context(GL3WGetProcAddressProc get_proc);
+	Context();
 	virtual ~Context();
 
 public:
@@ -21,8 +21,10 @@ public:
 		return current_;
 	}
 
+public:
+
+
 private:
-	GL3WProcs gl3w_;
 	static thread_local Context* current_;
 };
 

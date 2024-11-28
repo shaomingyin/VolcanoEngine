@@ -12,15 +12,14 @@
 #include <vector>
 #include <string>
 #include <chrono>
+#include <stdexcept>
+#include <system_error>
 #include <filesystem>
+#include <format>
 
-#include <physfs.h>
+#include <async++.h>
+#include <Eigen.h>
 #include <spdlog/spdlog.h>
-#include <taskflow/taskflow.hpp>
-
-#include <Eigen/Core>
-#include <Eigen/Dense>
-#include <Eigen/Geometry>
 
 #include <Volcano/Config.h>
 
@@ -104,8 +103,6 @@ using Clock = std::chrono::steady_clock;
 using Duration = Clock::duration;
 using TimePoint = Clock::time_point;
 
-extern tf::Executor defaultExecutor;
-
 VOLCANO_FORCE_INLINE int64_t durationToSeconds(Duration d) {
     return std::chrono::duration_cast<std::chrono::seconds>(d).count();
 }
@@ -158,9 +155,5 @@ void logDebug(spdlog::format_string_t<Args...> fmt, Args&&... args) {
 }
 
 VOLCANO_END
-
-namespace Eigen {
-    using Quaternionf = Quaternion<float>;
-}
 
 #endif // VOLCANO_COMMON_H

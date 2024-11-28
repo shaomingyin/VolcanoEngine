@@ -7,6 +7,7 @@
 #include <bitset>
 
 #include <Volcano/Color.h>
+#include <Volcano/World/Scene.h>
 #include <Volcano/Graphics/Common.h>
 #include <Volcano/Graphics/View.h>
 #include <Volcano/Graphics/Pipeline.h>
@@ -15,19 +16,17 @@ VOLCANO_GRAPHICS_BEGIN
 
 class Renderer {
 public:
-    Renderer(entt::registry& registry);
+    Renderer(World::Scene& scene);
     virtual ~Renderer();
 
 public:
-    void frame(Duration elapsed);
+    void update(Duration elapsed);
+    void render();
 
 private:
-    void buildView(View& view) const;
-
-private:
-    entt::registry& registry_;
-    Pipeline vector_graphics_pipeline_;
-    Pipeline gbuffer_pipeline_;
+    World::Scene& scene_;
+    //Pipeline vector_graphics_pipeline_;
+    //Pipeline gbuffer_pipeline_;
 };
 
 VOLCANO_GRAPHICS_END

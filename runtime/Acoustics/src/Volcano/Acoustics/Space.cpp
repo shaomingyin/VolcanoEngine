@@ -4,11 +4,14 @@
 
 VOLCANO_ACOUSTICS_BEGIN
 
-Space::Space(entt::registry& registry)
-	: registry_(registry) {
+Space::Space(World::Scene& scene)
+	: scene_(scene) {
 }
 
-void Space::frame(Duration elapsed) {
+void Space::update(Duration elapsed) {
+}
+
+void Space::render() {
 }
 
 VOLCANO_ACOUSTICS_END

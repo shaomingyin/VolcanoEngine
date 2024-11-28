@@ -10,10 +10,17 @@ volcano_add_static_library(Graphics
         include/GL/glcorearb.h
         include/KHR/khrplatform.h
         src/gl3w/gl3w.c
+		
+		include/fontstash.h
+		include/stb_image.h
+		include/stb_truetype.h
+		src/stb/fontstash.c
+		src/stb/stb_image.c
+		src/stb/stb_truetype.c
 
         include/debug_draw.hpp
         src/debug_draw/debug_draw.cpp
-		
+	
         include/Volcano/Graphics/Camera.h
         include/Volcano/Graphics/Canvas.h
         include/Volcano/Graphics/Common.h
@@ -25,12 +32,10 @@ volcano_add_static_library(Graphics
         include/Volcano/Graphics/Material.h
         include/Volcano/Graphics/Mesh.h
         include/Volcano/Graphics/PointLight.h
-        include/Volcano/Graphics/Program.h
         include/Volcano/Graphics/RenderableObject.h
         include/Volcano/Graphics/RenderBuffer.h
 		include/Volcano/Graphics/Renderer.h
         include/Volcano/Graphics/Pipeline.h
-        include/Volcano/Graphics/Shader.h
         include/Volcano/Graphics/SpotLight.h
         include/Volcano/Graphics/Target.h
         include/Volcano/Graphics/Texture.h
@@ -45,11 +50,9 @@ volcano_add_static_library(Graphics
         src/Volcano/Graphics/Material.cpp
         src/Volcano/Graphics/Mesh.cpp
         src/Volcano/Graphics/PointLight.cpp
-        src/Volcano/Graphics/Program.cpp
         src/Volcano/Graphics/RenderBuffer.cpp
 		src/Volcano/Graphics/Renderer.cpp
         src/Volcano/Graphics/Pipeline.cpp
-        src/Volcano/Graphics/Shader.cpp
         src/Volcano/Graphics/SpotLight.cpp
         src/Volcano/Graphics/Target.cpp
         src/Volcano/Graphics/Texture.cpp
@@ -59,7 +62,7 @@ volcano_add_static_library(Graphics
         World
     PUBLIC_HEADERS
         include/Volcano/Graphics/Common.h
-        include/Volcano/Graphics/Graphics.h
+        include/Volcano/Graphics/Renderer.h
         include/Volcano/Graphics/View.h
         ${CMAKE_CURRENT_BINARY_DIR}/include/Volcano/Graphics/Config.h
         DESTINATION include/Volcano/Graphics

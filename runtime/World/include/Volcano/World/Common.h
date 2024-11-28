@@ -4,6 +4,7 @@
 #define VOLCANO_WORLD_COMMON_H
 
 #include <entt/entt.hpp>
+#include <bullet/btBulletDynamicsCommon.h>
 
 #include <Volcano/Common.h>
 #include <Volcano/World/Config.h>

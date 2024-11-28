@@ -5,7 +5,6 @@
 
 #include <AL/al.h>
 #include <AL/alc.h>
-#include <entt/entt.hpp>
 
 #include <Volcano/Common.h>
 #include <Volcano/Acoustics/Config.h>

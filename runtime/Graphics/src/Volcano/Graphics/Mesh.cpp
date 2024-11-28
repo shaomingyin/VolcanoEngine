@@ -1,35 +1,18 @@
 //
 //
-#include <Volcano/Error.h>
 #include <Volcano/ScopeGuard.h>
 #include <Volcano/Graphics/Mesh.h>
 
 VOLCANO_GRAPHICS_BEGIN
 
 Mesh::Mesh(const std::string& path)
-	: path_(path)
-	, vao_(0)
-	, vbo_(0) 
-	, ebo_(0) {
+	: path_(path) {
 }
 
 Mesh::~Mesh() {
-	if (vao_ > 0) {
-		glDeleteVertexArrays(1, &vao_);
-	}
-	if (vbo_ > 0) {
-		glDeleteBuffers(1, &vbo_);
-	}
-	if (ebo_ > 0) {
-		glDeleteBuffers(1, &ebo_);
-	}
 }
 
 void Mesh::load() {
-	VOLCANO_ASSERT(vao_ == 0);
-	VOLCANO_ASSERT(vbo_ == 0);
-	VOLCANO_ASSERT(ebo_ == 0);
-
 #if 0
 	PHYSFS_Stat st;
 	auto ret = PHYSFS_stat(path_.c_str(), &st);

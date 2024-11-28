@@ -29,12 +29,23 @@ public:
 		transform_.translate(Eigen::Vector2f(dx, dy));
 	}
 
-	void line(float x, float y) {
+	void lineTo(float x, float y) {
 	}
 
 private:
+	struct Command {
+		Eigen::Affine3f transform;
+		virtual void render() = 0;
+	};
+
+	struct DrawLineCommand: public Command {
+		Eigen::Vector3f a;
+		Eigen::Vector3f b;
+		void render() override;
+	};
+
 	Eigen::Affine2f transform_;
-	//std::vector<std::pair<Eigen::Affine2f>> ops_;
+	//std::vector<std::pair<Eigen::Affine2f>> commands_;
 };
 
 VOLCANO_GRAPHICS_END

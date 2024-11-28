@@ -1,6 +1,5 @@
 //
 //
-#include <Volcano/Error.h>
 #include <Volcano/Graphics/Canvas.h>
 
 VOLCANO_GRAPHICS_BEGIN

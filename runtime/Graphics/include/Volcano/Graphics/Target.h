@@ -22,8 +22,8 @@ public:
 	}
 
 	virtual void resize(int width, int height);
-	virtual bool beginFrame() = 0;
-	virtual void endFrame() = 0;
+	virtual bool beginFrame();
+	virtual void endFrame();
 
 private:
 	int width_;

@@ -27,18 +27,8 @@ public:
 		return flags_;
 	}
 
-	GLuint id() const {
-		return id_;
-	}
-
-	void bind(GLenum target = GL_FRAMEBUFFER) const {
-		glBindFramebuffer(target, id_);
-	}
-
 private:
 	int flags_;
-	GLuint id_;
-	GLuint texture_;
 };
 
 VOLCANO_GRAPHICS_END

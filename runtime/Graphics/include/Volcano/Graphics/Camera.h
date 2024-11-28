@@ -14,6 +14,7 @@ public:
 	virtual ~Camera();
 
 public:
+#if 0
 	Eigen::Affine3f& view() {
 		return view_;
 	}
@@ -29,6 +30,7 @@ public:
 	const Eigen::Matrix4f& viewMatrix() const {
 		return view_.matrix();
 	}
+#endif
 
 	Eigen::Projective3f& projection() {
 		return projection_;
@@ -47,6 +49,7 @@ public:
 	}
 
 	void lookTo(Eigen::Vector3f pos, Eigen::Vector3f direction, Eigen::Vector3f up) {
+#if 0
 		auto eye = worldTransform() * pos;
 		auto f = direction.normalized();
 		auto u = up.normalized();
@@ -65,6 +68,7 @@ public:
 		projection_(0, 3) = -s.dot(eye);
 		projection_(1, 3) = -u.dot(eye);
 		projection_(2, 3) = f.dot(eye);
+#endif
 	}
 
 	void lookAt(Eigen::Vector3f pos, Eigen::Vector3f center, Eigen::Vector3f up) {

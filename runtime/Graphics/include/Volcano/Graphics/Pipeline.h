@@ -9,7 +9,6 @@
 #include <Volcano/Color.h>
 #include <Volcano/Graphics/Common.h>
 #include <Volcano/Graphics/View.h>
-#include <Volcano/Graphics/Program.h>
 
 VOLCANO_GRAPHICS_BEGIN
 
@@ -36,7 +35,7 @@ public:
 
 public:
     void reset();
-    void apply() const;
+    virtual void apply() const = 0;
 
     bool isEnabled(BoolAttribute attr) const {
         return bool_attributes_[static_cast<int>(attr)];
@@ -66,19 +65,10 @@ public:
         vector4i_attributes_[static_cast<int>(attr)] = v;
     }
 
-    Program& program() {
-        return program_;
-    }
-
-    const Program& program() const {
-        return program_;
-    }
-
 private:
     std::bitset<static_cast<size_t>(BoolAttribute::Max)> bool_attributes_;
     std::array<Eigen::Vector4f, static_cast<size_t>(Vector4fAttribute::Max)> vector4f_attributes_;
     std::array<Eigen::Vector4i, static_cast<size_t>(Vector4iAttribute::Max)> vector4i_attributes_;
-    Program program_;
 };
 
 VOLCANO_GRAPHICS_END

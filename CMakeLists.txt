@@ -18,6 +18,20 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 include(Volcano/Utils)
 
 add_subdirectory(runtime)
-add_subdirectory(tools)
-add_subdirectory(examples)
-add_subdirectory(documents)
+
+volcano_option(VOLCANO_TOOLS "Enable tools." ON)
+if(VOLCANO_TOOLS)
+	add_subdirectory(tools)
+endif()
+
+add_subdirectory(system)
+
+volcano_option(VOLCANO_EXAMPLES "Enable examples." OFF)
+if(VOLCANO_EXAMPLES)
+	add_subdirectory(examples)
+endif()
+
+volcano_option(VOLCANO_DOCUMENTS "Enable documents." ON)
+if(VOLCANO_DOCUMENTS)
+	add_subdirectory(documents)
+endif()

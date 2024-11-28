@@ -1,8 +1,10 @@
 //
 //
+#include <format>
 #include <memory>
 
 #include <argh.h>
+#include <physfs.h>
 #include <SDL_main.h>
 
 #ifdef _WIN32
@@ -11,17 +13,10 @@
 
 #include <Volcano/Error.h>
 #include <Volcano/ScopeGuard.h>
-#include <Volcano/System/Local.h>
-#include <Volcano/System/Client.h>
-#include <Volcano/System/Server.h>
-
-#include "Volcano/Demo/Common.h"
+#include <Volcano/Demo/Common.h>
+#include <Volcano/Demo/Application.h>
 
 VOLCANO_DEMO_BEGIN
-
-static void printBanner() {
-    spdlog::info("VolcanoDemo v" VOLCANO_VERSION_STR);
-}
 
 static void printHelp() {
 }
@@ -44,10 +39,7 @@ static int run(int argc, char* argv[]) {
         spdlog::set_level(spdlog::level::debug);
     }
 
-    spdlog::set_pattern("[%L] %n %t-%o %H:%M:%S.%e: %v");
-
-    printBanner();
-
+    spdlog::info("VolcanoDemo v" VOLCANO_VERSION_STR);
     if (cmdline[{ "-v", "--version" }]) {
         return EXIT_SUCCESS;
     }
@@ -57,68 +49,38 @@ static int run(int argc, char* argv[]) {
         return EXIT_SUCCESS;
     }
 
-    std::string mode("local");
-    cmdline({ "-m", "--mode" }) >> mode;
+    spdlog::set_pattern("[%L] %n %t-%o %H:%M:%S.%e: %v");
 
     std::string root(std::filesystem::current_path().string());
     cmdline({ "-r", "--root" }) >> root;
-
-    std::string host("127.0.0.1");
-    cmdline({ "--host" }) >> host;
-
-    int port = VOLCANO_SYSTEM_DEFAULT_PORT;
-    cmdline({ "--port" }) >> port;
+    if (!std::filesystem::exists(root)) {
+        throw std::runtime_error(std::format("Invalid root path {}.", root));
+    }
 
     int ret = PHYSFS_init(argv[0]);
     if (!ret) {
-        throw Error(Errc::OutOfResource);
+        throw std::runtime_error(std::format("Failed to init PhysFS: {}.", PHYSFS_getLastError()));
     }
 
     auto physfs_guard = scopeGuard([] {
         PHYSFS_deinit();
     });
 
-    if (!std::filesystem::exists(root)) {
-        throw Error(Errc::InvalidParameter);
-    }
-
     ret = PHYSFS_mount(root.c_str(), "/", 0);
     if (!ret) {
-        throw Error(Errc::InvalidState);
+        throw std::runtime_error(std::format("Failed to mount root: {}.", PHYSFS_getLastError()));
     }
 
-    const char* wdir = PHYSFS_getPrefDir("Volcano", "Demo");
-    if (wdir == nullptr) {
-        throw Error(Errc::InvalidContext);
-    }
+    std::string init = "/Manifest.json";
+    cmdline({ "-i", "--init" }) >> init;
 
-    ret = PHYSFS_setWriteDir(wdir);
-    if (!ret) {
-        throw Error(Errc::InvalidContext);
-    }
-
-    std::unique_ptr<System::Base> system;
-    if (mode == "local") {
-        logInfo("Creating single player system...");
-        system = std::make_unique<System::Local>();
-    } else if (mode == "client") {
-        logInfo("Creating multi-player client system...");
-        system = std::make_unique<System::Client>(host, port);
-    } else if (mode == "server") {
-        logInfo("Creating multi-player server system...");
-        system = std::make_unique<System::Server>(host, port);
-    } else {
-        logInfo("Invalid mode, fallback to single player system...");
-        system = std::make_unique<System::Local>();
-    }
-
-    system->run();
+    auto app = std::make_unique<Application>(std::move(init));
+    app->run();
 
     return EXIT_SUCCESS;
 }
 
 VOLCANO_DEMO_END
-
 
 int main(int argc, char* argv[]) {
     int exit_code = EXIT_FAILURE;

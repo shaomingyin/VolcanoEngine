@@ -4,6 +4,4 @@
 
 VOLCANO_BEGIN
 
-tf::Executor defaultExecutor;
-
 VOLCANO_END

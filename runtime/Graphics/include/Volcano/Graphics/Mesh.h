@@ -24,10 +24,6 @@ private:
 	unsigned int color_channels_;
 	unsigned int uv_channels_;
 	bool has_normals_;
-	GLuint vao_;
-	GLuint vbo_;
-	GLuint ebo_;
-	std::future<void> loading_future_;
 };
 
 VOLCANO_GRAPHICS_END

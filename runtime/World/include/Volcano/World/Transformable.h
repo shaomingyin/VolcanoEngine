@@ -7,7 +7,7 @@
 
 VOLCANO_WORLD_BEGIN
 
-class Transformable {
+class Transformable: public btMotionState {
 public:
 	Eigen::Affine3f& localTransform() {
 		return local_transform_;
@@ -17,7 +17,7 @@ public:
 		return local_transform_;
 	}
 
-	Eigen::Affine3f toWorldTransform() const {
+	Eigen::Affine3f worldTransform() const {
 		if (world_transform_ != nullptr) {
 			return (*world_transform_) * local_transform_;
 		}
@@ -25,6 +25,8 @@ public:
 	}
 
 	void attachWorldTransform(Eigen::Affine3f* p);
+	void getWorldTransform(btTransform& worldTrans) const override;
+	void setWorldTransform(const btTransform& worldTrans) override;
 
 private:
 	Eigen::Affine3f* world_transform_ = nullptr;

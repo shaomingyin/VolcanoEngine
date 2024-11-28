@@ -1,6 +1,5 @@
 //
 //
-#include <Volcano/Error.h>
 #include <Volcano/Gui/Window.h>
 
 VOLCANO_GUI_BEGIN

@@ -1,22 +1,23 @@
 //
 //
-#include <Volcano/Error.h>
 #include <Volcano/ScopeGuard.h>
 #include <Volcano/Graphics/Renderer.h>
 
 VOLCANO_GRAPHICS_BEGIN
 
-Renderer::Renderer(entt::registry& registry)
-	: registry_(registry) {
+Renderer::Renderer(World::Scene& scene)
+	: scene_(scene) {
 }
 
 Renderer::~Renderer() {
 }
 
-void Renderer::frame(Duration elapsed) {
+void Renderer::update(Duration elapsed) {
 }
 
-void Renderer::buildView(View& view) const {
+void Renderer::render() {
+	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+	glClear(GL_COLOR_BUFFER_BIT);
 }
 
 VOLCANO_GRAPHICS_END
