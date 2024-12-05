@@ -24,7 +24,7 @@ if(VOLCANO_TOOLS)
 	add_subdirectory(tools)
 endif()
 
-add_subdirectory(system)
+add_subdirectory(skeleton)
 
 volcano_option(VOLCANO_EXAMPLES "Enable examples." OFF)
 if(VOLCANO_EXAMPLES)

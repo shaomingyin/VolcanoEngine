@@ -14,11 +14,8 @@ void Target::resize(int width, int height) {
 	height_ = height;
 }
 
-bool Target::beginFrame() {
+bool Target::makeCurrent() const {
 	return true;
-}
-
-void Target::endFrame() {
 }
 
 VOLCANO_GRAPHICS_END

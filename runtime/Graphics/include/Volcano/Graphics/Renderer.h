@@ -25,8 +25,9 @@ public:
 
 private:
     World::Scene& scene_;
-    //Pipeline vector_graphics_pipeline_;
-    //Pipeline gbuffer_pipeline_;
+    nvg::Context* nvg_;
+    // vg pipeline
+    // 3d pipeline
 };
 
 VOLCANO_GRAPHICS_END

@@ -12,11 +12,14 @@ volcano_add_static_library(Graphics
         src/gl3w/gl3w.c
 		
 		include/fontstash.h
+		include/nanovg.h
+        include/nanovg_ctx.h
+        include/nanovg_gl.h
+        include/nanovg_gl_utils.h
 		include/stb_image.h
 		include/stb_truetype.h
-		src/stb/fontstash.c
-		src/stb/stb_image.c
-		src/stb/stb_truetype.c
+		src/nanovg/nanovg.c
+        src/nanovg/nanovg_ctx.cpp
 
         include/debug_draw.hpp
         src/debug_draw/debug_draw.cpp

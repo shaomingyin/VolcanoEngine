@@ -21,8 +21,7 @@ public:
 
 public:
 	void resize(int w, int h) override;
-	bool beginFrame() override;
-	void endFrame() override;
+	bool makeCurrent() const override;
 
 	int flags() const {
 		return flags_;

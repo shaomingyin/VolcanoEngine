@@ -20,11 +20,8 @@ void RenderBuffer::resize(int w, int h) {
 	// TODO
 }
 
-bool RenderBuffer::beginFrame() {
+bool RenderBuffer::makeCurrent() const {
 	return true;
-}
-
-void RenderBuffer::endFrame() {
 }
 
 VOLCANO_GRAPHICS_END

@@ -22,6 +22,7 @@ public:
 
 public:
 	void resize(int w, int h) override;
+	bool makeCurrent() const override;
 
 	int flags() const {
 		return flags_;
@@ -29,6 +30,7 @@ public:
 
 private:
 	int flags_;
+	GLuint id_;
 };
 
 VOLCANO_GRAPHICS_END

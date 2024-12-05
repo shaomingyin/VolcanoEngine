@@ -17,12 +17,4 @@ if(VOLCANO_GUI)
 	add_subdirectory(Gui)
 endif()
 
-volcano_option(VOLCANO_NETWORK "Enable network." ON)
-if(VOLCANO_NETWORK)
-	add_subdirectory(Network)
-endif()
-
-volcano_option(VOLCANO_PLAYER "Enable player." VOLCANO_ACOUSTICS AND VOLCANO_GRAPHICS AND VOLCANO_PHYSICS AND VOLCANO_GUI)
-if(VOLCANO_PLAYER)
-	add_subdirectory(Player)
-endif()
+add_subdirectory(System)

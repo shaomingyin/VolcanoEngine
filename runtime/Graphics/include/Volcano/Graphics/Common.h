@@ -4,6 +4,7 @@
 #define VOLCANO_GRAPHICS_COMMON_H
 
 #include <GL/gl3w.h>
+#include <nanovg_ctx.h>
 
 #include <Volcano/Common.h>
 #include <Volcano/Graphics/Config.h>

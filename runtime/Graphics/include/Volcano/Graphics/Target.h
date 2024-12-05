@@ -22,8 +22,7 @@ public:
 	}
 
 	virtual void resize(int width, int height);
-	virtual bool beginFrame();
-	virtual void endFrame();
+	virtual bool makeCurrent() const;
 
 private:
 	int width_;

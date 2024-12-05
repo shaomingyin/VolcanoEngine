@@ -723,7 +723,7 @@ union GL3WProcs {
 	} gl;
 };
 
-GL3W_API extern union GL3WProcs* gl3wProcs;
+GL3W_API extern const union GL3WProcs* gl3wProcs;
 
 /* OpenGL functions */
 #define glActiveShaderProgram                            gl3wProcs->gl.ActiveShaderProgram

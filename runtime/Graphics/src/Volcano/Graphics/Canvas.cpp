@@ -8,20 +8,11 @@ Canvas::Canvas(int w, int h)
 	: FrameBuffer(w, h) {
 }
 
-void Canvas::resize(int w, int h) {
-	FrameBuffer::resize(w, h);
-}
-
-bool Canvas::beginFrame() {
-	if (!FrameBuffer::beginFrame()) {
-		return false;
-	}
-
-	return true;
-}
-
-void Canvas::endFrame() {
-	FrameBuffer::endFrame();
+void Canvas::paint() const {
+	nvg::beginPath();
+	nvg::rect(0, 0, width(), height());
+	nvg::strokeColor(nvg::RGBf(0.0f, 0.0f, 0.0f));
+	nvg::stroke();
 }
 
 VOLCANO_GRAPHICS_END
