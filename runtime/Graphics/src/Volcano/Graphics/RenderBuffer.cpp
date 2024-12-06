@@ -20,7 +20,7 @@ void RenderBuffer::resize(int w, int h) {
 	// TODO
 }
 
-bool RenderBuffer::makeCurrent() const {
+bool RenderBuffer::makeCurrent() {
 	return true;
 }
 

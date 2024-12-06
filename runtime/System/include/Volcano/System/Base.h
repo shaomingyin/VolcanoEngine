@@ -8,23 +8,13 @@
 
 #include <Volcano/World/Scene.h>
 #include <Volcano/System/Common.h>
+#include <Volcano/System/Stepper.h>
 
 VOLCANO_SYSTEM_BEGIN
 
 class Base {
 public:
-	enum class State {
-		Idle = 0,
-		Loading,
-		Ready,
-		Playing,
-		Paused,
-		Stopping,
-		Error
-	};
-
-public:
-	Base(const std::string& manifest_path);
+	Base();
 	virtual ~Base() = default;
 
 public:
@@ -40,21 +30,28 @@ public:
 		return scene_;
 	}
 
-	const std::string& manifestPath() const {
-		return manifest_path_;
+	uint32_t tps() const {
+		return ticker_.countPerSecond();
 	}
 
 	uint32_t fps() const {
-		return frame_count_per_second_;
+		return framer_.countPerSecond();
+	}
+
+	uint32_t tpsMax() const {
+		return ticker_.max();
 	}
 
 	uint32_t fpsMax() const {
-		return 1000000 / durationToMicroseconds(elapsed_min_);
+		return framer_.max();
+	}
+
+	void setTpsMax(uint32_t v) {
+		ticker_.setMax(v);
 	}
 
 	void setFpsMax(uint32_t v) {
-		uint32_t tmp = std::clamp(v, 1u, 1000u);
-		elapsed_min_ = std::chrono::microseconds(1000000 / tmp);
+		framer_.setMax(v);
 	}
 
 	template <typename T>
@@ -70,9 +67,33 @@ public:
 	void run();
 
 protected:
+	enum class State {
+		Idle = 0,
+		Loading,
+		Ready,
+		Playing,
+		Paused,
+		Stopping,
+		Error
+	};
+
 	State state() const {
 		return state_;
 	}
+
+	bool isThreadedSimulation() const {
+		return threaded_simulation_;
+	}
+
+	void stop() {
+		if (state_ != State::Idle) {
+			state_ = State::Stopping;
+		}
+	}
+
+	void clear();
+	virtual void tick(Duration elapsed);
+	virtual void frame(Duration elapsed);
 
 protected:
 	bool isLoading() const {
@@ -80,30 +101,32 @@ protected:
 	}
 
 	int loadingProgress() const {
+		VOLCANO_ASSERT(isLoading());
 		return loading_progress_;
 	}
 
 	void setLoadingProgress(int v) {
-		if (state_ == State::Loading) {
-			loading_progress_ = std::clamp(v, 0, 100);
-		}
+		VOLCANO_ASSERT(isLoading());
+		loading_progress_ = std::clamp(v, 0, 100);
 	}
 
 	const std::string& loadingMessage() const {
+		VOLCANO_ASSERT(isLoading());
 		return loading_message_;
 	}
 
 	void setLoadingMessage(std::string v) {
-		if (state_ == State::Loading) {
-			loading_message_ = std::move(v);
-		}
+		VOLCANO_ASSERT(isLoading());
+		loading_message_ = std::move(v);
 	}
 
 	void cancelLoading() {
+		VOLCANO_ASSERT(isLoading());
 		loading_cancellation_.cancel();
 	}
 
 	void loadingCancelPoint() {
+		VOLCANO_ASSERT(isLoading());
 		try {
 			async::interruption_point(loading_cancellation_);
 		} catch (async::task_canceled& ex) {
@@ -115,6 +138,7 @@ protected:
 		loadScene(nlohmann::parseFromPhysFS(path));
 	}
 
+	virtual void loadConfig(const nlohmann::json & json);
 	virtual void loadScene(const nlohmann::json& json);
 	virtual void loadMap(const nlohmann::json& json, entt::handle map);
 	virtual void loadEntity(const nlohmann::json& json, entt::handle entity);
@@ -147,6 +171,11 @@ protected:
 	}
 
 protected:
+	bool isStopping() const {
+		return (state_ == State::Stopping);
+	}
+
+protected:
 	bool isError() const {
 		return (state_ == State::Error);
 	}
@@ -160,38 +189,18 @@ protected:
 		error_message_ = std::move(message);
 	}
 
-protected:
-	void stop() {
-		if (state_ != State::Idle) {
-			state_ = State::Stopping;
-		}
-	}
-
-	void clear();
-	virtual void loadingFrame(Duration elapsed);
-	virtual void readyFrame(Duration elapsed);
-	virtual void playingFrame(Duration elapsed);
-	virtual void pausedFrame(Duration elapsed);
-	virtual void errorFrame(Duration elapsed);
-
 private:
-	void frame(Duration elapsed);
 	void load();
 	void loadRigidBody(const nlohmann::json& json, entt::handle entity);
 
 private:
 	State state_;
-	async::threadpool_scheduler threadpool_;
-	async::fifo_scheduler task_scheduler_;
-	World::Scene scene_;
-	std::string manifest_path_;
-	std::string name_;
 
-	Duration elapsed_min_;
-	TimePoint frame_last_;
-	TimePoint frame_count_last_;
-	uint32_t frame_count_;
-	uint32_t frame_count_per_second_;
+	async::fifo_scheduler task_scheduler_;
+	bool threaded_simulation_;
+
+	World::Scene scene_;
+	std::string name_;
 
 	async::task<void> loading_task_;
 	async::cancellation_token loading_cancellation_;
@@ -199,6 +208,9 @@ private:
 	int loading_progress_;
 
 	std::string error_message_;
+
+	Stepper ticker_;
+	Stepper framer_;
 };
 
 VOLCANO_SYSTEM_END

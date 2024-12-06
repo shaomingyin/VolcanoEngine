@@ -36,7 +36,7 @@ void FrameBuffer::resize(int w, int h) {
 	// TODO
 }
 
-bool FrameBuffer::makeCurrent() const {
+bool FrameBuffer::makeCurrent() {
 	glBindFramebuffer(GL_FRAMEBUFFER, id_);
 	return true;
 }

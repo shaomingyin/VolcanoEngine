@@ -1,7 +1,6 @@
 //
 //
 #include <vector>
-#include <thread>
 
 #include <Volcano/ScopeGuard.h>
 #include <Volcano/World/BoxRigidBody.h>
@@ -15,64 +14,122 @@
 
 VOLCANO_SYSTEM_BEGIN
 
-Base::Base(const std::string& manifest_path)
+Base::Base()
 	: state_(State::Idle)
-	, threadpool_(async::hardware_concurrency())
-	, manifest_path_(manifest_path)
-	, loading_progress_(0)
-	, frame_count_(0)
-	, frame_count_per_second_(0) {
-	setFpsMax(60);
+	, loading_progress_(0) {
 }
 
 void Base::run() {
 	if (state_ != State::Idle) {
-		throw std::runtime_error("Invalid state.");
+		throw std::runtime_error("Run in invalid state.");
 	}
 
 	state_ = State::Loading;
-	loading_task_ = async::spawn(async::thread_scheduler(), std::bind(&Base::load, this));
+	loadConfig(nlohmann::parseFromPhysFS("/Config.json"));
 
-	frame_last_ = Clock::now();
-	frame_count_last_ = frame_last_;
-	frame_count_ = 0;
-	frame_count_per_second_ = 0;
+	auto simulate = [this] {
+		VOLCANO_ASSERT(state_ == State::Loading);
+		loading_task_ = async::spawn(async::thread_scheduler(), std::bind(&Base::load, this));
+		ticker_.reset();
+		while (state_ != State::Idle) {
+			if (ticker_.step()) {
+				tick(ticker_.elapsed());
+			}
+		}
+	};
+
+	framer_.reset();
+
+	if (!threaded_simulation_) {
+		simulate();
+		return;
+	}
+
+	auto simulation_thread = std::thread(simulate);
+	auto simulation_thread_guard = scopeGuard([&simulation_thread] {
+		simulation_thread.join();
+	});
 
 	while (state_ != State::Idle) {
-		auto current = Clock::now();
-		auto elapsed = current - frame_last_;
-		if (elapsed >= elapsed_min_) {
-			frame(elapsed);
-			frame_count_ += 1;
-			frame_last_ = current;
-			if ((current - frame_count_last_) >= 1s) {
-				frame_count_per_second_ = frame_count_;
-				frame_count_ = 0;
-				frame_count_last_ = current;
-				logInfo("Simulation: {}fps", frame_count_per_second_);
-			}
-		} else {
-			auto left = elapsed_min_ - elapsed;
-			std::this_thread::sleep_for(left < 10ms ? left : 10ms);
+		if (framer_.step()) {
+			frame(framer_.elapsed());
 		}
 	}
+}
+
+void Base::clear() {
+	name_.clear();
+	scene_.clear();
+	loading_message_.clear();
+	loading_progress_ = 0;
+	error_message_.clear();
+	state_ = State::Idle;
+}
+
+void Base::tick(Duration elapsed) {
+	if (!threaded_simulation_) {
+		task_scheduler_.run_all_tasks();
+	}
+
+	switch (state_) {
+	case State::Playing:
+		scene_.update(elapsed);
+		break;
+	case State::Loading:
+		if (!threaded_simulation_ && loading_task_.ready()) {
+			try {
+				loading_task_.get();
+				state_ = State::Ready;
+			} catch (std::exception& ex) {
+				error(ex.what());
+			}
+		}
+		break;
+	default:
+		break;
+	}
+
+	if (!threaded_simulation_) {
+		frame(elapsed);
+	}
+}
+
+void Base::frame(Duration elapsed) {
+	if (threaded_simulation_) {
+		task_scheduler_.run_all_tasks();
+	}
+}
+
+void Base::loadConfig(const nlohmann::json& json) {
+	threaded_simulation_ = nlohmann::parseBool(json, "threadedSimulation", false);
+	logInfo("threadedSimulation: {}", threaded_simulation_);
+
+	ticker_.setMax(nlohmann::parseInt(json, "tpsMax", 60));
+	logInfo("tpsMax: {}", ticker_.max());
+
+	framer_.setMax(nlohmann::parseInt(json, "fpsMax", 60));
+	logInfo("fpsMax: {}", framer_.max());
 }
 
 void Base::loadScene(const nlohmann::json& json) {
 	loading_message_ = "Loading scene...";
 
-	name_ = nlohmann::parseString(json, "name");
-
-	auto map_it = json.find("map");
-	if (map_it == json.end() || !map_it->is_object()) {
-		throw std::runtime_error("Scene has no map node.");
+	if (!json.is_object()) {
+		throw std::runtime_error("Scene is not an object.");
 	}
 
-	loadMap(*map_it, scene_.global());
+	name_ = nlohmann::parseString(json, "name", "Unnamed");
+
+	auto map_it = json.find("map");
+	if (map_it != json.end() && map_it->is_object()) {
+		loadMap(*map_it, scene_.global());
+	}
 
 	if (nlohmann::parseBool(json, "physicsEnabled")) {
+		logInfo("Physics enabled.");
 		scene_.enablePhysics();
 	} else {
+		logInfo("Physics disabled.");
 		scene_.disablePhysics();
 	}
 
@@ -83,7 +140,7 @@ void Base::loadScene(const nlohmann::json& json) {
 	if (entities_it != json.end()) {
 		loading_message_ = "Loading entities...";
 		if (!entities_it->is_array()) {
-			throw std::runtime_error("Node 'entities' in scene file is not an array.");
+			throw std::runtime_error(std::format("Node 'entities' in scene {} is not an array.", name_));
 		}
 		for (const nlohmann::json& entity: *entities_it) {
 			loadingCancelPoint();
@@ -114,65 +171,6 @@ void Base::loadEntity(const nlohmann::json& json, entt::handle entity) {
 	}
 }
 
-void Base::clear() {
-	name_.clear();
-	scene_.clear();
-	loading_message_.clear();
-	loading_progress_ = 0;
-	error_message_.clear();
-	state_ = State::Idle;
-}
-
-void Base::loadingFrame(Duration elapsed) {
-	if (state_ == State::Loading) {
-		if (loading_task_.ready()) {
-			try {
-				loading_task_.get();
-				state_ = State::Ready;
-			} catch (std::exception& ex) {
-				error(ex.what());
-			}
-		}
-	}
-}
-
-void Base::readyFrame(Duration elapsed) {
-}
-
-void Base::playingFrame(Duration elapsed) {
-	scene_.update(elapsed);
-}
-
-void Base::pausedFrame(Duration elapsed) {
-}
-
-void Base::errorFrame(Duration elapsed) {
-}
-
-
-void Base::frame(Duration elapsed) {
-	task_scheduler_.run_all_tasks();
-	switch (state_) {
-	case State::Playing:
-		playingFrame(elapsed);
-		break;
-	case State::Loading:
-		loadingFrame(elapsed);
-		break;
-	case State::Ready:
-		readyFrame(elapsed);
-		break;
-	case State::Paused:
-		pausedFrame(elapsed);
-		break;
-	case State::Error:
-		errorFrame(elapsed);
-		break;
-	default:
-		break;
-	}
-}
-
 void Base::load() {
 	VOLCANO_ASSERT(state_ == State::Loading);
 
@@ -182,7 +180,11 @@ void Base::load() {
 	loading_progress_ = 0;
 	loading_cancellation_.reset();
 
-	auto manifest = nlohmann::parseFromPhysFS(manifest_path_.empty() ? "/Manifest.json" : manifest_path_);
+	auto manifest = nlohmann::parseFromPhysFS("/Manifest.json");
+	if (!manifest.is_object()) {
+		throw std::runtime_error("Manifest is not an object.");
+	}
+
 	loadScene(nlohmann::parseString(manifest, "firstScene", "/Startup.json"));
 }
 

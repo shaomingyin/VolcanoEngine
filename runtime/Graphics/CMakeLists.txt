@@ -11,21 +11,10 @@ volcano_add_static_library(Graphics
         include/KHR/khrplatform.h
         src/gl3w/gl3w.c
 		
-		include/fontstash.h
-		include/nanovg.h
-        include/nanovg_ctx.h
-        include/nanovg_gl.h
-        include/nanovg_gl_utils.h
-		include/stb_image.h
-		include/stb_truetype.h
-		src/nanovg/nanovg.c
-        src/nanovg/nanovg_ctx.cpp
-
         include/debug_draw.hpp
         src/debug_draw/debug_draw.cpp
 	
         include/Volcano/Graphics/Camera.h
-        include/Volcano/Graphics/Canvas.h
         include/Volcano/Graphics/Common.h
         include/Volcano/Graphics/Config.h.in
         include/Volcano/Graphics/Context.h
@@ -45,7 +34,6 @@ volcano_add_static_library(Graphics
         include/Volcano/Graphics/View.h
         include/Volcano/Graphics/VirtualTexture.h
         src/Volcano/Graphics/Camera.cpp
-        src/Volcano/Graphics/Canvas.cpp
         src/Volcano/Graphics/Context.cpp
         src/Volcano/Graphics/DirectionalLight.cpp
         src/Volcano/Graphics/FrameBuffer.cpp

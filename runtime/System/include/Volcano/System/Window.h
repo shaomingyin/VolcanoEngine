@@ -3,9 +3,6 @@
 #ifndef VOLCANO_SYSTEM_WINDOW_H
 #define VOLCANO_SYSTEM_WINDOW_H
 
-#include <SDL.h>
-#include <GL/gl3w.h>
-
 #include <Volcano/Graphics/Target.h>
 #include <Volcano/System/Common.h>
 
@@ -19,6 +16,10 @@ public:
 public:
     SDL_Window* handle() {
         return handle_;
+    }
+
+    Uint32 id() const {
+        return id_;
     }
 
     int x() const {
@@ -45,10 +46,22 @@ public:
         SDL_HideWindow(handle_);
     }
 
-    bool makeCurrent() const override;
+    void setTitle(const std::string& v) {
+        SDL_SetWindowTitle(handle_, v.c_str());
+    }
+
+    void resize(const Eigen::Vector2i& v) {
+        resize(v.x(), v.y());
+    }
+
+    void resize(int w, int h) override;
+    bool makeCurrent() override;
     void swapBuffers();
     virtual void handleEvent(const SDL_Event& evt);
     void toggleFullScreen();
+
+private:
+    void handleKeyEvent(const SDL_Event& evt);
 
 private:
     enum {
@@ -63,6 +76,7 @@ private:
     int y_;
     SDL_GLContext gl_context_;
     GL3WProcs gl3w_;
+    ImGuiContext* imgui_;
 };
 
 VOLCANO_SYSTEM_END

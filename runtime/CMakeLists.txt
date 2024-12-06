@@ -12,9 +12,4 @@ if(VOLCANO_GRAPHICS)
 	add_subdirectory(Graphics)
 endif()
 
-volcano_option(VOLCANO_GUI "Enable GUI." ON)
-if(VOLCANO_GUI)
-	add_subdirectory(Gui)
-endif()
-
 add_subdirectory(System)

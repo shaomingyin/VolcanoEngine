@@ -5,13 +5,11 @@
 
 VOLCANO_SYSTEM_BEGIN
 
-Client::Client(const std::string& manifest_path, const ENetAddress& address)
-	: Local(manifest_path)
-	, enet_address_(address) {
+Client::Client(const ENetAddress& address)
+	: enet_address_(address) {
 }
 
-Client::Client(const std::string& manifest_path, const std::string& host, int port)
-	: Local(manifest_path) {
+Client::Client(const std::string& host, int port) {
 	enet_address_set_host(&enet_address_, host.c_str());
 	enet_address_.port = port;
 }
@@ -26,29 +24,23 @@ Client::~Client() {
 	}
 }
 
-void Client::loadingFrame(Duration elapsed) {
-	poll();
-	Local::loadingFrame(elapsed);
-}
-
-void Client::readyFrame(Duration elapsed) {
-	poll();
-	Local::readyFrame(elapsed);
-}
-
-void Client::playingFrame(Duration elapsed) {
-	poll();
-	Local::playingFrame(elapsed);
-}
-
-void Client::pausedFrame(Duration elapsed) {
-	poll();
-	Local::pausedFrame(elapsed);
-}
-
-void Client::errorFrame(Duration elapsed) {
-	poll();
-	Local::loadingFrame(elapsed);
+void Client::tick(Duration elapsed) {
+	ENetEvent evt;
+	int ret = enet_host_service(enet_host_, &evt, 0);
+	if (ret == 0) {
+		switch (evt.type) {
+		case ENET_EVENT_TYPE_RECEIVE:
+			handlePackage(evt.peer, evt.packet);
+			break;
+		case ENET_EVENT_TYPE_CONNECT:
+			handleConnect(evt.peer);
+			break;
+		case ENET_EVENT_TYPE_DISCONNECT:
+			handleDisconnect(evt.peer);
+			break;
+		}
+	}
+	Local::tick(elapsed);
 }
 
 void Client::handlePackage(ENetPeer* peer, ENetPacket* package) {
@@ -77,24 +69,6 @@ void Client::init() {
 	}
 
 	enet_host_guard.dismiss();
-}
-
-void Client::poll() {
-	ENetEvent evt;
-	int ret = enet_host_service(enet_host_, &evt, 0);
-	if (ret == 0) {
-		switch (evt.type) {
-		case ENET_EVENT_TYPE_RECEIVE:
-			handlePackage(evt.peer, evt.packet);
-			break;
-		case ENET_EVENT_TYPE_CONNECT:
-			handleConnect(evt.peer);
-			break;
-		case ENET_EVENT_TYPE_DISCONNECT:
-			handleDisconnect(evt.peer);
-			break;
-		}
-	}
 }
 
 VOLCANO_SYSTEM_END

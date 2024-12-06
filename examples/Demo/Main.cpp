@@ -17,7 +17,7 @@
 static void printHelp() {
 }
 
-static int run(int argc, char* argv[]) {
+static void run(int argc, char* argv[]) {
     argh::parser cmdline(argv);
 
 #ifdef VOLCANO_DEBUG
@@ -37,12 +37,12 @@ static int run(int argc, char* argv[]) {
 
     spdlog::info("VolcanoDemo v" VOLCANO_VERSION_STR);
     if (cmdline[{ "-v", "--version" }]) {
-        return EXIT_SUCCESS;
+        return;
     }
 
     if (cmdline[{ "-h", "--help" }]) {
         printHelp();
-        return EXIT_SUCCESS;
+        return;
     }
 
     spdlog::set_pattern("[%L] %n %t-%o %H:%M:%S.%e: %v");
@@ -54,7 +54,7 @@ static int run(int argc, char* argv[]) {
     }
 
     int ret = SDL_Init(SDL_INIT_EVERYTHING);
-    if (ret == 0) {
+    if (ret != 0) {
         throw std::runtime_error("Failed to init SDL.");
     }
 
@@ -71,24 +71,37 @@ static int run(int argc, char* argv[]) {
         PHYSFS_deinit();
     });
 
+    const char* perf_dir = PHYSFS_getPrefDir("Volcano", "Demo");
+    if (perf_dir == nullptr) {
+        throw std::runtime_error("Failed to get user dir.");
+    }
+
+    Volcano::logInfo("User directory: {}", perf_dir);
+
     ret = PHYSFS_mount(root.c_str(), "/", 0);
     if (!ret) {
         throw std::runtime_error(std::format("Failed to mount root: {}.", PHYSFS_getLastError()));
     }
 
-    std::string init = "/Manifest.json";
-    cmdline({ "-i", "--init" }) >> init;
+    ret = PHYSFS_mount(perf_dir, "/", 0);
+    if (!ret) {
+        throw std::runtime_error(std::format("Failed to mount user directory {}.", perf_dir));
+    }
 
-    auto system = std::make_unique<Volcano::System::Local>(init);
+    ret = PHYSFS_setWriteDir(perf_dir);
+    if (!ret) {
+        throw std::runtime_error(std::format("Failed to set write dir {}.", perf_dir));
+    }
+
+    auto system = std::make_unique<Volcano::System::Local>();
     system->run();
-
-    return EXIT_SUCCESS;
 }
 
 int main(int argc, char* argv[]) {
     int exit_code = EXIT_FAILURE;
     //try {
-        exit_code = run(argc, argv);
+        run(argc, argv);
+        exit_code = EXIT_SUCCESS;
     //} catch (std::exception& e) {
     //    spdlog::error(e.what());
     //}

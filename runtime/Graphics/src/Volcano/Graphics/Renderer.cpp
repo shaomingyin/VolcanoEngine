@@ -6,8 +6,7 @@
 VOLCANO_GRAPHICS_BEGIN
 
 Renderer::Renderer(World::Scene& scene)
-	: scene_(scene)
-	, nvg_(nvg::createContext()) {
+	: scene_(scene) {
 }
 
 Renderer::~Renderer() {

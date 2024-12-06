@@ -7,7 +7,6 @@
 
 #include <Volcano/Graphics/Common.h>
 #include <Volcano/Graphics/Camera.h>
-#include <Volcano/Graphics/Canvas.h>
 #include <Volcano/Graphics/Light.h>
 #include <Volcano/Graphics/DirectionalLight.h>
 #include <Volcano/Graphics/PointLight.h>
@@ -89,14 +88,6 @@ public:
 		return ambient_light_;
 	}
 
-	Canvas& hud() {
-		return hud_;
-	}
-
-	const Canvas& hud() const {
-		return hud_;
-	}
-
 private:
 	Eigen::Vector4i viewport_;
 	Eigen::Matrix4f view_matrix_;
@@ -106,7 +97,6 @@ private:
 	std::vector<SpotLight*> spot_lights_;
 	std::vector<RenderableObject*> renderable_objects_;
 	Light ambient_light_;
-	Canvas hud_;
 };
 
 VOLCANO_GRAPHICS_END

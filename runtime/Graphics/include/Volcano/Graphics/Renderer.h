@@ -25,7 +25,6 @@ public:
 
 private:
     World::Scene& scene_;
-    nvg::Context* nvg_;
     // vg pipeline
     // 3d pipeline
 };

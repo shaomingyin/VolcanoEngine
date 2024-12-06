@@ -22,7 +22,7 @@ public:
 
 public:
 	void resize(int w, int h) override;
-	bool makeCurrent() const override;
+	bool makeCurrent() override;
 
 	int flags() const {
 		return flags_;

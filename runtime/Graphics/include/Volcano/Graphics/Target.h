@@ -22,7 +22,7 @@ public:
 	}
 
 	virtual void resize(int width, int height);
-	virtual bool makeCurrent() const;
+	virtual bool makeCurrent() = 0;
 
 private:
 	int width_;

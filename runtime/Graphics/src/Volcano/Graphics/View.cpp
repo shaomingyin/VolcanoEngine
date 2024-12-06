@@ -4,8 +4,7 @@
 
 VOLCANO_GRAPHICS_BEGIN
 
-View::View(int w, int h)
-	: hud_(w, h) {
+View::View(int w, int h) {
 }
 
 View::~View() {
