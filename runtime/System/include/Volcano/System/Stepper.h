@@ -12,7 +12,7 @@ public:
 	Stepper(uint32_t max = 60)
 		: last_(Clock::now())
 		, count_last_(last_)
-		, elapsed_min_(std::chrono::microseconds(std::micro::den / std::clamp(max, 1u, 1000u)))
+		, elapsed_min_(Precision(Precision::period::den / std::clamp(max, 1u, 1000u)))
 		, count_(0)
 		, count_per_second_(0) {
 	}
@@ -30,13 +30,13 @@ public:
 	}
 
 	uint32_t max() const {
-		auto tmp = std::chrono::duration_cast<std::chrono::microseconds>(elapsed_min_);
-		return (std::micro::den / tmp.count());
+		auto tmp = std::chrono::duration_cast<Precision>(elapsed_min_);
+		return (Precision::period::den / tmp.count());
 	}
 
 	void setMax(uint32_t v) {
 		auto tmp = std::clamp(v, 1u, 1000u);
-		elapsed_min_ = std::chrono::microseconds(std::micro::den / tmp);
+		elapsed_min_ = Precision(Precision::period::den / tmp);
 	}
 
 	void reset() {
@@ -46,12 +46,13 @@ public:
 		count_per_second_ = 0;
 	}
 
-	bool step(Duration slice = 10ms) {
+	bool step(Duration slice = 5ms) {
 		auto current = Clock::now();
 		auto elapsed = current - last_;
 		if (elapsed < elapsed_min_) {
 			auto left = elapsed_min_ - elapsed;
-			std::this_thread::sleep_for(left < slice ? left : slice);
+			SDL_Delay(std::chrono::duration_cast<std::chrono::milliseconds>(left).count());
+			//std::this_thread::sleep_for(left < slice ? left : slice);
 			return false;
 		}
 
@@ -69,6 +70,8 @@ public:
 	}
 
 private:
+	using Precision = std::chrono::milliseconds;
+
 	TimePoint last_;
 	TimePoint count_last_;
 	Duration elapsed_min_;

@@ -35,7 +35,10 @@ public:
 	}
 
 	uint32_t fps() const {
-		return framer_.countPerSecond();
+		if (threaded_simulation_) {
+			return framer_.countPerSecond();
+		}
+		return ticker_.countPerSecond();
 	}
 
 	uint32_t tpsMax() const {
@@ -43,7 +46,10 @@ public:
 	}
 
 	uint32_t fpsMax() const {
-		return framer_.max();
+		if (threaded_simulation_) {
+			return framer_.max();
+		}
+		return ticker_.max();
 	}
 
 	void setTpsMax(uint32_t v) {
@@ -52,11 +58,14 @@ public:
 
 	void setFpsMax(uint32_t v) {
 		framer_.setMax(v);
+		if (!threaded_simulation_) {
+			ticker_.setMax(v);
+		}
 	}
 
 	template <typename T>
 	void runTask(T&& t) {
-		async::spawn(task_scheduler_, std::move(t)).get();
+		postTask(std::move(t)).get();
 	}
 
 	template <typename T>

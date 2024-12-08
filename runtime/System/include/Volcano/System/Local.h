@@ -5,9 +5,10 @@
 
 #include <Volcano/Acoustics/Space.h>
 #include <Volcano/Graphics/Renderer.h>
-
+#include <Volcano/Gui/Window.h>
 #include <Volcano/System/Common.h>
 #include <Volcano/System/Window.h>
+#include <Volcano/System/Console.h>
 #include <Volcano/System/Base.h>
 
 VOLCANO_SYSTEM_BEGIN
@@ -33,21 +34,14 @@ protected:
 
 private:
 	void pollEvents();
-
-private:
-	void runGui();
-	void runMainMenuBar();
-	void runFps();
-	void runConsole();
-	void runOptions();
-	void runAbout();
+	void showFps();
 
 private:
 	Window window_;
 	bool gui_show_;
-	bool gui_show_fps_;
-	bool gui_show_console_;
-	bool gui_show_demo_;
+	bool show_fps_;
+	bool show_console_;
+	Console console_;
 	Acoustics::Space acoustics_space_;
 	Graphics::Renderer graphics_renderer_;
 };

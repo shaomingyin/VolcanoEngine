@@ -12,9 +12,24 @@ Local::Local()
 	, acoustics_space_(scene())
 	, graphics_renderer_(scene())
 	, gui_show_(true)
-	, gui_show_console_(false)
-	, gui_show_fps_(true)
-	, gui_show_demo_(false) {
+	, show_fps_(true) {
+	auto& main_menus = window_.menuBar().menus();
+	main_menus.clear();
+	auto& file_menu = main_menus.emplace_back("File");
+	file_menu.items().emplace_back("New...");
+	file_menu.items().emplace_back("Load...");
+	file_menu.items().emplace_back("Save...");
+	auto& edit_menu = main_menus.emplace_back("Edit");
+	edit_menu.items().emplace_back("Undo");
+	edit_menu.items().emplace_back("Redo");
+	auto& view_menu = main_menus.emplace_back("View");
+	view_menu.items().emplace_back("Show Console", console_.visiblility());
+	view_menu.items().emplace_back("Show FPS", &show_fps_);
+	auto& settings_menu = main_menus.emplace_back("Settings");
+	settings_menu.items().emplace_back("Options...");
+	auto& help_menu = main_menus.emplace_back("Help");
+	help_menu.items().emplace_back("About...");
+	console_.hide();
 }
 
 void Local::loadConfig(const nlohmann::json& json) {
@@ -92,8 +107,11 @@ void Local::frame(Duration elapsed) {
 	}
 
 	if (window_.makeCurrent()) {
-		runGui();
 		graphics_renderer_.render();
+		if (show_console_) {
+			console_.update();
+		}
+		showFps();
 		window_.swapBuffers();
 	}
 
@@ -121,10 +139,10 @@ void Local::errorFrame(Duration elapsed) {
 void Local::handleEvent(const SDL_Event& evt) {
 	window_.handleEvent(evt);
 
-	if (evt.type == SDL_WINDOWEVENT && evt.window.windowID == window_.id()) {
+	if (evt.type == SDL_KEYDOWN && evt.key.windowID == window_.id()) {
 		switch (evt.key.keysym.sym) {
-		case SDLK_ESCAPE:
-			gui_show_ = !gui_show_;
+		case SDLK_BACKQUOTE:
+			//gui_show_console_ = !gui_show_console_;
 			break;
 		default:
 			break;
@@ -145,87 +163,13 @@ void Local::pollEvents() {
 	}
 }
 
-void Local::runGui() {
-	if (!gui_show_) {
-		return;
-	}
-
-	runMainMenuBar();
-
-	if (gui_show_console_) {
-		runConsole();
-	}
-
-	if (gui_show_demo_) {
-		ImGui::ShowDemoWindow(&gui_show_demo_);
-	}
-
-	if (gui_show_fps_) {
-		runFps();
-	}
-}
-
-void Local::runMainMenuBar() {
-	if (ImGui::BeginMainMenuBar()) {
-		if (ImGui::BeginMenu("File")) {
-			ImGui::MenuItem("New...");
-			ImGui::MenuItem("Load...");
-			ImGui::MenuItem("Save...");
-			ImGui::MenuItem("Quit");
-			ImGui::EndMenu();
-		}
-		if (ImGui::BeginMenu("View")) {
-			ImGui::MenuItem("Show FPS", "F9", &gui_show_fps_);
-			ImGui::MenuItem("Show Console", "F10", &gui_show_console_);
-			ImGui::EndMenu();
-		}
-		if (ImGui::BeginMenu("Settings")) {
-			if (ImGui::MenuItem("Options...")) {
-				runOptions();
-			}
-			ImGui::EndMenu();
-		}
-		if (ImGui::BeginMenu("Help")) {
-			ImGui::MenuItem("Website...");
-			if (ImGui::MenuItem("About...")) {
-				runAbout();
-			}
-			ImGui::EndMenu();
-		}
-		ImGui::EndMainMenuBar();
-	}
-}
-
-void Local::runFps() {
-	ImGuiViewport* vp = ImGui::GetMainViewport();
-	ImGui::SetNextWindowPos({ vp->Size.x - 50, vp->Size.y - 30 });
-	ImGui::SetNextWindowSize({ 50, 30 });
-	constexpr int flags =
-		ImGuiWindowFlags_NoBackground |
-		ImGuiWindowFlags_NoDecoration |
-		ImGuiWindowFlags_NoTitleBar |
-		ImGuiWindowFlags_NoMove |
-		ImGuiWindowFlags_NoResize;
-	if (ImGui::Begin("FPS", nullptr, flags)) {
-		ImGui::Text(std::format("{}fps", fps()).c_str());
-		ImGui::End();
-	}
-}
-
-void Local::runConsole() {
-	if (ImGui::Begin("Console", &gui_show_console_)) {
-		ImGui::End();
-	}
-}
-
-void Local::runOptions() {
-	if (ImGui::Begin("About", nullptr, ImGuiWindowFlags_NoResize)) {
-		ImGui::End();
-	}
-}
-
-void Local::runAbout() {
-	if (ImGui::Begin("About", nullptr, ImGuiWindowFlags_NoResize)) {
+void Local::showFps() {
+	if (show_fps_) {
+		const auto& display_size = ImGui::GetMainViewport()->Size;
+		ImGui::SetNextWindowPos({ display_size.x - 50.0f, display_size.y - 30.0f });
+		ImGui::SetNextWindowSize({ 50.0f, 30.0f });
+		ImGui::Begin("FPS", nullptr, ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
+		ImGui::TextColored({ 0.0f, 1.0f, 0.0f, 1.0f }, "%dfps", fps());
 		ImGui::End();
 	}
 }

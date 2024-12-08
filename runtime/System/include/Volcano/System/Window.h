@@ -4,6 +4,7 @@
 #define VOLCANO_SYSTEM_WINDOW_H
 
 #include <Volcano/Graphics/Target.h>
+#include <Volcano/Gui/MenuBar.h>
 #include <Volcano/System/Common.h>
 
 VOLCANO_SYSTEM_BEGIN
@@ -16,6 +17,10 @@ public:
 public:
     SDL_Window* handle() {
         return handle_;
+    }
+
+    SDL_GLContext glContext() {
+        return gl_context_;
     }
 
     Uint32 id() const {
@@ -54,6 +59,10 @@ public:
         resize(v.x(), v.y());
     }
 
+    Gui::MenuBar& menuBar() {
+        return menu_bar_;
+    }
+
     void resize(int w, int h) override;
     bool makeCurrent() override;
     void swapBuffers();
@@ -61,6 +70,7 @@ public:
     void toggleFullScreen();
 
 private:
+    void handleWindowEvent(const SDL_Event& evt);
     void handleKeyEvent(const SDL_Event& evt);
 
 private:
@@ -77,6 +87,8 @@ private:
     SDL_GLContext gl_context_;
     GL3WProcs gl3w_;
     ImGuiContext* imgui_;
+    Gui::MenuBar menu_bar_;
+    bool show_gui_;
 };
 
 VOLCANO_SYSTEM_END

@@ -23,6 +23,7 @@ volcano_add_static_library(Base
         NOMINMAX
         VFSPP_ENABLE_MULTITHREADING
     PUBLIC_LINK_PACKAGES
+        PalSigslot Pal::Sigslot
         Async++ Async++
         Eigen3 Eigen3::Eigen
         spdlog spdlog::spdlog

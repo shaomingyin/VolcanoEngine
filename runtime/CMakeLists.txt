@@ -12,4 +12,5 @@ if(VOLCANO_GRAPHICS)
 	add_subdirectory(Graphics)
 endif()
 
+add_subdirectory(Gui)
 add_subdirectory(System)

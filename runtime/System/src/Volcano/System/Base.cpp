@@ -25,11 +25,14 @@ void Base::run() {
 	}
 
 	state_ = State::Loading;
-	loadConfig(nlohmann::parseFromPhysFS("/Config.json"));
+
+	nlohmann::json config_json;
+	try { config_json = nlohmann::parseFromPhysFS("/Config.json"); } catch (...) {}
+	loadConfig(config_json);
+
+	loading_task_ = async::spawn(async::thread_scheduler(), std::bind(&Base::load, this));
 
 	auto simulate = [this] {
-		VOLCANO_ASSERT(state_ == State::Loading);
-		loading_task_ = async::spawn(async::thread_scheduler(), std::bind(&Base::load, this));
 		ticker_.reset();
 		while (state_ != State::Idle) {
 			if (ticker_.step()) {

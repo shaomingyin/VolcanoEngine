@@ -6,9 +6,9 @@
 #include <nlohmann_json.h>
 #include <physfs.h>
 #include <enet/enet.h>
+#include <GL/gl3w.h>
 #include <SDL.h>
 #include <imgui.h>
-#include <GL/gl3w.h>
 
 #include <Volcano/Common.h>
 #include <Volcano/System/Config.h>
