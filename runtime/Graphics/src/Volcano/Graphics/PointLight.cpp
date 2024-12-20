@@ -4,10 +4,8 @@
 
 VOLCANO_GRAPHICS_BEGIN
 
-PointLight::PointLight() {
-}
-
-PointLight::~PointLight() {
+PointLight::PointLight(QObject* parent)
+    : Light(parent) {
 }
 
 VOLCANO_GRAPHICS_END

@@ -3,23 +3,10 @@
 #ifndef VOLCANO_COMMON_H
 #define VOLCANO_COMMON_H
 
-#include <cstdlib>
-#include <cstdint>
-#include <cstdarg>
-
-#include <set>
-#include <list>
-#include <vector>
-#include <string>
 #include <chrono>
-#include <stdexcept>
-#include <system_error>
-#include <filesystem>
-#include <format>
 
-#include <async++.h>
-#include <Eigen.h>
-#include <spdlog/spdlog.h>
+#include <QtGlobal>
+#include <QtConcurrent>
 
 #include <Volcano/Config.h>
 
@@ -35,13 +22,6 @@
 #   define VOLCANO_C
 #   define VOLCANO_C_BEGIN
 #   define VOLCANO_C_END
-#endif
-
-#ifdef VOLCANO_DEBUG
-#   include <cassert>
-#   define VOLCANO_ASSERT(expr) assert(expr)
-#else
-#   define VOLCANO_ASSERT(expr)
 #endif
 
 #if defined(__GNUC__)
@@ -94,11 +74,6 @@ VOLCANO_BEGIN
 
 using namespace std::chrono_literals;
 
-using Buffer = std::vector<uint8_t>;
-using StringSet = std::set<std::string>;
-using StringList = std::list<std::string>;
-using StringVector = std::vector<std::string>;
-
 using Clock = std::chrono::steady_clock;
 using Duration = Clock::duration;
 using TimePoint = Clock::time_point;
@@ -125,33 +100,6 @@ VOLCANO_FORCE_INLINE int64_t timePointToMillieconds(TimePoint tp) {
 
 VOLCANO_FORCE_INLINE int64_t timePointToMicroseconds(TimePoint tp) {
     return durationToMicroseconds(tp.time_since_epoch());
-}
-
-template <typename... Args>
-void log(spdlog::level::level_enum level, spdlog::format_string_t<Args...> fmt, Args&&... args) {
-    spdlog::log(level, fmt, std::forward<Args>(args)...);
-}
-
-template <typename... Args>
-void logError(spdlog::format_string_t<Args...> fmt, Args&&... args) {
-    log(spdlog::level::err, fmt, std::forward<Args>(args)...);
-}
-
-template <typename... Args>
-void logWarning(spdlog::format_string_t<Args...> fmt, Args&&... args) {
-    log(spdlog::level::warn, fmt, std::forward<Args>(args)...);
-}
-
-template <typename... Args>
-void logInfo(spdlog::format_string_t<Args...> fmt, Args&&... args) {
-    log(spdlog::level::info, fmt, std::forward<Args>(args)...);
-}
-
-template <typename... Args>
-void logDebug(spdlog::format_string_t<Args...> fmt, Args&&... args) {
-#ifdef VOLCANO_DEBUG
-    log(spdlog::level::debug, fmt, std::forward<Args>(args)...);
-#endif
 }
 
 VOLCANO_END

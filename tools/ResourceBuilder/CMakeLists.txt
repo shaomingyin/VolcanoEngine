@@ -19,6 +19,5 @@ volcano_add_executable(ResourceBuilder
     PUBLIC_LINK_LIBRARIES
         Graphics
     PUBLIC_LINK_PACKAGES
-		argh argh
         assimp assimp::assimp
 )

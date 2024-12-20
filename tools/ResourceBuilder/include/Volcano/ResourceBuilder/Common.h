@@ -3,8 +3,6 @@
 #ifndef VOLCANO_RESOURCEBUILDER_COMMON_H
 #define VOLCANO_RESOURCEBUILDER_COMMON_H
 
-#include <argh.h>
-
 #include <Volcano/Common.h>
 
 #define VOLCANO_RESOURCEBUILDER_BEGIN VOLCANO_BEGIN namespace ResourceBuilder {

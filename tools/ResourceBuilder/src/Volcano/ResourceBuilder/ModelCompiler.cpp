@@ -4,8 +4,7 @@
 
 VOLCANO_RESOURCEBUILDER_BEGIN
 
-ModelCompiler::ModelCompiler(const argh::parser& cmdline)
-	: Tool(cmdline) {
+ModelCompiler::ModelCompiler() {
 }
 
 int ModelCompiler::run() {

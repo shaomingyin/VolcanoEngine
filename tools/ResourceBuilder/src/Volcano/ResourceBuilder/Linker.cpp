@@ -4,8 +4,7 @@
 
 VOLCANO_RESOURCEBUILDER_BEGIN
 
-Linker::Linker(const argh::parser& cmdline)
-	: Tool(cmdline) {
+Linker::Linker() {
 }
 
 int Linker::run() {

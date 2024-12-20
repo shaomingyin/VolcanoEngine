@@ -4,8 +4,7 @@
 
 VOLCANO_RESOURCEBUILDER_BEGIN
 
-Tool::Tool(const argh::parser& cmdline)
-	: cmdline_(cmdline) {
+Tool::Tool() {
 }
 
 VOLCANO_RESOURCEBUILDER_END

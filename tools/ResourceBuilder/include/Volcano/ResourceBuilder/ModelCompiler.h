@@ -10,7 +10,7 @@ VOLCANO_RESOURCEBUILDER_BEGIN
 
 class ModelCompiler: public Tool {
 public:
-	ModelCompiler(const argh::parser& cmldine);
+    ModelCompiler();
 	virtual ~ModelCompiler() = default;
 
 public:

@@ -11,8 +11,16 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_INTERPROCEDURAL_OPTIMIZATION ON)
 
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+
 set(VOLCANO_DEBUG ON CACHE BOOL "Enable debug functions.")
 set(VOLCANO_PROFILE ON CACHE BOOL "Enable profile functions.")
+
+find_package(Qt6 REQUIRED COMPONENTS Core)
+link_libraries(Qt6::Core)
+
+qt_standard_project_setup()
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 include(Volcano/Utils)
@@ -23,8 +31,6 @@ volcano_option(VOLCANO_TOOLS "Enable tools." ON)
 if(VOLCANO_TOOLS)
 	add_subdirectory(tools)
 endif()
-
-add_subdirectory(skeleton)
 
 volcano_option(VOLCANO_EXAMPLES "Enable examples." OFF)
 if(VOLCANO_EXAMPLES)

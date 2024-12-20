@@ -1,19 +1,10 @@
 [requires]
-sigslot/1.2.2
-jemalloc/5.3.0
-asyncplusplus/1.2
-eigen/3.4.0
-spdlog/1.14.1
 microprofile/4.0
-entt/3.13.2
 enet/1.3.18
-nlohmann_json/3.11.3
 assimp/5.4.2
 bullet3/3.25
 physfs/3.2.0
 openal/1.22.2
-sdl/2.30.9
-argh/1.3.2
 
 [generators]
 CMakeDeps

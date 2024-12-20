@@ -1,16 +1,7 @@
 
 add_subdirectory(Base)
 add_subdirectory(World)
-
-volcano_option(VOLCANO_ACOUSTICS "Enable acoustics." ON)
-if(VOLCANO_ACOUSTICS)
-	add_subdirectory(Acoustics)
-endif()
-
-volcano_option(VOLCANO_GRAPHICS "Enable graphics." ON)
-if(VOLCANO_GRAPHICS)
-	add_subdirectory(Graphics)
-endif()
-
-add_subdirectory(Gui)
-add_subdirectory(System)
+#add_subdirectory(Net)
+add_subdirectory(Acoustics)
+add_subdirectory(Graphics)
+add_subdirectory(Physics)

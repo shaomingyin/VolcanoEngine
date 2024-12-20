@@ -4,11 +4,10 @@
 
 VOLCANO_GRAPHICS_BEGIN
 
-Camera::Camera()
-	: projection_(Eigen::Matrix4f::Zero()) {
-}
-
-Camera::~Camera() {
+Camera::Camera(QObject* parent)
+    : World::Transformable(parent) {
+    view_.setToIdentity();
+    projection_.setToIdentity();
 }
 
 VOLCANO_GRAPHICS_END

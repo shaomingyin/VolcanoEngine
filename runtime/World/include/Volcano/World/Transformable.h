@@ -3,34 +3,50 @@
 #ifndef VOLCANO_WORLD_TRANSFORMABLE_H
 #define VOLCANO_WORLD_TRANSFORMABLE_H
 
+#include <QMatrix4x4>
+
 #include <Volcano/World/Common.h>
+#include <Volcano/World/Component.h>
 
 VOLCANO_WORLD_BEGIN
 
-class Transformable: public btMotionState {
+class Transformable: public Component {
+    Q_OBJECT
+
 public:
-	Eigen::Affine3f& localTransform() {
-		return local_transform_;
-	}
+    Q_INVOKABLE Transformable(QObject* parent = nullptr)
+        : Component(parent) {
+    }
 
-	const Eigen::Affine3f& localTransform() const {
-		return local_transform_;
-	}
+public:
+    const QMatrix4x4& transform() const {
+        return transform_;
+    }
 
-	Eigen::Affine3f worldTransform() const {
-		if (world_transform_ != nullptr) {
-			return (*world_transform_) * local_transform_;
+    void setTransform(QMatrix4x4 v) {
+        if (!qFuzzyCompare(transform_, v)) {
+            transform_ = v;
+            emit transformChanged(v);
+            emit worldTransformChanged(worldTransform());
+        }
+    }
+
+    QMatrix4x4 worldTransform() const {
+        if (world_transform_ != nullptr) {
+            return (*world_transform_) * transform_;
 		}
-		return local_transform_;
+        return transform_;
 	}
 
-	void attachWorldTransform(Eigen::Affine3f* p);
-	void getWorldTransform(btTransform& worldTrans) const override;
-	void setWorldTransform(const btTransform& worldTrans) override;
+    void attachWorldTransform(const QMatrix4x4* p);
+
+signals:
+    void transformChanged(const QMatrix4x4& v);
+    void worldTransformChanged(const QMatrix4x4& v);
 
 private:
-	Eigen::Affine3f* world_transform_ = nullptr;
-	Eigen::Affine3f local_transform_ = Eigen::Affine3f::Identity();
+    QMatrix4x4 transform_;
+    const QMatrix4x4* world_transform_;
 };
 
 VOLCANO_WORLD_END

@@ -1,12 +1,14 @@
 //
 //
-#include <Volcano/ScopeGuard.h>
+#include <QScopeGuard>
+
 #include <Volcano/Graphics/Renderer.h>
 
 VOLCANO_GRAPHICS_BEGIN
 
-Renderer::Renderer(World::Scene& scene)
-	: scene_(scene) {
+Renderer::Renderer(World::Scene& scene, QObject* parent)
+    : QObject(parent)
+    , scene_(scene) {
 }
 
 Renderer::~Renderer() {

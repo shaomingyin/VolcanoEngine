@@ -9,14 +9,13 @@ VOLCANO_RESOURCEBUILDER_BEGIN
 
 class Tool {
 public:
-	Tool(const argh::parser& cmdline);
+    Tool();
 	virtual ~Tool() = default;
 
 public:
 	virtual int run() = 0;
 
 private:
-	const argh::parser& cmdline_;
 };
 
 VOLCANO_RESOURCEBUILDER_END

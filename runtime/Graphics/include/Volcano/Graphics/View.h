@@ -5,13 +5,16 @@
 
 #include <vector>
 
+#include <QRectF>
+#include <QVector3D>
+#include <QMatrix4x4>
+
 #include <Volcano/Graphics/Common.h>
 #include <Volcano/Graphics/Camera.h>
 #include <Volcano/Graphics/Light.h>
 #include <Volcano/Graphics/DirectionalLight.h>
 #include <Volcano/Graphics/PointLight.h>
 #include <Volcano/Graphics/SpotLight.h>
-#include <Volcano/Graphics/RenderableObject.h>
 
 VOLCANO_GRAPHICS_BEGIN
 
@@ -24,28 +27,28 @@ public:
 public:
 	void reset();
 
-	Eigen::Vector4i& viewport() {
+    QRectF& viewport() {
 		return viewport_;
 	}
 
-	const Eigen::Vector4i& viewport() const {
+    const QRectF& viewport() const {
 		return viewport_;
 	}
 
-	Eigen::Matrix4f& viewMatrix() {
+    const QMatrix4x4& viewMatrix() {
 		return view_matrix_;
 	}
 
-	const Eigen::Matrix4f& viewMatrix() const {
+    const QMatrix4x4& viewMatrix() const {
 		return view_matrix_;
 	}
 
-	Eigen::Matrix4f& projectionMatrix() {
-		projection_matrix_;
+    QMatrix4x4& projectionMatrix() {
+        return projection_matrix_;
 	}
 
-	const Eigen::Matrix4f& projectionMatrix() const {
-		projection_matrix_;
+    const QMatrix4x4& projectionMatrix() const {
+        return projection_matrix_;
 	}
 
 	const std::vector<DirectionalLight*>& directionalLights() const {
@@ -72,14 +75,6 @@ public:
 		spot_lights_.push_back(p);
 	}
 
-	const std::vector<RenderableObject*>& renderableObjects() const {
-		return renderable_objects_;
-	}
-
-	void addRenderableObject(RenderableObject* p) {
-		renderable_objects_.push_back(p);
-	}
-
 	Light& ambientLight() {
 		return ambient_light_;
 	}
@@ -89,13 +84,12 @@ public:
 	}
 
 private:
-	Eigen::Vector4i viewport_;
-	Eigen::Matrix4f view_matrix_;
-	Eigen::Matrix4f projection_matrix_;
+    QRectF viewport_;
+    QMatrix4x4 view_matrix_;
+    QMatrix4x4 projection_matrix_;
 	std::vector<DirectionalLight*> directional_lights_;
 	std::vector<PointLight*> point_lights_;
 	std::vector<SpotLight*> spot_lights_;
-	std::vector<RenderableObject*> renderable_objects_;
 	Light ambient_light_;
 };
 

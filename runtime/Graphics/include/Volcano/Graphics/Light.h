@@ -3,23 +3,29 @@
 #ifndef VOLCANO_GRAHPICS_LIGHT_H
 #define VOLCANO_GRAHPICS_LIGHT_H
 
-#include <Volcano/Color.h>
+#include <QColor>
+
+#include <Volcano/World/Transformable.h>
 #include <Volcano/Graphics/Common.h>
 
 VOLCANO_GRAPHICS_BEGIN
 
-class Light {
-public:
-	Light();
-	virtual ~Light();
+class Light: public World::Transformable {
+    Q_OBJECT
+    Q_PROPERTY(QColor color READ color WRITE setColor NOTIFY colorChanged FINAL)
+    Q_PROPERTY(float strength READ strength WRITE setStrength NOTIFY strengthChanged FINAL)
 
 public:
-	const Color& color() const {
+    Light(QObject* parent = nullptr);
+
+public:
+    const QColor& color() const {
 		return color_;
 	}
 
-	void setColor(const Color& v) {
+    void setColor(const QColor& v) {
 		color_ = v;
+        emit colorChanged(v);
 	}
 
 	float strength() const {
@@ -27,11 +33,19 @@ public:
 	}
 
 	void setStrength(float v) {
-		strength_ = std::clamp(v, 0.0f, 1.0f);
+        float tmp = std::clamp(v, 0.0f, 1.0f);
+        if (!qFuzzyCompare(strength_, tmp)) {
+            strength_ = tmp;
+            emit strengthChanged(tmp);
+        }
 	}
 
+signals:
+    void colorChanged(const QColor& v);
+    void strengthChanged(float v);
+
 private:
-	Color color_;
+    QColor color_;
 	float strength_;
 };
 

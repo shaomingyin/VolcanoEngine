@@ -9,9 +9,10 @@
 VOLCANO_GRAPHICS_BEGIN
 
 class SpotLight: public DirectionalLight {
+    Q_OBJECT
+
 public:
-	SpotLight();
-	~SpotLight() override;
+    SpotLight(QObject* parent = nullptr);
 };
 
 VOLCANO_GRAPHICS_END

@@ -4,10 +4,8 @@
 
 VOLCANO_GRAPHICS_BEGIN
 
-SpotLight::SpotLight() {
-}
-
-SpotLight::~SpotLight() {
+SpotLight::SpotLight(QObject* parent)
+    : DirectionalLight(parent) {
 }
 
 VOLCANO_GRAPHICS_END

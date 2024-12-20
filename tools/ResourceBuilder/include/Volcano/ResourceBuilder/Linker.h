@@ -10,8 +10,7 @@ VOLCANO_RESOURCEBUILDER_BEGIN
 
 class Linker: public Tool {
 public:
-	Linker(const argh::parser& cmdline);
-	virtual ~Linker() = default;
+    Linker();
 
 public:
 	int run() override;

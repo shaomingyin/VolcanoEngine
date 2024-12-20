@@ -9,9 +9,10 @@
 VOLCANO_GRAPHICS_BEGIN
 
 class PointLight: public Light {
+    Q_OBJECT
+
 public:
-	PointLight();
-	~PointLight() override;
+    PointLight(QObject* parent = nullptr);
 };
 
 VOLCANO_GRAPHICS_END

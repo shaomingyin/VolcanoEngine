@@ -38,6 +38,8 @@ function(volcano_setup_target TARGET)
         PRIVATE_LINK_LIBRARIES
 		PUBLIC_LINK_PACKAGES
 		PRIVATE_LINK_PACKAGES
+		PUBLIC_QT_MODULES
+		PRIVATE_QT_MODULES
         EXTRA_INSTALL_FILES
 		EXTRA_INSTALL_DIRECTORIES
     )
@@ -210,6 +212,24 @@ function(volcano_setup_target TARGET)
 		endwhile()
 	endif()
 	
+	if(ARG_PUBLIC_QT_MODULES)
+		message(STATUS "  Public link Qt modules:")
+		foreach(PUBLIC_QT_MODULE ${ARG_PUBLIC_QT_MODULES})
+			message(STATUS "    ${PUBLIC_QT_MODULE}")
+			find_package(Qt6 REQUIRED COMPONENTS ${PUBLIC_QT_MODULE})
+			target_link_libraries(${TARGET} PUBLIC Qt6::${PUBLIC_QT_MODULE})
+		endforeach()
+	endif()
+	
+	if(ARG_PRIVATE_QT_MODULES)
+		message(STATUS "  Private link Qt modules:")
+		foreach(PRIVATE_QT_MODULE ${ARG_PRIVATE_QT_MODULES})
+			message(STATUS "    ${PRIVATE_QT_MODULE}")
+			find_package(Qt6 REQUIRED COMPONENTS ${PRIVATE_QT_MODULE})
+			target_link_libraries(${TARGET} PRIVATE Qt6::${PRIVATE_QT_MODULE})
+		endforeach()
+	endif()
+	
 	install(TARGETS ${TARGET}
 		ARCHIVE DESTINATION lib
 		LIBRARY DESTINATION lib
@@ -250,13 +270,13 @@ endfunction()
 
 function(volcano_add_static_library TARGET)
 	message(STATUS "Add static library: ${CMAKE_CURRENT_SOURCE_DIR} - ${TARGET}")
-    add_library(${TARGET} STATIC)
+    qt_add_library(${TARGET} STATIC)
     volcano_setup_target(${TARGET} ${ARGN})
 endfunction()
 
 function(volcano_add_shared_library TARGET)
 	message(STATUS "Add shared library: ${CMAKE_CURRENT_SOURCE_DIR} - ${TARGET}")
-    add_library(${TARGET} SHARED)
+    qt_add_library(${TARGET} SHARED)
     volcano_setup_target(${TARGET} ${ARGN})
     if(MSVC)
         set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
@@ -265,17 +285,12 @@ endfunction()
 
 function(volcano_add_executable TARGET)
 	message(STATUS "Add executable: ${CMAKE_CURRENT_SOURCE_DIR} - ${TARGET}")
-	add_executable(${TARGET})
+	qt_add_executable(${TARGET})
     volcano_setup_target(${TARGET} ${ARGN})
 endfunction()
 
 function(volcano_add_auto_executable TARGET)
 	message(STATUS "Add executable: ${CMAKE_CURRENT_SOURCE_DIR} - ${TARGET}")
-	if(WIN32)
-		add_executable(${TARGET} WIN32)
-	else()
-		add_executable(${TARGET})
-	endif()
+	qt_add_executable(${TARGET})
     volcano_setup_target(${TARGET} ${ARGN})
 endfunction()
-

@@ -6,7 +6,12 @@
 #include <array>
 #include <bitset>
 
-#include <Volcano/Color.h>
+#include <QVector3D>
+#include <QVector4D>
+#include <QMatrix4x4>
+#include <QColor>
+#include <QOpenGLShaderProgram>
+
 #include <Volcano/Graphics/Common.h>
 #include <Volcano/Graphics/View.h>
 
@@ -19,13 +24,20 @@ public:
         Max
     };
 
-    enum class Vector4fAttribute {
-        ClearColor = 0,
+    enum class Vector3Attribute {
         Max
     };
 
-    enum class Vector4iAttribute {
-        Viewport = 0,
+    enum class Vector4Attribute {
+        Max
+    };
+
+    enum class Matrix4x4Attribute {
+        Max
+    };
+
+    enum class ColorAttribute {
+        ClearColor = 0,
         Max
     };
 
@@ -35,40 +47,67 @@ public:
 
 public:
     void reset();
-    virtual void apply() const = 0;
+    void apply() const;
 
-    bool isEnabled(BoolAttribute attr) const {
-        return bool_attributes_[static_cast<int>(attr)];
+    bool isEnabled(BoolAttribute i) const {
+        return bool_attributes_[static_cast<int>(i)];
     }
 
-    void enable(BoolAttribute attr) {
-        bool_attributes_.set(static_cast<int>(attr));
+    void enable(BoolAttribute i) {
+        bool_attributes_.set(static_cast<int>(i));
     }
 
-    void disable(BoolAttribute attr) {
-        bool_attributes_.reset(static_cast<int>(attr));
+    void disable(BoolAttribute i) {
+        bool_attributes_.reset(static_cast<int>(i));
     }
 
-    const Eigen::Vector4f& get(Vector4fAttribute attr) const {
-        return vector4f_attributes_[static_cast<int>(attr)];
+    const QVector3D& attr(Vector3Attribute i) const {
+        return vector3_attributes_[static_cast<int>(i)];
     }
 
-    const Eigen::Vector4i& get(Vector4iAttribute attr) const {
-        return vector4i_attributes_[static_cast<int>(attr)];
+    QVector3D& attr(Vector3Attribute i) {
+        return vector3_attributes_[static_cast<int>(i)];
     }
 
-    void set(Vector4fAttribute attr, Eigen::Vector4f v) {
-        vector4f_attributes_[static_cast<int>(attr)] = v;
+    const QVector4D& attr(Vector4Attribute i) const {
+        return vector4_attributes_[static_cast<int>(i)];
     }
 
-    void set(Vector4iAttribute attr, Eigen::Vector4i v) {
-        vector4i_attributes_[static_cast<int>(attr)] = v;
+    QVector4D& attr(Vector4Attribute i) {
+        return vector4_attributes_[static_cast<int>(i)];
+    }
+
+    const QMatrix4x4& attr(Matrix4x4Attribute i) const {
+        return matrix4x4_attributes_[static_cast<int>(i)];
+    }
+
+    QMatrix4x4& attr(Matrix4x4Attribute i) {
+        return matrix4x4_attributes_[static_cast<int>(i)];
+    }
+
+    const QColor& attr(ColorAttribute i) const {
+        return color_attributes_[static_cast<int>(i)];
+    }
+
+    QColor& attr(ColorAttribute i) {
+        return color_attributes_[static_cast<int>(i)];
+    }
+
+    const QOpenGLShaderProgram& program() const {
+        return program_;
+    }
+
+    QOpenGLShaderProgram& program() {
+        return program_;
     }
 
 private:
     std::bitset<static_cast<size_t>(BoolAttribute::Max)> bool_attributes_;
-    std::array<Eigen::Vector4f, static_cast<size_t>(Vector4fAttribute::Max)> vector4f_attributes_;
-    std::array<Eigen::Vector4i, static_cast<size_t>(Vector4iAttribute::Max)> vector4i_attributes_;
+    std::array<QVector3D, static_cast<size_t>(Vector4Attribute::Max)> vector3_attributes_;
+    std::array<QVector4D, static_cast<size_t>(Vector3Attribute::Max)> vector4_attributes_;
+    std::array<QMatrix4x4, static_cast<size_t>(Matrix4x4Attribute::Max)> matrix4x4_attributes_;
+    std::array<QColor, static_cast<size_t>(ColorAttribute::Max)> color_attributes_;
+    QOpenGLShaderProgram program_;
 };
 
 VOLCANO_GRAPHICS_END
