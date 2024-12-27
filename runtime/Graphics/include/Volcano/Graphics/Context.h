@@ -3,29 +3,24 @@
 #ifndef VOLCANO_GRAPHICS_CONTEXT_H
 #define VOLCANO_GRAPHICS_CONTEXT_H
 
-#include <array>
+#include <QThread>
+#include <QObject>
 
 #include <Volcano/Graphics/Common.h>
+#include <Volcano/Graphics/Buffer.h>
 
 VOLCANO_GRAPHICS_BEGIN
 
-class Context {
-public:
-	Context();
-	virtual ~Context();
+class Context: public QObject {
+    Q_OBJECT
 
 public:
-	void makeCurrent();
-
-	static Context* current() {
-		return current_;
-	}
+    Context(QObject* parent = nullptr);
+    virtual ~Context() = default;
 
 public:
-
-
-private:
-	static thread_local Context* current_;
+    virtual Buffer* allocStaticVertexBuffer(GLsizei size) = 0;
+    virtual Buffer* allocStaticIndexBuffer(GLsizei size) = 0;
 };
 
 VOLCANO_GRAPHICS_END

@@ -4,19 +4,8 @@
 
 VOLCANO_GRAPHICS_BEGIN
 
-namespace BuiltinShaders {
-}
-
-thread_local Context* Context::current_ = nullptr;
-
-Context::Context() {
-}
-
-Context::~Context() {
-}
-
-void Context::makeCurrent() {
-	current_ = this;
+Context::Context(QObject* parent)
+    : QObject(parent) {
 }
 
 VOLCANO_GRAPHICS_END

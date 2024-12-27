@@ -6,15 +6,19 @@ volcano_add_static_library(Base
         ${CMAKE_CURRENT_SOURCE_DIR}/include
         ${CMAKE_CURRENT_BINARY_DIR}/include
     PRIVATE_SOURCES
-        include/buddy_alloc.h
-        src/buddy_alloc/buddy_alloc.c
+        include/buddy2.h
+        src/buddy2/buddy2.c
 
         include/Volcano/Config.h.in
         include/Volcano/Common.h
+        include/Volcano/Config.h.in
         src/Volcano/Common.cpp
+    PUBLIC_DEFINITIONS
+        QT_NO_CONTEXTLESS_CONNECT
     PUBLIC_LINK_PACKAGES
-        Eigen3 Eigen3::Eigen
+        Async++ Async++
         microprofile microprofile::microprofile
+        Eigen3 Eigen3::Eigen
     PUBLIC_QT_MODULES
         Concurrent
     PUBLIC_HEADERS

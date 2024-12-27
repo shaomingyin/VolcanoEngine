@@ -4,22 +4,19 @@
 
 VOLCANO_WORLD_BEGIN
 
-void Transformable::attachWorldTransform(const QMatrix4x4* p) {
-    if (world_transform_ == p) {
+void Transformable::setParentTransform(const QMatrix4x4* p) {
+    if (parent_transform_ == p) {
         return;
     }
-    if (world_transform_ != nullptr) {
+    if (parent_transform_ != nullptr) {
         auto offset = transform_;
-        transform_ = *world_transform_ * offset;
-        world_transform_ = nullptr;
+        transform_ = *parent_transform_ * offset;
+        parent_transform_ = nullptr;
 	}
 	if (p != nullptr) {
         auto offset = transform_;
         transform_ = p->inverted() * offset;
-        world_transform_ = p;
-        emit worldTransformChanged(*p);
-    } else {
-        emit worldTransformChanged(transform_);
+        parent_transform_ = p;
     }
 }
 

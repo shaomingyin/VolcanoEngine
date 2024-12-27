@@ -4,7 +4,9 @@
 
 VOLCANO_RESOURCEBUILDER_BEGIN
 
-Tool::Tool() {
+Tool::Tool(const QCommandLineParser& cmdline, QObject* parent)
+    : QObject(parent)
+    , cmdline_(cmdline) {
 }
 
 VOLCANO_RESOURCEBUILDER_END

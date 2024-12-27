@@ -9,9 +9,10 @@
 VOLCANO_RESOURCEBUILDER_BEGIN
 
 class ModelCompiler: public Tool {
+    Q_OBJECT
+
 public:
-    ModelCompiler();
-	virtual ~ModelCompiler() = default;
+    ModelCompiler(const QCommandLineParser& cmdline, QObject* parent = nullptr);
 
 public:
 	int run() override;

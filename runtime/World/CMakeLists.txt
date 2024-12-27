@@ -6,25 +6,69 @@ volcano_add_static_library(World
         ${CMAKE_CURRENT_SOURCE_DIR}/include
         ${CMAKE_CURRENT_BINARY_DIR}/include
     PRIVATE_SOURCES
+        include/Volcano/World/BoxRigidBody.h
+        include/Volcano/World/Camera.h
+        include/Volcano/World/CapsuleRigidBody.h
+        include/Volcano/World/Config.h.in
         include/Volcano/World/Common.h
         include/Volcano/World/Component.h
+        include/Volcano/World/ConeRigidBody.h
         include/Volcano/World/Config.h.in
+        include/Volcano/World/Context.h
+        include/Volcano/World/CylinderRigidBody.h
+        include/Volcano/World/DirectionalLight.h
+        include/Volcano/World/Dynamic.h
         include/Volcano/World/Entity.h
-        include/Volcano/World/Listener.h
+        include/Volcano/World/Glass.h
+        include/Volcano/World/Light.h
+        include/Volcano/World/Material.h
+        include/Volcano/World/Mesh.h
+        include/Volcano/World/Mirror.h
+        include/Volcano/World/Object.h
+        include/Volcano/World/Particle.h
+        include/Volcano/World/PointLight.h
+        include/Volcano/World/RigidBody.h
         include/Volcano/World/Scene.h
+        include/Volcano/World/Screen.h
+        include/Volcano/World/SphereRigidBody.h
+        include/Volcano/World/SpotLight.h
+        include/Volcano/World/StaticPlaneRigidBody.h
         include/Volcano/World/Transformable.h
+        include/Volcano/World/TriangleMeshRigidBody.h
+        src/Volcano/World/BoxRigidBody.cpp
+        src/Volcano/World/Camera.cpp
+        src/Volcano/World/CapsuleRigidBody.cpp
+        src/Volcano/World/Component.cpp
+        src/Volcano/World/ConeRigidBody.cpp
+        src/Volcano/World/Context.cpp
+        src/Volcano/World/CylinderRigidBody.cpp
+        src/Volcano/World/DirectionalLight.cpp
+        src/Volcano/World/Dynamic.cpp
         src/Volcano/World/Entity.cpp
-        src/Volcano/World/Listener.cpp
+        src/Volcano/World/Glass.cpp
+        src/Volcano/World/Light.cpp
+        src/Volcano/World/Material.cpp
+        src/Volcano/World/Mesh.cpp
+        src/Volcano/World/Mirror.cpp
+        src/Volcano/World/Object.cpp
+        src/Volcano/World/Particle.cpp
+        src/Volcano/World/PointLight.cpp
+        src/Volcano/World/RigidBody.cpp
         src/Volcano/World/Scene.cpp
+        src/Volcano/World/Screen.cpp
+        src/Volcano/World/SphereRigidBody.cpp
+        src/Volcano/World/SpotLight.cpp
+        src/Volcano/World/StaticPlaneRigidBody.cpp
         src/Volcano/World/Transformable.cpp
-    PUBLIC_LINK_LIBRARIES
-        Base
+        src/Volcano/World/TriangleMeshRigidBody.cpp
+	PUBLIC_LINK_LIBRARIES
+		Base
+    PUBLIC_LINK_PACKAGES
+        Bullet Bullet::Bullet
     PUBLIC_QT_MODULES
-        Gui
-        Qml
+        Quick
     PUBLIC_HEADERS
         include/Volcano/World/Common.h
-        include/Volcano/World/Scene.h
         ${CMAKE_CURRENT_BINARY_DIR}/include/Volcano/World/Config.h
         DESTINATION include/Volcano/World
 )

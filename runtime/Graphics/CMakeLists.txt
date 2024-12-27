@@ -9,40 +9,31 @@ volcano_add_static_library(Graphics
         include/debug_draw.hpp
         src/debug_draw/debug_draw.cpp
 	
-        include/Volcano/Graphics/Camera.h
+        include/Volcano/Graphics/Buffer.h
+        include/Volcano/Graphics/BufferAllocator.h
         include/Volcano/Graphics/Common.h
         include/Volcano/Graphics/Config.h.in
         include/Volcano/Graphics/Context.h
-        include/Volcano/Graphics/DirectionalLight.h
-        include/Volcano/Graphics/Light.h
-        include/Volcano/Graphics/Material.h
         include/Volcano/Graphics/Mesh.h
-        include/Volcano/Graphics/PointLight.h
         include/Volcano/Graphics/Renderer.h
         include/Volcano/Graphics/Pipeline.h
-        include/Volcano/Graphics/SpotLight.h
+        include/Volcano/Graphics/Screen.h
         include/Volcano/Graphics/View.h
-        include/Volcano/Graphics/Viewport.h
         include/Volcano/Graphics/VirtualTexture.h
-        src/Volcano/Graphics/Camera.cpp
+        src/Volcano/Graphics/BufferImpl.cpp
+        src/Volcano/Graphics/BufferImpl.h
+        src/Volcano/Graphics/BufferAllocator.cpp
         src/Volcano/Graphics/Context.cpp
-        src/Volcano/Graphics/DirectionalLight.cpp
-        src/Volcano/Graphics/Light.cpp
-        src/Volcano/Graphics/Material.cpp
         src/Volcano/Graphics/Mesh.cpp
-        src/Volcano/Graphics/PointLight.cpp
         src/Volcano/Graphics/Renderer.cpp
         src/Volcano/Graphics/Pipeline.cpp
-        src/Volcano/Graphics/SpotLight.cpp
+        src/Volcano/Graphics/Screen.cpp
         src/Volcano/Graphics/View.cpp
-        src/Volcano/Graphics/Viewport.cpp
         src/Volcano/Graphics/VirtualTexture.cpp
     PUBLIC_LINK_LIBRARIES
         World
     PUBLIC_QT_MODULES
         OpenGL
-        Quick
-        Gui
     PUBLIC_HEADERS
         include/Volcano/Graphics/Common.h
         include/Volcano/Graphics/Renderer.h

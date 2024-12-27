@@ -1,7 +1,7 @@
 //
 //
-#ifndef VOLCANO_WORLD_TRANSFORMABLE_H
-#define VOLCANO_WORLD_TRANSFORMABLE_H
+#ifndef VOLCANO_WORLD_TRANSFORM_H
+#define VOLCANO_WORLD_TRANSFORM_H
 
 #include <QMatrix4x4>
 
@@ -12,6 +12,7 @@ VOLCANO_WORLD_BEGIN
 
 class Transformable: public Component {
     Q_OBJECT
+    Q_PROPERTY(QMatrix4x4* transform READ transform)
 
 public:
     Q_INVOKABLE Transformable(QObject* parent = nullptr)
@@ -19,36 +20,24 @@ public:
     }
 
 public:
-    const QMatrix4x4& transform() const {
-        return transform_;
+    QMatrix4x4* transform() {
+        return &transform_;
     }
 
-    void setTransform(QMatrix4x4 v) {
-        if (!qFuzzyCompare(transform_, v)) {
-            transform_ = v;
-            emit transformChanged(v);
-            emit worldTransformChanged(worldTransform());
+    Q_INVOKABLE QMatrix4x4 absoluteTransform() const {
+        if (parent_transform_ != nullptr) {
+            return (*parent_transform_) * transform_;
         }
+        return transform_;
     }
 
-    QMatrix4x4 worldTransform() const {
-        if (world_transform_ != nullptr) {
-            return (*world_transform_) * transform_;
-		}
-        return transform_;
-	}
-
-    void attachWorldTransform(const QMatrix4x4* p);
-
-signals:
-    void transformChanged(const QMatrix4x4& v);
-    void worldTransformChanged(const QMatrix4x4& v);
+    void setParentTransform(const QMatrix4x4* p);
 
 private:
     QMatrix4x4 transform_;
-    const QMatrix4x4* world_transform_;
+    const QMatrix4x4* parent_transform_;
 };
 
 VOLCANO_WORLD_END
 
-#endif // VOLCANO_WORLD_TRANSFORMABLE_H
+#endif // VOLCANO_WORLD_TRANSFORM_H

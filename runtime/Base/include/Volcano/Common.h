@@ -6,9 +6,10 @@
 #include <chrono>
 
 #include <QtGlobal>
-#include <QtConcurrent>
 
 #include <Volcano/Config.h>
+
+#include <async++.h>
 
 #ifdef VOLCANO_PROFILE
 #   include <microprofile.h>

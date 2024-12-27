@@ -6,10 +6,10 @@
 #include <array>
 #include <bitset>
 
-#include <QVector3D>
-#include <QVector4D>
-#include <QMatrix4x4>
 #include <QColor>
+#include <QVector3D>
+#include <QMatrix4x4>
+#include <QOpenGLContext>
 #include <QOpenGLShaderProgram>
 
 #include <Volcano/Graphics/Common.h>
@@ -42,12 +42,13 @@ public:
     };
 
 public:
-    Pipeline();
+    Pipeline(QOpenGLContext* gl_context = nullptr);
     virtual ~Pipeline();
 
 public:
     void reset();
-    void apply() const;
+    void apply();
+    void render(const View& view);
 
     bool isEnabled(BoolAttribute i) const {
         return bool_attributes_[static_cast<int>(i)];
@@ -102,6 +103,7 @@ public:
     }
 
 private:
+    OpenGLFunctions* gl_;
     std::bitset<static_cast<size_t>(BoolAttribute::Max)> bool_attributes_;
     std::array<QVector3D, static_cast<size_t>(Vector4Attribute::Max)> vector3_attributes_;
     std::array<QVector4D, static_cast<size_t>(Vector3Attribute::Max)> vector4_attributes_;

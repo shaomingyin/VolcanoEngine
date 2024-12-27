@@ -14,8 +14,6 @@ volcano_add_executable(ResourceBuilder
         src/Volcano/ResourceBuilder/Main.cpp
         src/Volcano/ResourceBuilder/ModelCompiler.cpp
 		src/Volcano/ResourceBuilder/Tool.cpp
-    PUBLIC_DEFINITIONS
-        SDL_MAIN_HANDLED
     PUBLIC_LINK_LIBRARIES
         Graphics
     PUBLIC_LINK_PACKAGES

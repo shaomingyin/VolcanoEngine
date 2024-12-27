@@ -3,26 +3,32 @@
 #ifndef VOLCANO_WORLD_ENTITY_H
 #define VOLCANO_WORLD_ENTITY_H
 
-#include <QMatrix4x4>
 #include <QList>
-#include <QObject>
+#include <QMatrix4x4>
 #include <QQmlListProperty>
 
 #include <Volcano/World/Common.h>
 #include <Volcano/World/Component.h>
+#include <Volcano/World/Object.h>
 
 VOLCANO_WORLD_BEGIN
 
-class Entity: public QObject {
+class Entity: public Object {
     Q_OBJECT
-    Q_PROPERTY(bool enable READ isEnabled WRITE setEnabled NOTIFY enabledChanged)
+    Q_PROPERTY(bool enabled READ isEnabled WRITE setEnabled NOTIFY enabledChanged FINAL)
+    Q_PROPERTY(QMatrix4x4* transform READ transform)
     Q_PROPERTY(QQmlListProperty<Component> components READ qmlComponents)
     Q_CLASSINFO("DefaultProperty", "components")
 
 public:
     Entity(QObject* parent = nullptr);
+    ~Entity() override;
 
 public:
+    QMatrix4x4* transform() {
+        return &transform_;
+    }
+
     bool isEnabled() const {
         return enabled_;
     }
@@ -34,56 +40,22 @@ public:
         }
     }
 
-    Q_INVOKABLE void enable() {
-        setEnabled(true);
-    }
-
-    Q_INVOKABLE void disable() {
-        setEnabled(false);
-    }
-
-    void update(Duration elapsed) {
-        if (enabled_) {
-            tick(elapsed);
-        }
-    }
-
-    const QMatrix4x4& transform() const {
-        return transform_;
-    }
-
-    void setTransform(const QMatrix4x4& v) {
-        if (!qFuzzyCompare(transform_, v)) {
-            transform_ = v;
-            emit transformChanged(v);
-        }
-    }
-
-    Q_INVOKABLE void resetTransform() {
-        transform_.setToIdentity();
-    }
-
     const QList<Component*>& components() const {
         return components_;
     }
 
     void appendComponent(Component* p);
     Component* componentAt(qsizetype i);
-    const Component* componentAt(qsizetype i) const;
     void clearComponents();
-    qsizetype componentCount() const;
+    qsizetype componentCount();
     void removeLastComponent();
     void replaceComponent(qsizetype i, Component* p);
     QQmlListProperty<Component> qmlComponents();
 
 signals:
     void enabledChanged(bool v);
-    void transformChanged(const QMatrix4x4& v);
-    void componentAdded(Component* component);
-    void componentRemoved(Component* component);
-
-protected:
-    virtual void tick(Duration elapsed);
+    void componentAdded(Component* p);
+    void componentRemoved(Component* p);
 
 private:
     bool enabled_;

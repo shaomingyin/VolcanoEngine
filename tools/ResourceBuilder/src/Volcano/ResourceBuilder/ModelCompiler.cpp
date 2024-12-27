@@ -4,7 +4,8 @@
 
 VOLCANO_RESOURCEBUILDER_BEGIN
 
-ModelCompiler::ModelCompiler() {
+ModelCompiler::ModelCompiler(const QCommandLineParser& cmdline, QObject* parent)
+    : Tool(cmdline, parent) {
 }
 
 int ModelCompiler::run() {

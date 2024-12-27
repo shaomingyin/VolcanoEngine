@@ -3,37 +3,58 @@
 #ifndef VOLCANO_GRAPHICS_MESH_H
 #define VOLCANO_GRAPHICS_MESH_H
 
-#include <QUrl>
+#include <memory>
 
-#include <Volcano/World/Transformable.h>
+#include <QObject>
+#include <QDataStream>
+
+#include <Volcano/World/Entity.h>
+#include <Volcano/World/Mesh.h>
 #include <Volcano/Graphics/Common.h>
+#include <Volcano/Graphics/Buffer.h>
+#include <Volcano/Graphics/Context.h>
 
 VOLCANO_GRAPHICS_BEGIN
 
-class Mesh: public World::Transformable {
+class Mesh: public QObject {
     Q_OBJECT
-    Q_PROPERTY(QUrl source READ source WRITE setSource NOTIFY sourceChanged FINAL)
+
+    friend QDataStream &operator<<(QDataStream&, const Mesh&);
+    friend QDataStream &operator>>(QDataStream&, Mesh&);
 
 public:
-    Mesh(QObject* parent = nullptr);
-    virtual ~Mesh();
+    Mesh(Context& context, World::Entity* world_entity, World::Mesh* world_mesh, QObject* parent = nullptr);
 
 public:
-    const QUrl& source() const {
-        return source_;
+    World::Entity* worldEntity() {
+        return world_entity_;
     }
 
-    void setSource(const QUrl& v);
+    const World::Entity* worldEntity() const {
+        return world_entity_;
+    }
 
-signals:
-    void sourceChanged(const QUrl& v);
+    World::Mesh* worldMesh() {
+        return world_mesh_;
+    }
+
+    const World::Mesh* worldMesh() const {
+        return world_mesh_;
+    }
+
+private slots:
+    void onSourceChanged(const QUrl& v);
 
 private:
-    QUrl source_;
-	unsigned int color_channels_;
-	unsigned int uv_channels_;
-	bool has_normals_;
+    Context& context_;
+    World::Entity* world_entity_;
+    World::Mesh* world_mesh_;
+    std::unique_ptr<Buffer> vertex_buffer_;
+    std::unique_ptr<Buffer> index_buffer_;
 };
+
+QDataStream &operator<<(QDataStream&, const Mesh&);
+QDataStream &operator>>(QDataStream&, Mesh&);
 
 VOLCANO_GRAPHICS_END
 

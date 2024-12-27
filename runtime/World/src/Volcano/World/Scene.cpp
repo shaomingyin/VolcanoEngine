@@ -5,11 +5,22 @@
 VOLCANO_WORLD_BEGIN
 
 Scene::Scene(QObject* parent)
-    : QObject(parent) {
+    : Object(parent) {
+}
+
+Scene::~Scene() {
+    clearEntities();
+}
+
+void Scene::update(Duration elapsed) {
+    dynamic_.update(elapsed);
 }
 
 void Scene::appendEntity(Entity* p) {
     entities_.append(p);
+    connect(p, &Entity::componentAdded, this, [this, p](Component* component) {
+        emit componentAdded(p, component);
+    });
     emit entityAdded(p);
 }
 
@@ -18,8 +29,8 @@ Entity* Scene::entityAt(qsizetype i) {
 }
 
 void Scene::clearEntities() {
-    for (auto p: entities_) {
-        entityRemoved(p);
+    for (Entity* p: entities_) {
+        emit entityRemoved(p);
     }
     entities_.clear();
 }
@@ -30,30 +41,31 @@ qsizetype Scene::entityCount() {
 
 void Scene::removeLastEntity() {
     if (!entities_.isEmpty()) {
-        entityRemoved(entities_.last());
+        emit entityRemoved(entities_.last());
         entities_.removeLast();
     }
 }
 
 void Scene::replaceEntity(qsizetype i, Entity* p) {
     if (0 <= i && i < entities_.count()) {
-        entityRemoved(entities_.at(i));
+        emit entityRemoved(entities_.at(i));
         entities_.replace(i, p);
+        connect(p, &Entity::componentAdded, this, [this, p](Component* component) {
+            emit componentAdded(p, component);
+        });
+        emit entityAdded(p);
     }
 }
 
 QQmlListProperty<Entity> Scene::qmlEntities() {
     return { this, this,
-        [](QQmlListProperty<Entity>* lp, Entity* p) { reinterpret_cast<Scene*>(lp->data)->appendEntity(p); },
-        [](QQmlListProperty<Entity>* lp) { return reinterpret_cast<Scene*>(lp->data)->entityCount(); },
-        [](QQmlListProperty<Entity>* lp, qsizetype i) { return reinterpret_cast<Scene*>(lp->data)->entityAt(i); },
-        [](QQmlListProperty<Entity>* lp) { reinterpret_cast<Scene*>(lp->data)->clearEntities(); },
-        [](QQmlListProperty<Entity>* lp, qsizetype i, Entity* p) { reinterpret_cast<Scene*>(lp->data)->replaceEntity(i, p); },
-        [](QQmlListProperty<Entity>* lp) { reinterpret_cast<Scene*>(lp->data)->removeLastEntity(); }
+        [](QQmlListProperty<Entity>* prop, Entity* p) { reinterpret_cast<Scene*>(prop->data)->appendEntity(p); },
+        [](QQmlListProperty<Entity>* prop) { return reinterpret_cast<Scene*>(prop->data)->entityCount(); },
+        [](QQmlListProperty<Entity>* prop, qsizetype i) { return reinterpret_cast<Scene*>(prop->data)->entityAt(i); },
+        [](QQmlListProperty<Entity>* prop) { reinterpret_cast<Scene*>(prop->data)->clearEntities(); },
+        [](QQmlListProperty<Entity>* prop, qsizetype i, Entity* p) { reinterpret_cast<Scene*>(prop->data)->replaceEntity(i, p); },
+        [](QQmlListProperty<Entity>* prop) { reinterpret_cast<Scene*>(prop->data)->removeLastEntity(); }
     };
-}
-
-void Scene::update(Duration elapsed) {
 }
 
 VOLCANO_WORLD_END

@@ -9,8 +9,10 @@
 VOLCANO_RESOURCEBUILDER_BEGIN
 
 class Linker: public Tool {
+    Q_OBJECT
+
 public:
-    Linker();
+    Linker(const QCommandLineParser& cmdline, QObject* parent = nullptr);
 
 public:
 	int run() override;

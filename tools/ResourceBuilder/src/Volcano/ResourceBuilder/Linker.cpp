@@ -4,7 +4,8 @@
 
 VOLCANO_RESOURCEBUILDER_BEGIN
 
-Linker::Linker() {
+Linker::Linker(const QCommandLineParser& cmdline, QObject* parent)
+    : Tool(cmdline, parent) {
 }
 
 int Linker::run() {

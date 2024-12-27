@@ -16,6 +16,8 @@ volcano_add_static_library(Launcher
 		Graphics
 		Physics
         World
+    PUBLIC_QT_MODULES
+        Quick
     PUBLIC_HEADERS
         include/Volcano/Launcher/Common.h
         ${CMAKE_CURRENT_BINARY_DIR}/include/Volcano/Launcher/Config.h
