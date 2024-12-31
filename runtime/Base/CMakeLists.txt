@@ -12,13 +12,15 @@ volcano_add_static_library(Base
         include/Volcano/Config.h.in
         include/Volcano/Common.h
         include/Volcano/Config.h.in
+        include/Volcano/Math.h
         src/Volcano/Common.cpp
+        src/Volcano/Math.cpp
     PUBLIC_DEFINITIONS
         QT_NO_CONTEXTLESS_CONNECT
     PUBLIC_LINK_PACKAGES
+        Eigen3 Eigen3::Eigen
         Async++ Async++
         microprofile microprofile::microprofile
-        Eigen3 Eigen3::Eigen
     PUBLIC_QT_MODULES
         Concurrent
     PUBLIC_HEADERS

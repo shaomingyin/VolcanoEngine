@@ -63,7 +63,7 @@ private:
     //QHash<World::DirectionalLight*, World::Entity*> directional_lights_;
     //QHash<World::PointLight*, World::Entity*> point_lights_;
     //QHash<World::SpotLight*, World::Entity*> spot_lights_;
-    QList<Mesh> meshes_;
+    //QList<Mesh> meshes_;
     std::array<View, 2> views_;
     QAtomicInt update_view_;
 };

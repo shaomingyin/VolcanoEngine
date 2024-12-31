@@ -42,9 +42,7 @@ public:
         return owner_world_;
     }
 
-    void setOwnerWorld(btDynamicsWorld* p) {
-        owner_world_ = p;
-    }
+    void addToWorld(btDynamicsWorld* p);
 
 signals:
     void massChanged(float v);

@@ -7,13 +7,13 @@ volcano_add_executable(ResourceBuilder
         ${CMAKE_CURRENT_BINARY_DIR}/include
     PRIVATE_SOURCES
         include/Volcano/ResourceBuilder/Common.h
-		include/Volcano/ResourceBuilder/Linker.h
         include/Volcano/ResourceBuilder/ModelCompiler.h
 		include/Volcano/ResourceBuilder/Tool.h
-		src/Volcano/ResourceBuilder/Linker.cpp
+        include/Volcano/ResourceBuilder/Packager.h
         src/Volcano/ResourceBuilder/Main.cpp
         src/Volcano/ResourceBuilder/ModelCompiler.cpp
 		src/Volcano/ResourceBuilder/Tool.cpp
+        src/Volcano/ResourceBuilder/Packager.cpp
     PUBLIC_LINK_LIBRARIES
         Graphics
     PUBLIC_LINK_PACKAGES

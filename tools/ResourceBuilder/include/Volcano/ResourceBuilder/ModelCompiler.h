@@ -15,7 +15,10 @@ public:
     ModelCompiler(const QCommandLineParser& cmdline, QObject* parent = nullptr);
 
 public:
-	int run() override;
+    QString name() const override;
+
+protected:
+    void run() override;
 };
 
 VOLCANO_RESOURCEBUILDER_END

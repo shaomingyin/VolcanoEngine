@@ -1,4 +1,5 @@
 [requires]
+eigen/3.4.0
 asyncplusplus/1.2
 microprofile/4.0
 enet/1.3.18

@@ -1,10 +1,10 @@
 //
 //
-#include <Volcano/Transformable.h>
+#include <Volcano/World/Transformable.h>
 
-VOLCANO_BEGIN
+VOLCANO_WORLD_BEGIN
 
-void Transformable::setParentTransform(const Affine3f* p) {
+void Transformable::setParentTransform(const QMatrix4x4* p) {
     if (parent_transform_ == p) {
         return;
     }
@@ -15,9 +15,9 @@ void Transformable::setParentTransform(const Affine3f* p) {
 	}
 	if (p != nullptr) {
         auto offset = transform_;
-        transform_ = p->inverse() * offset;
+        transform_ = p->inverted() * offset;
         parent_transform_ = p;
     }
 }
 
-VOLCANO_END
+VOLCANO_WORLD_END

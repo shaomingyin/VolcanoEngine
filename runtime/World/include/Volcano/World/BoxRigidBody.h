@@ -24,45 +24,49 @@ public:
 
 public:
     QVector3D size() const {
-        auto tmp = shape_->getImplicitShapeDimensions();
-        return { tmp.x(), tmp.y(), tmp.z() };
+        return size_;
     }
 
-    Q_INVOKABLE void resize(float l, float w, float h) {
-        resize({ l, w, h });
+    void resize(const QVector3D& v) {
+        if (!qFuzzyCompare(size_, v)) {
+            resize(v.x(), v.y(), v.z());
+        }
     }
 
     float length() const {
-        return size().x();
+        return size_.x();
     }
 
     void setLength(float v) {
-        auto tmp = shape_->getImplicitShapeDimensions();
-        resize(v, tmp.y(), tmp.z());
-        emit lengthChanged(v);
+        if (!qFuzzyCompare(size_.x(), v)) {
+            forceResize({ v, size_.y(), size_.z() });
+            emit lengthChanged(v);
+        }
     }
 
     float width() const {
-        return size().y();
+        return size_.y();
     }
 
     void setWidth(float v) {
-        auto tmp = shape_->getImplicitShapeDimensions();
-        resize(tmp.x(), v, tmp.z());
-        emit widthChanged(v);
+        if (!qFuzzyCompare(size_.z(), v)) {
+            forceResize({ size_.x(), size_.y(), v });
+            emit widthChanged(v);
+        }
     }
 
     float height() const {
-        return size().z();
+        return size_.z();
     }
 
     void setHeight(float v) {
-        auto tmp = shape_->getImplicitShapeDimensions();
-        resize(tmp.x(), tmp.y(), v);
-        emit heightChanged(v);
+        if (!qFuzzyCompare(size_.y(), v)) {
+            forceResize({ size_.x(), v, size_.z() });
+            emit heightChanged(v);
+        }
     }
 
-    void resize(const QVector3D& v);
+    Q_INVOKABLE void resize(float x, float y, float z);
 
 signals:
     void sizeChanged(const QVector3D& v);
@@ -71,6 +75,7 @@ signals:
     void heightChanged(float v);
 
 private:
+    QVector3D size_;
     std::unique_ptr<btBoxShape> shape_;
 };
 

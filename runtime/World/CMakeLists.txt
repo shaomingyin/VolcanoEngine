@@ -33,6 +33,7 @@ volcano_add_static_library(World
         include/Volcano/World/SphereRigidBody.h
         include/Volcano/World/SpotLight.h
         include/Volcano/World/StaticPlaneRigidBody.h
+        include/Volcano/World/Transform.h
         include/Volcano/World/Transformable.h
         include/Volcano/World/TriangleMeshRigidBody.h
         src/Volcano/World/BoxRigidBody.cpp
@@ -59,6 +60,7 @@ volcano_add_static_library(World
         src/Volcano/World/SphereRigidBody.cpp
         src/Volcano/World/SpotLight.cpp
         src/Volcano/World/StaticPlaneRigidBody.cpp
+        src/Volcano/World/Transform.cpp
         src/Volcano/World/Transformable.cpp
         src/Volcano/World/TriangleMeshRigidBody.cpp
 	PUBLIC_LINK_LIBRARIES

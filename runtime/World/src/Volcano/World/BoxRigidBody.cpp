@@ -10,12 +10,26 @@ BoxRigidBody::BoxRigidBody(QObject* parent)
     setCollisionShape(shape_.get());
 }
 
-void BoxRigidBody::resize(const QVector3D& v) {
-    preCollisionShapeChange();
-    shape_.reset(new btBoxShape({ v.x(), v.y(), v.z() }));
-    setCollisionShape(shape_.get());
-    postCollisionShapeChange();
-    emit sizeChanged(v);
+void BoxRigidBody::resize(float x, float y, float z) {
+    bool dx = qFuzzyCompare(size_.x(), x);
+    if (dx) {
+        size_.setX(x);
+    }
+    bool dy = qFuzzyCompare(size_.y(), y);
+    if (dy) {
+        size_.setY(y);
+    }
+    bool dz = qFuzzyCompare(size_.z(), z);
+    if (dz) {
+        size_.setZ(z);
+    }
+    if (dx || dy || dz) {
+        preCollisionShapeChange();
+        shape_.reset(new btBoxShape({ x, y, z }));
+        setCollisionShape(shape_.get());
+        postCollisionShapeChange();
+        emit sizeChanged(size_);
+    }
 }
 
 VOLCANO_WORLD_END

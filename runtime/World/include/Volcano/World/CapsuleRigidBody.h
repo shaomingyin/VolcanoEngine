@@ -23,23 +23,13 @@ public:
         return shape_->getRadius();
     }
 
-    void setRadius(float v) {
-        float h = height();
-        shape_.reset(new btCapsuleShape({ v, h }));
-        setCollisionShape(shape_.get());
-        emit radiusChanged(v);
-    }
+    void setRadius(float v);
 
     float height() const {
         return (shape_->getHalfHeight() * 2.0f);
     }
 
-    void setHeight(float v) {
-        float r = shape_->getRadius();
-        shape_.reset(new btCapsuleShape({ r, v }));
-        setCollisionShape(shape_.get());
-        emit heightChanged(v);
-    }
+    void setHeight(float v);
 
 signals:
     void radiusChanged(float v);

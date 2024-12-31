@@ -138,7 +138,7 @@ void Renderer::onLightRemoved(World::Entity* entity, World::Light* light) {
 }
 
 void Renderer::onMeshAdded(World::Entity* entity, World::Mesh* mesh) {
-    meshes_.emplaceBack(*this, entity, mesh);
+    //meshes_.emplaceBack(*this, entity, mesh);
 }
 
 void Renderer::onMeshRemoved(World::Entity* entity, World::Mesh* mesh) {
@@ -148,17 +148,12 @@ void Renderer::onMeshRemoved(World::Entity* entity, World::Mesh* mesh) {
 void Renderer::loadNewMeshes() {
     Q_ASSERT(QOpenGLContext::currentContext() != nullptr);
     Q_ASSERT(QOpenGLContext::currentContext()->thread()->isCurrentThread());
-    for (auto it = new_meshes_.begin(); it != new_meshes_.end(); ++it) {
-    }
-    new_meshes_.clear();
 }
 
 void Renderer::onScreenAdded(World::Entity* entity, World::Screen* screen) {
-    screens_[screen] = entity;
 }
 
 void Renderer::onScreenRemoved(World::Entity* entity, World::Screen* screen) {
-    screens_.remove(screen);
 }
 
 VOLCANO_GRAPHICS_END
