@@ -12,40 +12,24 @@ VOLCANO_WORLD_BEGIN
 
 class CylinderRigidBody: public RigidBody {
     Q_OBJECT
-    Q_PROPERTY(float radius READ radius WRITE setRadius NOTIFY radiusChanged FINAL)
-    Q_PROPERTY(float height READ height WRITE setHeight NOTIFY heightChanged FINAL)
+    Q_PROPERTY(Vector3 size READ size WRITE resize NOTIFY sizeChanged FINAL)
 
 public:
     CylinderRigidBody(QObject* parent = nullptr);
 
 public:
-    float radius() const {
-        return shape_->getRadius();
+    const Vector3& size() const {
+        return size_;
     }
 
-    void setRadius(float v) {
-        float h = shape_->getHalfExtentsWithoutMargin().y();
-        shape_.reset(new btCylinderShape({ v, h, v }));
-        setCollisionShape(shape_.get());
-        emit radiusChanged(v);
-    }
-
-    float height() const {
-        return 1.0f; // TODO
-    }
-
-    void setHeight(float v) {
-        float r = shape_->getRadius();
-        shape_.reset(new btCylinderShape({ r, v, r }));
-        setCollisionShape(shape_.get());
-        emit radiusChanged(v);
-    }
+    void resize(const Vector3& v);
+    void componentComplete() override;
 
 signals:
-    void radiusChanged(float v);
-    void heightChanged(float v);
+    void sizeChanged(const Vector3& v);
 
 private:
+    Vector3 size_;
     std::unique_ptr<btCylinderShape> shape_;
 };
 

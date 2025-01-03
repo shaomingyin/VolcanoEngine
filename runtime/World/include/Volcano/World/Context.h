@@ -4,6 +4,9 @@
 #define VOLCANO_WORLD_CONTEXT_H
 
 #include <QObject>
+#include <QNetworkAccessManager>
+#include <QNetworkRequest>
+#include <QNetworkReply>
 
 #include <Volcano/World/Common.h>
 
@@ -16,7 +19,7 @@ public:
     Context(QObject* parent = nullptr);
 
 public:
-    //virtual
+    virtual QNetworkAccessManager* networkAccessManager(QObject* object);
 };
 
 VOLCANO_WORLD_END

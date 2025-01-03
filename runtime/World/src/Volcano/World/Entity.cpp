@@ -1,5 +1,6 @@
 //
 //
+#include <Volcano/World/Transformable.h>
 #include <Volcano/World/Entity.h>
 
 VOLCANO_WORLD_BEGIN
@@ -14,6 +15,10 @@ Entity::~Entity() {
 
 void Entity::appendComponent(Component* p) {
     components_.append(p);
+    auto transformable = qobject_cast<Transformable*>(p);
+    if (transformable != nullptr) {
+        transformable->attachParentTransform(&transform_.affine());
+    }
     emit componentAdded(p);
 }
 
@@ -23,6 +28,10 @@ Component* Entity::componentAt(qsizetype i) {
 
 void Entity::clearComponents() {
     for (Component* p: components_) {
+        auto transformable = qobject_cast<Transformable*>(p);
+        if (transformable != nullptr) {
+            transformable->attachParentTransform(nullptr);
+        }
         emit componentRemoved(p);
     }
     components_.clear();
@@ -34,15 +43,29 @@ qsizetype Entity::componentCount() {
 
 void Entity::removeLastComponent() {
     if (!components_.isEmpty()) {
-        emit componentRemoved(components_.last());
+        auto last = components_.last();
+        auto transformable = qobject_cast<Transformable*>(last);
+        if (transformable != nullptr) {
+            transformable->attachParentTransform(nullptr);
+        }
         components_.removeLast();
+        emit componentRemoved(last);
     }
 }
 
 void Entity::replaceComponent(qsizetype i, Component* p) {
     if (0 <= i && i < components_.count()) {
-        emit componentRemoved(components_.at(i));
+        auto old = components_.at(i);
+        auto transformable = qobject_cast<Transformable*>(old);
+        if (transformable != nullptr) {
+            transformable->attachParentTransform(nullptr);
+        }
+        emit componentRemoved(old);
         components_.replace(i, p);
+        transformable = qobject_cast<Transformable*>(p);
+        if (transformable != nullptr) {
+            transformable->attachParentTransform(&transform_.affine());
+        }
         emit componentAdded(p);
     }
 }

@@ -9,7 +9,7 @@ void RigidBody::MotionState::getWorldTransform(btTransform& world_transform) con
 }
 
 void RigidBody::MotionState::setWorldTransform(const btTransform& world_transform) {
-    world_transform.getOpenGLMatrix(orig_.transform()->data());
+    world_transform.getOpenGLMatrix(orig_.offset()->affine().data());
 }
 
 RigidBody::RigidBody(QObject* parent)
@@ -17,7 +17,6 @@ RigidBody::RigidBody(QObject* parent)
     , motion_state_(*this)
     , rigid_body_(0.0f, &motion_state_, nullptr)
     , owner_world_(nullptr) {
-    connect(this, &Transformable::)
 }
 
 RigidBody::~RigidBody() {
@@ -36,6 +35,12 @@ void RigidBody::addToWorld(btDynamicsWorld* p) {
             owner_world_->addRigidBody(&rigid_body_);
         }
     }
+}
+
+void RigidBody::classBegin() {
+}
+
+void RigidBody::componentComplete() {
 }
 
 VOLCANO_WORLD_END

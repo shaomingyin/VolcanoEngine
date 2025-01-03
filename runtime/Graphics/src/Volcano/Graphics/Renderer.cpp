@@ -10,18 +10,21 @@ VOLCANO_GRAPHICS_BEGIN
 
 Renderer::Renderer(World::Scene& scene, QObject* parent)
     : Context(parent)
+    , gl_context_(QOpenGLContext::currentContext())
     , static_vertex_buffer_allocator_(QOpenGLBuffer::VertexBuffer, QOpenGLBuffer::StaticDraw)
     , static_index_buffer_allocator_(QOpenGLBuffer::IndexBuffer, QOpenGLBuffer::StaticDraw)
     , scene_(scene)
     , update_view_(0) {
-    auto gl_context = QOpenGLContext::currentContext();
-    Q_ASSERT(gl_context != nullptr);
-    Q_ASSERT(gl_context->thread()->isCurrentThread());
+    Q_ASSERT(gl_context_ != nullptr);
+    Q_ASSERT(gl_context_->thread()->isCurrentThread());
+    Q_ASSERT(gl_context_->thread() == thread());
+
     for (auto e: scene_.entities()) {
         for (auto c: e->components()) {
             onComponentAdded(e, c);
         }
     }
+
     connect(&scene_, &World::Scene::componentAdded, this, &Renderer::onComponentAdded, Qt::QueuedConnection);
     connect(&scene_, &World::Scene::componentAdded, this, &Renderer::onComponentRemoved, Qt::QueuedConnection);
 }
@@ -138,11 +141,13 @@ void Renderer::onLightRemoved(World::Entity* entity, World::Light* light) {
 }
 
 void Renderer::onMeshAdded(World::Entity* entity, World::Mesh* mesh) {
-    //meshes_.emplaceBack(*this, entity, mesh);
+    meshes_.emplaceBack(*this, std::make_unique<Mesh>(*this, entity, mesh));
 }
 
 void Renderer::onMeshRemoved(World::Entity* entity, World::Mesh* mesh) {
-    //meshes_.removeIf()
+    meshes_.removeIf([entity, mesh](const auto& r) {
+        return (r.worldEntity() == entity && r.worldMesh() == mesh);
+    });
 }
 
 void Renderer::loadNewMeshes() {

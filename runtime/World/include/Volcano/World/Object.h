@@ -4,6 +4,7 @@
 #define VOLCANO_WORLD_OBJECT_H
 
 #include <QObject>
+#include <QNetworkAccessManager>
 
 #include <Volcano/World/Common.h>
 #include <Volcano/World/Context.h>
@@ -16,6 +17,7 @@ class Object: public QObject {
 
 public:
     Object(QObject* parent = nullptr);
+    Object(Context& context, QObject* parent = nullptr);
 
 public:
     bool isEnabled() const {

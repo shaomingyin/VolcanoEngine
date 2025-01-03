@@ -3,9 +3,10 @@
 #ifndef VOLCANO_GRAPHICS_RENDERER_H
 #define VOLCANO_GRAPHICS_RENDERER_H
 
+#include <memory>
+
 #include <QList>
 #include <QAtomicInt>
-#include <QOpenGLBuffer>
 
 #include <Volcano/World/Scene.h>
 #include <Volcano/World/Light.h>
@@ -52,6 +53,7 @@ private:
     void onScreenRemoved(World::Entity* entity, World::Screen* screen);
 
 private:
+    QOpenGLContext* gl_context_;
     Pipeline forward_pipeline_;
     Pipeline deferred_pipeline_;
     BufferAllocator static_vertex_buffer_allocator_;
@@ -63,7 +65,7 @@ private:
     //QHash<World::DirectionalLight*, World::Entity*> directional_lights_;
     //QHash<World::PointLight*, World::Entity*> point_lights_;
     //QHash<World::SpotLight*, World::Entity*> spot_lights_;
-    //QList<Mesh> meshes_;
+    QList<std::unique_ptr<Mesh>> meshes_;
     std::array<View, 2> views_;
     QAtomicInt update_view_;
 };

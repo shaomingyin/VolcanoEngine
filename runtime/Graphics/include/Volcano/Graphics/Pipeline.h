@@ -103,7 +103,6 @@ public:
     }
 
 private:
-    OpenGLFunctions* gl_;
     std::bitset<static_cast<size_t>(BoolAttribute::Max)> bool_attributes_;
     std::array<QVector3D, static_cast<size_t>(Vector4Attribute::Max)> vector3_attributes_;
     std::array<QVector4D, static_cast<size_t>(Vector3Attribute::Max)> vector4_attributes_;

@@ -9,6 +9,17 @@ VOLCANO_WORLD_BEGIN
 Object::Object(QObject* parent)
     : QObject(parent)
     , context_(nullptr) {
+    if (parent != nullptr) {
+        auto parent_object = qobject_cast<Object*>(parent);
+        if (parent_object != nullptr) {
+            context_ = parent_object->context_;
+        }
+    }
+}
+
+Object::Object(Context& context, QObject* parent)
+    : QObject(parent)
+    , context_(&context) {
 }
 
 Context* Object::context() {

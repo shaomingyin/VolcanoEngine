@@ -27,6 +27,7 @@ volcano_add_static_library(World
         include/Volcano/World/Object.h
         include/Volcano/World/Particle.h
         include/Volcano/World/PointLight.h
+        include/Volcano/World/Resource.h
         include/Volcano/World/RigidBody.h
         include/Volcano/World/Scene.h
         include/Volcano/World/Screen.h
@@ -54,6 +55,7 @@ volcano_add_static_library(World
         src/Volcano/World/Object.cpp
         src/Volcano/World/Particle.cpp
         src/Volcano/World/PointLight.cpp
+        src/Volcano/World/Resource.cpp
         src/Volcano/World/RigidBody.cpp
         src/Volcano/World/Scene.cpp
         src/Volcano/World/Screen.cpp

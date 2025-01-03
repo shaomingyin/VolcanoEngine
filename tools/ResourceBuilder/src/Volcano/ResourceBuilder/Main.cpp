@@ -7,8 +7,9 @@
 #include <QCommandLineParser>
 
 #include <Volcano/ResourceBuilder/Common.h>
+#include <Volcano/ResourceBuilder/MapCompiler.h>
 #include <Volcano/ResourceBuilder/ModelCompiler.h>
-#include <Volcano/ResourceBuilder/Linker.h>
+#include <Volcano/ResourceBuilder/Packager.h>
 
 int main(int argc, char* argv[]) {
     QCoreApplication app(argc, argv);

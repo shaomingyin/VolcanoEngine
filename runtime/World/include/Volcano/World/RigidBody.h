@@ -3,17 +3,19 @@
 #ifndef VOLCANO_WORLD_RIGIDBODY_H
 #define VOLCANO_WORLD_RIGIDBODY_H
 
-#include <QVector3D>
+#include <QQmlParserStatus>
 
+#include <Volcano/Math.h>
 #include <Volcano/World/Common.h>
 #include <Volcano/World/Transformable.h>
 
 VOLCANO_WORLD_BEGIN
 
-class RigidBody: public Transformable {
+class RigidBody: public Transformable, public QQmlParserStatus {
     Q_OBJECT
+    Q_INTERFACES(QQmlParserStatus)
     Q_PROPERTY(float mass READ mass WRITE setMass NOTIFY massChanged)
-    Q_PROPERTY(QVector3D scaling READ scaling WRITE setScaling NOTIFY scalingChanged FINAL)
+    Q_PROPERTY(Vector3 scaling READ scaling WRITE setScaling NOTIFY scalingChanged FINAL)
 
 public:
     RigidBody(QObject* parent = nullptr);
@@ -28,12 +30,12 @@ public:
         // TODO
     }
 
-    QVector3D scaling() const {
+    Vector3 scaling() const {
         const btVector3& r = rigid_body_.getCollisionShape()->getLocalScaling();
         return { r.x(), r.y(), r.z() };
     }
 
-    void setScaling(const QVector3D& v) {
+    void setScaling(const Vector3& v) {
         rigid_body_.getCollisionShape()->setLocalScaling({ v.x(), v.y(), v.z() });
         emit scalingChanged(v);
     }
@@ -43,10 +45,12 @@ public:
     }
 
     void addToWorld(btDynamicsWorld* p);
+    void classBegin() override;
+    void componentComplete() override;
 
 signals:
     void massChanged(float v);
-    void scalingChanged(const QVector3D& v);
+    void scalingChanged(const Vector3& v);
 
 protected:
     void preCollisionShapeChange() {

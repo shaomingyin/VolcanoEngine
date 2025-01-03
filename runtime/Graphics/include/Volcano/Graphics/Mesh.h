@@ -7,6 +7,7 @@
 
 #include <QObject>
 #include <QDataStream>
+#include <QOpenGLVertexArrayObject>
 
 #include <Volcano/World/Entity.h>
 #include <Volcano/World/Mesh.h>
@@ -49,6 +50,7 @@ private:
     Context& context_;
     World::Entity* world_entity_;
     World::Mesh* world_mesh_;
+    QOpenGLVertexArrayObject vao_;
     std::unique_ptr<Buffer> vertex_buffer_;
     std::unique_ptr<Buffer> index_buffer_;
 };

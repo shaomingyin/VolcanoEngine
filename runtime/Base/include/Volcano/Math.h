@@ -118,6 +118,10 @@ public:
         return Vector2(a.v_ / v);
     }
 
+    float* data() {
+        return v_.data();
+    }
+
     const float* data() const {
         return v_.data();
     }
@@ -262,6 +266,10 @@ public:
         return Vector3(a.v_ / v);
     }
 
+    float* data() {
+        return v_.data();
+    }
+
     const float* data() const {
         return v_.data();
     }
@@ -399,6 +407,10 @@ public:
 
     friend Vector4 operator/(const Vector4& a, float v) {
         return Vector4(a.v_ / v);
+    }
+
+    float* data() {
+        return v_.data();
     }
 
     const float* data() const {
@@ -570,6 +582,10 @@ public:
         return Matrix2(a.v_ / v);
     }
 
+    float* data() {
+        return v_.data();
+    }
+
     const float* data() const {
         return v_.data();
     }
@@ -695,6 +711,10 @@ public:
         return Matrix3(a.v_ / v);
     }
 
+    float* data() {
+        return v_.data();
+    }
+
     const float* data() const {
         return v_.data();
     }
@@ -818,6 +838,10 @@ public:
 
     friend Matrix4 operator/(const Matrix4& a, float v) {
         return Matrix4(a.v_ / v);
+    }
+
+    float* data() {
+        return v_.data();
     }
 
     const float* data() const {
@@ -1022,6 +1046,10 @@ public:
         return Vector2(a.v_ * b.toEigen());
     }
 
+    float* data() {
+        return v_.data();
+    }
+
     const float* data() const {
         return v_.data();
     }
@@ -1102,6 +1130,10 @@ public:
         return Vector3(a * b);
     }
 
+    float* data() {
+        return v_.data();
+    }
+
     const float* data() const {
         return v_.data();
     }
@@ -1179,6 +1211,10 @@ public:
         return !v_.isApprox(v);
     }
 
+    float* data() {
+        return v_.data();
+    }
+
     const float* data() const {
         return v_.data();
     }
@@ -1201,13 +1237,5 @@ private:
 };
 
 VOLCANO_END
-
-Q_DECLARE_METATYPE(Volcano::Vector2)
-Q_DECLARE_METATYPE(Volcano::Vector3)
-Q_DECLARE_METATYPE(Volcano::Vector4)
-Q_DECLARE_METATYPE(Volcano::AngleAxis)
-Q_DECLARE_METATYPE(Volcano::Quaternion)
-Q_DECLARE_METATYPE(Volcano::Affine3)
-Q_DECLARE_METATYPE(Volcano::Projective3)
 
 #endif // VOLCANO_MATH_H

@@ -5,7 +5,11 @@
 
 #include <bullet/btBulletDynamicsCommon.h>
 
+#include <QQmlInfo>
+#include <QQmlEngine>
+
 #include <Volcano/Common.h>
+#include <Volcano/Math.h>
 
 #define VOLCANO_WORLD_BEGIN VOLCANO_BEGIN namespace World {
 #define VOLCANO_WORLD_END } VOLCANO_END

@@ -25,6 +25,7 @@ public:
     }
 
     void setSource(const QUrl& v);
+    void componentComplete() override;
 
 signals:
     void sourceChanged(const QUrl& v);

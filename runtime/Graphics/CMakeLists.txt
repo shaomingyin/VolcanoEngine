@@ -20,9 +20,11 @@ volcano_add_static_library(Graphics
         include/Volcano/Graphics/Screen.h
         include/Volcano/Graphics/View.h
         include/Volcano/Graphics/VirtualTexture.h
+        src/Volcano/Graphics/Buffer.cpp
         src/Volcano/Graphics/BufferImpl.cpp
         src/Volcano/Graphics/BufferImpl.h
         src/Volcano/Graphics/BufferAllocator.cpp
+        src/Volcano/Graphics/Common.cpp
         src/Volcano/Graphics/Context.cpp
         src/Volcano/Graphics/Mesh.cpp
         src/Volcano/Graphics/Renderer.cpp

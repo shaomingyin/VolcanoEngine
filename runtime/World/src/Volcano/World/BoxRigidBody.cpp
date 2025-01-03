@@ -6,30 +6,35 @@ VOLCANO_WORLD_BEGIN
 
 BoxRigidBody::BoxRigidBody(QObject* parent)
     : RigidBody(parent)
-    , shape_(new btBoxShape({ 1.0f, 1.0f, 1.0f })) {
-    setCollisionShape(shape_.get());
+    , size_(1.0f, 1.0f, 1.0f) {
 }
 
-void BoxRigidBody::resize(float x, float y, float z) {
-    bool dx = qFuzzyCompare(size_.x(), x);
-    if (dx) {
-        size_.setX(x);
+void BoxRigidBody::setWidth(float v) {
+    if (shape_) {
+        qmlWarning(this) << "Cannot set the 'width' property after component completed.";
+        return;
     }
-    bool dy = qFuzzyCompare(size_.y(), y);
-    if (dy) {
-        size_.setY(y);
+    if (!qFuzzyCompare(size_.z(), v)) {
+        size_.setZ(v);
+        emit widthChanged(v);
     }
-    bool dz = qFuzzyCompare(size_.z(), z);
-    if (dz) {
-        size_.setZ(z);
+}
+
+void BoxRigidBody::setHeight(float v) {
+    if (shape_) {
+        qmlWarning(this) << "Cannot set the 'height' property after component completed.";
+        return;
     }
-    if (dx || dy || dz) {
-        preCollisionShapeChange();
-        shape_.reset(new btBoxShape({ x, y, z }));
-        setCollisionShape(shape_.get());
-        postCollisionShapeChange();
-        emit sizeChanged(size_);
+    if (!qFuzzyCompare(size_.y(), v)) {
+        size_.setY(v);
+        emit heightChanged(v);
     }
+}
+
+void BoxRigidBody::componentComplete() {
+    shape_ = std::make_unique<btBoxShape>(
+        btVector3{ size_.x() / 2.0f, size_.y() / 2.0f, size_.z() / 2.0f });
+    setCollisionShape(shape_.get());
 }
 
 VOLCANO_WORLD_END

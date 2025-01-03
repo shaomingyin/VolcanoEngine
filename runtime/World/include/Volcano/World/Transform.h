@@ -13,7 +13,6 @@ VOLCANO_WORLD_BEGIN
 
 class Transform: public QObject {
     Q_OBJECT
-    Q_PROPERTY(Affine3 affine READ affine NOTIFY affineChanged FINAL)
     Q_PROPERTY(Vector3 translation READ translation WRITE setTranslation NOTIFY translationChanged FINAL)
     Q_PROPERTY(Vector3 scaling READ scaling WRITE setScaling NOTIFY scalingChanged FINAL)
     Q_PROPERTY(AngleAxis rotation READ rotation WRITE setRotation NOTIFY rotationChanged FINAL)
@@ -52,6 +51,15 @@ public:
         }
     }
 
+    Vector3 scaling() const {
+        return affine_transform_.scaling();
+    }
+
+    void setScaling(const Vector3& v) {
+        affine_transform_.setScaling(v);
+        emit scalingChanged(v);
+    }
+
     AngleAxis rotation() const {
         return AngleAxis(affine_transform_.rotation());
     }
@@ -63,7 +71,7 @@ public:
         }
     }
 
-    Transform inverted() const {
+    Q_INVOKABLE Transform inverted() const {
         return Transform(affine_transform_.inverted());
     }
 
@@ -80,16 +88,15 @@ public:
         return (*this);
     }
 
-    friend Vector3 operator*(const Transform& a, const Vector3& b) {
-        return (a.affine_transform_ * b);
-    }
-
     friend Transform operator*(const Transform& a, const Transform& b) {
         return Transform(a.affine_transform_ * b.affine_transform_);
     }
 
+    friend Vector3 operator*(const Transform& a, const Vector3& b) {
+        return (a.affine_transform_ * b);
+    }
+
 signals:
-    void matrixChanged(const Matrix4& v);
     void translationChanged(const Vector3& v);
     void scalingChanged(const Vector3& v);
     void rotationChanged(const AngleAxis& v);

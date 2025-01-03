@@ -34,6 +34,7 @@ public:
     }
 
     Buffer* allocBuffer(GLsizei size);
+    void dump() const;
 
 private:
     class Block final: public QOpenGLBuffer {
@@ -43,6 +44,7 @@ private:
 
     public:
         Buffer* allocBuffer(GLsizei size);
+        void dump() const;
 
     private:
         GLsizei size_;

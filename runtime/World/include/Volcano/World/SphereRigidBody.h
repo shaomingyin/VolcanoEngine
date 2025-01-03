@@ -3,6 +3,8 @@
 #ifndef VOLCANO_WORLD_SPHERERIGIDBODY_H
 #define VOLCANO_WORLD_SPHERERIGIDBODY_H
 
+#include <memory>
+
 #include <Volcano/World/Common.h>
 #include <Volcano/World/RigidBody.h>
 
@@ -17,22 +19,18 @@ public:
 
 public:
     float radius() const {
-        return shape_.getImplicitShapeDimensions().x();
+        return radius_;
     }
 
-    void setRadius(float v) {
-        preCollisionShapeChange();
-        auto tmp = shape_.getImplicitShapeDimensions();
-        shape_.setImplicitShapeDimensions({ v, tmp.y(), tmp.z() });
-        postCollisionShapeChange();
-        emit radiusChanged(v);
-    }
+    void setRadius(float v);
+    void componentComplete() override;
 
 signals:
     void radiusChanged(float v);
 
 private:
-	btSphereShape shape_;
+    float radius_;
+    std::unique_ptr<btSphereShape> shape_;
 };
 
 VOLCANO_WORLD_END

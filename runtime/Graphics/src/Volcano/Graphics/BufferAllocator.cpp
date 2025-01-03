@@ -29,6 +29,10 @@ Buffer* BufferAllocator::Block::allocBuffer(GLsizei size) {
     return nullptr;
 }
 
+void BufferAllocator::Block::dump() const {
+    buddy2_dump(allocator_);
+}
+
 BufferAllocator::BufferAllocator(QOpenGLBuffer::Type type, QOpenGLBuffer::UsagePattern usage, GLsizei block_size)
     : type_(type)
     , usage_(usage)
@@ -72,6 +76,18 @@ Buffer* BufferAllocator::allocBuffer(GLsizei size) {
     block_guard.dismiss();
 
     return p;
+}
+
+void BufferAllocator::dump() const {
+    qInfo() << "---- Dump graphics buffer allocator ----";
+    qInfo() << "Instance: " << this;
+    qInfo() << "Type: " << static_cast<int>(type_);
+    qInfo() << "Usage: " << static_cast<int>(usage_);
+    qInfo() << "Block size: " << block_size_;
+    qInfo() << "Block count: " << blocks_.count();
+    for (const auto& block: blocks_) {
+        block.dump();
+    }
 }
 
 VOLCANO_GRAPHICS_END

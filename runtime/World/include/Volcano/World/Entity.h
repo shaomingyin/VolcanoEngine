@@ -9,6 +9,7 @@
 
 #include <Volcano/World/Common.h>
 #include <Volcano/World/Component.h>
+#include <Volcano/World/Transform.h>
 #include <Volcano/World/Object.h>
 
 VOLCANO_WORLD_BEGIN
@@ -16,7 +17,7 @@ VOLCANO_WORLD_BEGIN
 class Entity: public Object {
     Q_OBJECT
     Q_PROPERTY(bool enabled READ isEnabled WRITE setEnabled NOTIFY enabledChanged FINAL)
-    Q_PROPERTY(QMatrix4x4* transform READ transform)
+    Q_PROPERTY(Transform* transform READ transform)
     Q_PROPERTY(QQmlListProperty<Component> components READ qmlComponents)
     Q_CLASSINFO("DefaultProperty", "components")
 
@@ -25,7 +26,7 @@ public:
     ~Entity() override;
 
 public:
-    QMatrix4x4* transform() {
+    Transform* transform() {
         return &transform_;
     }
 
@@ -59,7 +60,7 @@ signals:
 
 private:
     bool enabled_;
-    QMatrix4x4 transform_;
+    Transform transform_;
     QList<Component*> components_;
 };
 

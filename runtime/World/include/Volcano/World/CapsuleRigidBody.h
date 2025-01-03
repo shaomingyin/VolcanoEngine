@@ -20,22 +20,25 @@ public:
 
 public:
     float radius() const {
-        return shape_->getRadius();
+        return radius_;
+    }
+
+
+    float height() const {
+        return height_;
     }
 
     void setRadius(float v);
-
-    float height() const {
-        return (shape_->getHalfHeight() * 2.0f);
-    }
-
     void setHeight(float v);
+    void componentComplete() override;
 
 signals:
     void radiusChanged(float v);
     void heightChanged(float v);
 
 private:
+    float radius_;
+    float height_;
     std::unique_ptr<btCapsuleShape> shape_;
 };
 

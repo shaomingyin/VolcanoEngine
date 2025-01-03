@@ -3,6 +3,8 @@
 #ifndef VOLCANO_WORLD_CONERIGIDBODY_H
 #define VOLCANO_WORLD_CONERIGIDBODY_H
 
+#include <memory>
+
 #include <Volcano/World/Common.h>
 #include <Volcano/World/RigidBody.h>
 
@@ -17,33 +19,25 @@ public:
     ConeRigidBody(QObject* parent = nullptr);
 
     float radius() const {
-        return shape_.getRadius();
-    }
-
-    void setRadius(float v) {
-        preCollisionShapeChange();
-        shape_.setRadius(v);
-        postCollisionShapeChange();
-        emit radiusChanged(v);
+        return radius_;
     }
 
     float height() const {
-        return shape_.getHeight();
+        return height_;
     }
 
-    void setHeight(float v) {
-        preCollisionShapeChange();
-        shape_.setHeight(v);
-        postCollisionShapeChange();
-        emit heightChanged(v);
-    }
+    void setRadius(float v);
+    void setHeight(float v);
+    void componentComplete() override;
 
 signals:
     void radiusChanged(float v);
     void heightChanged(float v);
 
 private:
-	btConeShape shape_;
+    float radius_;
+    float height_;
+    std::unique_ptr<btConeShape> shape_;
 };
 
 VOLCANO_WORLD_END

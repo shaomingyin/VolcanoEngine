@@ -6,22 +6,35 @@ VOLCANO_WORLD_BEGIN
 
 CapsuleRigidBody::CapsuleRigidBody(QObject* parent)
     : RigidBody(parent)
-    , shape_(new btCapsuleShape(1.0f, 1.0f)) {
-    setCollisionShape(shape_.get());
+    , radius_(1.0f)
+    , height_(1.0f) {
 }
 
 void CapsuleRigidBody::setRadius(float v) {
-    float h = height();
-    shape_.reset(new btCapsuleShape({ v, h }));
-    setCollisionShape(shape_.get());
-    emit radiusChanged(v);
+    if (shape_) {
+        qmlWarning(this) << "Cannot set the 'radius' property after component completed.";
+        return;
+    }
+    if (!qFuzzyCompare(radius_, v)) {
+        radius_ = v;
+        emit radiusChanged(v);
+    }
 }
 
 void CapsuleRigidBody::setHeight(float v) {
-    float r = shape_->getRadius();
-    shape_.reset(new btCapsuleShape({ r, v }));
+    if (shape_) {
+        qmlWarning(this) << "Cannot set the 'height' property after component completed.";
+        return;
+    }
+    if (!qFuzzyCompare(height_, v)) {
+        height_ = v;
+        emit heightChanged(v);
+    }
+}
+
+void CapsuleRigidBody::componentComplete() {
+    shape_ = std::make_unique<btCapsuleShape>(radius_, height_);
     setCollisionShape(shape_.get());
-    emit heightChanged(v);
 }
 
 VOLCANO_WORLD_END

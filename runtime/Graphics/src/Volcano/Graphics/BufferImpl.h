@@ -25,11 +25,17 @@ public:
         return offset_;
     }
 
-    GLsizei size() const override;
-    void bind() override;
-    void *map(QOpenGLBuffer::RangeAccessFlag access) override;
-    void *mapRange(int offset, int count, QOpenGLBuffer::RangeAccessFlags access) override;
+    bool open(QIODeviceBase::OpenMode mode) override;
+    size_t size() const override;
+    bool bind() override;
+    void *map(OpenMode mode) override;
+    void *mapRange(int offset, int count, OpenMode mode) override;
     void unmap() override;
+
+private:
+    bool isCurrent() const {
+        return (currentBuffer(owner_.type()) == owner_.bufferId());
+    }
 
 private:
     QOpenGLBuffer& owner_;

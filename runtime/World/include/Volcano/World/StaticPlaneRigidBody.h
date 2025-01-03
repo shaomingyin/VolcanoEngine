@@ -5,8 +5,6 @@
 
 #include <memory>
 
-#include <QVector3D>
-
 #include <Volcano/World/Common.h>
 #include <Volcano/World/RigidBody.h>
 
@@ -14,43 +12,33 @@ VOLCANO_WORLD_BEGIN
 
 class StaticPlaneRigidBody: public RigidBody {
     Q_OBJECT
-    Q_PROPERTY(QVector3D normal READ normal WRITE setNormal NOTIFY normalChanged FINAL)
+    Q_PROPERTY(Vector3 normal READ normal WRITE setNormal NOTIFY normalChanged FINAL)
     Q_PROPERTY(float constant READ constant WRITE setConstant NOTIFY constantChanged FINAL)
 
 public:
     StaticPlaneRigidBody(QObject* parent = nullptr);
 
 public:
-    QVector3D normal() const {
-        const btVector3& r = shape_->getPlaneNormal();
-        return { r.x(), r.y(), r.z() };
+    Vector3 normal() const {
+        return normal_;
     }
 
-    void setNormal(const QVector3D& v) {
-        preCollisionShapeChange();
-        float c = shape_->getPlaneConstant();
-        shape_.reset(new btStaticPlaneShape({ v.x(), v.y(), v.z() }, c));
-        postCollisionShapeChange();
-        emit normalChanged(v);
-    }
 
     float constant() const {
-        return shape_->getPlaneConstant();
+        return constant_;
     }
 
-    void setConstant(float v) {
-        preCollisionShapeChange();
-        btVector3 n = shape_->getPlaneNormal();
-        shape_.reset(new btStaticPlaneShape(n, v));
-        postCollisionShapeChange();
-        emit constantChanged(v);
-    }
+    void setNormal(const Vector3& v);
+    void setConstant(float v);
+    void componentComplete() override;
 
 signals:
-    void normalChanged(const QVector3D& v);
+    void normalChanged(const Vector3& v);
     void constantChanged(float v);
 
 private:
+    Vector3 normal_;
+    float constant_;
     std::unique_ptr<btStaticPlaneShape> shape_;
 };
 
