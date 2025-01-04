@@ -19,7 +19,7 @@ volcano_add_executable(ResourceBuilder
 		src/Volcano/ResourceBuilder/Tool.cpp
         src/Volcano/ResourceBuilder/Packager.cpp
     PUBLIC_LINK_LIBRARIES
-        Graphics
+        Resource
     PUBLIC_LINK_PACKAGES
         assimp assimp::assimp
 )

@@ -21,13 +21,13 @@ volcano_add_static_library(World
         include/Volcano/World/Entity.h
         include/Volcano/World/Glass.h
         include/Volcano/World/Light.h
+        include/Volcano/World/Loadable.h
         include/Volcano/World/Material.h
-        include/Volcano/World/Mesh.h
         include/Volcano/World/Mirror.h
+        include/Volcano/World/Model.h
         include/Volcano/World/Object.h
         include/Volcano/World/Particle.h
         include/Volcano/World/PointLight.h
-        include/Volcano/World/Resource.h
         include/Volcano/World/RigidBody.h
         include/Volcano/World/Scene.h
         include/Volcano/World/Screen.h
@@ -49,13 +49,13 @@ volcano_add_static_library(World
         src/Volcano/World/Entity.cpp
         src/Volcano/World/Glass.cpp
         src/Volcano/World/Light.cpp
+        src/Volcano/World/Loadable.cpp
         src/Volcano/World/Material.cpp
-        src/Volcano/World/Mesh.cpp
         src/Volcano/World/Mirror.cpp
+        src/Volcano/World/Model.cpp
         src/Volcano/World/Object.cpp
         src/Volcano/World/Particle.cpp
         src/Volcano/World/PointLight.cpp
-        src/Volcano/World/Resource.cpp
         src/Volcano/World/RigidBody.cpp
         src/Volcano/World/Scene.cpp
         src/Volcano/World/Screen.cpp

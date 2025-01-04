@@ -14,9 +14,6 @@ class ModelCompiler: public Tool {
 public:
     ModelCompiler(const QCommandLineParser& cmdline, QObject* parent = nullptr);
 
-public:
-    QString name() const override;
-
 protected:
     void run() override;
 };

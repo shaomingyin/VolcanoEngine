@@ -10,48 +10,23 @@
 
 VOLCANO_RESOURCE_BEGIN
 
-class Mesh {
-public:
-    Mesh() = default;
+struct Mesh {
+    enum {
+        AttributePosition = 0x1,
+        AttributeColor = 0x2,
+        AttributeNormal = 0x4,
+        AttributeTexCoord = 0x8,
+    };
 
-public:
-    QVector<Vector3f>& vertexData() {
-        return vertex_data_;
+    size_t vertexSize() const {
+        return vertexSize(attributes);
     }
 
-    const QVector<Vector3f>& vertexData() const {
-        return vertex_data_;
-    }
+    static size_t vertexSize(quint32 attributes);
 
-    QVector<quint32>& indexData() {
-        return index_data_;
-    }
-
-    const QVector<quint32>& indexData() const {
-        return index_data_;
-    }
-
-    QVector<QColor>& colorData() {
-        return color_data_;
-    }
-
-    const QVector<QColor>& colorData() const {
-        return color_data_;
-    }
-
-    QVector<Vector2f>& texCoordData() {
-        return tex_coord_data_;
-    }
-
-    const QVector<Vector2f>& texCoordData() const {
-        return tex_coord_data_;
-    }
-
-private:
-    QVector<Vector3f> vertex_data_;
-    QVector<quint32> index_data_;
-    QVector<QColor> color_data_;
-    QVector<Vector2f> tex_coord_data_;
+    quint32 attributes;
+    QVector<float> vertices;
+    QVector<quint32> indices;
 };
 
 QDataStream &operator<<(QDataStream &s, const Mesh& v);

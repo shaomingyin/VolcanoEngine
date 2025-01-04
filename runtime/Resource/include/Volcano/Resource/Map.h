@@ -7,8 +7,7 @@
 
 VOLCANO_RESOURCE_BEGIN
 
-class Map {
-public:
+struct Map {
 };
 
 QDataStream &operator<<(QDataStream &s, const Map& v);

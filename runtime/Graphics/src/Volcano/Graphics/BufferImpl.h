@@ -26,7 +26,7 @@ public:
     }
 
     bool open(QIODeviceBase::OpenMode mode) override;
-    size_t size() const override;
+    qint64 size() const override;
     bool bind() override;
     void *map(OpenMode mode) override;
     void *mapRange(int offset, int count, OpenMode mode) override;

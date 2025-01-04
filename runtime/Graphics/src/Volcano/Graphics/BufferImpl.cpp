@@ -25,7 +25,7 @@ bool BufferImpl::open(QIODeviceBase::OpenMode mode) {
     return owner_.bind();
 }
 
-size_t BufferImpl::size() const {
+qint64 BufferImpl::size() const {
     return size_;
 }
 

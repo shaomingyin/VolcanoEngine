@@ -15,7 +15,6 @@ public:
     Packager(const QCommandLineParser& cmdline, QObject* parent = nullptr);
 
 public:
-    QString name() const override;
     void run() override;
 };
 

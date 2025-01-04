@@ -14,7 +14,7 @@ volcano_add_static_library(Graphics
         include/Volcano/Graphics/Common.h
         include/Volcano/Graphics/Config.h.in
         include/Volcano/Graphics/Context.h
-        include/Volcano/Graphics/Mesh.h
+        include/Volcano/Graphics/Model.h
         include/Volcano/Graphics/Renderer.h
         include/Volcano/Graphics/Pipeline.h
         include/Volcano/Graphics/Screen.h
@@ -26,13 +26,14 @@ volcano_add_static_library(Graphics
         src/Volcano/Graphics/BufferAllocator.cpp
         src/Volcano/Graphics/Common.cpp
         src/Volcano/Graphics/Context.cpp
-        src/Volcano/Graphics/Mesh.cpp
+        src/Volcano/Graphics/Model.cpp
         src/Volcano/Graphics/Renderer.cpp
         src/Volcano/Graphics/Pipeline.cpp
         src/Volcano/Graphics/Screen.cpp
         src/Volcano/Graphics/View.cpp
         src/Volcano/Graphics/VirtualTexture.cpp
     PUBLIC_LINK_LIBRARIES
+        Resource
         World
     PUBLIC_QT_MODULES
         OpenGL

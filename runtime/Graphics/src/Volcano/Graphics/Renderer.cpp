@@ -33,7 +33,6 @@ Renderer::~Renderer() {
 }
 
 void Renderer::update(Duration elapsed) {
-    loadNewMeshes();
     View& view = views_[update_view_];
 
     if (thread()->isCurrentThread()) {
@@ -73,9 +72,9 @@ void Renderer::onComponentAdded(World::Entity* entity, World::Component* compone
         onLightAdded(entity, light);
         return;
     }
-    auto mesh = qobject_cast<World::Mesh*>(component);
-    if (mesh != nullptr) {
-        onMeshAdded(entity, mesh);
+    auto model = qobject_cast<World::Model*>(component);
+    if (model != nullptr) {
+        onModelAdded(entity, model);
         return;
     }
     auto screen = qobject_cast<World::Screen*>(component);
@@ -91,9 +90,9 @@ void Renderer::onComponentRemoved(World::Entity* entity, World::Component* compo
         onLightRemoved(entity, light);
         return;
     }
-    auto mesh = qobject_cast<World::Mesh*>(component);
-    if (mesh != nullptr) {
-        onMeshRemoved(entity, mesh);
+    auto model = qobject_cast<World::Model*>(component);
+    if (model != nullptr) {
+        onModelRemoved(entity, model);
         return;
     }
     auto screen = qobject_cast<World::Screen*>(component);
@@ -140,19 +139,17 @@ void Renderer::onLightRemoved(World::Entity* entity, World::Light* light) {
     }
 }
 
-void Renderer::onMeshAdded(World::Entity* entity, World::Mesh* mesh) {
-    meshes_.emplaceBack(*this, std::make_unique<Mesh>(*this, entity, mesh));
+void Renderer::onModelAdded(World::Entity* entity, World::Model* model) {
+    models_.emplace_back(std::make_unique<Model>(*this, entity, model));
 }
 
-void Renderer::onMeshRemoved(World::Entity* entity, World::Mesh* mesh) {
-    meshes_.removeIf([entity, mesh](const auto& r) {
-        return (r.worldEntity() == entity && r.worldMesh() == mesh);
+void Renderer::onModelRemoved(World::Entity* entity, World::Model* model) {
+    auto it = std::find_if(models_.begin(), models_.end(), [entity, model](const auto& m) {
+        return (m->worldEntity() == entity && m->worldModel() == model);
     });
-}
-
-void Renderer::loadNewMeshes() {
-    Q_ASSERT(QOpenGLContext::currentContext() != nullptr);
-    Q_ASSERT(QOpenGLContext::currentContext()->thread()->isCurrentThread());
+    if (it != models_.end()) {
+        models_.erase(it);
+    }
 }
 
 void Renderer::onScreenAdded(World::Entity* entity, World::Screen* screen) {

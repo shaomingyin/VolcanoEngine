@@ -3,7 +3,6 @@
 #ifndef VOLCANO_RESOURCECOMPILER_TOOL_H
 #define VOLCANO_RESOURCECOMPILER_TOOL_H
 
-#include <QString>
 #include <QFuture>
 #include <QCommandLineParser>
 #include <QObject>
@@ -23,7 +22,6 @@ public:
         future_.cancel();
     }
 
-    virtual QString name() const = 0;
     void init();
 
 signals:

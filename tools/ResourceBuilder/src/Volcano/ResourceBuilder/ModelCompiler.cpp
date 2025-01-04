@@ -6,10 +6,7 @@ VOLCANO_RESOURCEBUILDER_BEGIN
 
 ModelCompiler::ModelCompiler(const QCommandLineParser& cmdline, QObject* parent)
     : Tool(cmdline, parent) {
-}
-
-QString ModelCompiler::name() const {
-    return "ModelCompiler";
+    setObjectName("ModelCompiler");
 }
 
 void ModelCompiler::run() {

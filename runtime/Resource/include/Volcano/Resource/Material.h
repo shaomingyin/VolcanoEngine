@@ -7,8 +7,7 @@
 
 VOLCANO_RESOURCE_BEGIN
 
-class Material {
-public:
+struct Material {
 };
 
 QDataStream &operator<<(QDataStream &s, const Material& v);

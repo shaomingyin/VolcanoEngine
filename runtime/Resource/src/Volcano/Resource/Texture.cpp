@@ -5,12 +5,12 @@
 VOLCANO_RESOURCE_BEGIN
 
 QDataStream &operator<<(QDataStream &s, const Texture& v) {
-    s << v.pixmap();
+    s << v.pixmap;
     return s;
 }
 
 QDataStream &operator>>(QDataStream &s, Texture& v) {
-    s >> v.pixmap();
+    s >> v.pixmap;
     return s;
 }
 

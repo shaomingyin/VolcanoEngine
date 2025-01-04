@@ -3,48 +3,21 @@
 #ifndef VOLCANO_RESOURCE_MODEL_H
 #define VOLCANO_RESOURCE_MODEL_H
 
+#include <memory>
+
 #include <QList>
-#include <QPixmap>
 
 #include <Volcano/Resource/Common.h>
 #include <Volcano/Resource/Mesh.h>
 #include <Volcano/Resource/Material.h>
+#include <Volcano/Resource/Texture.h>
 
 VOLCANO_RESOURCE_BEGIN
 
-class Model {
-public:
-    Model() = default;
-
-public:
-    QList<Mesh>& meshList() {
-        return mesh_list_;
-    }
-
-    const QList<Mesh>& meshList() const {
-        return mesh_list_;
-    }
-
-    QList<QPixmap>& textureList() {
-        return texture_list_;
-    }
-
-    const QList<QPixmap> textureList() const {
-        return texture_list_;
-    }
-
-    QList<Material>& materialList() {
-        return material_list_;
-    }
-
-    const QList<Material> materialList() const {
-        return material_list_;
-    }
-
-private:
-    QList<Mesh> mesh_list_;
-    QList<QPixmap> texture_list_;
-    QList<Material> material_list_;
+struct Model {
+    QList<Mesh> mesh_list;
+    QList<Texture> texture_list;
+    QList<Material> material_list;
 };
 
 QDataStream &operator<<(QDataStream &s, const Model& v);

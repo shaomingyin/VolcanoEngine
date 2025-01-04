@@ -9,21 +9,8 @@
 
 VOLCANO_RESOURCE_BEGIN
 
-class Texture {
-public:
-    Texture() = default;
-
-public:
-    QPixmap& pixmap() {
-        return pixmap_;
-    }
-
-    const QPixmap& pixmap() const {
-        return pixmap_;
-    }
-
-public:
-    QPixmap pixmap_;
+struct Texture {
+    QPixmap pixmap;
 };
 
 QDataStream &operator<<(QDataStream &s, const Texture& v);

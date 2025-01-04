@@ -6,6 +6,7 @@
 #include <chrono>
 
 #include <QtGlobal>
+#include <QtConcurrent>
 
 #include <Volcano/Config.h>
 

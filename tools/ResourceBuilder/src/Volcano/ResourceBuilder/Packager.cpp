@@ -6,6 +6,7 @@ VOLCANO_RESOURCEBUILDER_BEGIN
 
 Packager::Packager(const QCommandLineParser& cmdline, QObject* parent)
     : Tool(cmdline, parent) {
+    setObjectName("Packager");
 }
 
 void Packager::run() {

@@ -5,16 +5,16 @@
 VOLCANO_RESOURCE_BEGIN
 
 QDataStream &operator<<(QDataStream &s, const Model& v) {
-    s << v.meshList();
-    s << v.textureList();
-    s << v.materialList();
+    s << v.mesh_list;
+    s << v.texture_list;
+    s << v.material_list;
     return s;
 }
 
 QDataStream &operator>>(QDataStream &s, Model& v) {
-    s >> v.meshList();
-    s >> v.textureList();
-    s >> v.materialList();
+    s >> v.mesh_list;
+    s >> v.texture_list;
+    s >> v.material_list;
     return s;
 }
 

@@ -4,8 +4,8 @@
 #define VOLCANO_GRAPHICS_RENDERER_H
 
 #include <memory>
+#include <vector>
 
-#include <QList>
 #include <QAtomicInt>
 
 #include <Volcano/World/Scene.h>
@@ -13,14 +13,14 @@
 #include <Volcano/World/DirectionalLight.h>
 #include <Volcano/World/PointLight.h>
 #include <Volcano/World/SpotLight.h>
-#include <Volcano/World/Mesh.h>
+#include <Volcano/World/Model.h>
 #include <Volcano/World/Screen.h>
 #include <Volcano/Graphics/Common.h>
 #include <Volcano/Graphics/Context.h>
 #include <Volcano/Graphics/View.h>
 #include <Volcano/Graphics/Pipeline.h>
 #include <Volcano/Graphics/BufferAllocator.h>
-#include <Volcano/Graphics/Mesh.h>
+#include <Volcano/Graphics/Model.h>
 
 VOLCANO_GRAPHICS_BEGIN
 
@@ -45,9 +45,8 @@ private:
     void onLightAdded(World::Entity* entity, World::Light* light);
     void onLightRemoved(World::Entity* entity, World::Light* light);
 
-    void onMeshAdded(World::Entity* entity, World::Mesh* mesh);
-    void onMeshRemoved(World::Entity* entity, World::Mesh* mesh);
-    void loadNewMeshes();
+    void onModelAdded(World::Entity* entity, World::Model* model);
+    void onModelRemoved(World::Entity* entity, World::Model* model);
 
     void onScreenAdded(World::Entity* entity, World::Screen* screen);
     void onScreenRemoved(World::Entity* entity, World::Screen* screen);
@@ -65,7 +64,7 @@ private:
     //QHash<World::DirectionalLight*, World::Entity*> directional_lights_;
     //QHash<World::PointLight*, World::Entity*> point_lights_;
     //QHash<World::SpotLight*, World::Entity*> spot_lights_;
-    QList<std::unique_ptr<Mesh>> meshes_;
+    std::vector<std::unique_ptr<Model>> models_;
     std::array<View, 2> views_;
     QAtomicInt update_view_;
 };
