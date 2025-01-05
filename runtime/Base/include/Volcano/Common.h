@@ -4,9 +4,14 @@
 #define VOLCANO_COMMON_H
 
 #include <chrono>
+#include <format>
+#include <stdexcept>
 
 #include <QtGlobal>
 #include <QtConcurrent>
+#include <QtLogging>
+
+#include <QVersionNumber>
 
 #include <Volcano/Config.h>
 
@@ -79,6 +84,28 @@ using namespace std::chrono_literals;
 using Clock = std::chrono::steady_clock;
 using Duration = Clock::duration;
 using TimePoint = Clock::time_point;
+
+extern const QVersionNumber version;
+
+VOLCANO_FORCE_INLINE QDebug fatal() {
+    return qFatal().noquote().nospace();
+}
+
+VOLCANO_FORCE_INLINE QDebug error() {
+    return qCritical().noquote().nospace();
+}
+
+VOLCANO_FORCE_INLINE QDebug warning() {
+    return qWarning().noquote().nospace();
+}
+
+VOLCANO_FORCE_INLINE QDebug info() {
+    return qInfo().noquote().nospace();
+}
+
+VOLCANO_FORCE_INLINE QDebug debug() {
+    return qDebug().noquote().nospace();
+}
 
 VOLCANO_FORCE_INLINE int64_t durationToSeconds(Duration d) {
     return std::chrono::duration_cast<std::chrono::seconds>(d).count();
