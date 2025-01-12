@@ -140,4 +140,14 @@ QDataStream &operator>>(QDataStream &s, Matrix4x4f& v) {
     return s;
 }
 
+QDataStream &operator<<(QDataStream &s, DetailLevel v) {
+    s << static_cast<quint8>(v);
+    return s;
+}
+
+QDataStream &operator>>(QDataStream &s, DetailLevel& v) {
+    s >> reinterpret_cast<quint8&>(v);
+    return s;
+}
+
 VOLCANO_RESOURCE_END

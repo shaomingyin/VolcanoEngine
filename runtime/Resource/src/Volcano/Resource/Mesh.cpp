@@ -6,16 +6,16 @@ VOLCANO_RESOURCE_BEGIN
 
 size_t Mesh::vertexSize(quint32 attributes) {
     quint32 size = 0;
-    if (attributes & AttributePosition) {
+    if (attributes & VertexAttributePosition) {
         size += sizeof(float) * 3;
     }
-    if (attributes & AttributeColor) {
+    if (attributes & VertexAttributeColor) {
         size += sizeof(float) * 3;
     }
-    if (attributes & AttributeNormal) {
+    if (attributes & VertexAttributeNormal) {
         size += sizeof(float) * 3;
     }
-    if (attributes & AttributeTexCoord) {
+    if (attributes & VertexAttributeTexCoord) {
         size += sizeof(float) * 2;
     }
     return size;

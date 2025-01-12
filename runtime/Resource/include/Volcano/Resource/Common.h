@@ -55,6 +55,18 @@ struct Matrix4x4f {
 QDataStream &operator<<(QDataStream &s, const Matrix4x4f& v);
 QDataStream &operator>>(QDataStream &s, Matrix4x4f& v);
 
+enum class DetailLevel: quint8 {
+    Minimal = 0,
+    Low,
+    Mid,
+    High,
+    Ultra,
+    Max // Donot use!
+};
+
+QDataStream &operator<<(QDataStream &s, DetailLevel v);
+QDataStream &operator>>(QDataStream &s, DetailLevel& v);
+
 VOLCANO_RESOURCE_END
 
 #endif // VOLCANO_RESOURCE_COMMON_H

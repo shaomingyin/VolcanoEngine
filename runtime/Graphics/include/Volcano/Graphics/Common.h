@@ -25,6 +25,9 @@ public:
 public:
     Functions* operator()(QOpenGLContext* context = nullptr) {
         if (Q_LIKELY(functions_ != nullptr)) {
+            Q_ASSERT(context_ != nullptr);
+            Q_ASSERT(context_ == QOpenGLContext::currentContext());
+            Q_ASSERT(context_->thread()->isCurrentThread());
             return functions_;
         }
         init(context);
@@ -42,7 +45,7 @@ private:
 
 extern thread_local OpenGLFunctions gl;
 
-inline GLenum bufferBinding(GLenum type) {
+inline GLenum glBufferBinding(GLenum type) {
     GLenum pn;
 
     switch (type) {
@@ -66,15 +69,15 @@ inline GLenum bufferBinding(GLenum type) {
     return pn;
 }
 
-inline GLint currentBuffer(GLenum type) {
-    GLenum binding = bufferBinding(type);
+inline GLint glCurrentBuffer(GLenum type) {
+    GLenum binding = glBufferBinding(type);
     Q_ASSERT(binding != GL_INVALID_ENUM);
     GLint id;
     gl()->glGetIntegerv(binding, &id);
     return id;
 }
 
-inline GLint currentProgram() {
+inline GLint glCurrentProgram() {
     GLint id;
     gl()->glGetIntegerv(GL_CURRENT_PROGRAM, &id);
     return id;

@@ -3,6 +3,8 @@
 #ifndef VOLCANO_WORLD_CONTEXT_H
 #define VOLCANO_WORLD_CONTEXT_H
 
+#include <memory>
+
 #include <QObject>
 #include <QNetworkAccessManager>
 #include <QNetworkRequest>
@@ -19,7 +21,13 @@ public:
     Context(QObject* parent = nullptr);
 
 public:
-    virtual QNetworkAccessManager* networkAccessManager(QObject* object);
+    QNetworkAccessManager* networkAccessManager(QObject* object);
+
+protected:
+    virtual QNetworkAccessManager* createFallbackNetworkAccessManager();
+
+private:
+    std::unique_ptr<QNetworkAccessManager> fallback_network_access_manager_;
 };
 
 VOLCANO_WORLD_END

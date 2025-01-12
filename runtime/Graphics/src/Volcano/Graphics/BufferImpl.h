@@ -34,7 +34,7 @@ public:
 
 private:
     bool isCurrent() const {
-        return (currentBuffer(owner_.type()) == owner_.bufferId());
+        return (glCurrentBuffer(owner_.type()) == owner_.bufferId());
     }
 
 private:

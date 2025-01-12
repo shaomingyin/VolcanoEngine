@@ -8,18 +8,10 @@ Loadable::Loadable(QObject* parent)
     : Transformable(parent) {
 }
 
-QNetworkAccessManager* Loadable::networkAccessManager() {
-    auto ctx = context();
-    if (ctx != nullptr) {
-        return ctx->networkAccessManager(this);
-    }
-    return nullptr;
-}
-
 QNetworkReply* Loadable::requestContent() {
-    auto net = networkAccessManager();
-    if (net != nullptr) {
-        return net->get(QNetworkRequest(source_));
+    auto network_access_manager = networkAccessManager();
+    if (network_access_manager != nullptr) {
+        return network_access_manager->get(QNetworkRequest(source_));
     }
     return nullptr;
 }

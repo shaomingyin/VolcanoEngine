@@ -4,6 +4,7 @@
 #define VOLCANO_WORLD_LOADABLE_H
 
 #include <QUrl>
+#include <QNetworkReply>
 
 #include <Volcano/World/Common.h>
 #include <Volcano/World/Transformable.h>
@@ -12,6 +13,7 @@ VOLCANO_WORLD_BEGIN
 
 class Loadable: public Transformable {
     Q_OBJECT
+    Q_PROPERTY(QUrl source READ source WRITE setSource NOTIFY sourceChanged FINAL)
 
 public:
     Loadable(QObject* parent = nullptr);
@@ -32,9 +34,6 @@ public:
 
 signals:
     void sourceChanged(const QUrl& v);
-
-protected:
-    QNetworkAccessManager* networkAccessManager();
 
 private:
     QUrl source_;

@@ -3,8 +3,7 @@
 #ifndef VOLCANO_RESOURCE_MODEL_H
 #define VOLCANO_RESOURCE_MODEL_H
 
-#include <memory>
-
+#include <QMap>
 #include <QList>
 
 #include <Volcano/Resource/Common.h>
@@ -14,11 +13,13 @@
 
 VOLCANO_RESOURCE_BEGIN
 
-struct Model {
+struct ModelData {
     QList<Mesh> mesh_list;
     QList<Texture> texture_list;
     QList<Material> material_list;
 };
+
+using Model = QMap<DetailLevel, ModelData>;
 
 QDataStream &operator<<(QDataStream &s, const Model& v);
 QDataStream &operator>>(QDataStream &s, Model& v);

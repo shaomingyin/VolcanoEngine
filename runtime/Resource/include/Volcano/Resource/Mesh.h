@@ -12,10 +12,10 @@ VOLCANO_RESOURCE_BEGIN
 
 struct Mesh {
     enum {
-        AttributePosition = 0x1,
-        AttributeColor = 0x2,
-        AttributeNormal = 0x4,
-        AttributeTexCoord = 0x8,
+        VertexAttributePosition = 0x1,
+        VertexAttributeColor = 0x2,
+        VertexAttributeNormal = 0x4,
+        VertexAttributeTexCoord = 0x8
     };
 
     size_t vertexSize() const {

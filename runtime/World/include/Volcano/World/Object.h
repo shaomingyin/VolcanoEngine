@@ -31,6 +31,8 @@ public:
         }
     }
 
+    QNetworkAccessManager* networkAccessManager();
+
 signals:
     void enabledChanged(bool v);
 

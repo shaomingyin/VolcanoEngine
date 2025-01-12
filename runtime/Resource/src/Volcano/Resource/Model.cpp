@@ -9,9 +9,7 @@ static constexpr quint32 MAGIC = 0x20120920;
 QDataStream &operator<<(QDataStream &s, const Model& v) {
     s << MAGIC;
     s << version;
-    s << v.mesh_list;
-    s << v.texture_list;
-    s << v.material_list;
+    s << v;
     return s;
 }
 
@@ -26,9 +24,7 @@ QDataStream &operator>>(QDataStream &s, Model& v) {
     if (ver > version) {
         throw std::runtime_error("New version model is not supported.");
     }
-    s >> v.mesh_list;
-    s >> v.texture_list;
-    s >> v.material_list;
+    s >> v;
     return s;
 }
 

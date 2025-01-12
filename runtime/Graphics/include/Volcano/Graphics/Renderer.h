@@ -60,6 +60,7 @@ private:
 
 private:
     World::Scene& scene_;
+    World::Camera* camera_;
     World::Light ambient_light_;
     //QHash<World::DirectionalLight*, World::Entity*> directional_lights_;
     //QHash<World::PointLight*, World::Entity*> point_lights_;

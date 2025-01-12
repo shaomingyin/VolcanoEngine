@@ -38,4 +38,11 @@ Context* Object::context() {
     return context_;
 }
 
+QNetworkAccessManager* Object::networkAccessManager() {
+    if (context_ != nullptr) {
+        return context_->networkAccessManager(this);
+    }
+    return nullptr;
+}
+
 VOLCANO_WORLD_END

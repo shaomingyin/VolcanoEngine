@@ -10,10 +10,11 @@ VOLCANO_GRAPHICS_BEGIN
 
 Renderer::Renderer(World::Scene& scene, QObject* parent)
     : Context(parent)
+    , scene_(scene)
+    , camera_(scene.camera())
     , gl_context_(QOpenGLContext::currentContext())
     , static_vertex_buffer_allocator_(QOpenGLBuffer::VertexBuffer, QOpenGLBuffer::StaticDraw)
     , static_index_buffer_allocator_(QOpenGLBuffer::IndexBuffer, QOpenGLBuffer::StaticDraw)
-    , scene_(scene)
     , update_view_(0) {
     Q_ASSERT(gl_context_ != nullptr);
     Q_ASSERT(gl_context_->thread()->isCurrentThread());
@@ -33,6 +34,12 @@ Renderer::~Renderer() {
 }
 
 void Renderer::update(Duration elapsed) {
+    if (Q_UNLIKELY(camera_ == nullptr)) {
+        return;
+    }
+
+    // TODO update detail level for all drawables
+
     View& view = views_[update_view_];
 
     if (thread()->isCurrentThread()) {
@@ -43,6 +50,10 @@ void Renderer::update(Duration elapsed) {
 }
 
 void Renderer::render() {
+    if (Q_UNLIKELY(camera_ == nullptr)) {
+        return;
+    }
+
     Q_ASSERT(thread()->isCurrentThread());
     Q_ASSERT(QOpenGLContext::currentContext() != nullptr);
     Q_ASSERT(QOpenGLContext::currentContext()->thread()->isCurrentThread());
