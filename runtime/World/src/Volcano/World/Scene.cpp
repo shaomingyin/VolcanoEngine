@@ -1,5 +1,6 @@
 //
 //
+#include <Volcano/World/BoxRigidBody.h>
 #include <Volcano/World/Scene.h>
 
 VOLCANO_WORLD_BEGIN
@@ -18,10 +19,7 @@ void Scene::update(Duration elapsed) {
 
 void Scene::appendEntity(Entity* p) {
     entities_.append(p);
-    connect(p, &Entity::componentAdded, this, [this, p](Component* component) {
-        emit componentAdded(p, component);
-    });
-    emit entityAdded(p);
+    onEntityAdded(p);
 }
 
 Entity* Scene::entityAt(qsizetype i) {
@@ -30,7 +28,7 @@ Entity* Scene::entityAt(qsizetype i) {
 
 void Scene::clearEntities() {
     for (Entity* p: entities_) {
-        emit entityRemoved(p);
+        onEntityRemoved(p);
     }
     entities_.clear();
 }
@@ -41,19 +39,16 @@ qsizetype Scene::entityCount() {
 
 void Scene::removeLastEntity() {
     if (!entities_.isEmpty()) {
-        emit entityRemoved(entities_.last());
+        onEntityRemoved(entities_.last());
         entities_.removeLast();
     }
 }
 
 void Scene::replaceEntity(qsizetype i, Entity* p) {
     if (0 <= i && i < entities_.count()) {
-        emit entityRemoved(entities_.at(i));
+        onEntityRemoved(entities_.at(i));
         entities_.replace(i, p);
-        connect(p, &Entity::componentAdded, this, [this, p](Component* component) {
-            emit componentAdded(p, component);
-        });
-        emit entityAdded(p);
+        onEntityAdded(p);
     }
 }
 
@@ -66,6 +61,46 @@ QQmlListProperty<Entity> Scene::qmlEntities() {
         [](QQmlListProperty<Entity>* prop, qsizetype i, Entity* p) { reinterpret_cast<Scene*>(prop->data)->replaceEntity(i, p); },
         [](QQmlListProperty<Entity>* prop) { reinterpret_cast<Scene*>(prop->data)->removeLastEntity(); }
     };
+}
+
+void Scene::onEntityAdded(Entity* entity) {
+    auto& components = entity->components();
+    for (auto& component: components) {
+        emit componentAdded(entity, component);
+    }
+    connect(entity, &Entity::componentAdded, this, [this, entity](Component* component) {
+        onComponentAdded(entity, component);
+    });
+    connect(entity, &Entity::componentRemoved, this, [this, entity](Component* component) {
+        onComponentRemoved(entity, component);
+    });
+    emit entityAdded(entity);
+}
+
+void Scene::onComponentAdded(Entity* entity, Component* component) {
+    auto rigid_body = qobject_cast<RigidBody*>(component);
+    if (rigid_body != nullptr) {
+        rigid_body->attachParentTransform(entity->transform());
+        dynamic_.addRigidBody(rigid_body);
+    }
+    emit componentAdded(entity, component);
+}
+
+void Scene::onEntityRemoved(Entity* entity) {
+    auto& components = entity->components();
+    for (auto& component: components) {
+        emit componentRemoved(entity, component);
+    }
+    emit entityRemoved(entity);
+}
+
+void Scene::onComponentRemoved(Entity* entity, Component* component) {
+    auto rigid_body = qobject_cast<RigidBody*>(component);
+    if (rigid_body != nullptr) {
+        dynamic_.removeRigidBody(rigid_body);
+        rigid_body->attachParentTransform(nullptr);
+    }
+    emit componentRemoved(entity, component);
 }
 
 VOLCANO_WORLD_END

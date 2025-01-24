@@ -4,7 +4,7 @@
 
 VOLCANO_WORLD_BEGIN
 
-void Transformable::attachParentTransform(const Affine3* p) {
+void Transformable::attachParentTransform(const Transform* p) {
     if (parent_transform_ == p) {
         return;
     }

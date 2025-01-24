@@ -6,6 +6,7 @@ volcano_add_static_library(World
         ${CMAKE_CURRENT_SOURCE_DIR}/include
         ${CMAKE_CURRENT_BINARY_DIR}/include
     PRIVATE_SOURCES
+        include/Volcano/World/AmbientLight.h
         include/Volcano/World/BoxRigidBody.h
         include/Volcano/World/Camera.h
         include/Volcano/World/CapsuleRigidBody.h
@@ -14,7 +15,6 @@ volcano_add_static_library(World
         include/Volcano/World/Component.h
         include/Volcano/World/ConeRigidBody.h
         include/Volcano/World/Config.h.in
-        include/Volcano/World/Context.h
         include/Volcano/World/CylinderRigidBody.h
         include/Volcano/World/DirectionalLight.h
         include/Volcano/World/Dynamic.h
@@ -37,12 +37,12 @@ volcano_add_static_library(World
         include/Volcano/World/Transform.h
         include/Volcano/World/Transformable.h
         include/Volcano/World/TriangleMeshRigidBody.h
+        src/Volcano/World/AmbientLight.cpp
         src/Volcano/World/BoxRigidBody.cpp
         src/Volcano/World/Camera.cpp
         src/Volcano/World/CapsuleRigidBody.cpp
         src/Volcano/World/Component.cpp
         src/Volcano/World/ConeRigidBody.cpp
-        src/Volcano/World/Context.cpp
         src/Volcano/World/CylinderRigidBody.cpp
         src/Volcano/World/DirectionalLight.cpp
         src/Volcano/World/Dynamic.cpp

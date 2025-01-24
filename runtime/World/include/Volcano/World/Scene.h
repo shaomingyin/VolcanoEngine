@@ -11,7 +11,7 @@
 #include <Volcano/World/Entity.h>
 #include <Volcano/World/Dynamic.h>
 #include <Volcano/World/Camera.h>
-#include <Volcano/World/Light.h>
+#include <Volcano/World/AmbientLight.h>
 #include <Volcano/World/Object.h>
 
 VOLCANO_WORLD_BEGIN
@@ -19,18 +19,10 @@ VOLCANO_WORLD_BEGIN
 class Scene: public Object {
     Q_OBJECT
     Q_PROPERTY(Camera* camera READ camera FINAL)
-    Q_PROPERTY(Light* ambientLight READ ambientLight FINAL)
+    Q_PROPERTY(AmbientLight* ambientLight READ ambientLight FINAL)
     Q_PROPERTY(Dynamic* dynamic READ dynamic FINAL)
     Q_PROPERTY(QQmlListProperty<Entity> entities READ qmlEntities)
     Q_CLASSINFO("DefaultProperty", "entities")
-
-public:
-    struct Listener {
-        virtual void onEntityAdded(World::Entity* entity) {}
-        virtual void onEntityRemoved(World::Entity* entity) {}
-        virtual void onComponentAdded(World::Entity* entity, World::Component* component) {}
-        virtual void onComponentRemoved(World::Entity* entity, World::Component* component) {}
-    };
 
 public:
     Scene(QObject* parent = nullptr);
@@ -41,7 +33,7 @@ public:
         return &camera_;
     }
 
-    Light* ambientLight() {
+    AmbientLight* ambientLight() {
         return &ambient_light_;
     }
 
@@ -69,8 +61,14 @@ signals:
     void componentRemoved(Entity* entity, Component *component);
 
 private:
+    void onEntityAdded(Entity* entity);
+    void onComponentAdded(Entity* entity, Component* component);
+    void onEntityRemoved(Entity* entity);
+    void onComponentRemoved(Entity* entity, Component* component);
+
+private:
     Camera camera_;
-    Light ambient_light_;
+    AmbientLight ambient_light_;
     Dynamic dynamic_;
     QList<Entity*> entities_;
 };

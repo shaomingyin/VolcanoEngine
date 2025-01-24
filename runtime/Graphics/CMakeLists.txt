@@ -35,8 +35,7 @@ volcano_add_static_library(Graphics
         src/Volcano/Graphics/View.cpp
         src/Volcano/Graphics/VirtualTexture.cpp
     PUBLIC_LINK_LIBRARIES
-        Resource
-        World
+        Base
     PUBLIC_QT_MODULES
         OpenGL
     PUBLIC_HEADERS

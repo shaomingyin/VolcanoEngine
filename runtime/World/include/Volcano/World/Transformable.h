@@ -23,18 +23,18 @@ public:
         return &transform_;
     }
 
-    Q_INVOKABLE Affine3 absoluteTransform() const {
+    Q_INVOKABLE Transform absoluteTransform() const {
         if (parent_transform_ != nullptr) {
             return (*parent_transform_) * transform_.affine();
         }
         return transform_.affine();
     }
 
-    void attachParentTransform(const Affine3* p);
+    void attachParentTransform(const Transform* p);
 
 private:
     Transform transform_;
-    const Affine3* parent_transform_;
+    const Transform* parent_transform_;
 };
 
 VOLCANO_WORLD_END

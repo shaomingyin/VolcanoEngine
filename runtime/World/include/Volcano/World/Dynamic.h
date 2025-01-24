@@ -51,6 +51,15 @@ public:
         }
 	}
 
+    void addRigidBody(RigidBody* p) {
+        p->addToWorld(&world_);
+    }
+
+    void removeRigidBody(RigidBody* p) {
+        Q_ASSERT(p->ownerWorld() == &world_);
+        p->addToWorld(nullptr);
+    }
+
     void update(Duration elapsed) {
         if (enabled_) {
             world_.stepSimulation(durationToMicroseconds(elapsed) / 1000000.0);

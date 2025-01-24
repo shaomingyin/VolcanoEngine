@@ -8,21 +8,14 @@
 
 VOLCANO_GRAPHICS_BEGIN
 
-Model::Model(Context& context, World::Entity* world_entity, World::Model* world_model, QObject* parent)
+Model::Model(Context& context, QObject* parent)
     : Drawable(context, parent)
-    , world_entity_(world_entity)
-    , world_model_(world_model)
     , vertex_current_(nullptr) {
-    Q_ASSERT(world_entity_ != nullptr);
-    Q_ASSERT(world_model_ != nullptr);
-    onSourceChanged(world_model->source());
-    connect(world_model_, &World::Model::sourceChanged, this, &Model::onSourceChanged);
 }
 
 void Model::enable() {
     if (vertex_current_ == nullptr) {
         Q_ASSERT(vertex_current_ == nullptr);
-        onSourceChanged(world_model_->source());
     }
     Drawable::enable();
 }
@@ -87,7 +80,7 @@ void Model::draw() {
 
     Drawable::draw();
 }
-
+#if 0
 void Model::onSourceChanged(const QUrl& v) {
     if (!isEnabled()) {
         return;
@@ -213,5 +206,6 @@ void Model::loadMesh(const Resource::Mesh& mesh, QPromise<void>& promise) {
         memcpy(index_buffer, mesh.indices.data(), index_buffer_size);
     }
 }
+#endif
 
 VOLCANO_GRAPHICS_END

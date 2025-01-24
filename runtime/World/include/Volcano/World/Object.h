@@ -7,7 +7,6 @@
 #include <QNetworkAccessManager>
 
 #include <Volcano/World/Common.h>
-#include <Volcano/World/Context.h>
 
 VOLCANO_WORLD_BEGIN
 
@@ -17,7 +16,6 @@ class Object: public QObject {
 
 public:
     Object(QObject* parent = nullptr);
-    Object(Context& context, QObject* parent = nullptr);
 
 public:
     bool isEnabled() const {
@@ -36,12 +34,8 @@ public:
 signals:
     void enabledChanged(bool v);
 
-protected:
-    Context* context();
-
 private:
     bool enabled_;
-    Context* context_;
 };
 
 VOLCANO_WORLD_END
