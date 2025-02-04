@@ -13,8 +13,6 @@
 #include <QIODevice>
 #include <QOpenGLVertexArrayObject>
 
-#include <Volcano/Resource/Model.h>
-#include <Volcano/Resource/Common.h>
 #include <Volcano/Graphics/Common.h>
 #include <Volcano/Graphics/Buffer.h>
 #include <Volcano/Graphics/Drawable.h>
@@ -49,10 +47,10 @@ private:
         std::vector<std::unique_ptr<Buffer>> index_buffers_;
     };
 
-    using VertexDetails = std::array<std::unique_ptr<VertexData>, static_cast<int>(Resource::DetailLevel::Max)>;
+    //using VertexDetails = std::array<std::unique_ptr<VertexData>, static_cast<int>(Resource::DetailLevel::Max)>;
 
     QFuture<void> loading_task_;
-    VertexDetails vertex_details_;
+    //VertexDetails vertex_details_;
     VertexData* vertex_current_;
 };
 

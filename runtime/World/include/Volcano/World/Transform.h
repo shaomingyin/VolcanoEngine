@@ -28,6 +28,8 @@ public:
     }
 
 public:
+    static const Transform& identity();
+
     Q_INVOKABLE void setToIdentity() {
         affine_transform_.setToIdentity();
     }

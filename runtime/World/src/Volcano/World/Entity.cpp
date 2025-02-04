@@ -17,7 +17,7 @@ void Entity::appendComponent(Component* p) {
     components_.append(p);
     auto transformable = qobject_cast<Transformable*>(p);
     if (transformable != nullptr) {
-        transformable->attachParentTransform(&transform_.affine());
+        transformable->attachParentTransform(&transform_);
     }
     emit componentAdded(p);
 }
@@ -64,7 +64,7 @@ void Entity::replaceComponent(qsizetype i, Component* p) {
         components_.replace(i, p);
         transformable = qobject_cast<Transformable*>(p);
         if (transformable != nullptr) {
-            transformable->attachParentTransform(&transform_.affine());
+            transformable->attachParentTransform(&transform_);
         }
         emit componentAdded(p);
     }

@@ -3,12 +3,10 @@
 #ifndef VOLCANO_SYSTEM_BASE_H
 #define VOLCANO_SYSTEM_BASE_H
 
-#include <QUrl>
 #include <QString>
+#include <QEvent>
 #include <QFuture>
 #include <QObject>
-#include <QQmlEngine>
-#include <QQmlComponent>
 
 #include <Volcano/World/Scene.h>
 #include <Volcano/System/Common.h>
@@ -17,7 +15,6 @@ VOLCANO_SYSTEM_BEGIN
 
 class Base: public QObject {
     Q_OBJECT
-    Q_PROPERTY(State state READ state NOTIFY stateChanged FINAL)
 
 public:
     enum class State {
@@ -31,25 +28,35 @@ public:
     };
 
 public:
-    Base(QQmlEngine* engine, QObject* parent = nullptr);
+    Base(World::Scene& scene, QObject* parent = nullptr);
     ~Base() override;
 
 public:
-    void setUrl(const QUrl& url, bool force = false);
-
     State state() const {
         return state_;
     }
 
-    World::Scene* scene() {
+    int fps() const {
+        return frame_count_per_second_;
+    }
+
+    int fpsMax() const {
+        return (1000000000 / std::chrono::duration_cast<std::chrono::nanoseconds>(frame_elapsed_min_).count());
+    }
+
+    void setFpsMax(int v) {
+        frame_elapsed_min_ = std::chrono::nanoseconds(1000000000 / std::clamp(v, 1, 999));
+    }
+
+    World::Scene& scene() {
         return scene_;
     }
 
-    const World::Scene* scene() const {
+    const World::Scene& scene() const {
         return scene_;
     }
 
-    virtual void update(Duration elapsed);
+    virtual void start();
 
 signals:
     void stateChanged(State v);
@@ -58,7 +65,7 @@ protected:
     void setState(State v) {
         if (state_ != v) {
             state_ = v;
-            stateChanged(v);
+            emit stateChanged(v);
         }
     }
 
@@ -77,14 +84,15 @@ protected:
 
     QString loadingMessage() const {
         Q_ASSERT(state_ == State::Loading);
+        QString message;
         if (loading_task_.isValid()) {
-            return loading_task_.progressText();
+            message = loading_task_.progressText();
         }
-        return QString();
+        return message;
     }
 
-    void setErrorMessage(const QString& message) {
-        error_message_ = message;
+    void setErrorMessage(QString&& message) {
+        error_message_ = std::move(message);
         setState(State::Error);
     }
 
@@ -93,22 +101,23 @@ protected:
         return error_message_;
     }
 
-    virtual void loadScene(World::Scene* scene, QPromise<void>& promise);
-    virtual void loadEntity(World::Entity* entity, QPromise<void>& promise);
     virtual void loadComponent(World::Entity* entity, World::Component* component, QPromise<void>& promise);
-
-private slots:
-    void onComponentStatusChanged(QQmlComponent::Status st);
+    virtual void update(Duration elapsed);
 
 private:
-    void startLoadScene(World::Scene* scene);
+    void load(QPromise<void>& promise);
+    void frame();
 
 private:
+    World::Scene& scene_;
     State state_;
-    QQmlComponent component_;
     QFuture<void> loading_task_;
     QString error_message_;
-    World::Scene* scene_;
+    Duration frame_elapsed_min_;
+    TimePoint frame_last_;
+    TimePoint frame_count_last_;
+    int frame_count_;
+    int frame_count_per_second_;
 };
 
 VOLCANO_SYSTEM_END

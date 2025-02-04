@@ -12,7 +12,7 @@ class Server: public Base {
     Q_OBJECT
 
 public:
-    Server(QQmlEngine* engine, QObject* parent = nullptr);
+    Server(World::Scene& scene, QObject* parent = nullptr);
 
 public:
     void update(Duration elapsed) override;

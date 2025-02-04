@@ -4,11 +4,9 @@
 
 VOLCANO_BEGIN
 
-void foo() {
-    Vector2 v1(Eigen::Vector2f(1, 2));
-    Vector2 v2(v1);
-    Vector2 v3(1, 2);
-    Projective3 p;
+const Affine3& Affine3::identity() {
+    static const Affine3 Identity = Eigen::Affine3f::Identity();
+    return Identity;
 }
 
 VOLCANO_END

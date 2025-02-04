@@ -1,36 +1,43 @@
 //
 //
+#include <QThread>
+#include <QOpenGLContext>
+
 #include <Volcano/System/Local.h>
 
 VOLCANO_SYSTEM_BEGIN
 
-Local::Local(QQmlEngine* engine, const QUrl& url, QObject* parent)
-    : Base(engine, url, parent)
-    , view_current_(0)
-    , potential_visible_set_builder_(scene()) {
+Local::Local(World::Scene& scene, QObject* parent)
+    : Base(scene, parent) {
+}
+
+bool Local::event(QEvent* evt) {
+    for (auto& screen_controller: screen_controller_list_) {
+        if (screen_controller.event(evt)) {
+            return true;
+        }
+    }
+    return Base::event(evt);
 }
 
 void Local::update(Duration elapsed) {
     Base::update(elapsed);
-
-    bool threaded = thread()->isCurrentThread();
-    if (threaded) {
-
-    } else {
-
-    }
-
-    potential_visible_set_builder_.build(view_[!view_current_]);
-
-    if (threaded) {
-
-    } else {
-
-    }
+    Graphics::View view;
+    addScreensToView(view);
+    addSceneToView(view);
+    renderer_.render(view);
 }
 
-void Local::render() {
-    renderer_.render(view_[view_current_]);
+void Local::addScreensToView(Graphics::View& view) const {
+    QtConcurrent::map(scene().entities(), [this](auto& entity) {
+
+    }).waitForFinished();
+}
+
+void Local::addSceneToView(Graphics::View& view) const {
+    QtConcurrent::map(screen_controller_list_, [this](auto& screen_controller) {
+
+    }).waitForFinished();
 }
 
 VOLCANO_SYSTEM_END

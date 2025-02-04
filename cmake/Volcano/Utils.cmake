@@ -17,6 +17,18 @@ function(volcano_option OPT DESC COND)
 	set(${OPT} ${VAL} CACHE BOOL ${DESC})
 endfunction()
 
+macro(volcano_set_target_folder TARGET)
+    file(RELATIVE_PATH RDIR ${CMAKE_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
+    if(RDIR)
+        get_filename_component(FOLDER ${RDIR} DIRECTORY)
+        set_target_properties(${TARGET} PROPERTIES FOLDER ${FOLDER})
+    endif()
+endmacro()
+
+macro(volcano_source_tree)
+    source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${ARGN})
+endmacro()
+
 function(volcano_setup_target TARGET)
     set(FLAG_ARGS "")
     set(ONE_VALUE_ARGS

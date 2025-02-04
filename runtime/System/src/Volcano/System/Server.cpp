@@ -4,8 +4,8 @@
 
 VOLCANO_SYSTEM_BEGIN
 
-Server::Server(QQmlEngine* engine, QObject* parent)
-    : Base(engine, parent) {
+Server::Server(World::Scene& scene, QObject* parent)
+    : Base(scene, parent) {
 }
 
 void Server::update(Duration elapsed) {

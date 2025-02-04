@@ -8,13 +8,8 @@
 VOLCANO_WORLD_BEGIN
 
 Screen::Screen(QObject* parent)
-    : Transformable(parent) {
-}
-
-Screen::~Screen() {
-    if (component_ != nullptr) {
-        delete component_;
-    }
+    : Transformable(parent)
+    , root_item_(nullptr) {
 }
 
 void Screen::setSource(const QVariant& v) {
@@ -22,29 +17,26 @@ void Screen::setSource(const QVariant& v) {
         return;
     }
 
-    if (component_ != nullptr) {
-        delete component_;
+    if (root_item_ != nullptr) {
+        delete root_item_;
     }
 
-    if (item_ != nullptr) {
-        delete item_;
-    }
+    disconnect(component_.get(), &QQmlComponent::statusChanged, this, &Screen::statusChanged);
 
     if (v.canConvert<QUrl>()) {
-        component_ = new QQmlComponent(qmlEngine(this), v.value<QUrl>(), QQmlComponent::Asynchronous);
+        component_.reset(new QQmlComponent(qmlEngine(this), v.value<QUrl>(), QQmlComponent::Asynchronous));
     } else if (v.canConvert<QString>()) {
-        component_ = new QQmlComponent(qmlEngine(this), v.value<QString>(), QQmlComponent::Asynchronous);
+        component_.reset(new QQmlComponent(qmlEngine(this), v.value<QString>(), QQmlComponent::Asynchronous));
     } else if (v.canConvert<QQmlComponent*>()) {
-        component_ = v.value<QQmlComponent*>();
+        component_.reset(v.value<QQmlComponent*>());
     } else {
-        component_ = nullptr;
+        component_.reset();
     }
 
-    if (component_ != nullptr) {
+    if (component_) {
+        connect(component_.get(), &QQmlComponent::statusChanged, this, &Screen::onComponentStatusChanged);
         if (component_->isReady()) {
             onComponentStatusChanged(QQmlComponent::Ready);
-        } else {
-            connect(component_, &QQmlComponent::statusChanged, this, &Screen::onComponentStatusChanged);
         }
     }
 
@@ -55,9 +47,10 @@ void Screen::onComponentStatusChanged(QQmlComponent::Status st) {
     if (st == QQmlComponent::Ready) {
         auto object = component_->create();
         if (object != nullptr) {
-            item_ = qobject_cast<QQuickItem*>(object);
+            root_item_ = qobject_cast<QQuickItem*>(object);
         }
     }
+    emit statusChanged(st);
 }
 
 VOLCANO_WORLD_END

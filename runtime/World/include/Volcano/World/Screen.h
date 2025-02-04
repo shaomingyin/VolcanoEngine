@@ -3,6 +3,9 @@
 #ifndef VOLCANO_WORLD_SCREEN_H
 #define VOLCANO_WORLD_SCREEN_H
 
+#include <memory>
+
+#include <QSize>
 #include <QVariant>
 #include <QQmlComponent>
 #include <QQuickItem>
@@ -14,6 +17,7 @@ VOLCANO_WORLD_BEGIN
 
 class Screen: public Transformable {
     Q_OBJECT
+    Q_PROPERTY(QSize size READ size WRITE setSize NOTIFY sizeChanged FINAL)
     Q_PROPERTY(QVariant source READ source WRITE setSource NOTIFY sourceChanged FINAL)
 
 public:
@@ -21,7 +25,6 @@ public:
 
 public:
     Screen(QObject* parent = nullptr);
-    ~Screen() override;
 
 public:
     Status status() const {
@@ -35,8 +38,19 @@ public:
         return (status() == Status::Ready);
     }
 
-    QQuickItem* item() {
-        return item_;
+    QQuickItem* rootItem() {
+        return root_item_;
+    }
+
+    const QSize& size() const {
+        return size_;
+    }
+
+    void setSize(const QSize& v) {
+        if (size_ != v) {
+            size_ = v;
+            emit sizeChanged(v);
+        }
     }
 
     const QVariant& source() const {
@@ -46,15 +60,18 @@ public:
     void setSource(const QVariant& v);
 
 signals:
+    void statusChanged(Status v);
+    void sizeChanged(const QSize& v);
     void sourceChanged(const QVariant& v);
 
 private slots:
     void onComponentStatusChanged(QQmlComponent::Status st);
 
 private:
+    QSize size_;
     QVariant source_;
-    QQmlComponent* component_;
-    QQuickItem* item_;
+    std::unique_ptr<QQmlComponent> component_;
+    QQuickItem* root_item_;
 };
 
 VOLCANO_WORLD_END

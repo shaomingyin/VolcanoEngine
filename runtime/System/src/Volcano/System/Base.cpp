@@ -1,15 +1,17 @@
 //
 //
+#include <QTimer>
 #include <QScopeGuard>
 
+#include <Volcano/World/Screen.h>
 #include <Volcano/System/Base.h>
 
 VOLCANO_SYSTEM_BEGIN
 
-Base::Base(QQmlEngine* engine, QObject* parent)
+Base::Base(World::Scene& scene, QObject* parent)
     : QObject(parent)
-    , state_(State::Idle)
-    , component_(engine) {
+    , scene_(scene)
+    , state_(State::Idle) {
 }
 
 Base::~Base() {
@@ -19,99 +21,86 @@ Base::~Base() {
     }
 }
 
-void Base::setUrl(const QUrl& url, bool force) {
-    if (state_ == State::Loading) {
+void Base::start() {
+    if (state_ != State::Idle) {
         return;
     }
 
-    if (component_.url() == url && !force) {
-        return;
-    }
+    frame_count_ = 0;
+    frame_count_per_second_ = 0;
+    frame_last_ = Clock::now();
+    frame_count_last_ = frame_last_;
+
+    QTimer::singleShot(0, Qt::PreciseTimer, this, &Base::frame);
 
     setState(State::Loading);
-    scene_ = nullptr;
 
-    component_.loadUrl(url);
-    if (component_.isReady()) {
-        onComponentStatusChanged(QQmlComponent::Ready);
-    } else {
-        connect(&component_, &QQmlComponent::statusChanged, this, &Base::onComponentStatusChanged);
+    if (loading_task_.isRunning()) {
+        loading_task_.cancel();
+        loading_task_.waitForFinished();
+    }
+
+    loading_task_ = QtConcurrent::run([this](QPromise<void>& promise) {
+        Base::load(promise);
+    });
+}
+
+void Base::loadComponent(World::Entity* entity, World::Component* component, QPromise<void>& promise) {
+    auto screen = qobject_cast<World::Screen*>(component);
+    if (screen != nullptr) {
+
     }
 }
 
 void Base::update(Duration elapsed) {
-    if (state_ == State::Playing && scene_ != nullptr) {
-        scene_->update(elapsed);
+    if (state_ == State::Playing) {
+        scene_.update(elapsed);
     }
 }
 
-void Base::loadScene(World::Scene* scene, QPromise<void>& promise) {
-    Q_ASSERT(scene != nullptr);
+void Base::load(QPromise<void>& promise) {
+    promise.start();
+    auto promise_guard = qScopeGuard([this, &promise] {
+        if (state_ == State::Loading) {
+            setState(State::Ready);
+        }
+        promise.finish();
+    });
 
-    auto& entities = scene->entities();
-    promise.setProgressRange(0, 1, entities.count())
-
-    if (promise.isCanceled()) {
-        setErrorMessage("Cancelled.");
-        return;
-    }
+    auto& entities = scene_.entities();
 
     promise.setProgressRange(0, entities.count());
     for (int i = 0; i < entities.count(); ++i) {
+        if (promise.isCanceled()) {
+            setState(State::Idle);
+            break;
+        }
+        auto entity = entities.at(i);
         promise.setProgressValueAndText(i, QString("Loading entity %1...").arg(i + 1));
-        loadEntity(entities.at(i), promise);
+        auto& components = entity->components();
+        for (auto& component: components) {
+            loadComponent(entity, component, promise);
+        }
     }
 }
 
-void Base::loadEntity(World::Entity* entity, QPromise<void>& promise) {
-    auto& components = entity->components();
-    for (auto& component: components) {
-        loadComponent(entity, component, promise);
-    }
-}
-
-void Base::loadComponent(World::Entity* entity, World::Component* component, QPromise<void>& promise) {
-}
-
-void Base::onComponentStatusChanged(QQmlComponent::Status st) {
-    switch (st) {
-    case QQmlComponent::Ready:
-        startLoadScene(qobject_cast<World::Scene*>(component_.create()));
-        break;
-    case QQmlComponent::Error:
-        setErrorMessage(component_.errorString());
-        break;
-    default:
-        break;
-    }
-}
-
-void Base::startLoadScene(World::Scene* scene) {
-    Q_ASSERT(scene_ == nullptr);
-
-    if (scene == nullptr) {
-        setErrorMessage("Invalid scene to load.");
-        return;
-    }
-
-    auto load = [this, scene] {
-        loading_task_ = QtConcurrent::run([this, scene](QPromise<void>& promise) {
-            promise.start();
-            auto promise_guard = qScopeGuard([this, &promise] {
-                if (state_ == State::Loading) {
-                    setState(State::Ready);
-                }
-                promise.finish();
-            });
-            loadScene(scene, promise);
-        });
-    };
-
-    if (loading_task_.isRunning()) {
-        loading_task_.onCanceled(std::move(load));
-        loading_task_.cancel();
+void Base::frame() {
+    auto curr = Clock::now();
+    auto elapsed = curr - frame_last_;
+    update(elapsed);
+    frame_count_ += 1;
+    frame_last_ = curr;
+    curr = Clock::now();
+    auto frame_elapsed = curr - frame_last_;
+    if (frame_elapsed < frame_elapsed_min_) {
+        QTimer::singleShot(frame_elapsed_min_ - frame_elapsed, Qt::PreciseTimer, this, &Base::frame);
     } else {
-        load();
+        QTimer::singleShot(0, Qt::PreciseTimer, this, &Base::frame);
+    }
+    if ((curr - frame_count_last_) >= 1s) {
+        frame_count_per_second_ = frame_count_;
+        frame_count_ = 0;
+        frame_count_last_ = curr;
     }
 }
 

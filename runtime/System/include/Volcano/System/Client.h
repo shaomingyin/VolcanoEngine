@@ -12,9 +12,9 @@ class Client: public Local {
     Q_OBJECT
 
 public:
-    Client(QQmlEngine* engine, const QUrl& url, QObject* parent = nullptr);
+    Client(World::Scene& scene, QObject* parent = nullptr);
 
-public:
+protected:
     void update(Duration elapsed) override;
 
 private:

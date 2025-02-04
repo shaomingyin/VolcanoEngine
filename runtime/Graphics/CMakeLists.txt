@@ -6,9 +6,6 @@ volcano_add_static_library(Graphics
         ${CMAKE_CURRENT_SOURCE_DIR}/include
         ${CMAKE_CURRENT_BINARY_DIR}/include
     PRIVATE_SOURCES
-        include/debug_draw.hpp
-        src/debug_draw/debug_draw.cpp
-	
         include/Volcano/Graphics/Buffer.h
         include/Volcano/Graphics/BufferAllocator.h
         include/Volcano/Graphics/Common.h
@@ -18,7 +15,6 @@ volcano_add_static_library(Graphics
         include/Volcano/Graphics/Model.h
         include/Volcano/Graphics/Renderer.h
         include/Volcano/Graphics/Pipeline.h
-        include/Volcano/Graphics/Screen.h
         include/Volcano/Graphics/View.h
         include/Volcano/Graphics/VirtualTexture.h
         src/Volcano/Graphics/Buffer.cpp
@@ -31,7 +27,6 @@ volcano_add_static_library(Graphics
         src/Volcano/Graphics/Model.cpp
         src/Volcano/Graphics/Renderer.cpp
         src/Volcano/Graphics/Pipeline.cpp
-        src/Volcano/Graphics/Screen.cpp
         src/Volcano/Graphics/View.cpp
         src/Volcano/Graphics/VirtualTexture.cpp
     PUBLIC_LINK_LIBRARIES

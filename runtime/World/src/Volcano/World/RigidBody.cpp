@@ -5,7 +5,7 @@
 VOLCANO_WORLD_BEGIN
 
 void RigidBody::MotionState::getWorldTransform(btTransform& world_transform) const {
-    world_transform.setFromOpenGLMatrix(orig_.absoluteTransform().data());
+    world_transform.setFromOpenGLMatrix(orig_.absoluteTransform().affine().data());
 }
 
 void RigidBody::MotionState::setWorldTransform(const btTransform& world_transform) {

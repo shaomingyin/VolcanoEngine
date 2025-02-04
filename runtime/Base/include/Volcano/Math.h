@@ -1102,6 +1102,8 @@ public:
     Affine3(const Affine3&) = default;
     Affine3& operator=(const Affine3&) = default;
 
+    static const Affine3& identity();
+
     Affine3(const Eigen::Affine3f& v)
         : v_(v) {
     }

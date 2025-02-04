@@ -4,12 +4,12 @@
 
 VOLCANO_SYSTEM_BEGIN
 
-Client::Client(QQmlEngine* engine, const QUrl& url, QObject* parent)
-    : Local(engine, url, parent) {
+Client::Client(World::Scene& scene, QObject* parent)
+    : Local(scene, parent) {
 }
 
 void Client::update(Duration elapsed) {
-    Client::update(elapsed);
+    Local::update(elapsed);
 
     // TODO
 }

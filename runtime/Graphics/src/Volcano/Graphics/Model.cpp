@@ -22,52 +22,11 @@ void Model::enable() {
 
 void Model::disable() {
     vertex_current_ = nullptr;
-    for (int i = 0; i < static_cast<int>(Resource::DetailLevel::Max); ++i) {
-        vertex_details_[i].reset();
-    }
     Drawable::disable();
 }
 
 void Model::setDetailLevel(float level) {
-    int detail_level;
-    if (level < 0.2f) {
-        detail_level = static_cast<int>(Resource::DetailLevel::Minimal);
-    } else if (level < 0.4f) {
-        detail_level = static_cast<int>(Resource::DetailLevel::Low);
-    } else if (level < 0.6f) {
-        detail_level = static_cast<int>(Resource::DetailLevel::Mid);
-    } else if (level < 0.8f) {
-        detail_level = static_cast<int>(Resource::DetailLevel::High);
-    } else {
-        detail_level = static_cast<int>(Resource::DetailLevel::Ultra);
-    }
-    vertex_current_ = vertex_details_[detail_level].get();
-    if (Q_UNLIKELY(vertex_current_ == nullptr)) {
-        if (level > detailLevel()) {
-            for (int i = detail_level; i < static_cast<int>(Resource::DetailLevel::Max); ++i) {
-                vertex_current_ = vertex_details_[i].get();
-                if (vertex_current_ != nullptr) {
-                    break;
-                }
-            }
-        } else {
-            for (int i = detail_level; i >= 0; --i) {
-                vertex_current_ = vertex_details_[i].get();
-                if (vertex_current_ != nullptr) {
-                    break;
-                }
-            }
-        }
-        if (vertex_current_ == nullptr) {
-            for (int i = 0; i < static_cast<int>(Resource::DetailLevel::Max); ++i) {
-                vertex_current_ = vertex_details_[i].get();
-                if (vertex_current_ != nullptr) {
-                    break;
-                }
-            }
-        }
-    }
-    Drawable::setDetailLevel(level);
+
 }
 
 void Model::tick(Duration elapsed) {

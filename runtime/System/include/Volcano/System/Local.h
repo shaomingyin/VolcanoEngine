@@ -3,12 +3,12 @@
 #ifndef VOLCANO_SYSTEM_LOCAL_H
 #define VOLCANO_SYSTEM_LOCAL_H
 
-#include <QAtomicInt>
+#include <QList>
 
 #include <Volcano/Graphics/Renderer.h>
 #include <Volcano/System/Common.h>
 #include <Volcano/System/Base.h>
-#include <Volcano/System/PotentialVisibleSetBuilder.h>
+#include <Volcano/System/ScreenController.h>
 
 VOLCANO_SYSTEM_BEGIN
 
@@ -16,17 +16,19 @@ class Local: public Base {
     Q_OBJECT
 
 public:
-    Local(QQmlEngine* engine, const QUrl& url, QObject* parent = nullptr);
+    Local(World::Scene& scene, QObject* parent = nullptr);
 
-public:
+protected:
+    bool event(QEvent* evt) override;
     void update(Duration elapsed) override;
-    virtual void render();
+
+private:
+    void addScreensToView(Graphics::View& view) const;
+    void addSceneToView(Graphics::View& view) const;
 
 private:
     Graphics::Renderer renderer_;
-    Graphics::View view_[2];
-    QAtomicInt view_current_;
-    PotentialVisibleSetBuilder potential_visible_set_builder_;
+    QList<ScreenController> screen_controller_list_;
 };
 
 VOLCANO_SYSTEM_END

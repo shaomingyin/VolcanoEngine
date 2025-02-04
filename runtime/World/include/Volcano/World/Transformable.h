@@ -14,9 +14,7 @@ class Transformable: public Component {
     Q_PROPERTY(Transform* offset READ offset)
 
 public:
-    Q_INVOKABLE Transformable(QObject* parent = nullptr)
-        : Component(parent) {
-    }
+    Q_INVOKABLE Transformable(QObject* parent = nullptr);
 
 public:
     Transform* offset() {
@@ -24,10 +22,7 @@ public:
     }
 
     Q_INVOKABLE Transform absoluteTransform() const {
-        if (parent_transform_ != nullptr) {
-            return (*parent_transform_) * transform_.affine();
-        }
-        return transform_.affine();
+        return (*parent_transform_) * transform_.affine();
     }
 
     void attachParentTransform(const Transform* p);
