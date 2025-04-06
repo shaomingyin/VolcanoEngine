@@ -1,7 +1,7 @@
 
 add_subdirectory(Base)
-#add_subdirectory(Resource)
-add_subdirectory(World)
-add_subdirectory(System)
-add_subdirectory(Acoustics)
 add_subdirectory(Graphics)
+add_subdirectory(Sound)
+add_subdirectory(Gui)
+add_subdirectory(Game)
+add_subdirectory(System)

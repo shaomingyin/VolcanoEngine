@@ -1,17 +1,48 @@
 //
 //
+#include <Volcano/ScopeGuard.h>
 #include <Volcano/System/Client.h>
 
 VOLCANO_SYSTEM_BEGIN
 
-Client::Client(World::Scene& scene, QObject* parent)
-    : Local(scene, parent) {
+void Client::frame(Duration elapsed) {
+
 }
 
-void Client::update(Duration elapsed) {
-    Local::update(elapsed);
+void Client::handlePackage(const ENetPacket& package) {
 
-    // TODO
+}
+
+void Client::handleConnect(ENetPeer& peer) {
+
+}
+
+void Client::handleDisconnect(ENetPeer& peer) {
+
+}
+
+ENetHost* Client::createHost(const ENetAddress* address) {
+    if (address == nullptr) {
+        return nullptr;
+    }
+
+    auto host = enet_host_create(nullptr, 1, 2, 0, 0);
+    if (host == nullptr) {
+        return nullptr;
+    }
+
+    auto host_guard = scopeGuard([host] {
+        enet_host_destroy(host);
+    });
+
+    peer_ = enet_host_connect(host, address, 2, 0);
+    if (peer_ == nullptr) {
+        return nullptr;
+    }
+
+    host_guard.dismiss();
+
+    return host;
 }
 
 VOLCANO_SYSTEM_END

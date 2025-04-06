@@ -1,0 +1,32 @@
+
+volcano_add_static_library(OpenGL
+    OUTPUT_NAME
+        VolcanoOpenGL
+    PUBLIC_INCLUDE_DIRECTORIES
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+        ${CMAKE_CURRENT_BINARY_DIR}/include
+    PRIVATE_SOURCES
+        include/GL/glcorearb.h
+        include/GL/gl3w.h
+        src/gl3w/gl3w.c
+        include/nanovg.h
+        include/nanovg_gl.h
+        include/nanovg_gl_utils.h
+        src/nanovg/fontstash.h
+        src/nanovg/nanovg.c
+        src/nanovg/nanovg_gl.c
+        src/nanovg/stb_image.h
+        src/nanovg/stb_truetype.h
+        include/Volcano/OpenGL/Config.h.in
+        include/Volcano/OpenGL/Common.h
+        include/Volcano/OpenGL/Driver.h
+        src/Volcano/OpenGL/Driver.cpp
+    PUBLIC_LINK_LIBRARIES
+        Graphics
+    PUBLIC_HEADERS
+        include/Volcano/OpenGL/Common.h
+        include/Volcano/OpenGL/Renderer.h
+        include/Volcano/OpenGL/View.h
+        ${CMAKE_CURRENT_BINARY_DIR}/include/Volcano/OpenGL/Config.h
+        DESTINATION include/Volcano/OpenGL
+)

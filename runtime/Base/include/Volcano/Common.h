@@ -3,22 +3,35 @@
 #ifndef VOLCANO_COMMON_H
 #define VOLCANO_COMMON_H
 
+#include <cstdlib>
+#include <cstdint>
+#include <cstdarg>
+
+#include <vector>
+#include <list>
+#include <string>
 #include <chrono>
-#include <format>
 #include <stdexcept>
 
-#include <QtGlobal>
-#include <QtConcurrent>
-#include <QtLogging>
+#include <SDL3/SDL.h>
+#include <fmt/core.h>
+#include <sigslot/signal.hpp>
 
-#include <QVersionNumber>
+#include <Eigen/Core>
+#include <Eigen/Dense>
+#include <Eigen/Geometry>
 
 #include <Volcano/Config.h>
 
-#include <async++.h>
-
 #ifdef VOLCANO_PROFILE
 #   include <microprofile.h>
+#endif
+
+#ifdef VOLCANO_DEBUG
+#   include <SDL3/SDL_assert.h>
+#   define VOLCANO_ASSERT(expr) SDL_assert(expr)
+#else
+#   define VOLCANO_ASSERT(expr)
 #endif
 
 #ifdef __cplusplus
@@ -69,11 +82,6 @@
     VOLCANO_STRIZE(VOLCANO_VERSION_MINOR) "." \
     VOLCANO_STRIZE(VOLCANO_VERSION_PATCH)
 
-#define VOLCANO_PMOVB(p, offset) \
-    (((uint8_t*)p) + (offset))
-
-#define VOLCANO_DIMOF(a) (sizeof(a) / sizeof(a[0]))
-
 #define VOLCANO_BEGIN namespace Volcano {
 #define VOLCANO_END }
 
@@ -81,31 +89,13 @@ VOLCANO_BEGIN
 
 using namespace std::chrono_literals;
 
+using Buffer = std::vector<uint8_t>;
+using StringList = std::list<std::string>;
+using StringVector = std::vector<std::string>;
+
 using Clock = std::chrono::steady_clock;
 using Duration = Clock::duration;
 using TimePoint = Clock::time_point;
-
-extern const QVersionNumber version;
-
-VOLCANO_FORCE_INLINE QDebug fatal() {
-    return qFatal().noquote().nospace();
-}
-
-VOLCANO_FORCE_INLINE QDebug error() {
-    return qCritical().noquote().nospace();
-}
-
-VOLCANO_FORCE_INLINE QDebug warning() {
-    return qWarning().noquote().nospace();
-}
-
-VOLCANO_FORCE_INLINE QDebug info() {
-    return qInfo().noquote().nospace();
-}
-
-VOLCANO_FORCE_INLINE QDebug debug() {
-    return qDebug().noquote().nospace();
-}
 
 VOLCANO_FORCE_INLINE int64_t durationToSeconds(Duration d) {
     return std::chrono::duration_cast<std::chrono::seconds>(d).count();
@@ -129,6 +119,33 @@ VOLCANO_FORCE_INLINE int64_t timePointToMillieconds(TimePoint tp) {
 
 VOLCANO_FORCE_INLINE int64_t timePointToMicroseconds(TimePoint tp) {
     return durationToMicroseconds(tp.time_since_epoch());
+}
+
+template <typename... Args>
+void log(SDL_LogPriority priority, fmt::format_string<Args...> fmt, Args&&... args) {
+    SDL_LogMessage(SDL_LOG_CATEGORY_APPLICATION, priority, fmt::format(fmt, std::forward<Args>(args)...).c_str());
+}
+
+template <typename... Args>
+void logError(fmt::format_string<Args...> fmt, Args&&... args) {
+    log(SDL_LOG_PRIORITY_ERROR, fmt, std::forward<Args>(args)...);
+}
+
+template <typename... Args>
+void logWarning(fmt::format_string<Args...> fmt, Args&&... args) {
+    log(SDL_LOG_PRIORITY_WARN, fmt, std::forward<Args>(args)...);
+}
+
+template <typename... Args>
+void logInfo(fmt::format_string<Args...> fmt, Args&&... args) {
+    log(SDL_LOG_PRIORITY_INFO, fmt, std::forward<Args>(args)...);
+}
+
+template <typename... Args>
+void logDebug(fmt::format_string<Args...> fmt, Args&&... args) {
+#ifdef VOLCANO_DEBUG
+    log(SDL_LOG_PRIORITY_DEBUG, fmt, std::forward<Args>(args)...);
+#endif
 }
 
 VOLCANO_END

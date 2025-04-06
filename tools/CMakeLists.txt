@@ -1,4 +1,3 @@
 
-add_subdirectory(Launcher)
-#add_subdirectory(ModelCompiler)
+add_subdirectory(ResourceBuilder)
 add_subdirectory(Editor)

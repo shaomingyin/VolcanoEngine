@@ -1,35 +1,5 @@
 
-function(volcano_enable_if COND)
-	if(COND)
-		return(${ARGN})
-	else()
-		return()
-	endif()
-endfunction()
-
-function(volcano_option OPT DESC COND)
-	if(${COND})
-		set(VAL ON)
-	else()
-		set(VAL OFF)
-	endif()
-	message(STATUS "Option: ${OPT}\t= ${VAL}")
-	set(${OPT} ${VAL} CACHE BOOL ${DESC})
-endfunction()
-
-macro(volcano_set_target_folder TARGET)
-    file(RELATIVE_PATH RDIR ${CMAKE_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
-    if(RDIR)
-        get_filename_component(FOLDER ${RDIR} DIRECTORY)
-        set_target_properties(${TARGET} PROPERTIES FOLDER ${FOLDER})
-    endif()
-endmacro()
-
-macro(volcano_source_tree)
-    source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${ARGN})
-endmacro()
-
-function(volcano_setup_target TARGET)
+macro(volcano_setup_target TARGET)
     set(FLAG_ARGS "")
     set(ONE_VALUE_ARGS
 		FOLDER
@@ -50,8 +20,6 @@ function(volcano_setup_target TARGET)
         PRIVATE_LINK_LIBRARIES
 		PUBLIC_LINK_PACKAGES
 		PRIVATE_LINK_PACKAGES
-		PUBLIC_QT_MODULES
-		PRIVATE_QT_MODULES
         EXTRA_INSTALL_FILES
 		EXTRA_INSTALL_DIRECTORIES
     )
@@ -100,8 +68,6 @@ function(volcano_setup_target TARGET)
 		else()
 			message(FATAL_ERROR "Invalid PUBLIC_HEADERS.")
 		endif()
-	else()
-		set(PUBLIC_HEADERS_DESTINATION "include")
 	endif()
 	
 	if(ARG_DEPENDENCIES)
@@ -224,24 +190,6 @@ function(volcano_setup_target TARGET)
 		endwhile()
 	endif()
 	
-	if(ARG_PUBLIC_QT_MODULES)
-		message(STATUS "  Public link Qt modules:")
-		foreach(PUBLIC_QT_MODULE ${ARG_PUBLIC_QT_MODULES})
-			message(STATUS "    ${PUBLIC_QT_MODULE}")
-			find_package(Qt6 REQUIRED COMPONENTS ${PUBLIC_QT_MODULE})
-			target_link_libraries(${TARGET} PUBLIC Qt6::${PUBLIC_QT_MODULE})
-		endforeach()
-	endif()
-	
-	if(ARG_PRIVATE_QT_MODULES)
-		message(STATUS "  Private link Qt modules:")
-		foreach(PRIVATE_QT_MODULE ${ARG_PRIVATE_QT_MODULES})
-			message(STATUS "    ${PRIVATE_QT_MODULE}")
-			find_package(Qt6 REQUIRED COMPONENTS ${PRIVATE_QT_MODULE})
-			target_link_libraries(${TARGET} PRIVATE Qt6::${PRIVATE_QT_MODULE})
-		endforeach()
-	endif()
-	
 	install(TARGETS ${TARGET}
 		ARCHIVE DESTINATION lib
 		LIBRARY DESTINATION lib
@@ -278,31 +226,36 @@ function(volcano_setup_target TARGET)
 			message(FATAL_ERROR "Invalid INSTALL_DIRECTORIES.")
 		endif()
 	endif()
-endfunction()
+endmacro()
 
-function(volcano_add_static_library TARGET)
+macro(volcano_add_static_library TARGET)
 	message(STATUS "Add static library: ${CMAKE_CURRENT_SOURCE_DIR} - ${TARGET}")
-    qt_add_library(${TARGET} STATIC)
+    add_library(${TARGET} STATIC)
     volcano_setup_target(${TARGET} ${ARGN})
-endfunction()
+endmacro()
 
-function(volcano_add_shared_library TARGET)
+macro(volcano_add_shared_library TARGET)
 	message(STATUS "Add shared library: ${CMAKE_CURRENT_SOURCE_DIR} - ${TARGET}")
-    qt_add_library(${TARGET} SHARED)
+    add_library(${TARGET} SHARED)
     volcano_setup_target(${TARGET} ${ARGN})
     if(MSVC)
         set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
     endif()
-endfunction()
+endmacro()
 
-function(volcano_add_executable TARGET)
+macro(volcano_add_executable TARGET)
 	message(STATUS "Add executable: ${CMAKE_CURRENT_SOURCE_DIR} - ${TARGET}")
-	qt_add_executable(${TARGET})
+	add_executable(${TARGET})
     volcano_setup_target(${TARGET} ${ARGN})
-endfunction()
+endmacro()
 
-function(volcano_add_auto_executable TARGET)
+macro(volcano_add_auto_executable TARGET)
 	message(STATUS "Add executable: ${CMAKE_CURRENT_SOURCE_DIR} - ${TARGET}")
-	qt_add_executable(${TARGET})
+	if(WIN32)
+		add_executable(${TARGET} WIN32)
+	else()
+		add_executable(${TARGET})
+	endif()
     volcano_setup_target(${TARGET} ${ARGN})
-endfunction()
+endmacro()
+

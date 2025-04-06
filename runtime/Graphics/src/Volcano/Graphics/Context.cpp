@@ -4,8 +4,10 @@
 
 VOLCANO_GRAPHICS_BEGIN
 
-Context::Context(QObject* parent)
-    : QObject(parent) {
+Context::Context() {
+}
+
+Context::~Context() {
 }
 
 VOLCANO_GRAPHICS_END

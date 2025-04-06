@@ -4,20 +4,24 @@
 #define VOLCANO_SYSTEM_CLIENT_H
 
 #include <Volcano/System/Common.h>
-#include <Volcano/System/Local.h>
+#include <Volcano/System/Base.h>
 
 VOLCANO_SYSTEM_BEGIN
 
-class Client: public Local {
-    Q_OBJECT
-
+class Client: public Base {
 public:
-    Client(World::Scene& scene, QObject* parent = nullptr);
+    Client();
+    ~Client() override;
 
 protected:
-    void update(Duration elapsed) override;
+    void frame(Duration elapsed) override;
+    void handlePackage(const ENetPacket& package) override;
+    void handleConnect(ENetPeer& peer) override;
+    void handleDisconnect(ENetPeer& peer) override;
+    ENetHost* createHost(const ENetAddress* address) override;
 
 private:
+    ENetPeer* peer_;
 };
 
 VOLCANO_SYSTEM_END
