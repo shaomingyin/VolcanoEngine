@@ -5,21 +5,21 @@
 
 #include <Volcano/Graphics/Common.h>
 #include <Volcano/Graphics/View.h>
-#include <Volcano/Graphics/Context.h>
+#include <Volcano/Graphics/Target.h>
+#include <Volcano/Graphics/Window.h>
+#include <Volcano/Graphics/Texture.h>
 
 VOLCANO_GRAPHICS_BEGIN
 
-class Renderer: public Context {
+class Renderer {
 public:
-    Renderer();
-    ~Renderer() override;
+    Renderer() = default;
+    virtual ~Renderer() = default;
 
 public:
-    void render(const View& view, Duration elapsed);
-
-private:
-    GL3WProcs gl3w_;
-	NVGcontext* nvg_;
+    virtual Window* createWindow(const std::string& name, int width, int height) = 0;
+    virtual Texture* createTexture(int width, int height) = 0;
+    virtual void render(const View& view, Duration elapsed, Target* target = nullptr) = 0;
 };
 
 VOLCANO_GRAPHICS_END

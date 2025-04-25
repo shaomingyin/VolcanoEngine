@@ -10,18 +10,16 @@ volcano_add_static_library(Graphics
         src/debug_draw/debug_draw.cpp
         include/Volcano/Graphics/Config.h.in
         include/Volcano/Graphics/Common.h
-        include/Volcano/Graphics/Context.h
-		include/Volcano/Graphics/Driver.h
-        include/Volcano/Graphics/Pipeline.h
         include/Volcano/Graphics/Renderer.h
         include/Volcano/Graphics/Target.h
+        include/Volcano/Graphics/Texture.h
         include/Volcano/Graphics/View.h
-        src/Volcano/Graphics/Context.cpp
-		src/Volcano/Graphics/Driver.cpp
-        src/Volcano/Graphics/Pipeline.cpp
+        include/Volcano/Graphics/Window.h
         src/Volcano/Graphics/Renderer.cpp
         src/Volcano/Graphics/Target.cpp
+        src/Volcano/Graphics/Texture.cpp
         src/Volcano/Graphics/View.cpp
+        src/Volcano/Graphics/Window.cpp
     PUBLIC_LINK_LIBRARIES
         Base
     PUBLIC_HEADERS

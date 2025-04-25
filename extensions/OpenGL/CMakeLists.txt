@@ -19,8 +19,14 @@ volcano_add_static_library(OpenGL
         src/nanovg/stb_truetype.h
         include/Volcano/OpenGL/Config.h.in
         include/Volcano/OpenGL/Common.h
-        include/Volcano/OpenGL/Driver.h
-        src/Volcano/OpenGL/Driver.cpp
+        include/Volcano/OpenGL/Renderer.h
+        include/Volcano/OpenGL/Texture.h
+        include/Volcano/OpenGL/Window.h
+        src/Volcano/OpenGL/Renderer.cpp
+        src/Volcano/OpenGL/Texture.cpp
+        src/Volcano/OpenGL/Window.cpp
+    PUBLIC_DEFINITIONS
+        NANOVG_GL3_IMPLEMENTATION
     PUBLIC_LINK_LIBRARIES
         Graphics
     PUBLIC_HEADERS

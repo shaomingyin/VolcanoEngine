@@ -1,4 +1,5 @@
 [requires]
+rttr/0.9.6
 asyncplusplus/1.2
 eigen/3.4.0
 fmt/11.0.2
@@ -10,7 +11,10 @@ assimp/5.4.2
 bullet3/3.25
 enet/1.3.18
 entt/3.13.2
-taskflow/3.8.0
+nlohmann_json/3.11.3
+
+[options]
+rttr/*:shared=True
 
 [generators]
 CMakeDeps
