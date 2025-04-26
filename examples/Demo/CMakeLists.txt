@@ -1,5 +1,5 @@
 
-volcano_add_static_library(Demo
+volcano_add_shared_library(Demo
     OUTPUT_NAME
         VolcanoDemo
     PUBLIC_INCLUDE_DIRECTORIES
@@ -7,7 +7,8 @@ volcano_add_static_library(Demo
         ${CMAKE_CURRENT_BINARY_DIR}/include
     PRIVATE_SOURCES
         include/Volcano/Demo/Common.h
-        src/Volcano/Demo/Main.cpp
+        include/Volcano/Demo/Game.h
+        src/Volcano/Demo/Game.cpp
     PUBLIC_LINK_LIBRARIES
-        System
+        Framework
 )

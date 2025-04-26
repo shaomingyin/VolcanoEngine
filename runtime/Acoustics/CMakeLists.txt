@@ -1,5 +1,5 @@
 
-volcano_add_static_library(Acoustics
+volcano_add_shared_library(Acoustics
     OUTPUT_NAME
         VolcanoAcoustics
     PUBLIC_INCLUDE_DIRECTORIES

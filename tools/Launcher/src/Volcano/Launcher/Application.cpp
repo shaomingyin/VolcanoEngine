@@ -36,6 +36,7 @@ SDL_AppResult Application::event(const SDL_Event& evt) {
         if (graphics_window_) {
             graphics_window_->handleEvent(evt);
         }
+        game_->event(evt);
         ret = SDL_APP_CONTINUE;
         break;
     case State::Loading:
@@ -64,15 +65,19 @@ SDL_AppResult Application::update() {
 
     switch (state()) {
     case State::Playing:
+        game_->playginFrame();
         ret = SDL_APP_CONTINUE;
         break;
     case State::Loading:
+        game_->loadingFrame();
         ret = SDL_APP_CONTINUE;
         break;
     case State::Ready:
+        game_->readyFrame();
         ret = SDL_APP_CONTINUE;
         break;
     case State::Error:
+        game_->errorFrame();
         ret = SDL_APP_CONTINUE;
         break;
     default:
@@ -83,10 +88,12 @@ SDL_AppResult Application::update() {
     return ret;
 }
 
-void Application::loadConfig(const nlohmann::json& scene) {
+void Application::loadConfig(const nlohmann::json& j) {
+    game_->loadConfig(j);
 }
 
-void Application::loadScene(const nlohmann::json& scene) {
+void Application::loadScene(const nlohmann::json& j) {
+    game_->loadScene(j);
 }
 
 VOLCANO_LAUNCHER_END

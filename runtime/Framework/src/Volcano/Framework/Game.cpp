@@ -8,4 +8,37 @@ Game::Game(Context& context)
     : context_(context) {
 }
 
+const std::string& Game::name() {
+    return "NoNamed";
+}
+
+const VersionNumber& Game::version() const {
+    return VersionNumber();
+}
+
+void Game::loadConfig(const nlohmann::json& j) {
+}
+
+void Game::loadScene(const nlohmann::json& j) {
+}
+
+void Game::event(const SDL_Event& evt) {
+
+}
+
+void Game::loadingFrame() {
+}
+
+void Game::readyFrame() {
+}
+
+void Game::playginFrame() {
+}
+
+void Game::pausedFrame() {
+}
+
+void Game::errorFrame() {
+}
+
 VOLCANO_FRAMEWORK_END

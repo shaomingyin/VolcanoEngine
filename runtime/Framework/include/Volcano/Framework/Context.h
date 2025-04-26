@@ -11,7 +11,7 @@
 
 VOLCANO_FRAMEWORK_BEGIN
 
-class Context {
+class VOLCANO_FRAMEWORK_API Context {
 public:
     enum class State {
         Idle = 0,
@@ -32,7 +32,7 @@ public:
     }
 
     void schedule(async::task_run_handle t) {
-        scheduler_.schedule(std::move(t));
+        scheduler_.schedule(std::forward<async::task_run_handle>(t));
     }
 
     SDL_Storage* rootfs() {

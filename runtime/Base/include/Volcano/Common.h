@@ -64,8 +64,8 @@
 #   error Unknown compiler.
 #endif
 
-#ifdef VolcanoBase_SHARED
-#   ifdef VolcanoBase_EXPORTS
+#ifdef VOLCANO_BASE_SHARED
+#   ifdef VOLCANO_BASE_EXPORTS
 #       define VOLCANO_BASE_API VOLCANO_EXPORT
 #   else
 #       define VOLCANO_BASE_API VOLCANO_IMPORT
