@@ -1,5 +1,5 @@
 
-volcano_add_shared_library(Framework
+volcano_add_static_library(Framework
     OUTPUT_NAME
         VolcanoFramework
     PUBLIC_INCLUDE_DIRECTORIES
@@ -15,6 +15,9 @@ volcano_add_shared_library(Framework
     PUBLIC_LINK_LIBRARIES
 		World
         Schema
+        Acoustics
+        Graphics
+        Physics
     PUBLIC_HEADERS
         include/Volcano/Framework/Common.h
         ${CMAKE_CURRENT_BINARY_DIR}/include/Volcano/Framework/Config.h

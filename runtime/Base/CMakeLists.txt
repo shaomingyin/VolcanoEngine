@@ -146,8 +146,6 @@ set(RTTR_SOURCES
     include/rttr/wrapper_mapper.h
     src/rttr/constructor.cpp
     src/rttr/destructor.cpp
-    src/rttr/detail/base/version.h.in
-    src/rttr/detail/base/version.rc.in
     src/rttr/detail/comparison/compare_equal.cpp
     src/rttr/detail/comparison/compare_less.cpp
     src/rttr/detail/constructor/constructor_wrapper_base.cpp
@@ -172,11 +170,7 @@ set(RTTR_SOURCES
     src/rttr/parameter_info.cpp
     src/rttr/policy.cpp
     src/rttr/property.cpp
-    src/rttr/registration
     src/rttr/registration.cpp
-    src/rttr/registration_friend
-    src/rttr/rttr.cmake
-    src/rttr/type
     src/rttr/type.cpp
     src/rttr/variant.cpp
     src/rttr/variant_associative_view.cpp
@@ -184,7 +178,7 @@ set(RTTR_SOURCES
     src/rttr/visitor.cpp
 )
 
-volcano_add_shared_library(Base
+volcano_add_static_library(Base
     OUTPUT_NAME
         VolcanoBase
     PUBLIC_INCLUDE_DIRECTORIES
@@ -197,13 +191,9 @@ volcano_add_shared_library(Base
         include/Volcano/Color.h
         include/Volcano/Config.h.in
         include/Volcano/Common.h
+        include/Volcano/ScopeGuard.h
         include/Volcano/VersionNumber.h
         src/Volcano/VersionNumber.cpp
-    PRIVATE_DEFINITIONS
-        VOLCANO_BASE
-        RTTR_DLL_EXPORTS
-    PUBLIC_DEFINITIONS
-        RTTR_DLL
     PUBLIC_LINK_PACKAGES
         Async++ Async++
         Eigen3 Eigen3::Eigen

@@ -6,16 +6,6 @@
 #include <Volcano/Common.h>
 #include <Volcano/Acoustics/Config.h>
 
-#ifdef VOLCANO_ACOUSTICS_SHARED
-#	ifdef VOLCANO_ACOUSTICS_EXPORTS
-#		define VOLCANO_ACOUSTICS_API VOLCANO_EXPORT
-#	else
-#		define VOLCANO_ACOUSTICS_API VOLCANO_IMPORT
-#	endif
-#else
-#	define VOLCANO_ACOUSTICS_API
-#endif
-
 #define VOLCANO_ACOUSTICS_BEGIN VOLCANO_BEGIN namespace Acoustics {
 #define VOLCANO_ACOUSTICS_END } VOLCANO_END
 

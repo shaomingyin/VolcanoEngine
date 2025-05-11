@@ -45,33 +45,11 @@
 #endif
 
 #if defined(__GNUC__)
-#   if __GNUC__ >= 4
-#       define VOLCANO_EXPORT __attribute__((visibility("default")))
-#   else
-#       define VOLCANO_EXPORT
-#   endif
-#   define VOLCANO_IMPORT
 #   define VOLCANO_FORCE_INLINE __inline __attribute__((__always_inline__))
-#   define VOLCANO_LIKELY(expr) __builtin_expect((expr), 1)
-#   define VOLCANO_UNLIKELY(expr) __builtin_expect((expr), 0)
 #elif defined(_MSC_VER)
-#   define VOLCANO_EXPORT __declspec(dllexport)
-#   define VOLCANO_IMPORT __declspec(dllimport)
 #   define VOLCANO_FORCE_INLINE __forceinline
-#   define VOLCANO_LIKELY(expr) (expr)
-#   define VOLCANO_UNLIKELY(expr) (expr)
 #else
 #   error Unknown compiler.
-#endif
-
-#ifdef VOLCANO_BASE_SHARED
-#   ifdef VOLCANO_BASE_EXPORTS
-#       define VOLCANO_BASE_API VOLCANO_EXPORT
-#   else
-#       define VOLCANO_BASE_API VOLCANO_IMPORT
-#   endif
-#else
-#   define VOLCANO_BASE_API
 #endif
 
 #define VOLCANO_STRIZE(x) VOLCANO_STRIZE_(x)

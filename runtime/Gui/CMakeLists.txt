@@ -1,5 +1,5 @@
 
-volcano_add_shared_library(Gui
+volcano_add_static_library(Gui
     OUTPUT_NAME
         VolcanoGui
     PUBLIC_INCLUDE_DIRECTORIES

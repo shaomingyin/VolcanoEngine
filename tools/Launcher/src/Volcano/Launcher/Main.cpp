@@ -44,7 +44,7 @@ static void init(Application** appstate, const argh::parser& args) {
         }
     }
 
-    *appstate = new Application( game_type,
+    *appstate = new Application(
         SDL_OpenTitleStorage(nullptr, 0),
         SDL_OpenUserStorage("VolcanoEngine", "VolcanoLauncher", 0));
 }

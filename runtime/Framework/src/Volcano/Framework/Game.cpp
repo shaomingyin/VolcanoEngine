@@ -26,19 +26,7 @@ void Game::event(const SDL_Event& evt) {
 
 }
 
-void Game::loadingFrame() {
-}
-
-void Game::readyFrame() {
-}
-
-void Game::playginFrame() {
-}
-
-void Game::pausedFrame() {
-}
-
-void Game::errorFrame() {
+void Game::frame(Duration elapsed) {
 }
 
 VOLCANO_FRAMEWORK_END

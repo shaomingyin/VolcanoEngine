@@ -3,15 +3,15 @@
 #ifndef VOLCANO_FRAMEWORK_CONTEXT_H
 #define VOLCANO_FRAMEWORK_CONTEXT_H
 
-#include <SDL3/SDL_storage.h>
-
+#include <rttr/type>
 #include <entt/entt.hpp>
+#include <SDL3/SDL_storage.h>
 
 #include <Volcano/Framework/Common.h>
 
 VOLCANO_FRAMEWORK_BEGIN
 
-class VOLCANO_FRAMEWORK_API Context {
+class Context {
 public:
     enum class State {
         Idle = 0,
@@ -19,6 +19,7 @@ public:
         Ready,
         Playing,
         Paused,
+        Stopped,
         Error
     };
 
@@ -32,7 +33,7 @@ public:
     }
 
     void schedule(async::task_run_handle t) {
-        scheduler_.schedule(std::forward<async::task_run_handle>(t));
+        scheduler_.schedule(std::move(t));
     }
 
     SDL_Storage* rootfs() {
@@ -47,17 +48,13 @@ public:
         return registry_;
     }
 
-    Duration elapsed() const {
-        return elapsed_;
+    const entt::registry& registry() const {
+        return registry_;
     }
 
 protected:
     void runAllTasks() {
         scheduler_.run_all_tasks();
-    }
-
-    void setElapsed(Duration v) {
-        elapsed_ = v;
     }
 
     void setState(State v);
@@ -68,7 +65,6 @@ private:
     SDL_Storage* rootfs_;
     SDL_Storage* userfs_;
     entt::registry registry_;
-    Duration elapsed_;
 };
 
 VOLCANO_FRAMEWORK_END

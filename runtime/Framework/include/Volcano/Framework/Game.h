@@ -16,7 +16,7 @@
 
 VOLCANO_FRAMEWORK_BEGIN
 
-class VOLCANO_FRAMEWORK_API Game {
+class Game {
     RTTR_ENABLE()
 
 public:
@@ -36,16 +36,7 @@ public:
     virtual void loadConfig(const nlohmann::json& j);
     virtual void loadScene(const nlohmann::json& j);
     virtual void event(const SDL_Event& evt);
-    virtual void loadingFrame();
-    virtual void readyFrame();
-    virtual void playginFrame();
-    virtual void pausedFrame();
-    virtual void errorFrame();
-
-protected:
-    Duration elapsed() const {
-        return context_.elapsed();
-    }
+    virtual void frame(Duration elapsed);
 
 private:
     Context& context_;

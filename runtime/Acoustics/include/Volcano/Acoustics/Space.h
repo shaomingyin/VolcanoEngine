@@ -7,7 +7,7 @@
 
 VOLCANO_ACOUSTICS_BEGIN
 
-class VOLCANO_ACOUSTICS_API Space {
+class Space {
 public:
     Space();
     virtual ~Space();

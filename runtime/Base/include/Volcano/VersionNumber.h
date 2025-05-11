@@ -9,7 +9,7 @@
 
 VOLCANO_BEGIN
 
-class VOLCANO_BASE_API VersionNumber final {
+class VersionNumber final {
 public:
     VersionNumber()
         : major_number_(0)

@@ -13,6 +13,8 @@ volcano_add_executable(Launcher
         src/Volcano/Launcher/Main.cpp
     PUBLIC_LINK_LIBRARIES
   		Framework
+    PUBLIC_LINK_PACKAGES
+        argh argh
     PUBLIC_HEADERS
         include/Volcano/Launcher/Common.h
         ${CMAKE_CURRENT_BINARY_DIR}/include/Volcano/Launcher/Config.h

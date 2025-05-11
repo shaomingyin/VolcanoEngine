@@ -5,15 +5,13 @@
 
 VOLCANO_LAUNCHER_BEGIN
 
-Application::Application(rttr::type game_type, SDL_Storage* rootfs, SDL_Storage* userfs)
+Application::Application(SDL_Storage* rootfs, SDL_Storage* userfs)
     : Framework::Context(rootfs, userfs)
-    , game_type_(game_type)
     , frame_last_(Clock::now()) {
-    auto game_inst = game_type_.create({ *this });
-    if (!game_inst.is_type<Framework::Game>()) {
-        throw std::invalid_argument("Invalid game type.");
-    }
-    game_.reset(game_inst.get_value<Framework::Game*>());
+    loadAcousticsSpace();
+    loadGraphicsRenderer();
+    loadPhysicsWorld();
+    loadGame();
     setState(State::Loading);
     loading_task_ = async::spawn([this] {
         try {
@@ -23,8 +21,6 @@ Application::Application(rttr::type game_type, SDL_Storage* rootfs, SDL_Storage*
             logWarning("{}", e.what());
         }
         loadScene(nlohmann::loadFromStorage(this->rootfs(), "Scenes/Startup.json"));
-    }).then(*this, [this] {
-        setState(State::Ready);
     });
 }
 
@@ -60,30 +56,34 @@ SDL_AppResult Application::update() {
     SDL_AppResult ret;
 
     auto curr = Clock::now();
-    setElapsed(curr - frame_last_);
+    auto elapsed = curr - frame_last_;
     frame_last_ = curr;
 
     switch (state()) {
     case State::Playing:
-        game_->playginFrame();
         ret = SDL_APP_CONTINUE;
         break;
     case State::Loading:
-        game_->loadingFrame();
+        if (loading_task_.canceled()) {
+            setState(State::Idle);
+        } else if (loading_task_.ready()) {
+            setState(State::Ready);
+        } else {
+        }
         ret = SDL_APP_CONTINUE;
         break;
     case State::Ready:
-        game_->readyFrame();
         ret = SDL_APP_CONTINUE;
         break;
     case State::Error:
-        game_->errorFrame();
         ret = SDL_APP_CONTINUE;
         break;
     default:
         ret = SDL_APP_CONTINUE;
         break;
     }
+
+    game_->frame(elapsed);
 
     return ret;
 }
@@ -94,6 +94,46 @@ void Application::loadConfig(const nlohmann::json& j) {
 
 void Application::loadScene(const nlohmann::json& j) {
     game_->loadScene(j);
+}
+
+void Application::loadAcousticsSpace() {
+    auto types = rttr::type::get<Acoustics::Space>().get_derived_classes();
+    if (!types.empty()) {
+        auto object = types.begin()->create();
+        if (object) {
+            acoustics_space_.reset(object.get_value<Acoustics::Space*>());
+        }
+    }
+}
+
+void Application::loadGraphicsRenderer() {
+    auto types = rttr::type::get<Acoustics::Space>().get_derived_classes();
+    if (!types.empty()) {
+        auto object = types.begin()->create();
+        if (object) {
+            acoustics_space_.reset(object.get_value<Acoustics::Space*>());
+        }
+    }
+}
+
+void Application::loadPhysicsWorld() {
+    auto types = rttr::type::get<Acoustics::Space>().get_derived_classes();
+    if (!types.empty()) {
+        auto object = types.begin()->create();
+        if (object) {
+            acoustics_space_.reset(object.get_value<Acoustics::Space*>());
+        }
+    }
+}
+
+void Application::loadGame() {
+    auto types = rttr::type::get<Framework::Game>().get_derived_classes();
+    if (!types.empty()) {
+        auto object = types.begin()->create({ *this });
+        if (object) {
+            game_.reset(object.get_value<Framework::Game*>());
+        }
+    }
 }
 
 VOLCANO_LAUNCHER_END

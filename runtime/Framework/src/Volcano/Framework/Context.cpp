@@ -10,18 +10,10 @@ Context::Context(SDL_Storage* rootfs, SDL_Storage* userfs)
     : state_(State::Idle)
     , rootfs_(rootfs)
     , userfs_(userfs) {
-    if (rootfs_ == nullptr) {
-        throw std::runtime_error("Cannot open title storage.");
-    }
-    if (userfs_ == nullptr) {
-        throw std::runtime_error("Cannot open user storage.");
-    }
-    while (SDL_StorageReady(rootfs_)) {
-        SDL_Delay(1);
-    }
-    while (SDL_StorageReady(userfs_)) {
-        SDL_Delay(1);
-    }
+    VOLCANO_ASSERT(rootfs_ != nullptr);
+    VOLCANO_ASSERT(SDL_StorageReady(rootfs_));
+    VOLCANO_ASSERT(userfs_ != nullptr);
+    VOLCANO_ASSERT(SDL_StorageReady(userfs_));
 }
 
 void Context::setState(State v) {

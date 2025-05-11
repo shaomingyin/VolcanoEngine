@@ -19,7 +19,6 @@ if(WIN32)
 	add_definitions(-DNOMINMAX)
 endif()
 
-add_subdirectory(extras)
 add_subdirectory(runtime)
 add_subdirectory(extensions)
 add_subdirectory(tools)
