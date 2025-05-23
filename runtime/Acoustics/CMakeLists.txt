@@ -11,10 +11,5 @@ volcano_add_static_library(Acoustics
         include/Volcano/Acoustics/Space.h
         src/Volcano/Acoustics/Space.cpp
     PUBLIC_LINK_LIBRARIES
-        Base
-    PUBLIC_HEADERS
-        include/Volcano/Acoustics/Common.h
-        include/Volcano/Acoustics/Space.h
-        ${CMAKE_CURRENT_BINARY_DIR}/include/Volcano/Acoustics/Config.h
-        DESTINATION include/Volcano/Acoustics
+        World
 )

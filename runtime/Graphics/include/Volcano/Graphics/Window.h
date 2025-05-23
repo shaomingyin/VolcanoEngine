@@ -13,38 +13,39 @@
 
 VOLCANO_GRAPHICS_BEGIN
 
-class Window: public Target {
-protected:
-    Window(SDL_Window* handle);
-
-public:
-    virtual ~Window();
-
-public:
-    SDL_Window* handle() {
-        return handle_;
-    }
-
-    void show() {
-        SDL_ShowWindow(handle_);
-    }
-
-    void hide() {
-        SDL_HideWindow(handle_);
-    }
-
-    bool isVisible() const {
-        return isEnabled() && visible_;
-    }
-
-    void resize(int width, int height) override;
-    virtual void handleEvent(const SDL_Event& evt);
-
-private:
-    SDL_Window* handle_;
-    Uint32 id_;
-    bool visible_;
+template <typename T>
+concept Window_handle = requires(T& v) {
+    { v.handle() } -> std::same_as<SDL_Window*>;
 };
+
+template <typename T>
+concept Window_show = requires(T & v) {
+    { v.show() } -> std::same_as<void>;
+};
+
+template <typename T>
+concept Window_hide = requires(T & v) {
+    { v.hide() } -> std::same_as<void>;
+};
+
+template <typename T>
+concept Window_isVisible = requires(const T & v) {
+    { v.isVisible() } -> std::convertible_to<bool>;
+};
+
+template <typename T>
+concept Window_event = requires(T & v, const SDL_Event & evt) {
+    { v.event(evt) } -> std::same_as<void>;
+};
+
+template <typename T>
+concept Window =
+    Target<T> &&
+    Window_handle<T> &&
+    Window_show<T> &&
+    Window_hide<T> &&
+    Window_isVisible<T> &&
+    Window_event<T>;
 
 VOLCANO_GRAPHICS_END
 

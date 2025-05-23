@@ -201,10 +201,4 @@ volcano_add_static_library(Base
         nlohmann_json nlohmann_json::nlohmann_json
         SDL3 SDL3::SDL3
         microprofile microprofile::microprofile
-    PUBLIC_HEADERS
-        include/Volcano/Common.h
-        include/Volcano/ScopeGuard.h
-        include/Volcano/VersionNumber.h
-        ${CMAKE_CURRENT_BINARY_DIR}/include/Volcano/Config.h
-        DESTINATION include/Volcano
 )

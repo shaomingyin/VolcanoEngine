@@ -10,11 +10,6 @@ volcano_add_static_library(Gui
         include/Volcano/Gui/Common.h
         src/Volcano/Gui/Common.cpp
 	PUBLIC_LINK_LIBRARIES
+        Acoustics
 		Graphics
-    PUBLIC_LINK_PACKAGES
-        SDL3 SDL3::SDL3
-    PUBLIC_HEADERS
-        include/Volcano/Gui/Common.h
-        ${CMAKE_CURRENT_BINARY_DIR}/include/Volcano/Gui/Config.h
-        DESTINATION include/Volcano/Gui
 )

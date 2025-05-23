@@ -4,10 +4,8 @@
 
 VOLCANO_ACOUSTICS_BEGIN
 
-Space::Space() {
-}
-
-Space::~Space() {
+Space::Space(World::Scene& scene)
+    : scene_(scene) {
 }
 
 VOLCANO_ACOUSTICS_END

@@ -1,10 +1,6 @@
 //
 //
-#include <Volcano/Editor/Common.h>
-
-VOLCANO_EDITOR_BEGIN
-
-VOLCANO_EDITOR_END
+#include <Volcano/Framework/Server.h>
 
 int main(int argc, char* argv[]) {
     return 0;

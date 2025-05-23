@@ -11,10 +11,5 @@ volcano_add_static_library(Physics
         include/Volcano/Physics/World.h
         src/Volcano/Physics/World.cpp
     PUBLIC_LINK_LIBRARIES
-        Base
-    PUBLIC_HEADERS
-        include/Volcano/Physics/Common.h
-        include/Volcano/Physics/World.h
-        ${CMAKE_CURRENT_BINARY_DIR}/include/Volcano/Physics/Config.h
-        DESTINATION include/Volcano/Physics
+        World
 )

@@ -21,6 +21,7 @@
 #include <Volcano/Config.h>
 
 #include <async++.h>
+#include <rttr/type>
 #include <SDL3/SDL_log.h>
 
 #ifdef VOLCANO_PROFILE

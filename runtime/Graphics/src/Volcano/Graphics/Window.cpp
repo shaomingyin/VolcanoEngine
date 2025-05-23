@@ -4,6 +4,7 @@
 
 VOLCANO_GRAPHICS_BEGIN
 
+#if 0
 static int GetWindowWidth(SDL_Window* handle) {
     int width;
     SDL_GetWindowSize(handle, &width, NULL);
@@ -49,5 +50,7 @@ void Window::handleEvent(const SDL_Event& evt) {
 void Window::resize(int width, int height) {
     SDL_SetWindowSize(handle_, width, height);
 }
+
+#endif
 
 VOLCANO_GRAPHICS_END

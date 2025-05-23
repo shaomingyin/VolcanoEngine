@@ -42,4 +42,10 @@ Entity& Entity::operator=(Entity&& other) {
     return (*this);
 }
 
+void Entity::loadFromJson(const nlohmann::json& j) {
+}
+
+void Entity::saveToJson(nlohmann::json& j) {
+}
+
 VOLCANO_WORLD_END

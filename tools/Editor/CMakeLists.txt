@@ -13,14 +13,5 @@ volcano_add_executable(Editor
 		Launcher
 		Server
     PUBLIC_LINK_LIBRARIES
-		Gui
-		Physics
-		Graphics
-		Acoustics
-		World
-        Schema
-    PUBLIC_HEADERS
-        include/Volcano/Editor/Common.h
-        ${CMAKE_CURRENT_BINARY_DIR}/include/Volcano/Editor/Config.h
-        DESTINATION include/Volcano/Editor
+		Framework
 )

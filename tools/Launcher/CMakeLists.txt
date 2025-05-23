@@ -6,17 +6,7 @@ volcano_add_executable(Launcher
         ${CMAKE_CURRENT_SOURCE_DIR}/include
         ${CMAKE_CURRENT_BINARY_DIR}/include
     PRIVATE_SOURCES
-        include/Volcano/Launcher/Config.h.in
-        include/Volcano/Launcher/Common.h
-        include/Volcano/Launcher/Application.h
-        src/Volcano/Launcher/Application.cpp
-        src/Volcano/Launcher/Main.cpp
+        Main.cpp
     PUBLIC_LINK_LIBRARIES
   		Framework
-    PUBLIC_LINK_PACKAGES
-        argh argh
-    PUBLIC_HEADERS
-        include/Volcano/Launcher/Common.h
-        ${CMAKE_CURRENT_BINARY_DIR}/include/Volcano/Launcher/Config.h
-        DESTINATION include/Volcano/Launcher
 )

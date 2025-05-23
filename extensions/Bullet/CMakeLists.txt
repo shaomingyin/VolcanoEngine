@@ -14,9 +14,4 @@ volcano_add_static_library(Bullet
         Physics
     PUBLIC_LINK_PACKAGES
         Bullet Bullet::Bullet
-    PUBLIC_HEADERS
-        include/Volcano/Bullet/Common.h
-        include/Volcano/Bullet/World.h
-        ${CMAKE_CURRENT_BINARY_DIR}/include/Volcano/Bullet/Config.h
-        DESTINATION include/Volcano/Bullet
 )

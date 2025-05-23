@@ -7,40 +7,48 @@
 
 VOLCANO_GRAPHICS_BEGIN
 
-class Target {
-public:
-	virtual ~Target() = default;
+template <typename T>
+concept Target_isEnabled = requires(const T& v) {
+	{ v.isEnabled() } -> std::convertible_to<bool>;
+};
 
-public:
-	bool isEnabled() const {
-		return enabled_;
-	}
+template <typename T>
+concept Target_enable = requires(T& v) {
+	{ v.enable() } -> std::same_as<void>;
+};
 
-	void enable() {
-		enabled_ = true;
-	}
+template <typename T>
+concept Target_disable = requires(T& v) {
+	{ v.disable() } -> std::same_as<void>;
+};
 
-	void disable() {
-		enabled_ = false;
-	}
+template <typename T>
+concept Target_width = requires(const T& v) {
+	{ v.width() } -> std::convertible_to<int>;
+};
 
-	int width() const {
-		return width_;
-	}
+template <typename T>
+concept Target_height = requires(const T & v) {
+	{ v.height() } -> std::convertible_to<int>;
+};
 
-	int height() const {
-		return height_;
-	}
+template <typename T>
+concept Target_resize = requires(T & v, int width, int height) {
+	{ v.resize(width, height) } -> std::same_as<void>;
+};
 
-	virtual void resize(int widht, int height);
+template <typename T>
+concept Target =
+	Target_isEnabled<T> &&
+	Target_enable<T> &&
+	Target_disable<T> &&
+	Target_width<T> &&
+	Target_height<T> &&
+	Target_resize<T>;
 
-protected:
-	Target(int width, int height);
-
-private:
-	bool enabled_;
-	int width_;
-	int height_;
+template <Target target_type>
+struct TargetType {
+	using Type = target_type;
 };
 
 VOLCANO_GRAPHICS_END

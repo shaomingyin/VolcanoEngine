@@ -7,10 +7,23 @@
 
 VOLCANO_WORLD_BEGIN
 
-class Scene {
+class Scene: public entt::registry {
+	RTTR_ENABLE()
+
 public:
 	Scene();
-	virtual ~Scene();
+	virtual ~Scene() = default;
+
+public:
+	entt::entity global() const {
+		return global_;
+	}
+
+	virtual void loadFromJson(const nlohmann::json& j);
+	virtual void saveToJson(nlohmann::json& j);
+
+private:
+	entt::entity global_;
 };
 
 VOLCANO_WORLD_END

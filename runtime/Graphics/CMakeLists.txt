@@ -21,11 +21,5 @@ volcano_add_static_library(Graphics
         src/Volcano/Graphics/View.cpp
         src/Volcano/Graphics/Window.cpp
     PUBLIC_LINK_LIBRARIES
-        Base
-    PUBLIC_HEADERS
-        include/Volcano/Graphics/Common.h
-        include/Volcano/Graphics/Renderer.h
-        include/Volcano/Graphics/View.h
-        ${CMAKE_CURRENT_BINARY_DIR}/include/Volcano/Graphics/Config.h
-        DESTINATION include/Volcano/Graphics
+        World
 )

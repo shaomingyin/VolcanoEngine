@@ -3,14 +3,20 @@
 #ifndef VOLCANO_ACOUSTICS_SPACE_H
 #define VOLCANO_ACOUSTICS_SPACE_H
 
+#include <Volcano/World/Scene.h>
 #include <Volcano/Acoustics/Common.h>
 
 VOLCANO_ACOUSTICS_BEGIN
 
 class Space {
 public:
-    Space();
-    virtual ~Space();
+    Space(World::Scene& scene);
+    virtual ~Space() = default;
+
+public:
+
+private:
+    World::Scene& scene_;
 };
 
 VOLCANO_ACOUSTICS_END

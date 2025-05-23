@@ -29,10 +29,4 @@ volcano_add_static_library(OpenGL
         NANOVG_GL3_IMPLEMENTATION
     PUBLIC_LINK_LIBRARIES
         Graphics
-    PUBLIC_HEADERS
-        include/Volcano/OpenGL/Common.h
-        include/Volcano/OpenGL/Renderer.h
-        include/Volcano/OpenGL/View.h
-        ${CMAKE_CURRENT_BINARY_DIR}/include/Volcano/OpenGL/Config.h
-        DESTINATION include/Volcano/OpenGL
 )

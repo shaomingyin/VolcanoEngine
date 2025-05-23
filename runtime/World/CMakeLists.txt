@@ -20,10 +20,4 @@ volcano_add_static_library(World
         Base
     PUBLIC_LINK_PACKAGES
         EnTT EnTT::EnTT
-    PUBLIC_HEADERS
-        include/Volcano/World/Common.h
-        include/Volcano/World/Object.h
-        include/Volcano/World/World.h
-        ${CMAKE_CURRENT_BINARY_DIR}/include/Volcano/World/Config.h
-        DESTINATION include/Volcano/World
 )

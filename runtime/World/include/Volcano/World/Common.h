@@ -5,6 +5,7 @@
 
 #include <type_traits>
 
+#include <nlohmann_json.h>
 #include <entt/entt.hpp>
 
 #include <Volcano/Common.h>
