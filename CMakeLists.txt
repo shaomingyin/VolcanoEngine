@@ -21,7 +21,7 @@ set(VOLCANO_PROFILE ON CACHE BOOL "Enable profile functions.")
 find_package(Qt6 REQUIRED COMPONENTS Core)
 link_libraries(Qt6::Core)
 
-# qt_standard_project_setup()
+qt_standard_project_setup()
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 include(Volcano/Utils)

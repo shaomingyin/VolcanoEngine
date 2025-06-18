@@ -66,7 +66,7 @@ function(volcano_setup_target TARGET)
 		if(RDIR)
 			get_filename_component(FOLDER ${RDIR} DIRECTORY)
 			message(STATUS "  Folder: ${FOLDER} (auto)")
-			set_target_properties(${TARGET} PROPERTIES FOLDER ${FOLDER})
+			#set_target_properties(${TARGET} PROPERTIES FOLDER ${FOLDER})
 		endif()
 	endif()
 	
