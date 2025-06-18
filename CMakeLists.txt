@@ -1,5 +1,5 @@
 
-cmake_minimum_required(VERSION 3.24)
+cmake_minimum_required(VERSION 3.19)
 project(VolcanoEngine VERSION 0.1.0)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
@@ -21,7 +21,7 @@ set(VOLCANO_PROFILE ON CACHE BOOL "Enable profile functions.")
 find_package(Qt6 REQUIRED COMPONENTS Core)
 link_libraries(Qt6::Core)
 
-qt_standard_project_setup()
+# qt_standard_project_setup()
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 include(Volcano/Utils)

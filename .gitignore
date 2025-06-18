@@ -35,3 +35,5 @@
 /.idea*
 /build*
 /CMake*Presets.json
+/CMakeLists.txt.user*
+
