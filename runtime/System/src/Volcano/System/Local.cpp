@@ -12,11 +12,8 @@ Local::Local(World::Scene& scene, QObject* parent)
 }
 
 bool Local::event(QEvent* evt) {
-    for (auto& screen_controller: screen_controller_list_) {
-        if (screen_controller.event(evt)) {
-            return true;
-        }
-    }
+    //for (const auto& screen_controller: screen_controller_list_) {
+    //}
     return Base::event(evt);
 }
 

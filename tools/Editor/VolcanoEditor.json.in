@@ -1,0 +1,26 @@
+{
+    "Id": "volcanoeditor",
+    "Name": "Volcano Editor",
+    "Version": "${CMAKE_PROJECT_VERSION}",
+	"Category": "Utilities",
+	"VendorId": "shaomingyin",
+	"Vendor": "ShaoMingyin",
+	"Description": "VolcanoEngine Editor.",
+	"Url": "https://github.com/shaomingyin/VolcanoEngine",
+	"Mimetypes" : [
+	    "<?xml version='1.0'?>",
+		"<mime-info xmlns='http://www.freedesktop.org/standards/shared-mime-info'>",
+		"  <mime-type type='${VOLCANO_EDITOR_PROJECT_MIMETYPE}'>",
+		"    <sub-class-of type='application/json'/>",
+		"    <comment>Volcano Project file</comment>",
+		"    <glob pattern='Manifest.vpf'/>",
+		"  </mime-type>",
+		"  <mime-type type='${VOLCANO_EDITOR_SCENE_MIMETYPE}'>",
+		"    <sub-class-of type='application/json'/>",
+		"    <comment>Volcano Scene file</comment>",
+		"    <glob pattern='Manifest.vsf'/>",
+		"  </mime-type>",
+		"</mime-info>"
+	],
+	${IDE_PLUGIN_DEPENDENCIES}
+}
