@@ -41,6 +41,7 @@ set(VOLCANO_EDITOR_SOURCES
     src/Volcano/Editor/SceneWizard.cpp
     src/Volcano/Editor/SceneWizardFactory.cpp
     src/Volcano/Editor/WorldNode.cpp
+    Resource.qrc
 )
 
 configure_file(
@@ -64,7 +65,10 @@ add_qtc_plugin(Editor
         ${VOLCANO_EDITOR_SOURCES}
 )
 
-volcano_source_tree(${VOLCANO_EDITOR_SOURCES})
+volcano_source_tree(
+    ${VOLCANO_EDITOR_SOURCES}
+    VolcanoEditor.json.in
+)
 
 target_include_directories(Editor PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/include
