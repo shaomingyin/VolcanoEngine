@@ -13,39 +13,47 @@
 
 VOLCANO_GRAPHICS_BEGIN
 
-template <typename T>
-concept Window_handle = requires(T& v) {
-    { v.handle() } -> std::same_as<SDL_Window*>;
-};
+class Window {
+public:
+    Window(SDL_Window* handle);
+    virtual ~Window();
 
-template <typename T>
-concept Window_show = requires(T & v) {
-    { v.show() } -> std::same_as<void>;
-};
+public:
+    bool isVisible() const noexcept {
+        return flags_ & FlagVisible;
+    }
 
-template <typename T>
-concept Window_hide = requires(T & v) {
-    { v.hide() } -> std::same_as<void>;
-};
+    void show();
+    void hide();
 
-template <typename T>
-concept Window_isVisible = requires(const T & v) {
-    { v.isVisible() } -> std::convertible_to<bool>;
-};
+    int width() const noexcept {
+        return width_;
+    }
 
-template <typename T>
-concept Window_event = requires(T & v, const SDL_Event & evt) {
-    { v.event(evt) } -> std::same_as<void>;
-};
+    int height() const noexcept {
+        return height_;
+    }
 
-template <typename T>
-concept Window =
-    Target<T> &&
-    Window_handle<T> &&
-    Window_show<T> &&
-    Window_hide<T> &&
-    Window_isVisible<T> &&
-    Window_event<T>;
+    void resize(int width, int height);
+    virtual void event(const SDL_Event& evt);
+
+private:
+    enum {
+        FlagVisible = 0x1
+    };
+
+    static Uint32 GetWindowId(SDL_Window* handle);
+    static std::string GetWindowTitle(SDL_Window* handle);
+    static int GetWindowWidth(SDL_Window* handle);
+    static int GetWindowHeight(SDL_Window* handle);
+
+    SDL_Window* handle_;
+    Uint32 id_;
+    std::string title_;
+    int width_;
+    int height_;
+    int flags_;
+};
 
 VOLCANO_GRAPHICS_END
 

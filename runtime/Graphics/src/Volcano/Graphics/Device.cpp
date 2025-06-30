@@ -1,6 +1,6 @@
 //
 //
-#include <Volcano/Graphics/Renderer.h>
+#include <Volcano/Graphics/Device.h>
 
 VOLCANO_GRAPHICS_BEGIN
 

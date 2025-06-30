@@ -10,15 +10,15 @@
 
 #include <Volcano/Framework/Common.h>
 #include <Volcano/Framework/Game.h>
-#include <Volcano/Framework/ContextImpl.h>
+#include <Volcano/Framework/Base.h>
 
 VOLCANO_FRAMEWORK_BEGIN
 
-class Server: public ContextImpl {
+class Server: public Base {
 public:
-    Server(SDL_Storage* rootfs, SDL_Storage* userfs, rttr::type game_type, std::vector<ada::url> urls);
+    Server(SDL_Storage* rootfs, SDL_Storage* userfs, std::vector<ada::url> urls);
 
-public:
+protected:
     virtual void frame(Duration elapsed);
 
 private:

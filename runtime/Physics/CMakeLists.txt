@@ -11,5 +11,5 @@ volcano_add_static_library(Physics
         include/Volcano/Physics/World.h
         src/Volcano/Physics/World.cpp
     PUBLIC_LINK_LIBRARIES
-        World
+        Base
 )

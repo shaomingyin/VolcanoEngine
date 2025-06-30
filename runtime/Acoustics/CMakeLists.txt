@@ -11,5 +11,5 @@ volcano_add_static_library(Acoustics
         include/Volcano/Acoustics/Space.h
         src/Volcano/Acoustics/Space.cpp
     PUBLIC_LINK_LIBRARIES
-        World
+        Base
 )

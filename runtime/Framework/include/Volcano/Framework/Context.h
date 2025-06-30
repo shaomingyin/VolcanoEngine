@@ -18,55 +18,48 @@
 
 VOLCANO_FRAMEWORK_BEGIN
 
-enum class State {
-    Idle = 0,
-    Loading,
-    Ready,
-    Playing,
-    Paused,
-    Stopped,
-    Error
-};
+class Context {
+public:
+    enum class State {
+        Idle = 0,
+        Loading,
+        Ready,
+        Playing,
+        Paused,
+        Stopped,
+        Error
+    };
 
-template <typename T>
-concept Context_state = requires(const T & v) {
-    { v.state() } -> std::same_as<State>;
-};
+public:
+    Context(SDL_Storage* rootfs, SDL_Storage* userfs);
+    virtual ~Context() = default;
 
-template <typename T>
-concept Context_load = requires(T & v, const std::string & scene_path) {
-    v.load(scene_path);
-};
+public:
+    void load(std::string scene_path);
 
-template <typename T>
-concept Context_event = requires(T & v, const SDL_Event & evt) {
-    v.event(evt);
-};
+    State state() const noexcept {
+        return state_;
+    }
 
-template <typename T>
-concept Context_schedule = requires(T & v, async::task_run_handle t) {
-    v.schedule(std::move(t));
-};
+    SDL_Storage* rootfs() noexcept {
+        return rootfs_;
+    }
 
-template <typename T>
-concept Context_quit = requires(T & v) {
-    v.quit();
-};
+    SDL_Storage* userfs() noexcept {
+        return userfs_;
+    }
 
-template <typename T>
-concept Context_rootfs = requires(T & v) {
-    { v.rootfs() } -> std::same_as<SDL_Storage*>;
-};
+    World::Scene& scene() {
+        return scene_;
+    }
 
-template <typename T>
-concept Context_userfs = requires(T & v) {
-    { v.userfs() } -> std::same_as<SDL_Storage*>;
-};
+    void schedule(async::task_run_handle t) {
+        scheduler_.schedule(std::move(t));
+    }
 
-template <typename T>
-concept Context_scene = requires(T & v) {
-    { v.scene() } -> std::convertible_to<World::Scene&>;
-};
+    void quit() noexcept {
+        quit_ = true;
+    }
 
 protected:
     void setState(State v);
@@ -76,9 +69,16 @@ protected:
         setState(State::Error);
     }
 
+    void runAllTasks() {
+        scheduler_.run_all_tasks();
+    }
+
+    bool isQuit() const noexcept {
+        return quit_;
+    }
+
     virtual void loadConfig(const nlohmann::json& j);
     virtual void loadScene(const nlohmann::json& j);
-    virtual void frame(Duration elapsed);
 
 private:
     State state_;
@@ -90,7 +90,6 @@ private:
     SDL_Storage* rootfs_;
     SDL_Storage* userfs_;
     World::Scene scene_;
-    TimePoint frame_last_;
 };
 
 VOLCANO_FRAMEWORK_END

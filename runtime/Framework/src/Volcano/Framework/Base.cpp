@@ -2,51 +2,45 @@
 //
 #include <SDL3/SDL_timer.h>
 
-#include <Volcano/Framework/ContextImpl.h>
+#include <Volcano/Framework/Base.h>
 
 VOLCANO_FRAMEWORK_BEGIN
 
-ContextImpl::ContextImpl(SDL_Storage* rootfs, SDL_Storage* userfs, rttr::type game_type)
+Base::Base(SDL_Storage* rootfs, SDL_Storage* userfs)
     : Context(rootfs, userfs) {
-    VOLCANO_ASSERT(game_type.is_derived_from<Game>());
-    game_instance_ = game_type.create({ *this });
-    if (!game_instance_) {
-        throw std::runtime_error("Failed to create game instance.");
+}
+
+SDL_AppResult Base::update() noexcept {
+    auto curr = Clock::now();
+    frame(curr - frame_last_);
+    frame_last_ = curr;
+    if (isQuit()) {
+        if (state() == State::Error) {
+            return SDL_APP_FAILURE;
+        }
+        return SDL_APP_SUCCESS;
     }
-    game_ = &game_instance_.get_value<Game>();
+    return SDL_APP_CONTINUE;
 }
 
-void ContextImpl::event(const SDL_Event& evt) {
-    Context::event(evt);
-    VOLCANO_ASSERT(game_ != nullptr);
-    game_->event(evt);
-}
-
-void ContextImpl::frame(Duration elapsed) {
-    Context::frame(elapsed);
+void Base::frame(Duration elapsed) {
+    runAllTasks();
 
     switch (state()) {
     case State::Playing:
-        physics_.update(elapsed);
+        //physics_.update(elapsed);
         break;
     default:
         break;
     }
-
-    VOLCANO_ASSERT(game_ != nullptr);
-    game_->frame(elapsed);
 }
 
-void ContextImpl::loadConfig(const nlohmann::json& j) {
+void Base::loadConfig(const nlohmann::json& j) {
     Context::loadConfig(j);
-    VOLCANO_ASSERT(game_ != nullptr);
-    game_->loadConfig(j);
 }
 
-void ContextImpl::loadScene(const nlohmann::json& j) {
+void Base::loadScene(const nlohmann::json& j) {
     Context::loadScene(j);
-    VOLCANO_ASSERT(game_ != nullptr);
-    game_->loadScene(j);
 }
 
 VOLCANO_FRAMEWORK_END

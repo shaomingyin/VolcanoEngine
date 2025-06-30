@@ -11,7 +11,6 @@
 
 #include <rttr/type>
 
-#include <Volcano/Framework/ContextImpl.h>
 #include <Volcano/Framework/Local.h>
 #include <Volcano/Framework/Client.h>
 
@@ -48,24 +47,19 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv) {
     }
 
     try {
-        auto game_types = rttr::type::get<Volcano::Framework::Game>().get_derived_classes();
-        VOLCANO_ASSERT(game_types.size() == 1);
-        auto game_type = *game_types.begin();
-
         auto rootfs = SDL_OpenTitleStorage(nullptr, 0);
         if (rootfs == nullptr) {
             throw std::runtime_error("Failed to open title storage.");
         }
         waitStorageReady(rootfs, 5s);
 
-        auto game_name = game_type.get_metadata("Name").to_string();
-        auto userfs = SDL_OpenUserStorage("VolcanoEngine", game_name.c_str(), 0);
+        auto userfs = SDL_OpenUserStorage("VolcanoEngine", "test", 0);
         if (rootfs == nullptr) {
             throw std::runtime_error("Failed to open user storage.");
         }
         waitStorageReady(userfs, 5s);
 
-        *appstate = new Volcano::Framework::Local(rootfs, userfs, game_type);
+        *appstate = new Volcano::Framework::Local(rootfs, userfs);
     } catch (std::exception& e) {
         SDL_Quit();
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "VolcanoError", e.what(), NULL);
@@ -78,16 +72,16 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv) {
 }
 
 SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event) {
-    reinterpret_cast<Volcano::Framework::Context*>(appstate)->event(*event);
+    reinterpret_cast<Volcano::Framework::Local*>(appstate)->event(*event);
     return SDL_APP_CONTINUE;
 }
 
 SDL_AppResult SDL_AppIterate(void* appstate) {
-    return reinterpret_cast<Volcano::Framework::Context*>(appstate)->update();
+    return reinterpret_cast<Volcano::Framework::Local*>(appstate)->update();
 }
 
 void SDL_AppQuit(void* appstate, SDL_AppResult result) {
     if (result == SDL_APP_CONTINUE) {
-        delete reinterpret_cast<Volcano::Framework::Context*>(appstate);
+        delete reinterpret_cast<Volcano::Framework::Local*>(appstate);
     }
 }

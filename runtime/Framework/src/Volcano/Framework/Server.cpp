@@ -4,15 +4,13 @@
 
 VOLCANO_FRAMEWORK_BEGIN
 
-Server::Server(SDL_Storage* rootfs, SDL_Storage* userfs, rttr::type game_type, std::vector<ada::url> urls)
-    : ContextImpl(rootfs, userfs, game_type)
+Server::Server(SDL_Storage* rootfs, SDL_Storage* userfs, std::vector<ada::url> urls)
+    : Base(rootfs, userfs)
     , urls_(std::move(urls)) {
 }
 
 void Server::frame(Duration elapsed) {
-    ContextImpl::frame(elapsed);
-
-    // TODO
+    Base::frame(elapsed);
 }
 
 VOLCANO_FRAMEWORK_END

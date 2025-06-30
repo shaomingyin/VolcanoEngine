@@ -3,43 +3,30 @@
 #ifndef VOLCANO_PHYSICS_WORLD_H
 #define VOLCANO_PHYSICS_WORLD_H
 
-#include <Volcano/World/Scene.h>
 #include <Volcano/Physics/Common.h>
 
 VOLCANO_PHYSICS_BEGIN
 
-template <typename T>
-concept World_construct = requires(Volcano::World::Scene & scene) {
-	T(scene);
-};
+class World {
+	RTTR_ENABLE()
 
-template <typename T>
-concept World_isEnabled = requires(const T & v) {
-	{ v.isEnabled() } -> std::convertible_to<bool>;
-};
+public:
+	World();
+	virtual ~World() = default;
 
-template <typename T>
-concept World_enable = requires(T & v) {
-	v.enable();
-};
+public:
+	const Eigen::Vector3f& gravity() const noexcept {
+		return gravity_;
+	}
 
-template <typename T>
-concept World_disable = requires(T & v) {
-	v.disable();
-};
+	virtual void setGravity(const Eigen::Vector3f& v);
+	virtual bool isEnabled() const noexcept = 0;
+	virtual void enable() noexcept = 0;
+	virtual void disable() noexcept = 0;
 
-template <typename T>
-concept World_update = requires(T & v, Duration elapsed) {
-	v.update(elapsed);
+private:
+	Eigen::Vector3f gravity_;
 };
-
-template <typename T>
-concept World =
-	World_construct<T> &&
-	World_isEnabled<T> &&
-	World_enable<T> &&
-	World_disable<T> &&
-	World_update<T>;
 
 VOLCANO_PHYSICS_END
 
