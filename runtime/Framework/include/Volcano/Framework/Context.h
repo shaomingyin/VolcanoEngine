@@ -5,7 +5,6 @@
 
 #include <memory>
 
-#include <rttr/type>
 #include <entt/entt.hpp>
 #include <nlohmann_json.h>
 
@@ -31,7 +30,7 @@ public:
     };
 
 public:
-    Context(SDL_Storage* rootfs, SDL_Storage* userfs);
+    Context(SDL_Storage* rootfs);
     virtual ~Context() = default;
 
 public:

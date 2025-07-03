@@ -8,8 +8,6 @@
 VOLCANO_PHYSICS_BEGIN
 
 class World {
-	RTTR_ENABLE()
-
 public:
 	World();
 	virtual ~World() = default;

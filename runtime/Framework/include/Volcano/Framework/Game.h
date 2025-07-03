@@ -18,8 +18,6 @@
 VOLCANO_FRAMEWORK_BEGIN
 
 class Game {
-    RTTR_ENABLE()
-
 public:
     Game(Context& context);
     virtual ~Game() = default;

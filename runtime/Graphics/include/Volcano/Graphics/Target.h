@@ -18,6 +18,7 @@ public:
 
 public:
 	bool isEnabled() const noexcept {
+		return false;// FIXME
 	}
 
 	void enable() noexcept {

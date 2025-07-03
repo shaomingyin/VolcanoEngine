@@ -6,8 +6,8 @@
 
 VOLCANO_FRAMEWORK_BEGIN
 
-Base::Base(SDL_Storage* rootfs, SDL_Storage* userfs)
-    : Context(rootfs, userfs) {
+Base::Base(SDL_Storage* rootfs)
+    : Context(rootfs) {
 }
 
 SDL_AppResult Base::update() noexcept {

@@ -13,7 +13,7 @@ VOLCANO_FRAMEWORK_BEGIN
 
 class Client: public Local {
 public:
-    Client(SDL_Storage* rootfs, SDL_Storage* userfs, ada::url url);
+    Client(SDL_Storage* rootfs, ada::url url);
 
 public:
     void event(const SDL_Event& evt) override;

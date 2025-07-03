@@ -12,7 +12,7 @@ VOLCANO_FRAMEWORK_BEGIN
 
 class Base: public Context {
 public:
-    Base(SDL_Storage* rootfs, SDL_Storage* userfs);
+    Base(SDL_Storage* rootfs);
     ~Base() override = default;
 
 public:

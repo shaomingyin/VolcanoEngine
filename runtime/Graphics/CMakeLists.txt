@@ -6,18 +6,21 @@ volcano_add_static_library(Graphics
         ${CMAKE_CURRENT_SOURCE_DIR}/include
         ${CMAKE_CURRENT_BINARY_DIR}/include
     PRIVATE_SOURCES
+        include/GL/gl3w.h
+        include/GL/glcorearb.h
+        include/KHR/khrplatform.h
+        src/gl3w/gl3w.c
+        src/nanovg/nanovg.c
         include/Volcano/Graphics/Config.h.in
         include/Volcano/Graphics/Common.h
-        include/Volcano/Graphics/Device.h
+        include/Volcano/Graphics/Renderer.h
         include/Volcano/Graphics/Target.h
         include/Volcano/Graphics/Texture.h
         include/Volcano/Graphics/View.h
-        include/Volcano/Graphics/Window.h
-        src/Volcano/Graphics/Device.cpp
+        src/Volcano/Graphics/Renderer.cpp
         src/Volcano/Graphics/Target.cpp
         src/Volcano/Graphics/Texture.cpp
         src/Volcano/Graphics/View.cpp
-        src/Volcano/Graphics/Window.cpp
     PUBLIC_LINK_LIBRARIES
         Base
 )

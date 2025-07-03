@@ -4,8 +4,8 @@
 
 VOLCANO_FRAMEWORK_BEGIN
 
-Client::Client(SDL_Storage* rootfs, SDL_Storage* userfs, ada::url url)
-    : Local(rootfs, userfs)
+Client::Client(SDL_Storage* rootfs, ada::url url)
+    : Local(rootfs)
     , url_(std::move(url)) {
 }
 

@@ -1,7 +1,7 @@
 [requires]
+fmt/11.2.0
 asyncplusplus/1.2
 eigen/3.4.0
-fmt/11.0.2
 sigslot/1.2.2
 sdl/3.2.6
 microprofile/4.0

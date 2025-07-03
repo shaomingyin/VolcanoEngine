@@ -7,15 +7,16 @@
 #include <SDL3/SDL_events.h>
 
 #include <Volcano/Acoustics/Space.h>
-#include <Volcano/Graphics/Device.h>
+#include <Volcano/Graphics/Renderer.h>
 #include <Volcano/Framework/Common.h>
+#include <Volcano/Framework/Window.h>
 #include <Volcano/Framework/Base.h>
 
 VOLCANO_FRAMEWORK_BEGIN
 
 class Local: public Base {
 public:
-    Local(SDL_Storage* rootfs, SDL_Storage* userfs);
+    Local(SDL_Storage* rootfs);
 
 public:
     virtual void event(const SDL_Event& evt);
@@ -31,11 +32,9 @@ private:
     void initGui();
 
 private:
-    rttr::variant acoustics_space_instance_;
+    Window window_;
     Acoustics::Space* acoustics_space_;
-    rttr::variant graphics_device_instance_;
-    Graphics::Device* graphics_device_;
-    Graphics::Window* graphics_window_;
+    Graphics::Renderer* graphics_renderer_;
 };
 
 VOLCANO_FRAMEWORK_END

@@ -13,8 +13,6 @@ public:
 	virtual ~Component();
 
 public:
-	virtual void loadFromJson(const nlohmann::json& j);
-	virtual void saveToJson(nlohmann::json& j);
 };
 
 VOLCANO_WORLD_END

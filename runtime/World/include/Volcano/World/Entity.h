@@ -95,9 +95,6 @@ public:
 		return registry_->remove<Component>(id_);
 	}
 
-	virtual void loadFromJson(const nlohmann::json& j);
-	virtual void saveToJson(nlohmann::json& j);
-
 private:
 	entt::registry* registry_;
 	entt::entity id_;

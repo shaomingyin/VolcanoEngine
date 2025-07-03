@@ -9,8 +9,6 @@
 #include <SDL3/SDL_filesystem.h>
 #include <SDL3/SDL_messagebox.h>
 
-#include <rttr/type>
-
 #include <Volcano/Framework/Local.h>
 #include <Volcano/Framework/Client.h>
 
@@ -53,13 +51,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv) {
         }
         waitStorageReady(rootfs, 5s);
 
-        auto userfs = SDL_OpenUserStorage("VolcanoEngine", "test", 0);
-        if (rootfs == nullptr) {
-            throw std::runtime_error("Failed to open user storage.");
-        }
-        waitStorageReady(userfs, 5s);
-
-        *appstate = new Volcano::Framework::Local(rootfs, userfs);
+        *appstate = new Volcano::Framework::Local(rootfs);
     } catch (std::exception& e) {
         SDL_Quit();
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "VolcanoError", e.what(), NULL);

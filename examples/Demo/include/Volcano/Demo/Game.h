@@ -9,8 +9,6 @@
 VOLCANO_DEMO_BEGIN
 
 class Game: public Framework::Game {
-	RTTR_ENABLE(Framework::Game)
-
 public:
 	Game(Framework::Context& context);
 };

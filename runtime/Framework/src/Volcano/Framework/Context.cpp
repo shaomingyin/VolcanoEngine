@@ -4,15 +4,11 @@
 
 VOLCANO_FRAMEWORK_BEGIN
 
-Context::Context(SDL_Storage* rootfs, SDL_Storage* userfs)
+Context::Context(SDL_Storage* rootfs)
     : state_(State::Idle)
     , quit_(false)
     , rootfs_(rootfs)
-    , userfs_(userfs) {
-    VOLCANO_ASSERT(rootfs_ != nullptr);
-    VOLCANO_ASSERT(SDL_StorageReady(rootfs_));
-    VOLCANO_ASSERT(userfs_ != nullptr);
-    VOLCANO_ASSERT(SDL_StorageReady(userfs_));
+    , userfs_(nullptr) {
 }
 
 void Context::load(std::string scene_path) {
@@ -21,7 +17,7 @@ void Context::load(std::string scene_path) {
 
     try {
         loadConfig(nlohmann::loadFromStorage(rootfs_, "/Config.json"));
-        loadConfig(nlohmann::loadFromStorage(userfs_, "/Config.json"));
+        //loadConfig(nlohmann::loadFromStorage(userfs_, "/Config.json"));
     } catch (...) {
     }
 

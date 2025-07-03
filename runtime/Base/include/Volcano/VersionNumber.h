@@ -56,7 +56,7 @@ public:
     }
 
     std::string toString() const {
-        return std::format("{}.{}.{}", major_number_, minor_number_, patch_number_);
+        return fmt::format("{}.{}.{}", major_number_, minor_number_, patch_number_);
     }
 
     bool operator==(const VersionNumber& other) const {

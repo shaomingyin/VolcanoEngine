@@ -11,8 +11,9 @@
 #include <list>
 #include <string>
 #include <chrono>
-#include <format>
 #include <stdexcept>
+
+#include <fmt/format.h>
 
 #include <Eigen/Core>
 #include <Eigen/Dense>
@@ -21,7 +22,6 @@
 #include <Volcano/Config.h>
 
 #include <async++.h>
-#include <rttr/type>
 #include <SDL3/SDL_log.h>
 
 #ifdef VOLCANO_PROFILE
@@ -101,27 +101,27 @@ VOLCANO_FORCE_INLINE int64_t timePointToMicroseconds(TimePoint tp) {
 }
 
 template <typename... Args>
-void log(SDL_LogPriority priority, std::format_string<Args...> fmt, Args&&... args) {
-    SDL_LogMessage(SDL_LOG_CATEGORY_APPLICATION, priority, std::format(fmt, std::forward<Args>(args)...).c_str());
+void log(SDL_LogPriority priority, fmt::format_string<Args...> fmt, Args&&... args) {
+    SDL_LogMessage(SDL_LOG_CATEGORY_APPLICATION, priority, fmt::format(fmt, std::forward<Args>(args)...).c_str());
 }
 
 template <typename... Args>
-void logError(std::format_string<Args...> fmt, Args&&... args) {
+void logError(fmt::format_string<Args...> fmt, Args&&... args) {
     log(SDL_LOG_PRIORITY_ERROR, fmt, std::forward<Args>(args)...);
 }
 
 template <typename... Args>
-void logWarning(std::format_string<Args...> fmt, Args&&... args) {
+void logWarning(fmt::format_string<Args...> fmt, Args&&... args) {
     log(SDL_LOG_PRIORITY_WARN, fmt, std::forward<Args>(args)...);
 }
 
 template <typename... Args>
-void logInfo(std::format_string<Args...> fmt, Args&&... args) {
+void logInfo(fmt::format_string<Args...> fmt, Args&&... args) {
     log(SDL_LOG_PRIORITY_INFO, fmt, std::forward<Args>(args)...);
 }
 
 template <typename... Args>
-void logDebug(std::format_string<Args...> fmt, Args&&... args) {
+void logDebug(fmt::format_string<Args...> fmt, Args&&... args) {
 #ifdef VOLCANO_DEBUG
     log(SDL_LOG_PRIORITY_DEBUG, fmt, std::forward<Args>(args)...);
 #endif

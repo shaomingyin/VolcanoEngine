@@ -8,10 +8,4 @@ Scene::Scene()
     : global_(create()) {
 }
 
-void Scene::loadFromJson(const nlohmann::json& j) {
-}
-
-void Scene::saveToJson(nlohmann::json& j) {
-}
-
 VOLCANO_WORLD_END

@@ -8,8 +8,6 @@
 VOLCANO_ACOUSTICS_BEGIN
 
 class Space {
-    RTTR_ENABLE()
-
 public:
     Space();
     virtual ~Space() = default;
