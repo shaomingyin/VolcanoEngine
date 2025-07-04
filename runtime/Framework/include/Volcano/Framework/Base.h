@@ -12,7 +12,7 @@ VOLCANO_FRAMEWORK_BEGIN
 
 class Base: public Context {
 public:
-    Base(SDL_Storage* rootfs);
+    Base(SDL_Storage* rootfs, Game& game);
     ~Base() override = default;
 
 public:
@@ -24,8 +24,8 @@ protected:
     void loadScene(const nlohmann::json& j);
 
 private:
-    Game* game_;
-    Physics::World* physics_world_;
+    Game& game_;
+    Physics::World physics_world_;
     TimePoint frame_last_;
 };
 

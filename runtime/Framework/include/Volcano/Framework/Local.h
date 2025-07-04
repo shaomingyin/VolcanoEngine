@@ -16,7 +16,7 @@ VOLCANO_FRAMEWORK_BEGIN
 
 class Local: public Base {
 public:
-    Local(SDL_Storage* rootfs);
+    Local(SDL_Storage* rootfs, Game& game);
 
 public:
     virtual void event(const SDL_Event& evt);

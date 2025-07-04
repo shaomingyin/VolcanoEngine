@@ -5,8 +5,8 @@
 
 VOLCANO_FRAMEWORK_BEGIN
 
-Local::Local(SDL_Storage* rootfs)
-    : Base(rootfs)
+Local::Local(SDL_Storage* rootfs, Game& game)
+    : Base(rootfs, game)
     , window_("Volcano", 800, 600)
     , acoustics_space_(nullptr)
     , graphics_renderer_(nullptr) {

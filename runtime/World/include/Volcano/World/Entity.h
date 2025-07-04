@@ -22,53 +22,43 @@ public:
 	Entity& operator=(Entity&&);
 
 	bool isEnabled() const {
-		VOLCANO_ASSERT(basic_ != nullptr);
-		return basic_->isEnabled();
+		return basic().isEnabled();
 	}
 
 	void enable() {
-		VOLCANO_ASSERT(basic_ != nullptr);
-		basic_->enable();
+		basic().enable();
 	}
 
 	void disable() {
-		VOLCANO_ASSERT(basic_ != nullptr);
-		basic_->disable();
+		basic().disable();
 	}
 
 	bool isVisible() const {
-		VOLCANO_ASSERT(basic_ != nullptr);
-		return basic_->isVisible();
+		return basic().isVisible();
 	}
 
 	void show() {
-		VOLCANO_ASSERT(basic_ != nullptr);
-		basic_->show();
+		basic().show();
 	}
 
 	void hide() {
-		VOLCANO_ASSERT(basic_ != nullptr);
-		basic_->hide();
+		basic().hide();
 	}
 
 	const std::string& name() const {
-		VOLCANO_ASSERT(basic_ != nullptr);
-		return basic_->name();
+		return basic().name();
 	}
 
 	void rename(std::string v) {
-		VOLCANO_ASSERT(basic_ != nullptr);
-		basic_->rename(std::move(v));
+		basic().rename(std::move(v));
 	}
 
 	Eigen::Affine3f transform() const {
-		VOLCANO_ASSERT(basic_ != nullptr);
-		return basic_->transform();
+		return basic().transform();
 	}
 
 	void setTransform(Eigen::Affine3f v) {
-		VOLCANO_ASSERT(basic_ != nullptr);
-		basic_->setTransform(v);
+		basic().setTransform(v);
 	}
 
 	template <typename Component>
@@ -96,9 +86,21 @@ public:
 	}
 
 private:
+	Basic& basic() {
+		VOLCANO_ASSERT(registry_ != nullptr);
+		VOLCANO_ASSERT(id_ != entt::null);
+		return registry_->get<Basic>(id_);
+	}
+
+	const Basic& basic() const {
+		VOLCANO_ASSERT(registry_ != nullptr);
+		VOLCANO_ASSERT(id_ != entt::null);
+		return registry_->get<Basic>(id_);
+	}
+
+private:
 	entt::registry* registry_;
 	entt::entity id_;
-	Basic* basic_; // FIXME: Is this pointer stable?
 };
 
 VOLCANO_WORLD_END

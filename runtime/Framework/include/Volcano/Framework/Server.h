@@ -16,7 +16,7 @@ VOLCANO_FRAMEWORK_BEGIN
 
 class Server: public Base {
 public:
-    Server(SDL_Storage* rootfs, std::vector<ada::url> urls);
+    Server(SDL_Storage* rootfs, Game& game, std::vector<ada::url> urls);
 
 protected:
     virtual void frame(Duration elapsed);

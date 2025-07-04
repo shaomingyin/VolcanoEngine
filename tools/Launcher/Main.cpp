@@ -49,9 +49,10 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv) {
         if (rootfs == nullptr) {
             throw std::runtime_error("Failed to open title storage.");
         }
-        waitStorageReady(rootfs, 5s);
-
-        *appstate = new Volcano::Framework::Local(rootfs);
+        Volcano::Framework::Game game;
+        auto app = new Volcano::Framework::Local(rootfs, game);
+        app->init();
+        *appstate = app;
     } catch (std::exception& e) {
         SDL_Quit();
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "VolcanoError", e.what(), NULL);

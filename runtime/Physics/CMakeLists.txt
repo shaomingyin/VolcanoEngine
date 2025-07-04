@@ -12,4 +12,6 @@ volcano_add_static_library(Physics
         src/Volcano/Physics/World.cpp
     PUBLIC_LINK_LIBRARIES
         Base
+    PUBLIC_LINK_PACKAGES
+        Bullet Bullet::Bullet
 )
