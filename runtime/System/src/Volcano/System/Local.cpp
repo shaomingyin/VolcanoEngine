@@ -12,11 +12,6 @@ Local::Local(World::Scene& scene, QObject* parent)
 }
 
 bool Local::event(QEvent* evt) {
-    for (auto& screen_controller: screen_controller_list_) {
-        if (screen_controller.event(evt)) {
-            return true;
-        }
-    }
     return Base::event(evt);
 }
 
@@ -35,9 +30,6 @@ void Local::addScreensToView(Graphics::View& view) const {
 }
 
 void Local::addSceneToView(Graphics::View& view) const {
-    QtConcurrent::map(screen_controller_list_, [this](auto& screen_controller) {
-
-    }).waitForFinished();
 }
 
 VOLCANO_SYSTEM_END

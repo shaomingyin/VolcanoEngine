@@ -28,7 +28,6 @@ private:
 
 private:
     Graphics::Renderer renderer_;
-    QList<ScreenController> screen_controller_list_;
 };
 
 VOLCANO_SYSTEM_END

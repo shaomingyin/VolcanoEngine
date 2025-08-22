@@ -4,6 +4,7 @@
 #define VOLCANO_EDITOR_COMMON_H
 
 #include <Volcano/Common.h>
+#include <Volcano/Editor/Config.h>
 
 #define VOLCANO_EDITOR_BEGIN VOLCANO_BEGIN namespace Editor {
 #define VOLCANO_EDITOR_END } VOLCANO_END

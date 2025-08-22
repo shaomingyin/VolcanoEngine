@@ -1,8 +1,0 @@
-{
-	"Id": "VolcanoEditor",
-    "Name": "Volcano Editor",
-    "Version": "${CMAKE_PROJECT_VERSION}",
-	"Vendor": "Shaomy",
-	"Dependencies": [
-	]
-}
