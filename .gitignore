@@ -34,4 +34,5 @@
 # Volcano
 /.idea*
 /build*
+/CMakeLists.txt.user*
 /CMake*Presets.json

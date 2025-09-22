@@ -16,8 +16,7 @@ set(VOLCANO_EDITOR_SOURCES
     include/Volcano/Editor/Config.h.in
     include/Volcano/Editor/KitAspect.h
     include/Volcano/Editor/KitAspectFactory.h
-    include/Volcano/Editor/KitSettingsPage.h
-    include/Volcano/Editor/KitSettingsWidget.h
+    include/Volcano/Editor/KitSettings.h
     include/Volcano/Editor/Plugin.h
     include/Volcano/Editor/Project.h
     include/Volcano/Editor/ProjectWizard.h
@@ -31,8 +30,7 @@ set(VOLCANO_EDITOR_SOURCES
     src/Volcano/Editor/BuildSystem.cpp
     src/Volcano/Editor/KitAspect.cpp
     src/Volcano/Editor/KitAspectFactory.cpp
-    src/Volcano/Editor/KitSettingsPage.cpp
-    src/Volcano/Editor/KitSettingsWidget.cpp
+    src/Volcano/Editor/KitSettings.cpp
     src/Volcano/Editor/Plugin.cpp
     src/Volcano/Editor/Project.cpp
     src/Volcano/Editor/ProjectWizard.cpp
@@ -54,14 +52,11 @@ configure_file(
 add_qtc_plugin(Editor
     OUTPUT_NAME
         VolcanoEditor
-    PLUGIN_NAME
-        VolcanoEditor
     PLUGIN_DEPENDS
         QtCreator::CMakeProjectManager
         QtCreator::ProjectExplorer
         QtCreator::QtSupport
         QtCreator::GLSLEditor
-        QtCreator::QmlPreview
         QtCreator::Core
     DEPENDS
         World

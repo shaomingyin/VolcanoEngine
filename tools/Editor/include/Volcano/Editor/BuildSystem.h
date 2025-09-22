@@ -13,12 +13,10 @@ class BuildSystem: public ProjectExplorer::BuildSystem {
     Q_OBJECT
 
 public:
-    explicit BuildSystem(ProjectExplorer::Target *target);
     explicit BuildSystem(ProjectExplorer::BuildConfiguration *build_configuration);
     ~BuildSystem() override;
 
 public:
-    QString name() const override;
     void triggerParsing() override;
 };
 

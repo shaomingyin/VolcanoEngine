@@ -11,7 +11,7 @@
 
 VOLCANO_EDITOR_BEGIN
 
-bool Plugin::initialize(const QStringList& arguments, QString* error_string) {
+Utils::Result<> Plugin::initialize(const QStringList& arguments) {
     ProjectExplorer::ProjectManager::registerProjectType<Project>(Project::MimeType);
 
     auto kit_manager = ProjectExplorer::KitManager::instance();
@@ -25,7 +25,7 @@ bool Plugin::initialize(const QStringList& arguments, QString* error_string) {
         return new ProjectWizardFactory();
     });
 
-    return true;
+    return Utils::ResultOk;
 }
 
 void Plugin::extensionsInitialized() {

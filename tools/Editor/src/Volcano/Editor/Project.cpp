@@ -9,7 +9,7 @@ const QString Project::MimeType(VOLCANO_EDITOR_MIMETYPE_PROJECT_FILE);
 
 Project::Project(const Utils::FilePath& filename)
     : ProjectExplorer::Project(MimeType, filename) {
-    setBuildSystemCreator<BuildSystem>();
+    setBuildSystemCreator<BuildSystem>("Volcano");
 }
 
 VOLCANO_EDITOR_END

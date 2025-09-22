@@ -13,7 +13,7 @@ class ProjectWizard: public Core::BaseFileWizard {
     Q_OBJECT
 
 public:
-    ProjectWizard(const Core::BaseFileWizardFactory* factory, const QVariantMap& extra_values, QWidget* parent = nullptr);
+    ProjectWizard(const Core::BaseFileWizardFactory* factory, const QVariantMap& extra_values);
 };
 
 VOLCANO_EDITOR_END

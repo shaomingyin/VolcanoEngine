@@ -6,8 +6,8 @@
 #include <extensionsystem/iplugin.h>
 
 #include <Volcano/Editor/Common.h>
+#include <Volcano/Editor/KitSettings.h>
 #include <Volcano/Editor/KitAspectFactory.h>
-#include <Volcano/Editor/KitSettingsPage.h>
 #include <Volcano/Editor/BuildConfigurationFactory.h>
 
 VOLCANO_EDITOR_BEGIN
@@ -20,7 +20,7 @@ public:
     Plugin() = default;
 
 public:
-    bool initialize(const QStringList& arguments, QString* error_string) override;
+    Utils::Result<> initialize(const QStringList& arguments) override;
     void extensionsInitialized() override;
     ShutdownFlag aboutToShutdown() override;
 

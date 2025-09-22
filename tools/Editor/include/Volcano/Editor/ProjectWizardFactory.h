@@ -16,11 +16,10 @@ public:
     ProjectWizardFactory();
 
 public:
-    Core::BaseFileWizard* create(QWidget* parent, const Core::WizardDialogParameters& parameters) const override;
+    Core::BaseFileWizard* create(const Core::WizardDialogParameters& parameters) const override;
     Core::GeneratedFiles generateFiles(const QWizard* wizard, QString* error_message) const override;
-    bool writeFiles(const Core::GeneratedFiles& files, QString* error_message) const override;
-    bool postGenerateFiles(const QWizard* wizard, const Core::GeneratedFiles& gen_files, QString* error_message) const override;
-
+    Utils::Result<> writeFiles(const Core::GeneratedFiles& files) const override;
+    Utils::Result<> postGenerateFiles(const QWizard* wizard, const Core::GeneratedFiles& gen_files) const override;
 };
 
 VOLCANO_EDITOR_END

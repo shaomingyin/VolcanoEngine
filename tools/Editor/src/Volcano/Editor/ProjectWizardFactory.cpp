@@ -12,20 +12,20 @@ ProjectWizardFactory::ProjectWizardFactory() {
     setDescription("asdf");
 }
 
-Core::BaseFileWizard* ProjectWizardFactory::create(QWidget* parent, const Core::WizardDialogParameters& parameters) const {
-    return new Editor::ProjectWizard(this, parameters.extraValues(), parent);
+Core::BaseFileWizard* ProjectWizardFactory::create(const Core::WizardDialogParameters& parameters) const {
+    return new Editor::ProjectWizard(this, parameters.extraValues());
 }
 
 Core::GeneratedFiles ProjectWizardFactory::generateFiles(const QWizard* wizard, QString* error_message) const {
     return {};
 }
 
-bool ProjectWizardFactory::writeFiles(const Core::GeneratedFiles& files, QString* error_message) const {
-    return false;
+Utils::Result<> ProjectWizardFactory::writeFiles(const Core::GeneratedFiles& files) const {
+    return Utils::ResultOk;
 }
 
-bool ProjectWizardFactory::postGenerateFiles(const QWizard* wizard, const Core::GeneratedFiles& gen_files, QString* error_message) const {
-    return false;
+Utils::Result<> ProjectWizardFactory::postGenerateFiles(const QWizard* wizard, const Core::GeneratedFiles& gen_files) const {
+    return Utils::ResultOk;
 }
 
 VOLCANO_EDITOR_END
