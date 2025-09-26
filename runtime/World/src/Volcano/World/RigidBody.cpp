@@ -4,6 +4,10 @@
 
 VOLCANO_WORLD_BEGIN
 
+RigidBody::MotionState::MotionState(Transformable &orig)
+    : orig_(orig) {
+}
+
 void RigidBody::MotionState::getWorldTransform(btTransform& world_transform) const {
     world_transform.setFromOpenGLMatrix(orig_.absoluteTransform().affine().data());
 }
@@ -41,6 +45,18 @@ void RigidBody::classBegin() {
 }
 
 void RigidBody::componentComplete() {
+}
+
+QDataStream& operator<<(QDataStream& s, const RigidBody& v) {
+    s << static_cast<const Transformable&>(v);
+    // TODO
+    return s;
+}
+
+QDataStream& operator>>(QDataStream& s, RigidBody& v) {
+    s >> static_cast<Transformable&>(v);
+    // TODO
+    return s;
 }
 
 VOLCANO_WORLD_END

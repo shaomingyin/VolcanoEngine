@@ -53,4 +53,16 @@ void Screen::onComponentStatusChanged(QQmlComponent::Status st) {
     emit statusChanged(st);
 }
 
+QDataStream& operator<<(QDataStream& s, const Screen& v) {
+    s << static_cast<const Transformable&>(v);
+    // TODO
+    return s;
+}
+
+QDataStream& operator>>(QDataStream& s, Screen& v) {
+    s >> static_cast<Transformable&>(v);
+    // TODO
+    return s;
+}
+
 VOLCANO_WORLD_END

@@ -48,6 +48,9 @@ public:
     void classBegin() override;
     void componentComplete() override;
 
+    friend QDataStream& operator<<(QDataStream& s, const RigidBody& v);
+    friend QDataStream& operator>>(QDataStream& s, RigidBody& v);
+
 signals:
     void massChanged(float v);
     void scalingChanged(const Vector3& v);

@@ -37,4 +37,16 @@ void ConeRigidBody::componentComplete() {
     setCollisionShape(shape_.get());
 }
 
+QDataStream& operator<<(QDataStream& s, const ConeRigidBody& v) {
+    s << static_cast<const RigidBody&>(v);
+    // TODO
+    return s;
+}
+
+QDataStream& operator>>(QDataStream& s, ConeRigidBody& v) {
+    s >> static_cast<RigidBody&>(v);
+    // TODO
+    return s;
+}
+
 VOLCANO_WORLD_END

@@ -37,4 +37,16 @@ void CapsuleRigidBody::componentComplete() {
     setCollisionShape(shape_.get());
 }
 
+QDataStream& operator<<(QDataStream& s, const CapsuleRigidBody& v) {
+    s << static_cast<const RigidBody&>(v);
+    // TODO
+    return s;
+}
+
+QDataStream& operator>>(QDataStream& s, CapsuleRigidBody& v) {
+    s >> static_cast<RigidBody&>(v);
+    // TODO
+    return s;
+}
+
 VOLCANO_WORLD_END

@@ -1,5 +1,5 @@
 
-volcano_add_static_library(Base
+volcano_add_shared_library(Base
     OUTPUT_NAME
         VolcanoBase
     PUBLIC_INCLUDE_DIRECTORIES

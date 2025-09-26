@@ -81,4 +81,12 @@ QQmlListProperty<Component> Entity::qmlComponents() {
     };
 }
 
+QDataStream& operator<<(QDataStream& s, const Entity& v) {
+    return s;
+}
+
+QDataStream& operator>>(QDataStream& s, Entity& v) {
+    return s;
+}
+
 VOLCANO_WORLD_END

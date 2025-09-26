@@ -66,6 +66,9 @@ public:
         }
     }
 
+    friend QDataStream& operator<<(QDataStream& s, const Dynamic& v);
+    friend QDataStream& operator>>(QDataStream& s, Dynamic& v);
+
 signals:
     void enabledChanged(bool v);
     void gravityChanged(const QVector3D& v);

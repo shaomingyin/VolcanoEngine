@@ -27,6 +27,9 @@ public:
     void setSource(const QUrl& v);
     void componentComplete() override;
 
+    friend QDataStream& operator<<(QDataStream& s, const TriangleMeshRigidBody& v);
+    friend QDataStream& operator>>(QDataStream& s, TriangleMeshRigidBody& v);
+
 signals:
     void sourceChanged(const QUrl& v);
 

@@ -1,0 +1,19 @@
+{
+    "Id": "volcanoeditor",
+	"Name": "Volcano Editor",
+	"Version": "${CMAKE_PROJECT_VERSION}_0",
+	"Vendor": "Shaomy",
+	"VendorId": "shaomy",
+	"JsonWizardPaths": [ ":/volcano/editor/templates/wizards" ],
+	"Mimetypes": [
+	    "<?xml version='1.0' encoding='UTF-8'?>",
+		"<mime-info xmlns='http://www.freedesktop.org/standards/shared-mime-info'>",
+		"    <mime-type type='${VOLCANO_EDITOR_MIMETYPE_SCENE_FILE}'>",
+		"        <sub-class-of type='application/json'/>",
+		"        <comment>Volcano Scene File</comment>",
+		"        <glob pattern='*.volcano-scene'/>",
+		"    </mime-type>",
+		"</mime-info>"
+	],
+	${IDE_PLUGIN_DEPENDENCIES}
+}

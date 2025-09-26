@@ -54,6 +54,9 @@ public:
     void replaceEntity(qsizetype i, Entity* p);
     QQmlListProperty<Entity> qmlEntities();
 
+    friend QDataStream& operator<<(QDataStream& s, const Scene& v);
+    friend QDataStream& operator>>(QDataStream& s, Scene& v);
+
 signals:
     void entityAdded(Entity* p);
     void entityRemoved(Entity* p);

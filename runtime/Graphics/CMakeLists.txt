@@ -1,5 +1,5 @@
 
-volcano_add_static_library(Graphics
+volcano_add_shared_library(Graphics
     OUTPUT_NAME
         VolcanoGraphics
     PUBLIC_INCLUDE_DIRECTORIES

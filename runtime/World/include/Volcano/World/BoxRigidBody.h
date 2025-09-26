@@ -47,6 +47,9 @@ public:
     void setHeight(float v);
     void componentComplete() override;
 
+    friend QDataStream& operator<<(QDataStream& s, const BoxRigidBody& v);
+    friend QDataStream& operator>>(QDataStream& s, BoxRigidBody& v);
+
 signals:
     void lengthChanged(float v);
     void widthChanged(float v);

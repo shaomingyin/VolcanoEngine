@@ -13,6 +13,10 @@ class Model: public Loadable {
 
 public:
     Model(QObject* parent = nullptr);
+
+public:
+    friend QDataStream& operator<<(QDataStream& s, const Model& v);
+    friend QDataStream& operator>>(QDataStream& s, Model& v);
 };
 
 VOLCANO_WORLD_END

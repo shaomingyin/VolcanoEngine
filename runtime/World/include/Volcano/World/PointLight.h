@@ -13,6 +13,10 @@ class PointLight: public Light {
 
 public:
     PointLight(QObject* parent = nullptr);
+
+public:
+    friend QDataStream& operator<<(QDataStream& s, const PointLight& v);
+    friend QDataStream& operator>>(QDataStream& s, PointLight& v);
 };
 
 VOLCANO_WORLD_END

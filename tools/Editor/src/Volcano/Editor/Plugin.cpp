@@ -5,15 +5,11 @@
 #include <projectexplorer/kitmanager.h>
 #include <projectexplorer/projectmanager.h>
 
-#include <Volcano/Editor/Project.h>
-#include <Volcano/Editor/ProjectWizardFactory.h>
 #include <Volcano/Editor/Plugin.h>
 
 VOLCANO_EDITOR_BEGIN
 
 Utils::Result<> Plugin::initialize(const QStringList& arguments) {
-    ProjectExplorer::ProjectManager::registerProjectType<Project>(Project::MimeType);
-
     auto kit_manager = ProjectExplorer::KitManager::instance();
     if (ProjectExplorer::KitManager::isLoaded()) {
         kitsRestored();
@@ -21,9 +17,11 @@ Utils::Result<> Plugin::initialize(const QStringList& arguments) {
         connect(kit_manager, &ProjectExplorer::KitManager::kitsLoaded, this, &Plugin::kitsRestored, Qt::SingleShotConnection);
     }
 
-    Core::IWizardFactory::registerFactoryCreator([] {
-        return new ProjectWizardFactory();
-    });
+    Core::IOptionsPage::registerCategory(SETTINGS_CATEGORY_ID, "VolcanoEngine", Utils::FilePath());
+
+    auto pm = ProjectExplorer::ProjectManager::instance();
+    connect(pm, &ProjectExplorer::ProjectManager::projectAdded, this, &Plugin::projectAdded);
+    connect(pm, &ProjectExplorer::ProjectManager::projectRemoved, this, &Plugin::projectRemoved);
 
     return Utils::ResultOk;
 }
@@ -48,6 +46,14 @@ void Plugin::kitsRestored() {
     //     kit->setAutoDetected(false);
     //     //kit->
     // }, "Teest");
+}
+
+void Plugin::projectAdded(ProjectExplorer::Project* project) {
+
+}
+
+void Plugin::projectRemoved(ProjectExplorer::Project* project) {
+
 }
 
 VOLCANO_EDITOR_END

@@ -13,6 +13,10 @@ class Component: public Object {
 
 public:
     Component(QObject* parent = nullptr);
+
+public:
+    friend QDataStream& operator<<(QDataStream& s, const Component& v);
+    friend QDataStream& operator>>(QDataStream& s, Component& v);
 };
 
 VOLCANO_WORLD_END

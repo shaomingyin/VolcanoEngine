@@ -98,6 +98,9 @@ public:
         return (a.affine_transform_ * b);
     }
 
+    friend QDataStream& operator<<(QDataStream& s, const Transform& v);
+    friend QDataStream& operator>>(QDataStream& s, Transform& v);
+
 signals:
     void translationChanged(const Vector3& v);
     void scalingChanged(const Vector3& v);

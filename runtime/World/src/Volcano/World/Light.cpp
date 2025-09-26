@@ -10,4 +10,16 @@ Light::Light(QObject* parent)
     , strength_(0.5f) {
 }
 
+QDataStream& operator<<(QDataStream& s, const Light& v) {
+    s << static_cast<const Transformable&>(v);
+    // TODO
+    return s;
+}
+
+QDataStream& operator>>(QDataStream& s, Light& v) {
+    s >> static_cast<Transformable&>(v);
+    // TODO
+    return s;
+}
+
 VOLCANO_WORLD_END

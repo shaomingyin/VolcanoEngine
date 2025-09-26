@@ -1,5 +1,5 @@
 
-volcano_add_static_library(Launcher
+volcano_add_executable(Launcher
     OUTPUT_NAME
         VolcanoLauncher
     PUBLIC_INCLUDE_DIRECTORIES
@@ -12,10 +12,9 @@ volcano_add_static_library(Launcher
         src/Volcano/Launcher/Main.cpp
         src/Volcano/Launcher/MainWindow.cpp
     PUBLIC_LINK_LIBRARIES
+        World
 		Acoustics
 		Graphics
-		Physics
-        World
     PUBLIC_QT_MODULES
         Quick
     PUBLIC_HEADERS

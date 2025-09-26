@@ -4,6 +4,7 @@
 #define VOLCANO_WORLD_OBJECT_H
 
 #include <QObject>
+#include <QDataStream>
 #include <QNetworkAccessManager>
 
 #include <Volcano/World/Common.h>
@@ -30,6 +31,9 @@ public:
     }
 
     QNetworkAccessManager* networkAccessManager();
+
+    friend QDataStream& operator<<(QDataStream& s, const Object& v);
+    friend QDataStream& operator>>(QDataStream& s, Object& v);
 
 signals:
     void enabledChanged(bool v);

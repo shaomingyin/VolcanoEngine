@@ -5,9 +5,6 @@
 
 #include <cmath>
 
-#include <Eigen/Core>
-#include <Eigen/Geometry>
-
 #include <QMetaType>
 
 #include <Volcano/Common.h>

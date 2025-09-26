@@ -23,4 +23,16 @@ void TriangleMeshRigidBody::componentComplete() {
     // TODO
 }
 
+QDataStream& operator<<(QDataStream& s, const TriangleMeshRigidBody& v) {
+    s << static_cast<const RigidBody&>(v);
+    // TODO
+    return s;
+}
+
+QDataStream& operator>>(QDataStream& s, TriangleMeshRigidBody& v) {
+    s >> static_cast<RigidBody&>(v);
+    // TODO
+    return s;
+}
+
 VOLCANO_WORLD_END

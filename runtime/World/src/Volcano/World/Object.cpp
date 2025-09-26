@@ -18,4 +18,14 @@ QNetworkAccessManager* Object::networkAccessManager() {
     return nullptr;
 }
 
+QDataStream& operator<<(QDataStream& s, const Object& v) {
+    // TODO
+    return s;
+}
+
+QDataStream& operator>>(QDataStream& s, Object& v) {
+    // TODO
+    return s;
+}
+
 VOLCANO_WORLD_END

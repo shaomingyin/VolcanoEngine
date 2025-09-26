@@ -26,4 +26,16 @@ void Transformable::attachParentTransform(const Transform* p) {
     }
 }
 
+QDataStream& operator<<(QDataStream& s, const Transformable& v) {
+    s << static_cast<const Component&>(v);
+    // TODO
+    return s;
+}
+
+QDataStream& operator>>(QDataStream& s, Transformable& v) {
+    s >> static_cast<Component&>(v);
+    // TODO
+    return s;
+}
+
 VOLCANO_WORLD_END

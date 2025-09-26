@@ -25,6 +25,9 @@ public:
     void setRadius(float v);
     void componentComplete() override;
 
+    friend QDataStream& operator<<(QDataStream& s, const SphereRigidBody& v);
+    friend QDataStream& operator>>(QDataStream& s, SphereRigidBody& v);
+
 signals:
     void radiusChanged(float v);
 

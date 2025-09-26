@@ -32,6 +32,9 @@ public:
     void setConstant(float v);
     void componentComplete() override;
 
+    friend QDataStream& operator<<(QDataStream& s, const StaticPlaneRigidBody& v);
+    friend QDataStream& operator>>(QDataStream& s, StaticPlaneRigidBody& v);
+
 signals:
     void normalChanged(const Vector3& v);
     void constantChanged(float v);

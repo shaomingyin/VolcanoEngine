@@ -1,5 +1,5 @@
 
-volcano_add_static_library(World
+volcano_add_shared_library(World
     OUTPUT_NAME
         VolcanoWorld
     PUBLIC_INCLUDE_DIRECTORIES

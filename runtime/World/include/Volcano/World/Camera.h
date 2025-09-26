@@ -131,6 +131,9 @@ public:
         updateProjection();
 	}
 
+    friend QDataStream& operator<<(QDataStream& s, const Camera& v);
+    friend QDataStream& operator>>(QDataStream& s, Camera& v);
+
 signals:
     void rectChanged(const QRectF& v);
     void fovChanged(float v);

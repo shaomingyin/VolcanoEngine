@@ -32,6 +32,10 @@ public:
     void *mapRange(int offset, int count, OpenMode mode) override;
     void unmap() override;
 
+protected:
+    qint64 readData(char* data, qint64 max_size) override;
+    qint64 writeData(const char* data, qint64 max_size) override;
+
 private:
     bool isCurrent() const {
         return (glCurrentBuffer(owner_.type()) == owner_.bufferId());

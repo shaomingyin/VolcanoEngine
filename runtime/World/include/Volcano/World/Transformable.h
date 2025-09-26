@@ -27,6 +27,9 @@ public:
 
     void attachParentTransform(const Transform* p);
 
+    friend QDataStream& operator<<(QDataStream& s, const Transformable& v);
+    friend QDataStream& operator>>(QDataStream& s, Transformable& v);
+
 private:
     Transform transform_;
     const Transform* parent_transform_;

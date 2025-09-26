@@ -30,6 +30,9 @@ public:
     void setHeight(float v);
     void componentComplete() override;
 
+    friend QDataStream& operator<<(QDataStream& s, const ConeRigidBody& v);
+    friend QDataStream& operator>>(QDataStream& s, ConeRigidBody& v);
+
 signals:
     void radiusChanged(float v);
     void heightChanged(float v);

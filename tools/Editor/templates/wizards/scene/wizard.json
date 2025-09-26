@@ -1,0 +1,30 @@
+{
+    "trDisplayName": "Scene",
+    "trDisplayCategory": "VolcanoEngine",
+    "trDescription": "asdf",
+
+    "version": 1,
+    "supportedProjectTypes": [],
+    "id": "VolcanoEditor.Scene",
+    "category": "VolcanoEngine",
+
+    "pages":
+    [
+        {
+            "trDisplayName": "Location",
+            "trShortTitle": "Location",
+            "typeId": "File"
+        }
+    ],
+
+    "generators":
+    [
+        {
+            "typeId": "File",
+            "data":
+            [
+                { "source": "World/Startup.volcano-scene", "target": "World/Startup.volcano-scene" }
+            ]
+        }
+    ]
+}

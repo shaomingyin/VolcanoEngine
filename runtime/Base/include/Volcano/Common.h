@@ -17,6 +17,9 @@
 
 #include <async++.h>
 
+#include <Eigen/Core>
+#include <Eigen/Geometry>
+
 #ifdef VOLCANO_PROFILE
 #   include <microprofile.h>
 #endif

@@ -53,6 +53,9 @@ public:
     void replaceComponent(qsizetype i, Component* p);
     QQmlListProperty<Component> qmlComponents();
 
+    friend QDataStream& operator<<(QDataStream& s, const Entity& v);
+    friend QDataStream& operator>>(QDataStream& s, Entity& v);
+
 signals:
     void enabledChanged(bool v);
     void componentAdded(Component* p);

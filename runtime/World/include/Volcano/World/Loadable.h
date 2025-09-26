@@ -32,6 +32,9 @@ public:
 
     QNetworkReply* requestContent();
 
+    friend QDataStream& operator<<(QDataStream& s, const Loadable& v);
+    friend QDataStream& operator>>(QDataStream& s, Loadable& v);
+
 signals:
     void sourceChanged(const QUrl& v);
 

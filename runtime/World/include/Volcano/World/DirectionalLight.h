@@ -29,6 +29,9 @@ public:
         }
     }
 
+    friend QDataStream& operator<<(QDataStream& s, const DirectionalLight& v);
+    friend QDataStream& operator>>(QDataStream& s, DirectionalLight& v);
+
 signals:
     void directionChanged(const QVector3D& v);
 

@@ -103,4 +103,16 @@ void Scene::onComponentRemoved(Entity* entity, Component* component) {
     emit componentRemoved(entity, component);
 }
 
+QDataStream& operator<<(QDataStream& s, const Scene& v) {
+    s << static_cast<const Object&>(v);
+    // TODO
+    return s;
+}
+
+QDataStream& operator>>(QDataStream& s, Scene& v) {
+    s >> static_cast<Object&>(v);
+    // TODO
+    return s;
+}
+
 VOLCANO_WORLD_END

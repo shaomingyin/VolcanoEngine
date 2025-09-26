@@ -17,4 +17,14 @@ Dynamic::Dynamic(QObject* parent)
     world_.setGravity(btVector3(gravity_.x(), gravity_.y(), gravity_.x()));
 }
 
+QDataStream& operator<<(QDataStream& s, const Dynamic& v) {
+    // TODO
+    return s;
+}
+
+QDataStream& operator>>(QDataStream& s, Dynamic& v) {
+    // TODO
+    return s;
+}
+
 VOLCANO_WORLD_END

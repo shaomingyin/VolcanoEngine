@@ -71,4 +71,12 @@ void BufferImpl::unmap() {
     owner_.unmap();
 }
 
+qint64 BufferImpl::readData(char* data, qint64 max_size) {
+    return 0;
+}
+
+qint64 BufferImpl::writeData(const char* data, qint64 max_size) {
+    return 0;
+}
+
 VOLCANO_GRAPHICS_END

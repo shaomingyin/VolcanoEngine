@@ -25,6 +25,9 @@ public:
     void resize(const Vector3& v);
     void componentComplete() override;
 
+    friend QDataStream& operator<<(QDataStream& s, const CylinderRigidBody& v);
+    friend QDataStream& operator>>(QDataStream& s, CylinderRigidBody& v);
+
 signals:
     void sizeChanged(const Vector3& v);
 
