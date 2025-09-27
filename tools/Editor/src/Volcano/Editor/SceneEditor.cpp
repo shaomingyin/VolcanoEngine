@@ -6,8 +6,9 @@ VOLCANO_EDITOR_BEGIN
 
 const Utils::Id SceneEditor::Id = "VolcanoEditor.SceneEditor";
 
-SceneEditor::SceneEditor()
-    : document_(std::make_shared<SceneDocument>()) {
+SceneEditor::SceneEditor(Context& context)
+    : context_(context)
+    , document_(std::make_shared<SceneDocument>()) {
     setDuplicateSupported(false);
     setWidget(&viewport_);
 }

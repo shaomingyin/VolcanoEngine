@@ -9,6 +9,13 @@
 
 VOLCANO_EDITOR_BEGIN
 
+Plugin::Plugin()
+    : general_settings_page_(context_)
+    , kit_aspect_factory_(context_)
+    , scene_editor_factory_(context_)
+    , property_view_(context_) {
+}
+
 Utils::Result<> Plugin::initialize(const QStringList& arguments) {
     auto kit_manager = ProjectExplorer::KitManager::instance();
     if (ProjectExplorer::KitManager::isLoaded()) {

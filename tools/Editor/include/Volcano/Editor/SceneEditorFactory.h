@@ -6,12 +6,13 @@
 #include <coreplugin/editormanager/ieditorfactory.h>
 
 #include <Volcano/Editor/Common.h>
+#include <Volcano/Editor/Context.h>
 
 VOLCANO_EDITOR_BEGIN
 
 class SceneEditorFactory: public Core::IEditorFactory {
 public:
-    SceneEditorFactory();
+    SceneEditorFactory(Context& context);
 };
 
 VOLCANO_EDITOR_END

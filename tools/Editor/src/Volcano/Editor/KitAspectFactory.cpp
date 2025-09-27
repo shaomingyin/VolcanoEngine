@@ -5,9 +5,10 @@
 
 VOLCANO_EDITOR_BEGIN
 
-KitAspectFactory::KitAspectFactory() {
-    setDisplayName("VolcanoEngine");
-    setId("volcanoeninge");
+KitAspectFactory::KitAspectFactory(Context& context)
+    : context_(context) {
+    setDisplayName("Volcano Engine Version");
+    setId("Volcano.Editor.KeyAspect");
 }
 
 ProjectExplorer::Tasks KitAspectFactory::validate(const ProjectExplorer::Kit* kit) const {
@@ -19,7 +20,7 @@ KitAspectFactory::ItemList KitAspectFactory::toUserOutput(const ProjectExplorer:
 }
 
 ProjectExplorer::KitAspect* KitAspectFactory::createKitAspect(ProjectExplorer::Kit* kit) const {
-    return new KitAspect(kit, this);
+    return new KitAspect(context_, kit, this);
 }
 
 VOLCANO_EDITOR_END

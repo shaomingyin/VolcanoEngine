@@ -7,6 +7,7 @@
 #include <projectexplorer/project.h>
 
 #include <Volcano/Editor/Common.h>
+#include <Volcano/Editor/Context.h>
 #include <Volcano/Editor/GeneralSettings.h>
 #include <Volcano/Editor/SdkSettings.h>
 #include <Volcano/Editor/KitSettings.h>
@@ -21,7 +22,7 @@ class Plugin: public ExtensionSystem::IPlugin {
     Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QtCreatorPlugin" FILE "Editor.json")
 
 public:
-    Plugin() = default;
+    Plugin();
 
 public:
     Utils::Result<> initialize(const QStringList& arguments) override;
@@ -34,6 +35,7 @@ private slots:
     void projectRemoved(ProjectExplorer::Project* project);
 
 private:
+    Context context_;
     GeneralSettingsPage general_settings_page_;
     SdkSettingsPage sdk_settings_page_;
     KitSettingsPage kit_settings_page_;

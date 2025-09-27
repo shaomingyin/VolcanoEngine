@@ -6,6 +6,7 @@ VOLCANO_EDITOR_BEGIN
 
 SceneEditorViewport::SceneEditorViewport(QWidget* parent)
     : QOpenGLWidget(parent) {
+    setWindowTitle("Scene");
 }
 
 void SceneEditorViewport::initializeGL() {

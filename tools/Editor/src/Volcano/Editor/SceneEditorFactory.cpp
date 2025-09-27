@@ -5,12 +5,12 @@
 
 VOLCANO_EDITOR_BEGIN
 
-SceneEditorFactory::SceneEditorFactory() {
+SceneEditorFactory::SceneEditorFactory(Context& context) {
     addMimeType(SCENE_FILE_MIMETYPE);
     setId(SceneEditor::Id);
     setDisplayName("Volcano Scene Editor");
-    setEditorCreator([] {
-        return new SceneEditor();
+    setEditorCreator([&context] {
+        return new SceneEditor(context);
     });
 }
 

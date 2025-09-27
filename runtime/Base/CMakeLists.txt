@@ -1,5 +1,5 @@
 
-volcano_add_shared_library(Base
+volcano_add_static_library(Base
     OUTPUT_NAME
         VolcanoBase
     PUBLIC_INCLUDE_DIRECTORIES
@@ -8,7 +8,6 @@ volcano_add_shared_library(Base
     PRIVATE_SOURCES
         include/buddy2.h
         src/buddy2/buddy2.c
-
         include/Volcano/Config.h.in
         include/Volcano/Common.h
         include/Volcano/Config.h.in

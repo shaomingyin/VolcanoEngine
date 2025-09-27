@@ -12,6 +12,7 @@
 #include <Volcano/Graphics/Renderer.h>
 
 #include <Volcano/Editor/Common.h>
+#include <Volcano/Editor/Context.h>
 #include <Volcano/Editor/SceneDocument.h>
 #include <Volcano/Editor/SceneEditorToolBar.h>
 #include <Volcano/Editor/SceneEditorViewport.h>
@@ -25,13 +26,14 @@ public:
     static const Utils::Id Id;
 
 public:
-    SceneEditor();
+    SceneEditor(Context& context);
 
 public:
     Core::IDocument *document() const override;
     QWidget *toolBar() override;
 
 private:
+    Context& context_;
     std::shared_ptr<SceneDocument> document_;
     SceneEditorToolBar toolbar_;
     SceneEditorViewport viewport_;

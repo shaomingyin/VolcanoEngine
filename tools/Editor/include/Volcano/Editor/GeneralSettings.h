@@ -7,6 +7,7 @@
 #include <coreplugin/dialogs/ioptionspage.h>
 
 #include <Volcano/Editor/Common.h>
+#include <Volcano/Editor/Context.h>
 
 VOLCANO_EDITOR_BEGIN
 
@@ -14,15 +15,16 @@ class GeneralSettings: public Utils::AspectContainer {
     Q_OBJECT
 
 public:
-    GeneralSettings();
+    GeneralSettings(Context& context);
 
 private:
+    Context& context_;
     Utils::FilePathAspect test_;
 };
 
 class GeneralSettingsPage: public Core::IOptionsPage {
 public:
-    GeneralSettingsPage();
+    GeneralSettingsPage(Context& context);
 };
 
 VOLCANO_EDITOR_END

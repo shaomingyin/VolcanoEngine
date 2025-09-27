@@ -13,7 +13,8 @@ VOLCANO_EDITOR_BEGIN
 
 // GeneralSettings
 
-GeneralSettings::GeneralSettings() {
+GeneralSettings::GeneralSettings(Context& context)
+    : context_(context) {
     setAutoApply(false);
 
     test_.setDefaultValue("defaultval");
@@ -26,12 +27,12 @@ GeneralSettings::GeneralSettings() {
 
 // GeneralSettingsPage
 
-GeneralSettingsPage::GeneralSettingsPage() {
+GeneralSettingsPage::GeneralSettingsPage(Context& context) {
     setCategory(SETTINGS_CATEGORY_ID);
     setDisplayName("General");
     setId("VolcanoGeneralSettings");
-    setSettingsProvider([] {
-        return new GeneralSettings();
+    setSettingsProvider([&context] {
+        return new GeneralSettings(context);
     });
 }
 

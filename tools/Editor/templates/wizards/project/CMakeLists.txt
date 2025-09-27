@@ -13,5 +13,5 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-qt_add_binary_resources(resources Resources.qrc DESTINATION Resources.rcc)
+#qt_add_binary_resources(resources Resources.qrc DESTINATION Resources.rcc)
 #add_dependencies(${ProjectName} resources)

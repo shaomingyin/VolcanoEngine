@@ -4,8 +4,9 @@
 
 VOLCANO_EDITOR_BEGIN
 
-PropertyView::PropertyView()
-    : Core::NavigationWidget(nullptr, Core::Side::Right) {
+PropertyView::PropertyView(Context& context)
+    : Core::NavigationWidget(nullptr, Core::Side::Right)
+    , context_(context) {
 }
 
 VOLCANO_EDITOR_END
