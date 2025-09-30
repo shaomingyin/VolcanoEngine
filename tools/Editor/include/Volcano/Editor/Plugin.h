@@ -10,7 +10,6 @@
 #include <Volcano/Editor/Context.h>
 #include <Volcano/Editor/GeneralSettings.h>
 #include <Volcano/Editor/SdkSettings.h>
-#include <Volcano/Editor/KitSettings.h>
 #include <Volcano/Editor/KitAspectFactory.h>
 #include <Volcano/Editor/SceneEditorFactory.h>
 #include <Volcano/Editor/PropertyView.h>
@@ -38,7 +37,6 @@ private:
     Context context_;
     GeneralSettingsPage general_settings_page_;
     SdkSettingsPage sdk_settings_page_;
-    KitSettingsPage kit_settings_page_;
     KitAspectFactory kit_aspect_factory_;
     SceneEditorFactory scene_editor_factory_;
     PropertyView property_view_;

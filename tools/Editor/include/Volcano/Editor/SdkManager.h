@@ -3,40 +3,37 @@
 #ifndef VOLCANO_EDITOR_SDKMANAGER_H
 #define VOLCANO_EDITOR_SDKMANAGER_H
 
-#include <memory>
-
 #include <QDir>
 #include <QList>
 #include <QObject>
+#include <QAbstractItemModel>
+
+#include <utils/listmodel.h>
 
 #include <Volcano/Editor/Common.h>
 #include <Volcano/Editor/Sdk.h>
 
 VOLCANO_EDITOR_BEGIN
 
-class SdkManager: public QObject {
+class SdkManager: public Utils::ListModel<Sdk> {
     Q_OBJECT
-
-public:
-    using SdkPtr = std::unique_ptr<Sdk>;
-    using SdkList = QList<SdkPtr>;
 
 public:
     SdkManager(QObject* parent = nullptr);
 
 public:
-    const SdkList& sdkList() const;
-    void addSdk(const QDir& dirpath);
-    void removeSdk(const QDir& dirpath);
-    void removeAllSdks();
+    const Sdk* sdk(Utils::Id id) const;
+    const Sdk* firstFitKit(const ProjectExplorer::Kit& kit) const;
+    const Sdk* current() const;
+    void setCurrent(const Sdk* sdk);
+    void reset();
 
 signals:
-    void sdkAdded(const Sdk& sdk);
-    void sdkDirectoryRemoved(const Sdk& sdk);
+    void currentChanged(const Sdk* sdk);
 
 private:
-    SdkList sdk_list_;
-
+    QList<Sdk> sdk_list_;
+    const Sdk* current_;
 };
 
 VOLCANO_EDITOR_END

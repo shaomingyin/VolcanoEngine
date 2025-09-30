@@ -28,9 +28,9 @@ GeneralSettings::GeneralSettings(Context& context)
 // GeneralSettingsPage
 
 GeneralSettingsPage::GeneralSettingsPage(Context& context) {
-    setCategory(SETTINGS_CATEGORY_ID);
+    setCategory(SETTINGS_CATEGORY);
     setDisplayName("General");
-    setId("VolcanoGeneralSettings");
+    setId(GENERAL_SETTINGS_PAGE);
     setSettingsProvider([&context] {
         return new GeneralSettings(context);
     });

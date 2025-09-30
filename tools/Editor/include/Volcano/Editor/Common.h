@@ -11,7 +11,13 @@
 
 VOLCANO_EDITOR_BEGIN
 
-const char SETTINGS_CATEGORY_ID[] = "X.Volcano.Edit";
+const char SETTINGS_CATEGORY[] = "Volcano.Editor.SettingsCategory";
+
+const char GENERAL_SETTINGS_PAGE[] = "Volcano.Editor.GeneralSettings";
+const char SDK_SETTINGS_PAGE[] = "Volcano.Editor.SdkSettingsPage";
+
+const char KIT_ASPECT[] = "Volcano.Editor.KitAspect";
+const char SDK[] = "Volcano.Editor.Sdk";
 
 const char SCENE_FILE_MIMETYPE[] = VOLCANO_EDITOR_MIMETYPE_SCENE_FILE;
 

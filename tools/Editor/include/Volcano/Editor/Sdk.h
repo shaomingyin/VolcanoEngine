@@ -5,23 +5,31 @@
 
 #include <QDir>
 #include <QVersionNumber>
-#include <QObject>
+
+#include <utils/id.h>
+#include <projectexplorer/kit.h>
 
 #include <Volcano/Editor/Common.h>
 
 VOLCANO_EDITOR_BEGIN
 
-class Sdk: public QObject {
-    Q_OBJECT
-
+class Sdk final {
 public:
+    Sdk() = default;
+    Sdk(const Sdk&) = default;
+    Sdk(Sdk&&) = default;
     Sdk(const QDir& dirpath, QObject* parent = nullptr);
 
 public:
+    Sdk& operator=(const Sdk&) = default;
+    Sdk& operator=(Sdk&&) = default;
+    Utils::Id id() const;
     const QDir& path() const;
     const QVersionNumber& version() const;
+    bool isFitKit(const ProjectExplorer::Kit& kit) const;
 
 private:
+    Utils::Id id_;
     QDir dirpath_;
     QVersionNumber version_;
 };

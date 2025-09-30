@@ -7,8 +7,8 @@ VOLCANO_EDITOR_BEGIN
 
 KitAspectFactory::KitAspectFactory(Context& context)
     : context_(context) {
-    setDisplayName("Volcano Engine Version");
-    setId("Volcano.Editor.KeyAspect");
+    setDisplayName("Volcano Engine");
+    setId(KIT_ASPECT);
 }
 
 ProjectExplorer::Tasks KitAspectFactory::validate(const ProjectExplorer::Kit* kit) const {

@@ -15,7 +15,6 @@ set(VOLCANO_EDITOR_SOURCES
     include/Volcano/Editor/GeneralSettings.h
     include/Volcano/Editor/KitAspect.h
     include/Volcano/Editor/KitAspectFactory.h
-    include/Volcano/Editor/KitSettings.h
     include/Volcano/Editor/Plugin.h
     include/Volcano/Editor/PropertyView.h
     include/Volcano/Editor/Qmlizer.h
@@ -33,7 +32,6 @@ set(VOLCANO_EDITOR_SOURCES
     src/Volcano/Editor/GeneralSettings.cpp
     src/Volcano/Editor/KitAspect.cpp
     src/Volcano/Editor/KitAspectFactory.cpp
-    src/Volcano/Editor/KitSettings.cpp
     src/Volcano/Editor/Plugin.cpp
     src/Volcano/Editor/PropertyView.cpp
     src/Volcano/Editor/Qmlizer.cpp
