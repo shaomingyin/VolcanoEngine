@@ -33,6 +33,7 @@
 
 # Volcano
 /.idea*
+/.vscode*
 /build*
 /CMakeLists.txt.user*
 /CMake*Presets.json

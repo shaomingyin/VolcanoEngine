@@ -2,7 +2,7 @@
 //
 #include <SFML/Graphics.hpp>
 
-#include <Volcano/Launcher/Common.h>
+#include <Volcano/Editor/Common.h>
 
 int main(int argc, char* argv[]) {
     sf::RenderWindow main_window(sf::VideoMode(800, 600), "VolcanoLauncher");

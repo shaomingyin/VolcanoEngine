@@ -1,9 +1,3 @@
 //
 //
 #include <Volcano/Common.h>
-
-VOLCANO_BEGIN
-
-const QVersionNumber version(VOLCANO_VERSION_MAJOR, VOLCANO_VERSION_MINOR, VOLCANO_VERSION_PATCH);
-
-VOLCANO_END
