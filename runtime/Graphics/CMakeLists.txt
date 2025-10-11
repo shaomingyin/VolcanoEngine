@@ -17,6 +17,7 @@ target_include_directories(Graphics PUBLIC
     ${CMAKE_CURRENT_BINARY_DIR}/include
 )
 
+volcano_target_setup(Graphics)
 set_target_properties(Graphics PROPERTIES OUTPUT_NAME VolcanoGraphics)
 
 target_link_libraries(Graphics Base)

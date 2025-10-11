@@ -17,6 +17,7 @@ target_include_directories(Launcher PRIVATE
     ${CMAKE_CURRENT_BINARY_DIR}/include
 )
 
+volcano_target_setup(Launcher)
 target_link_libraries(Launcher World Graphics Gui)
 
 find_package(SFML REQUIRED COMPONENTS sfml-window)

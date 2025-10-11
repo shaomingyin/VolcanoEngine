@@ -17,6 +17,7 @@ target_include_directories(Base PUBLIC
     ${CMAKE_CURRENT_BINARY_DIR}/include
 )
 
+volcano_target_setup(Base)
 set_target_properties(Base PROPERTIES OUTPUT_NAME VolcanoBase)
 
 find_package(Eigen3 REQUIRED)

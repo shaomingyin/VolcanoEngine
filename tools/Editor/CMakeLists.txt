@@ -10,6 +10,7 @@ configure_file(
     include/Volcano/Editor/Config.h
 )
 
+volcano_target_setup(Editor)
 set_target_properties(Editor PROPERTIES OUTPUT_NAME VolcanoEditor)
 
 target_include_directories(Editor PRIVATE

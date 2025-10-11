@@ -17,6 +17,7 @@ target_include_directories(World PUBLIC
     ${CMAKE_CURRENT_BINARY_DIR}/include
 )
 
+volcano_target_setup(World)
 set_target_properties(World PROPERTIES OUTPUT_NAME VolcanoWorld)
 
 target_link_libraries(World Base)

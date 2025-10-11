@@ -23,6 +23,7 @@ target_include_directories(Gui PUBLIC
     ${CMAKE_CURRENT_BINARY_DIR}/include
 )
 
+volcano_target_setup(Gui)
 set_target_properties(Gui PROPERTIES OUTPUT_NAME VolcanoGui)
 
 target_link_libraries(Gui Base)

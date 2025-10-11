@@ -1,9 +1,6 @@
 //
 //
-#define CLAY_IMPLEMENTATION
-#include "clay.h"
-
-#include <Volcano/Gui/Layout.h>
+#include <Volcano/Gui/Widget.h>
 
 VOLCANO_GUI_BEGIN
 
