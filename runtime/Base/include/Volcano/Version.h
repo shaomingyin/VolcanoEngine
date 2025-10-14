@@ -25,7 +25,7 @@ public:
         return patch_;
     }
 
-    sf::String toString() const;
+    std::string toString() const;
 
     bool operator==(const VersionNumber& other) const noexcept;
     bool operator!=(const VersionNumber& other) const noexcept;

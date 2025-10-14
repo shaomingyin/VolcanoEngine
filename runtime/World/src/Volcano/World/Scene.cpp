@@ -4,10 +4,9 @@
 
 VOLCANO_WORLD_BEGIN
 
-Scene::Scene() {
-}
-
-Scene::~Scene() {
+Scene::Scene()
+    : global_(create()) {
+    // on_construct<>()
 }
 
 VOLCANO_WORLD_END

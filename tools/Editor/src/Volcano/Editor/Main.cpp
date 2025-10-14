@@ -1,5 +1,6 @@
 //
 //
+#include <argh.h>
 #include <SFML/Graphics.hpp>
 
 #include <Volcano/Editor/Common.h>

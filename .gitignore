@@ -37,3 +37,4 @@
 /build*
 /CMakeLists.txt.user*
 /CMake*Presets.json
+/.cache*

@@ -18,8 +18,7 @@ target_include_directories(Launcher PRIVATE
 )
 
 volcano_target_setup(Launcher)
-target_link_libraries(Launcher World Graphics Gui)
+target_link_libraries(Launcher PUBLIC Framework)
 
-find_package(SFML REQUIRED COMPONENTS sfml-window)
-target_link_libraries(Launcher sfml-window)
-
+find_package(argh REQUIRED)
+target_link_libraries(Launcher PUBLIC argh)

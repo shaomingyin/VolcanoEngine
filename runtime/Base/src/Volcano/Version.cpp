@@ -16,8 +16,8 @@ VersionNumber::VersionNumber(int major, int minor, int patch)
     , patch_(patch) {
 }
 
-sf::String VersionNumber::toString() const {
-    return sf::String();
+std::string VersionNumber::toString() const {
+    return std::string();
 }
 
 bool VersionNumber::operator==(const VersionNumber& other) const noexcept {

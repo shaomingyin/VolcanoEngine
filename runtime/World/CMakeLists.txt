@@ -20,10 +20,7 @@ target_include_directories(World PUBLIC
 volcano_target_setup(World)
 set_target_properties(World PROPERTIES OUTPUT_NAME VolcanoWorld)
 
-target_link_libraries(World Base)
+target_link_libraries(World PUBLIC Base)
 
 find_package(EnTT REQUIRED)
-target_link_libraries(World EnTT::EnTT)
-
-find_package(Bullet)
-target_link_libraries(World Bullet::Bullet)
+target_link_libraries(World PUBLIC EnTT::EnTT)

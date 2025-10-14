@@ -18,8 +18,10 @@ target_include_directories(Editor PRIVATE
     ${CMAKE_CURRENT_BINARY_DIR}/include
 )
 
-target_link_libraries(Editor World Graphics Gui)
+target_link_libraries(Editor PUBLIC World Graphics Gui)
 
 find_package(SFML REQUIRED COMPONENTS sfml-window)
-target_link_libraries(Editor sfml-window)
+target_link_libraries(Editor PUBLIC sfml-window)
 
+find_package(argh REQUIRED)
+target_link_libraries(Editor PUBLIC argh)

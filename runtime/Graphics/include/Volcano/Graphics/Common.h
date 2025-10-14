@@ -3,8 +3,6 @@
 #ifndef VOLCANO_GRAPHICS_COMMON_H
 #define VOLCANO_GRAPHICS_COMMON_H
 
-#include <SFML/OpenGL.hpp>
-
 #include <Volcano/Common.h>
 #include <Volcano/Graphics/Config.h>
 
