@@ -7,12 +7,17 @@ VOLCANO_FRAMEWORK_BEGIN
 Local::Local(const std::string& name)
     : Base(name)
     , window_({ 800, 600 }, name)
-    , hud_(window_.getSize().x, window_.getSize().y)
+    , hud_(window_)
     , renderer_(window_.getSize().x, window_.getSize().y) {
     window_.setFramerateLimit(60);
 }
 
 void Local::frame(Clock::duration elapsed) {
+    if (!window_.isOpen()) {
+        quit();
+        return;
+    }
+
     sf::Event event;
     while (window_.pollEvent(event)) {
         handleEvent(event);
@@ -20,9 +25,9 @@ void Local::frame(Clock::duration elapsed) {
 
     Base::frame(elapsed);
 
-    window_.makeCurrent();
     renderer_.beginFrame();
     renderer_.endFrame();
+    hud_.paint();
     window_.display();
 }
 
@@ -56,9 +61,9 @@ void Local::handleEvent(const sf::Event& event) {
     case sf::Event::LostFocus:
         break;
     case sf::Event::Resized:
+        onResized(event.size);
         break;
     case sf::Event::Closed:
-        window_.close();
         quit();
         break;
     default:
@@ -79,6 +84,11 @@ void Local::onKeyPressed(const sf::Event::KeyEvent& event) {
 }
 
 void Local::onKeyReleased(const sf::Event::KeyEvent& event) {
+}
+
+void Local::onResized(const sf::Event::SizeEvent& event) {
+    //hud_.resize(event.width, event.height);
+    renderer_.resize(event.width, event.height);
 }
 
 VOLCANO_FRAMEWORK_END

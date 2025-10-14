@@ -25,6 +25,3 @@ volcano_target_setup(Graphics)
 set_target_properties(Graphics PROPERTIES OUTPUT_NAME VolcanoGraphics)
 
 target_link_libraries(Graphics PUBLIC Base)
-
-find_package(SFML REQUIRED COMPONENTS sfml-graphics)
-target_link_libraries(Base PUBLIC sfml-graphics)

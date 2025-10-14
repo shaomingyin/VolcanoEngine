@@ -55,8 +55,9 @@ int gl3wInit(union GL3WProcs* procs, GL3WGetProcAddressProc proc)
 	union GL3WProcs* bak = gl3wProcs;
 	gl3wProcs = procs;
 	load_procs(proc);
+	int ret = parse_version();
 	gl3wProcs = bak;
-	return parse_version();
+	return ret;
 }
 
 int gl3wIsSupported(int major, int minor)

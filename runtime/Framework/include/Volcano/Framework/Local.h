@@ -8,7 +8,7 @@
 #include <SFML/Window/Event.hpp>
 
 #include <Volcano/Graphics/Renderer.h>
-#include <Volcano/Gui/Context.h>
+#include <Volcano/Gui/Window.h>
 
 #include <Volcano/Framework/Common.h>
 #include <Volcano/Framework/Base.h>
@@ -29,11 +29,13 @@ protected:
     virtual void onMouseButtonReleased(const sf::Event::MouseButtonEvent& event);
     virtual void onKeyPressed(const sf::Event::KeyEvent& event);
     virtual void onKeyReleased(const sf::Event::KeyEvent& event);
+    virtual void onResized(const sf::Event::SizeEvent& event);
 
 private:
     Window window_;
-    Gui::Context hud_;
     Graphics::Renderer renderer_;
+    Gui::Window hud_;
+    Gui::Window* current_gui_window_;
 };
 
 VOLCANO_FRAMEWORK_END

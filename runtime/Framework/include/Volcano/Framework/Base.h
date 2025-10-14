@@ -40,7 +40,6 @@ private:
     Clock::time_point frame_count_last_;
     unsigned long frame_count_;
     unsigned long frame_count_per_second_;
-    World::Scene scene_;
     bool bt_enabled_;
     btDefaultCollisionConfiguration bt_collision_configuration_;
     btCollisionDispatcher bt_collision_dispatcher_;

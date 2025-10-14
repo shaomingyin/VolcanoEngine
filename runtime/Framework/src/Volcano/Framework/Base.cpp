@@ -19,6 +19,8 @@ Base::Base(const std::string& name)
     , bt_collision_dispatcher_(&bt_collision_configuration_)
     , bt_world_(&bt_collision_dispatcher_, &bt_broad_phase_, &bt_solver_, &bt_collision_configuration_) {
     setFpsMax(60);
+    auto& world_scene = scene();
+    // world_scene.on_construct<RigidBocy>().
 }
 
 void Base::run() {
@@ -52,14 +54,14 @@ unsigned long Base::fps() const noexcept {
 }
 
 unsigned long Base::fpsMax() const noexcept {
-    return (1000000000us / min_elapsed_);
+    return (1000000000ns / min_elapsed_);
 }
 
 void Base::setFpsMax(unsigned long v) noexcept {
     if (v < 1) {
         v = 1;
     }
-    min_elapsed_ = (1000000000us / v);
+    min_elapsed_ = (1000000000ns / v);
 }
 
 bool Base::isPhysicsEnabled() const noexcept {

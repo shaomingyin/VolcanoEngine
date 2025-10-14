@@ -29,7 +29,7 @@ target_include_directories(Framework PUBLIC
 volcano_target_setup(Framework)
 set_target_properties(Framework PROPERTIES OUTPUT_NAME VolcanoFramework)
 
-target_link_libraries(Framework PUBLIC World Gui)
+target_link_libraries(Framework PUBLIC World Graphics Gui)
 
 find_package(Async++)
 target_link_libraries(Framework PUBLIC Async++)

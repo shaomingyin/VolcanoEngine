@@ -26,6 +26,10 @@ public:
         scheduler_.schedule(std::move(t));
     }
 
+    World::Scene& scene() noexcept {
+        return scene_;
+    }
+
     virtual void quit() noexcept = 0;
     virtual const std::string& name() const noexcept = 0;
     virtual unsigned long fps() const noexcept  = 0;
@@ -40,6 +44,7 @@ protected:
 
 private:
     async::fifo_scheduler scheduler_;
+    World::Scene scene_;
 };
 
 VOLCANO_FRAMEWORK_END
