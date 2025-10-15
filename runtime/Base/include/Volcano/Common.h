@@ -55,6 +55,10 @@ void logDebug(spdlog::format_string_t<Args...> fmt, Args... args) {
     spdlog::log(spdlog::level::debug, fmt, std::forward<Args>(args)...);
 }
 
+const std::string& appOrganization();
+const std::string& appName();
+void setAppInfo(const std::string& organization, const std::string& name);
+
 VOLCANO_END
 
 #endif // VOLCANO_COMMON_H

@@ -4,8 +4,7 @@
 
 VOLCANO_FRAMEWORK_BEGIN
 
-Client::Client(const std::string& name)
-    : Local(name) {
+Client::Client() {
 }
 
 VOLCANO_FRAMEWORK_END

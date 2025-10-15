@@ -8,7 +8,7 @@
 #include <SFML/Window/Event.hpp>
 
 #include <Volcano/Graphics/Renderer.h>
-#include <Volcano/Gui/Window.h>
+#include <Volcano/Gui/Context.h>
 
 #include <Volcano/Framework/Common.h>
 #include <Volcano/Framework/Base.h>
@@ -18,11 +18,11 @@ VOLCANO_FRAMEWORK_BEGIN
 
 class Local: public Base {
 public:
-    Local(const std::string& name);
+    Local();
     virtual ~Local() = default;
 
 protected:
-    void frame(Clock::duration elapsed) override;
+    void frame(Clock::duration elapsed) noexcept override;
     virtual void handleEvent(const sf::Event& event);
     virtual void onMouseMoved(const sf::Event::MouseMoveEvent& event);
     virtual void onMouseButtonPressed(const sf::Event::MouseButtonEvent& event);
@@ -34,8 +34,8 @@ protected:
 private:
     Window window_;
     Graphics::Renderer renderer_;
-    Gui::Window hud_;
-    Gui::Window* current_gui_window_;
+    Gui::Context hud_;
+    Gui::Context* current_gui_;
 };
 
 VOLCANO_FRAMEWORK_END

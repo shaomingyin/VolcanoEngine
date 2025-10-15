@@ -6,17 +6,17 @@
 #include <list>
 
 #include <Volcano/Gui/Common.h>
-#include <Volcano/Gui/Window.h>
+#include <Volcano/Gui/Context.h>
 
 VOLCANO_GUI_BEGIN
 
-class Widget: public Window::Object {
+class Widget: public Context::Object {
 public:
     using Children = std::list<Widget*>;
 
 public:
     Widget(Widget& parent);
-    Widget(Window& owner);
+    Widget(Context& owner);
     virtual ~Widget();
 
 public:

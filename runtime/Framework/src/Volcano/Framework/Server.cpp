@@ -4,8 +4,7 @@
 
 VOLCANO_FRAMEWORK_BEGIN
 
-Server::Server(const std::string& name)
-    : Base(name) {
+Server::Server() {
 }
 
 VOLCANO_FRAMEWORK_END

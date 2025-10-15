@@ -5,9 +5,11 @@
 
 #include <string>
 #include <chrono>
+#include <system_error>
 
 #include <async++.h>
 
+#include <Volcano/Version.h>
 #include <Volcano/World/Scene.h>
 #include <Volcano/Framework/Common.h>
 
@@ -16,6 +18,15 @@ VOLCANO_FRAMEWORK_BEGIN
 class Context {
 public:
     using Clock = std::chrono::steady_clock;
+
+    enum class State {
+        Idle = 0,
+        Loading,
+        Ready,
+        Playing,
+        Paused,
+        Error
+    };
     
 public:
     Context() = default;
@@ -26,10 +37,13 @@ public:
         scheduler_.schedule(std::move(t));
     }
 
-    World::Scene& scene() noexcept {
-        return scene_;
-    }
-
+    virtual const VersionNumber& version() const noexcept = 0;
+    virtual State state() const noexcept = 0;
+    virtual World::Scene& scene() noexcept = 0;
+    virtual void load(const std::string& scene_name) = 0;
+    virtual unsigned int loadingProgress() const = 0;
+    virtual const std::string& loadingMessage() const = 0;
+    virtual const std::error_code& error() const = 0;
     virtual void quit() noexcept = 0;
     virtual const std::string& name() const noexcept = 0;
     virtual unsigned long fps() const noexcept  = 0;
@@ -44,7 +58,6 @@ protected:
 
 private:
     async::fifo_scheduler scheduler_;
-    World::Scene scene_;
 };
 
 VOLCANO_FRAMEWORK_END

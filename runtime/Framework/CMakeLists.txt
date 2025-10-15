@@ -1,17 +1,22 @@
 
 add_library(Framework STATIC
     include/Volcano/Framework/Base.h
+    include/Volcano/Framework/Client.h
     include/Volcano/Framework/Common.h
     include/Volcano/Framework/Config.h.in
     include/Volcano/Framework/Context.h
+    include/Volcano/Framework/JsonUtils.h
     include/Volcano/Framework/Local.h
-    include/Volcano/Framework/Client.h
+    include/Volcano/Framework/Physics.h
     include/Volcano/Framework/Server.h
     include/Volcano/Framework/Window.h
     src/Volcano/Framework/Base.cpp
-    src/Volcano/Framework/Context.cpp
-    src/Volcano/Framework/Local.cpp
     src/Volcano/Framework/Client.cpp
+    src/Volcano/Framework/Common.cpp
+    src/Volcano/Framework/Context.cpp
+    src/Volcano/Framework/JsonUtils.cpp
+    src/Volcano/Framework/Local.cpp
+    src/Volcano/Framework/Physics.cpp
     src/Volcano/Framework/Server.cpp
     src/Volcano/Framework/Window.cpp
 )

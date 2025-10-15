@@ -4,15 +4,15 @@
 
 VOLCANO_FRAMEWORK_BEGIN
 
-Local::Local(const std::string& name)
-    : Base(name)
-    , window_({ 800, 600 }, name)
+Local::Local()
+    : window_({ 800, 600 }, "VolcanoLauncher")
     , hud_(window_)
-    , renderer_(window_.getSize().x, window_.getSize().y) {
+    , renderer_(window_.getSize().x, window_.getSize().y)
+    , current_gui_(nullptr) {
     window_.setFramerateLimit(60);
 }
 
-void Local::frame(Clock::duration elapsed) {
+void Local::frame(Clock::duration elapsed) noexcept {
     if (!window_.isOpen()) {
         quit();
         return;
@@ -32,6 +32,11 @@ void Local::frame(Clock::duration elapsed) {
 }
 
 void Local::handleEvent(const sf::Event& event) {
+    if (current_gui_ != nullptr) {
+        current_gui_->event(event);
+        return;
+    }
+
     switch (event.type) {
     case sf::Event::MouseMoved:
         onMouseMoved(event.mouseMove);

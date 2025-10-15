@@ -12,7 +12,7 @@ VOLCANO_FRAMEWORK_BEGIN
 
 class Client: public Local {
 public:
-    Client(const std::string& name);
+    Client();
     virtual ~Client() = default;
 };
 

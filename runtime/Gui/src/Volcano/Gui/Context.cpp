@@ -1,23 +1,23 @@
 //
 //
-#include <Volcano/Gui/Window.h>
+#include <Volcano/Gui/Context.h>
 
 VOLCANO_GUI_BEGIN
 
-// Window::Object
+// Context::Object
 
-Window::Object::Object(Window& owner)
+Context::Object::Object(Context& owner)
     : owner_(owner)
     , flags_(FlagEnabled | FlagVisible) {
 }
 
-void Window::Object::paint(sf::RenderTarget& target) noexcept {
+void Context::Object::paint(sf::RenderTarget& target) noexcept {
     if (isVisible()) {
         onPaint(target);
     }
 }
 
-void Window::Object::event(const sf::Event& event) noexcept {
+void Context::Object::event(const sf::Event& event) noexcept {
     if (!isEnabled()) {
         return;
     }
@@ -31,20 +31,20 @@ void Window::Object::event(const sf::Event& event) noexcept {
     }
 }
 
-// Window
+// Context
 
 static sf::Vector2f VectorU2F(sf::Vector2u v) {
     return sf::Vector2f(float(v.x), float(v.y));
 }
 
-Window::Window(sf::RenderTarget& render_target)
+Context::Context(sf::RenderTarget& render_target)
     : render_target_(render_target)
     , background_(VectorU2F(render_target.getSize())) {
     background_.setFillColor(sf::Color::Transparent);
     background_.setOutlineColor(sf::Color::Transparent);
 }
 
-void Window::addObject(Object* p) {
+void Context::addObject(Object* p) {
     VOLCANO_ASSERT(p != nullptr);
     auto it = std::find(objects_.begin(), objects_.end(), p);
     if (it == objects_.end()) {
@@ -52,7 +52,7 @@ void Window::addObject(Object* p) {
     }
 }
 
-void Window::removeObject(Object* p) {
+void Context::removeObject(Object* p) {
     VOLCANO_ASSERT(p != nullptr);
     auto it = std::find(objects_.begin(), objects_.end(), p);
     if (it != objects_.end()) {
@@ -60,7 +60,7 @@ void Window::removeObject(Object* p) {
     }
 }
 
-void Window::moveToTop(Object* p) {
+void Context::moveToTop(Object* p) {
     VOLCANO_ASSERT(p != nullptr);
     auto it = std::find(objects_.begin(), objects_.end(), p);
     if (it != objects_.end()) {
@@ -69,7 +69,7 @@ void Window::moveToTop(Object* p) {
     }
 }
 
-void Window::paint() noexcept {
+void Context::paint() noexcept {
     render_target_.setActive();
     render_target_.draw(background_);
     for (Object* obj: objects()) {
@@ -77,7 +77,7 @@ void Window::paint() noexcept {
     }
 }
 
-void Window::event(const sf::Event& event) noexcept {
+void Context::event(const sf::Event& event) noexcept {
     for (Object* obj: objects()) {
         obj->event(event);
     }

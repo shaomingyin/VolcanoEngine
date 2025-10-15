@@ -5,12 +5,12 @@
 VOLCANO_GUI_BEGIN
 
 Widget::Widget(Widget& parent)
-    : Window::Object(parent.owner())
+    : Context::Object(parent.owner())
     , parent_(&parent) {
 }
 
-Widget::Widget(Window& owner)
-    : Window::Object(owner)
+Widget::Widget(Context& owner)
+    : Context::Object(owner)
     , parent_(nullptr) {
     owner.addObject(this);
 }

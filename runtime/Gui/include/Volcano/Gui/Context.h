@@ -1,7 +1,7 @@
 //
 //
-#ifndef VOLCANO_GUI_WINDOW_H
-#define VOLCANO_GUI_WINDOW_H
+#ifndef VOLCANO_GUI_CONTEXT_H
+#define VOLCANO_GUI_CONTEXT_H
 
 #include <list>
 
@@ -12,19 +12,19 @@
 
 VOLCANO_GUI_BEGIN
 
-class Window {
+class Context {
 public:
     class Object {
     public:
-        Object(Window& owner);
+        Object(Context& owner);
         virtual ~Object() = default;
     
     public:
-        Window& owner() noexcept {
+        Context& owner() noexcept {
             return owner_;
         }
 
-        const Window& owner() const noexcept {
+        const Context& owner() const noexcept {
             return owner_;
         }
 
@@ -66,15 +66,15 @@ public:
         };
 
     private:
-        Window& owner_;
+        Context& owner_;
         int flags_;
     };
     
     using Objects = std::list<Object*>;
 
 public:
-    Window(sf::RenderTarget& render_target);
-    virtual ~Window() = default;
+    Context(sf::RenderTarget& render_target);
+    virtual ~Context() = default;
 
 public:
     sf::Color backgroundColor() const noexcept {
@@ -119,4 +119,4 @@ private:
 
 VOLCANO_GUI_END
 
-#endif // VOLCANO_GUI_WINDOW_H
+#endif // VOLCANO_GUI_CONTEXT_H

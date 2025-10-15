@@ -62,6 +62,6 @@ ScopeGuard<typename std::decay<FN>::type> scopeGuard(FN&& fn) noexcept {
     return ScopeGuard<typename std::decay<FN>::type>(std::forward<FN>(fn));
 }
 
-VOLCAN_END
+VOLCANO_END
 
 #endif  // VOLCANO_SCOPEGUARD_H

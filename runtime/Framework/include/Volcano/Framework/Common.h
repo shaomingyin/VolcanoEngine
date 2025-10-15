@@ -3,6 +3,9 @@
 #ifndef VOLCANO_FRAMEWORK_COMMON_H
 #define VOLCANO_FRAMEWORK_COMMON_H
 
+#include <physfs.h>
+#include <nlohmann/json.hpp>
+
 #include <Volcano/Common.h>
 #include <Volcano/Framework/Config.h>
 

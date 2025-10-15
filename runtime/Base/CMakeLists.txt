@@ -4,6 +4,8 @@ add_library(Base STATIC
     include/Volcano/Config.h.in
     include/Volcano/ScopeGuard.h
     include/Volcano/Version.h
+    src/Volcano/Common.cpp
+    src/Volcano/Error.cpp
     src/Volcano/Version.cpp
 )
 

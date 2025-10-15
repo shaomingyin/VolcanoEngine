@@ -12,7 +12,7 @@ VOLCANO_FRAMEWORK_BEGIN
 
 class Server: public Base {
 public:
-    Server(const std::string& name);
+    Server();
     virtual ~Server() = default;
 };
 
