@@ -8,7 +8,8 @@ Local::Local()
     : window_({ 800, 600 }, "VolcanoLauncher")
     , hud_(window_)
     , renderer_(window_.getSize().x, window_.getSize().y)
-    , current_gui_(nullptr) {
+    , current_gui_(nullptr)
+    , console_(hud_) {
     window_.setFramerateLimit(60);
 }
 
@@ -27,13 +28,17 @@ void Local::frame(Clock::duration elapsed) noexcept {
 
     renderer_.beginFrame();
     renderer_.endFrame();
-    hud_.paint();
+    hud_.render();
     window_.display();
 }
 
 void Local::handleEvent(const sf::Event& event) {
+    // if (event.type == sf::Event::KeyPressed && event.key.code == sf::Event::KeyEvent::code) {
+    //     console_.taggle();
+    // }
+
     if (current_gui_ != nullptr) {
-        current_gui_->event(event);
+        current_gui_->handleEvent(event);
         return;
     }
 

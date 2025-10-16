@@ -4,22 +4,14 @@
 
 VOLCANO_GUI_BEGIN
 
-Widget::Widget(Widget& parent)
-    : Context::Object(parent.owner())
-    , parent_(&parent) {
-}
-
-Widget::Widget(Context& owner)
-    : Context::Object(owner)
-    , parent_(nullptr) {
-    owner.addObject(this);
+Widget::Widget(float width, float height, Widget* parent)
+    : Object(width, height)
+    , parent_(parent) {
 }
 
 Widget::~Widget() {
     try {
-        if (parent_ == nullptr) {
-            owner().removeObject(this);
-        }
+        setParent(nullptr);
     } catch (...) {
     }
 }
@@ -27,26 +19,27 @@ Widget::~Widget() {
 void Widget::setParent(Widget* p) {
     if (parent_ != nullptr) {
         parent_->children_.remove(this);
-    } else {
-        owner().removeObject(this);
     }
-
     parent_ = p;
-
     if (parent_ != nullptr) {
-        if (&parent_->owner() != &owner()) {
-            throw std::runtime_error("Invalid widget parent context.");
-        }
         parent_->children_.push_back(this);
-    } else {
-        owner().addObject(this);
     }
 }
 
-void Widget::onPaint(sf::RenderTarget& target) noexcept {
+bool Widget::handleEvent(const sf::Event& event) noexcept {
+    for (auto child: children_) {
+        if (child->handleEvent(event)) {
+            return true;
+        }
+    }
+    return Object::handleEvent(event);
 }
 
-void Widget::onResized(const sf::Event::SizeEvent& event) noexcept {
+void Widget::draw(sf::RenderTarget& target, sf::RenderStates states) const {
+    Object::draw(target, states);
+    for (auto child: children_) {
+        child->draw(target, states);
+    }
 }
 
 VOLCANO_GUI_END

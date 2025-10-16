@@ -7,16 +7,16 @@
 
 #include <Volcano/Gui/Common.h>
 #include <Volcano/Gui/Context.h>
+#include <Volcano/Gui/Object.h>
 
 VOLCANO_GUI_BEGIN
 
-class Widget: public Context::Object {
+class Widget: public Object {
 public:
     using Children = std::list<Widget*>;
 
 public:
-    Widget(Widget& parent);
-    Widget(Context& owner);
+    Widget(float width, float height, Widget* parent = nullptr);
     virtual ~Widget();
 
 public:
@@ -29,28 +29,14 @@ public:
     }
 
     void setParent(Widget* p);
-
-    sf::Vector2i pos() const noexcept {
-        return pos_;
-    }
-
-    void move(sf::Vector2i v) noexcept;
-    
-    sf::Vector2u size() const noexcept {
-        return size_;
-    }
-
-    void resize(sf::Vector2i v) noexcept;
+    bool handleEvent(const sf::Event& event) noexcept override;
 
 protected:
-    void onPaint(sf::RenderTarget& target) noexcept override;
-    void onResized(const sf::Event::SizeEvent& event) noexcept override;
+    void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 
 private:
     Widget* parent_;
     Children children_;
-    sf::Vector2i pos_;
-    sf::Vector2u size_;
 };
 
 VOLCANO_GUI_END

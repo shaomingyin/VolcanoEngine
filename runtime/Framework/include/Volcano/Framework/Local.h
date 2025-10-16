@@ -13,6 +13,7 @@
 #include <Volcano/Framework/Common.h>
 #include <Volcano/Framework/Base.h>
 #include <Volcano/Framework/Window.h>
+#include <Volcano/Framework/Console.h>
 
 VOLCANO_FRAMEWORK_BEGIN
 
@@ -36,6 +37,7 @@ private:
     Graphics::Renderer renderer_;
     Gui::Context hud_;
     Gui::Context* current_gui_;
+    Console console_;
 };
 
 VOLCANO_FRAMEWORK_END

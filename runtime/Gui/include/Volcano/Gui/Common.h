@@ -3,9 +3,6 @@
 #ifndef VOLCANO_GUI_COMMON_H
 #define VOLCANO_GUI_COMMON_H
 
-#include <SFML/Audio.hpp>
-#include <SFML/Graphics.hpp>
-
 #include <Volcano/Common.h>
 #include <Volcano/Gui/Config.h>
 
