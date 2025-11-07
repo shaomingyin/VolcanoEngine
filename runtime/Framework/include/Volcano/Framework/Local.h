@@ -34,10 +34,9 @@ protected:
 
 private:
     Window window_;
+    //Gui::Context window_gui_context_;
+    Console* console_;
     Graphics::Renderer renderer_;
-    Gui::Context hud_;
-    Gui::Context* current_gui_;
-    Console console_;
 };
 
 VOLCANO_FRAMEWORK_END

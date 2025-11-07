@@ -1,16 +1,16 @@
 [requires]
+argh/1.3.2
+assimp/5.4.2
+asyncplusplus/1.2
+edyn/1.2.1
+eigen/5.0.0
+entt/3.10.3
+glew/2.2.0
+microprofile/4.0
+nlohmann_json/3.12.0
+physfs/3.2.0
 sfml/2.6.2
 spdlog/1.15.3
-eigen/5.0.0
-nlohmann_json/3.12.0
-asyncplusplus/1.2
-microprofile/4.0
-entt/3.15.0
-glew/2.2.0
-assimp/5.4.2
-bullet3/3.25
-physfs/3.2.0
-argh/1.3.2
 
 [generators]
 CMakeDeps

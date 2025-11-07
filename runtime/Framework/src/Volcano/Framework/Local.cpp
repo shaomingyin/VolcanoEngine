@@ -6,15 +6,14 @@ VOLCANO_FRAMEWORK_BEGIN
 
 Local::Local()
     : window_({ 800, 600 }, "VolcanoLauncher")
-    , hud_(window_)
-    , renderer_(window_.getSize().x, window_.getSize().y)
-    , current_gui_(nullptr)
-    , console_(hud_) {
+    , console_(nullptr)
+    , renderer_(window_.getSize().x, window_.getSize().y) {
     window_.setFramerateLimit(60);
 }
 
 void Local::frame(Clock::duration elapsed) noexcept {
     if (!window_.isOpen()) {
+        window_.close();
         quit();
         return;
     }
@@ -28,7 +27,7 @@ void Local::frame(Clock::duration elapsed) noexcept {
 
     renderer_.beginFrame();
     renderer_.endFrame();
-    hud_.render();
+    //hud_.render();
     window_.display();
 }
 
@@ -37,10 +36,10 @@ void Local::handleEvent(const sf::Event& event) {
     //     console_.taggle();
     // }
 
-    if (current_gui_ != nullptr) {
-        current_gui_->handleEvent(event);
-        return;
-    }
+    // if (current_gui_ != nullptr) {
+    //     current_gui_->handleEvent(event);
+    //     return;
+    // }
 
     switch (event.type) {
     case sf::Event::MouseMoved:
@@ -74,6 +73,7 @@ void Local::handleEvent(const sf::Event& event) {
         onResized(event.size);
         break;
     case sf::Event::Closed:
+        window_.close();
         quit();
         break;
     default:

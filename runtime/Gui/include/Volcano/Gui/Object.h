@@ -3,21 +3,32 @@
 #ifndef VOLCANO_GUI_OBJECT_H
 #define VOLCANO_GUI_OBJECT_H
 
+#include <list>
+
 #include <SFML/Window/Event.hpp>
 #include <SFML/Graphics/Drawable.hpp>
-#include <SFML/Graphics/Transform.hpp>
-#include <SFML/Graphics/RenderTarget.hpp>
-#include <SFML/Graphics/RectangleShape.hpp>
+#include <SFML/Graphics/Transformable.hpp>
+#include <SFML/Graphics/Rect.hpp>
 
 #include <Volcano/Gui/Common.h>
+#include <Volcano/Gui/Context.h>
 
 VOLCANO_GUI_BEGIN
 
-class Object: public sf::Drawable {
+class Object: public sf::Drawable, public sf::Transformable {
 public:
-    Object(float width, float height);
+    using ObjectList = std::list<Object*>;
 
 public:
+    Object(Context& context, float width, float height, Object* parent = nullptr);
+    Object(Context& context, const sf::Vector2f& size, Object* parent = nullptr);
+    virtual ~Object();
+
+public:
+    const Context& getContext() const noexcept {
+        return context_;
+    }
+
     bool isEnabled() const noexcept {
         return (flags_ & FlagEnabled);
     }
@@ -42,64 +53,100 @@ public:
         flags_ &= ~FlagVisible;
     }
 
-    sf::Transform& transform() noexcept {
-        return transform_;
+    Object* getParent() noexcept {
+        return parent_;
     }
 
-    const sf::Transform& transform() const noexcept {
-        return transform_;
+    void setParent(Object* parent);
+
+    const ObjectList& getChildren() const noexcept {
+        return children_;
     }
 
-    const sf::Color& backgroundColor() const noexcept {
-        return background_.getFillColor();
+    const sf::Vector2f& getSize() const noexcept {
+        return size_;
     }
 
-    void setBackgroundColor(const sf::Color& v) noexcept {
-        background_.setFillColor(v);
+    void setSize(float width, float height) noexcept {
+        size_.x = width;
+        size_.y = height;
     }
 
-    const sf::Color& borderColor() const noexcept {
-        return background_.getOutlineColor();
+    void setSize(const sf::Vector2f& v) noexcept {
+        size_ = v;
     }
 
-    void setBorderColor(const sf::Color& v) noexcept {
-        background_.setOutlineColor(v);
+    sf::FloatRect getRect() const noexcept {
+        auto& position = getPosition();
+        return { position.x, position.y, size_.x, size_.y };
     }
 
-    float borderWidth() const noexcept {
-        return background_.getOutlineThickness();
+    void setRect(const sf::FloatRect& v) noexcept {
+        setPosition(v.getPosition());
+        setSize(v.getSize());
     }
 
-    void setBorderWidth(float v) noexcept {
-        background_.setOutlineThickness(v);
-    }
+    sf::Vector2f toLocal(float x, float y) const noexcept;
+    sf::Vector2f toLocal(const sf::Vector2f& v) const noexcept;
+    sf::FloatRect toLocal(const sf::FloatRect& v) const noexcept;
+    sf::FloatRect toLocal(float left, float top, float width, float height) const noexcept;
+    sf::Vector2f toGlobal(float x, float y) const noexcept;
+    sf::Vector2f toGlobal(const sf::Vector2f& v) const noexcept;
+    sf::FloatRect toGlobal(const sf::FloatRect& v) const noexcept;
+    sf::FloatRect toGlobal(float left, float top, float width, float height) const noexcept;
 
-    const sf::Vector2f& size() const noexcept {
-        return background_.getSize();
-    }
-
-    void resize(float width, float height) noexcept {
-        background_.setSize({ width, height });
-    }
-
-    void resize(const sf::Vector2f& v) noexcept;
-    virtual bool handleEvent(const sf::Event& event) noexcept;
+    void toTop();
+    bool event(const sf::Event& event);
 
 protected:
-    void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
-    virtual void onPaint(sf::RenderTarget& target, sf::RenderStates states) const noexcept;
-    virtual bool onResized(const sf::Event::SizeEvent& event) noexcept;
+    bool isMouseInside() const noexcept {
+        return (flags_ & FlagMouseInside);
+    }
+
+    bool isMouseGrabbed() const noexcept {
+        return (flags_ & FlagMouseGrabbed);
+    }
+
+    void grabMouse() noexcept {
+        flags_ |= FlagMouseGrabbed;
+    }
+
+    void releaseMouse() noexcept {
+        flags_ &= ~FlagMouseGrabbed;
+    }
+
+    virtual void onChildAdded(Object* child);
+    virtual void onChildRemoved(Object* child);
+    virtual void onPaint(sf::RenderTarget& target, sf::RenderStates state) const = 0;
+    virtual bool onEvent(const sf::Event& evt);
+    virtual void onMouseMoved(const sf::Event::MouseMoveEvent& evt);
+    virtual void onMouseEntered();
+    virtual void onMouseLeft();
+    virtual void onMouseButtonPressed(const sf::Event::MouseButtonEvent& evt);
+    virtual void onMouseButtonReleased(const sf::Event::MouseButtonEvent& evt);
+
+private:
+    void draw(sf::RenderTarget& target, sf::RenderStates states) const;
+    bool handleMouseMoved(const sf::Event::MouseMoveEvent& evt);
+    bool handleMouseEntered();
+    bool handleMouseLeft();
+    bool handleMouseButtonPressed(const sf::Event::MouseButtonEvent& evt);
+    bool handleMouseButtonReleased(const sf::Event::MouseButtonEvent& evt);
 
 private:
     enum {
         FlagEnabled = 0x1,
-        FlagVisible = 0x2
+        FlagVisible = 0x2,
+        FlagMouseInside = 0x4,
+        FlagMouseGrabbed = 0x8
     };
 
 private:
+    Context& context_;
     int flags_;
-    sf::Transform transform_;
-    sf::RectangleShape background_;
+    Object* parent_;
+    ObjectList children_;
+    sf::Vector2f size_;
 };
 
 VOLCANO_GUI_END

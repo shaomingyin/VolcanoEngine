@@ -3,58 +3,32 @@
 #ifndef VOLCANO_GUI_CONTEXT_H
 #define VOLCANO_GUI_CONTEXT_H
 
-#include <list>
-
-#include <SFML/Graphics/RenderTarget.hpp>
-#include <SFML/Graphics/RectangleShape.hpp>
+#include <string>
 
 #include <Volcano/Gui/Common.h>
-#include <Volcano/Gui/Object.h>
+#include <Volcano/Gui/Style.h>
+#include <Volcano/Gui/Cache.h>
 
 VOLCANO_GUI_BEGIN
 
-using Objects = std::list<Object*>;
-
 class Context {
 public:
-    Context(sf::RenderTarget& render_target);
-    virtual ~Context() = default;
+	Context() = default;
+	virtual ~Context() = default;
 
 public:
-    sf::RectangleShape& background() noexcept {
-        return background_;
-    }
+	FontCache::Pointer getFont(const std::string& family) noexcept {
+		return getFontCache().get(family);
+	}
 
-    const sf::RectangleShape& background() const noexcept {
-        return background_;
-    }
+	FontCache::Pointer getFont(const Style& style) noexcept {
+		return getFont(style.font_family);
+	}
 
-    const Objects& objects() const noexcept {
-        return objects_;
-    }
-
-    Object* currentObject() const noexcept {
-        return current_object_;
-    }
-
-    void makeCurrentObject(Object* p);
-    void makeTopObject(Object* p);
-    void addObject(Object* p);
-    void removeObject(Object* p);
-    void render() noexcept;
-    void handleEvent(const sf::Event& event) noexcept;
-
-protected:
-    virtual void onResized(const sf::Event::SizeEvent& event) noexcept;
-
-private:
-    void drawDecoration();
-
-private:
-    sf::RenderTarget& render_target_;
-    sf::RectangleShape background_;
-    Objects objects_;
-    Object* current_object_;
+	virtual FontCache& getFontCache() noexcept = 0;
+	virtual const Style& getDefaultStyle() const noexcept = 0;
+	virtual const Style& getWindowTitleStyle() const noexcept = 0;
+	virtual float getWindowTitleHeight() const noexcept = 0;
 };
 
 VOLCANO_GUI_END

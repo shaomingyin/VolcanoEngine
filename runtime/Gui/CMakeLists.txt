@@ -1,5 +1,6 @@
 
 add_library(Gui STATIC
+    include/Volcano/Gui/Cache.h
     include/Volcano/Gui/Common.h
     include/Volcano/Gui/Config.h.in
     include/Volcano/Gui/Context.h
@@ -7,7 +8,7 @@ add_library(Gui STATIC
     include/Volcano/Gui/Object.h
     include/Volcano/Gui/Widget.h
     include/Volcano/Gui/Window.h
-    src/Volcano/Gui/Common.cpp
+    src/Volcano/Gui/Cache.cpp
     src/Volcano/Gui/Context.cpp
     src/Volcano/Gui/Layout.cpp
     src/Volcano/Gui/Object.cpp

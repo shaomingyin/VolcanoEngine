@@ -3,40 +3,38 @@
 #ifndef VOLCANO_GUI_WIDGET_H
 #define VOLCANO_GUI_WIDGET_H
 
-#include <list>
+#include <layout.h>
 
-#include <Volcano/Gui/Common.h>
-#include <Volcano/Gui/Context.h>
+#include <SFML/System/String.hpp>
+#include <SFML/Graphics/Font.hpp>
+#include <SFML/Graphics/Text.hpp>
+#include <SFML/Graphics/RectangleShape.hpp>
+
 #include <Volcano/Gui/Object.h>
 
 VOLCANO_GUI_BEGIN
 
-class Widget: public Object {
+class Widget : public Object {
 public:
-    using Children = std::list<Widget*>;
-
-public:
-    Widget(float width, float height, Widget* parent = nullptr);
-    virtual ~Widget();
+    enum {
+    };
 
 public:
-    const Children& children() const noexcept {
-        return children_;
-    }
+    Widget(Context& context, const sf::Vector2f& size, Object* parent = nullptr);
+    Widget(Context& context, float width, float height, Object* parent = nullptr);
+    virtual ~Widget() = default;
 
-    Widget* parent() const noexcept {
-        return parent_;
-    }
-
-    void setParent(Widget* p);
-    bool handleEvent(const sf::Event& event) noexcept override;
+public:
 
 protected:
-    void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
+    void onPaint(sf::RenderTarget& target, sf::RenderStates states) const noexcept override;
+    void onMouseMoved(const sf::Event::MouseMoveEvent& evt) noexcept override;
+    void onMouseLeft() noexcept override;
+    void onMouseButtonPressed(const sf::Event::MouseButtonEvent& evt) noexcept override;
+    void onMouseButtonReleased(const sf::Event::MouseButtonEvent& evt) noexcept override;
 
 private:
-    Widget* parent_;
-    Children children_;
+    int flags_;
 };
 
 VOLCANO_GUI_END
