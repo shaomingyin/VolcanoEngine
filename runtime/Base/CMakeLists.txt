@@ -1,9 +1,11 @@
 
 add_library(Base STATIC
+    include/Volcano/Cache.h
     include/Volcano/Common.h
     include/Volcano/Config.h.in
     include/Volcano/ScopeGuard.h
     include/Volcano/Version.h
+    src/Volcano/Cache.cpp
     src/Volcano/Common.cpp
     src/Volcano/Error.cpp
     src/Volcano/Version.cpp

@@ -12,7 +12,7 @@ VOLCANO_FRAMEWORK_BEGIN
 
 class Server: public Base {
 public:
-    Server();
+    Server(WorldCreator world_creator);
     virtual ~Server() = default;
 };
 

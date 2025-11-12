@@ -12,7 +12,7 @@ VOLCANO_FRAMEWORK_BEGIN
 
 class Client: public Local {
 public:
-    Client();
+    Client(WorldCreator world_creator);
     virtual ~Client() = default;
 };
 

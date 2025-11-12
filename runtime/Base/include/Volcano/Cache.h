@@ -1,7 +1,7 @@
 //
 //
-#ifndef VOLCANO_GUI_CACHE_H
-#define VOLCANO_GUI_CACHE_H
+#ifndef VOLCANO_CACHE_H
+#define VOLCANO_CACHE_H
 
 #include <map>
 #include <memory>
@@ -10,11 +10,10 @@
 #include <functional>
 
 #include <SFML/System/NonCopyable.hpp>
-#include <SFML/Graphics/Font.hpp>
 
-#include <Volcano/Gui/Common.h>
+#include <Volcano/Common.h>
 
-VOLCANO_GUI_BEGIN
+VOLCANO_BEGIN
 
 template <typename T>
 class Cache: public sf::NonCopyable {
@@ -72,8 +71,6 @@ private:
 	Storage storage_;
 };
 
-using FontCache = Cache<sf::Font>;
+VOLCANO_END
 
-VOLCANO_GUI_END
-
-#endif // VOLCANO_GUI_CACHE_H
+#endif // VOLCANO_CACHE_H

@@ -4,8 +4,9 @@
 
 VOLCANO_FRAMEWORK_BEGIN
 
-Local::Local()
-    : window_({ 800, 600 }, "VolcanoLauncher")
+Local::Local(WorldCreator world_creator)
+    : Base(std::move(world_creator))
+    , window_({ 800, 600 }, "VolcanoLauncher")
     , console_(nullptr)
     , renderer_(window_.getSize().x, window_.getSize().y) {
     window_.setFramerateLimit(60);

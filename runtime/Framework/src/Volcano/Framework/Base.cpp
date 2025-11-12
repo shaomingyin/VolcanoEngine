@@ -41,6 +41,10 @@ void Base::run() {
     }
 }
 
+void Base::quit() noexcept {
+
+}
+
 unsigned long Base::fps() const noexcept {
     return frame_count_per_second_;
 }
@@ -73,21 +77,6 @@ void Base::setError(std::error_code ec) noexcept {
     error_ = ec;
 }
 
-void Base::loadingFrame(Clock::duration elapsed) noexcept {
-}
-
-void Base::readyFrame(Clock::duration elapsed) noexcept {
-}
-
-void Base::playingFrame(Clock::duration elapsed) noexcept {
-}
-
-void Base::pausedFrame(Clock::duration elapsed) noexcept {
-}
-
-void Base::errorFrame(Clock::duration elapsed) noexcept {
-}
-
 void Base::frame(Clock::duration elapsed) noexcept {
     runAllTasks();
 
@@ -97,7 +86,7 @@ void Base::frame(Clock::duration elapsed) noexcept {
         state_ = State::Loading;
         break;
     case World::State::Ready:
-        state_ = State::Rady;
+        state_ = State::Ready;
         break;
     case World::State::Error:
         setError(world_->error());
@@ -125,6 +114,21 @@ void Base::frame(Clock::duration elapsed) noexcept {
     default:
         break;
     }
+}
+
+void Base::loadingFrame(Clock::duration elapsed) noexcept {
+}
+
+void Base::readyFrame(Clock::duration elapsed) noexcept {
+}
+
+void Base::playingFrame(Clock::duration elapsed) noexcept {
+}
+
+void Base::pausedFrame(Clock::duration elapsed) noexcept {
+}
+
+void Base::errorFrame(Clock::duration elapsed) noexcept {
 }
 
 VOLCANO_FRAMEWORK_END

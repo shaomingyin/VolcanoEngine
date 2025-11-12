@@ -52,14 +52,12 @@ protected:
     void pause() noexcept;
     void setError(std::error_code ec) noexcept;
 
+    virtual void frame(Clock::duration elapsed) noexcept;
     virtual void loadingFrame(Clock::duration elapsed) noexcept;
     virtual void readyFrame(Clock::duration elapsed) noexcept;
     virtual void playingFrame(Clock::duration elapsed) noexcept;
     virtual void pausedFrame(Clock::duration elapsed) noexcept;
     virtual void errorFrame(Clock::duration elapsed) noexcept;
-
-private:
-    void frame(Clock::duration elapsed) noexcept;
 
 private:
     State state_;

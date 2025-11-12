@@ -1,12 +1,12 @@
 //
 //
-#include <Volcano/World/Scene.h>
+#include <Volcano/Scene/Registry.h>
 
-VOLCANO_WORLD_BEGIN
+VOLCANO_SCENE_BEGIN
 
-Scene::Scene()
+Registry::Registry()
     : global_(create()) {
     // on_construct<>()
 }
 
-VOLCANO_WORLD_END
+VOLCANO_SCENE_END

@@ -4,7 +4,8 @@
 
 VOLCANO_FRAMEWORK_BEGIN
 
-Client::Client() {
+Client::Client(WorldCreator world_creator)
+	: Local(std::move(world_creator)) {
 }
 
 VOLCANO_FRAMEWORK_END

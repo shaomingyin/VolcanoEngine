@@ -33,7 +33,7 @@ namespace JsonUtils {
         auto path = std::filesystem::path(jsonpath).lexically_normal();
         const nlohmann::json* p = &json;
         for (auto& node: path) {
-            p = &p->at(node.c_str());
+            p = &p->at(node.string());
         }
         return *p;
     }

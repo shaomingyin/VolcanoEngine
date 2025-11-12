@@ -45,6 +45,8 @@ public:
         title_bar_.setFillColor(style.background_color);
         title_bar_.setOutlineColor(style.border_color);
         title_bar_.setOutlineThickness(style.border_size);
+        title_text_.setFont(*context().getFont(style));
+        title_text_.setCharacterSize(style.font_size);
     }
 
     void applyStyle(const Style& style) {

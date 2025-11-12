@@ -19,7 +19,7 @@ VOLCANO_FRAMEWORK_BEGIN
 
 class Local: public Base {
 public:
-    Local();
+    Local(WorldCreator world_creator);
     virtual ~Local() = default;
 
 protected:

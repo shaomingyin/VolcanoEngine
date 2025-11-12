@@ -1,12 +1,12 @@
 //
 //
-#ifndef VOLCANO_WORLD_COMMON_H
-#define VOLCANO_WORLD_COMMON_H
+#ifndef VOLCANO_SCENE_COMMON_H
+#define VOLCANO_SCENE_COMMON_H
 
 #include <Volcano/Common.h>
-#include <Volcano/World/Config.h>
+#include <Volcano/Scene/Config.h>
 
-#define VOLCANO_WORLD_BEGIN VOLCANO_BEGIN namespace World {
-#define VOLCANO_WORLD_END } VOLCANO_END
+#define VOLCANO_SCENE_BEGIN VOLCANO_BEGIN namespace Scene {
+#define VOLCANO_SCENE_END } VOLCANO_END
 
-#endif // VOLCANO_WORLD_COMMON_H
+#endif // VOLCANO_SCENE_COMMON_H

@@ -1,19 +1,19 @@
 //
 //
-#ifndef VOLCANO_WORLD_SCENE_H
-#define VOLCANO_WORLD_SCENE_H
+#ifndef VOLCANO_SCENE_REGISTRY_H
+#define VOLCANO_SCENE_REGISTRY_H
 
 #include <entt/entt.hpp>
 
-#include <Volcano/World/Common.h>
+#include <Volcano/Scene/Common.h>
 
-VOLCANO_WORLD_BEGIN
+VOLCANO_SCENE_BEGIN
 
-class Scene: public entt::registry {
+class Registry: public entt::registry {
 
 public:
-    Scene();
-    virtual ~Scene() = default;
+    Registry();
+    virtual ~Registry() = default;
 
 public:
     entt::entity global() const {
@@ -24,6 +24,6 @@ private:
     entt::entity global_;
 };
 
-VOLCANO_WORLD_END
+VOLCANO_SCENE_END
 
-#endif // VOLCANO_WORLD_SCENE_H
+#endif // VOLCANO_SCENE_REGISTRY_H

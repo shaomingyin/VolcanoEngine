@@ -27,7 +27,7 @@ public:
 
 public:
     World(Context& context, const std::filesystem::path& scene_filepath);
-    ~World() override;
+    virtual ~World();
 
 public:
     Context& context() noexcept {
@@ -44,10 +44,6 @@ public:
 
     const std::string& name() const noexcept {
         return name_;
-    }
-
-    State state() const noexcept {
-        return state_;
     }
 
     bool isPhysicsEnabled() const noexcept {
@@ -77,7 +73,6 @@ public:
         return error_;
     }
 
-    virtual void load(const std::filesystem::path& scene_filepath);
     virtual void update(Clock::duration elapsed) noexcept;
 
 protected:
@@ -101,12 +96,14 @@ protected:
         error_ = ec;
     }
 
+    virtual void loadConfig(const nlohmann::json& config);
+    virtual void loadScene(const nlohmann::json& scene);
+
 private:
     Context& context_;
     State state_;
     std::string name_;
     VersionNumber version_;
-    State state_;
     Scene::Registry scene_;
     bool physics_enabled_;
     async::task<void> loading_task_;

@@ -45,9 +45,9 @@ static void run(int argc, char* argv[]) {
 
     std::unique_ptr<Framework::Local> app;
     if (true) {
-        app = std::make_unique<Framework::Local>();
+        app = std::make_unique<Framework::Local>(nullptr);
     } else {
-        app = std::make_unique<Framework::Client>();
+        app = std::make_unique<Framework::Client>(nullptr);
     }
 
     logInfo("Running...");

@@ -25,7 +25,7 @@ public:
     virtual ~Object();
 
 public:
-    const Context& getContext() const noexcept {
+    Context& context() noexcept {
         return context_;
     }
 

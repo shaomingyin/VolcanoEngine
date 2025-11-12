@@ -2,14 +2,13 @@
 //
 #include <edyn/edyn.hpp>
 
+#include <Volcano/Framework/JsonUtils.h>
 #include <Volcano/Framework/World.h>
 
 VOLCANO_FRAMEWORK_BEGIN
 
 World::World(Context& context, const std::filesystem::path& scene_filepath)
     : context_(context)
-    , name_(name)
-    , version_(version)
     , state_(State::Loading) {
     edyn::attach(scene_);
     loading_task_ = async::spawn(async::thread_scheduler(), [this, scene_filepath] {
@@ -19,7 +18,7 @@ World::World(Context& context, const std::filesystem::path& scene_filepath)
         // auto user_config = JsonUtils::loadFromFile(user_config_filepath.c_str());
         // config.merge_patch(user_config);
         // loadConfig(config);
-        auto startup_scene = JsonUtils::loadFromPhysFile(scene_filepath.c_str());
+        auto startup_scene = JsonUtils::loadFromPhysFile(scene_filepath.generic_string().c_str());
         loadScene(startup_scene);
     });
 }

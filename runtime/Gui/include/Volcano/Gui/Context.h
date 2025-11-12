@@ -5,11 +5,15 @@
 
 #include <string>
 
+#include <SFML/Graphics/Font.hpp>
+
+#include <Volcano/Cache.h>
 #include <Volcano/Gui/Common.h>
 #include <Volcano/Gui/Style.h>
-#include <Volcano/Gui/Cache.h>
 
 VOLCANO_GUI_BEGIN
+
+using FontCache = Cache<sf::Font>;
 
 class Context {
 public:
