@@ -2,7 +2,7 @@
 //
 #include <SFML/Window/Context.hpp>
 
-#include <Volcano/Framework/Window.h>
+#include <Volcano/Framework/Window.hpp>
 
 VOLCANO_FRAMEWORK_BEGIN
 

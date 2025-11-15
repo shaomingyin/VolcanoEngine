@@ -1,6 +1,6 @@
 //
 //
-#include <Volcano/Framework/Server.h>
+#include <Volcano/Framework/Server.hpp>
 
 VOLCANO_FRAMEWORK_BEGIN
 

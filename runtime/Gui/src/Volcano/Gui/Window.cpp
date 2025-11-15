@@ -3,7 +3,7 @@
 #include <SFML/OpenGL.hpp>
 #include <SFML/Graphics/Image.hpp>
 
-#include <Volcano/Gui/Window.h>
+#include <Volcano/Gui/Window.hpp>
 
 VOLCANO_GUI_BEGIN
 

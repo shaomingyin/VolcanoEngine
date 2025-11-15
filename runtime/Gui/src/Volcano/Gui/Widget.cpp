@@ -1,6 +1,6 @@
 //
 //
-#include <Volcano/Gui/Widget.h>
+#include <Volcano/Gui/Widget.hpp>
 
 VOLCANO_GUI_BEGIN
 

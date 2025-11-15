@@ -1,6 +1,6 @@
 //
 //
-#include <Volcano/Gui/Object.h>
+#include <Volcano/Gui/Object.hpp>
 
 VOLCANO_GUI_BEGIN
 

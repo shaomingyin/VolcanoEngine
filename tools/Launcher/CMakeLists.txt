@@ -1,13 +1,13 @@
 
 add_executable(Launcher
-    include/Volcano/Launcher/Common.h
-    include/Volcano/Launcher/Config.h.in
+    include/Volcano/Launcher/Common.hpp
+    include/Volcano/Launcher/Config.hpp.in
     src/Volcano/Launcher/Main.cpp
 )
 
 configure_file(
-    include/Volcano/Launcher/Config.h.in
-    include/Volcano/Launcher/Config.h
+    include/Volcano/Launcher/Config.hpp.in
+    include/Volcano/Launcher/Config.hpp
 )
 
 set_target_properties(Launcher PROPERTIES OUTPUT_NAME VolcanoLauncher)

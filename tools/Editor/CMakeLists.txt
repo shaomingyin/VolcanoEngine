@@ -1,13 +1,13 @@
 
 add_executable(Editor
-    include/Volcano/Editor/Common.h
-    include/Volcano/Editor/Config.h.in
+    include/Volcano/Editor/Common.hpp
+    include/Volcano/Editor/Config.hpp.in
     src/Volcano/Editor/Main.cpp
 )
 
 configure_file(
-    include/Volcano/Editor/Config.h.in
-    include/Volcano/Editor/Config.h
+    include/Volcano/Editor/Config.hpp.in
+    include/Volcano/Editor/Config.hpp
 )
 
 volcano_target_setup(Editor)

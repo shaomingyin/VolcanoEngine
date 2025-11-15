@@ -3,7 +3,7 @@
 #define LAY_IMPLEMENTATION
 #include <layout.h>
 
-#include <Volcano/Gui/Layout.h>
+#include <Volcano/Gui/Layout.hpp>
 
 VOLCANO_GUI_BEGIN
 

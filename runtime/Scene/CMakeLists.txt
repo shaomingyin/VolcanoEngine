@@ -1,15 +1,15 @@
 
 add_library(Scene STATIC
-    include/Volcano/Scene/Common.h
-    include/Volcano/Scene/Config.h.in
-    include/Volcano/Scene/Registry.h
+    include/Volcano/Scene/Common.hpp
+    include/Volcano/Scene/Config.hpp.in
+    include/Volcano/Scene/Registry.hpp
     src/Volcano/Scene/Common.cpp
     src/Volcano/Scene/Registry.cpp
 )
 
 configure_file(
-    include/Volcano/Scene/Config.h.in
-    include/Volcano/Scene/Config.h
+    include/Volcano/Scene/Config.hpp.in
+    include/Volcano/Scene/Config.hpp
 )
 
 target_include_directories(Scene PUBLIC

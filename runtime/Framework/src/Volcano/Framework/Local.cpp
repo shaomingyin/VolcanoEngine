@@ -1,6 +1,6 @@
 //
 //
-#include <Volcano/Framework/Local.h>
+#include <Volcano/Framework/Local.hpp>
 
 VOLCANO_FRAMEWORK_BEGIN
 
@@ -15,7 +15,6 @@ Local::Local(WorldCreator world_creator)
 void Local::frame(Clock::duration elapsed) noexcept {
     if (!window_.isOpen()) {
         window_.close();
-        quit();
         return;
     }
 
@@ -75,7 +74,6 @@ void Local::handleEvent(const sf::Event& event) {
         break;
     case sf::Event::Closed:
         window_.close();
-        quit();
         break;
     default:
         break;

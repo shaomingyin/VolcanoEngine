@@ -8,10 +8,10 @@
 #include <argh.h>
 #include <physfs.h>
 
-#include <Volcano/ScopeGuard.h>
-#include <Volcano/Framework/Local.h>
-#include <Volcano/Framework/Client.h>
-#include <Volcano/Launcher/Common.h>
+#include <Volcano/ScopeGuard.hpp>
+#include <Volcano/Framework/Local.hpp>
+#include <Volcano/Framework/Client.hpp>
+#include <Volcano/Launcher/Common.hpp>
 
 VOLCANO_LAUNCHER_BEGIN
 

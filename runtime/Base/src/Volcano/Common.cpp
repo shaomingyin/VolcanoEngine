@@ -1,6 +1,6 @@
 //
 //
-#include <Volcano/Common.h>
+#include <Volcano/Common.hpp>
 
 VOLCANO_BEGIN
 

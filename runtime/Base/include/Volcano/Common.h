@@ -1,20 +1,38 @@
-//
-//
+/*
+ *
+ */
 #ifndef VOLCANO_COMMON_H
 #define VOLCANO_COMMON_H
 
-#include <spdlog/spdlog.h>
-
-#include <Eigen/Core>
+#include <stdlib.h>
+#include <stdint.h>
+#include <stdbool.h>
 
 #include <Volcano/Config.h>
 
+#ifdef __cplusplus
+#   define VOLCANO_C_BEGIN extern "C" {
+#   define VOLCANO_C_END }
+#else
+#   define VOLCANO_C_BEGIN
+#   define VOLCANO_C_END
+#endif
+
 #ifdef VOLCANO_DEBUG
-#   include <cassert>
+#   include <assert.h>
 #   define VOLCANO_ASSERT(expr) assert(expr)
 #else
 #   define VOLCANO_ASSERT(expr)
 #endif
+
+#define VOLCANO_PMOVB(p, offset) \
+   (((uint8_t*)(p)) + (offset))
+
+#define VOLCANO_OFFSETOF(struct_type, member_name) \
+    ((size_t)&(((struct_type*)0)->member_name))
+
+#define VOLCANO_MEMBEROF(p, struct_type, member_name) \
+    ((struct_type*)VOLCANO_PMOVB(p, -VOLCANO_OFFSETOF(struct_type, member_name)))
 
 #define VOLCANO_CON(a, b) VOLCANO_CON_(a, b)
 #define VOLCANO_CON_(a, b) a##b
@@ -29,36 +47,5 @@
     VOLCANO_STRIZE(VOLCANO_VERSION_MAJOR) "." \
     VOLCANO_STRIZE(VOLCANO_VERSION_MINOR) "." \
     VOLCANO_STRIZE(VOLCANO_VERSION_PATCH)
-
-#define VOLCANO_BEGIN namespace Volcano {
-#define VOLCANO_END }
-
-VOLCANO_BEGIN
-
-template <typename... Args>
-void logError(spdlog::format_string_t<Args...> fmt, Args... args) {
-    spdlog::log(spdlog::level::err, fmt, std::forward<Args>(args)...);
-}
-
-template <typename... Args>
-void logWarn(spdlog::format_string_t<Args...> fmt, Args... args) {
-    spdlog::log(spdlog::level::warn, fmt, std::forward<Args>(args)...);
-}
-
-template <typename... Args>
-void logInfo(spdlog::format_string_t<Args...> fmt, Args... args) {
-    spdlog::log(spdlog::level::info, fmt, std::forward<Args>(args)...);
-}
-
-template <typename... Args>
-void logDebug(spdlog::format_string_t<Args...> fmt, Args... args) {
-    spdlog::log(spdlog::level::debug, fmt, std::forward<Args>(args)...);
-}
-
-const std::string& appOrganization();
-const std::string& appName();
-void setAppInfo(const std::string& organization, const std::string& name);
-
-VOLCANO_END
 
 #endif // VOLCANO_COMMON_H

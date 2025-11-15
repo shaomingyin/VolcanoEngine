@@ -3,7 +3,7 @@
 #include <format>
 #include <stdexcept>
 
-#include <Volcano/Framework/Common.h>
+#include <Volcano/Framework/Common.hpp>
 
 VOLCANO_FRAMEWORK_BEGIN
 

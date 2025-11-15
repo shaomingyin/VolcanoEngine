@@ -1,6 +1,6 @@
 //
 //
-#include <Volcano/Scene/Registry.h>
+#include <Volcano/Scene/Registry.hpp>
 
 VOLCANO_SCENE_BEGIN
 

@@ -1,6 +1,6 @@
 //
 //
-#include <Volcano/Framework/Console.h>
+#include <Volcano/Framework/Console.hpp>
 
 VOLCANO_FRAMEWORK_BEGIN
 

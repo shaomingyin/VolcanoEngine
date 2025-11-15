@@ -4,9 +4,8 @@
 #include <stdexcept>
 #include <filesystem>
 
-#include <Volcano/Error.h>
-#include <Volcano/Framework/JsonUtils.h>
-#include <Volcano/Framework/Base.h>
+#include <Volcano/Error.hpp>
+#include <Volcano/Framework/Base.hpp>
 
 VOLCANO_FRAMEWORK_BEGIN
 
@@ -24,9 +23,13 @@ Base::Base(WorldCreator world_creator)
 
 void Base::run() {
     VOLCANO_ASSERT(state_ == State::Idle);
-    state_ = State::Loading;
-    world_ = world_creator_(*this);
-    while (state_ != State::Idle) {
+
+    world_task_ = async::spawn(async::thread_scheduler(), [this]() {
+        state_ = State::Loading;
+        world_creator_(*this)->run();
+    });
+
+    while (!world_task_.ready()) {
         auto now = Clock::now();
         if ((now - frame_count_last_) >= 1s) {
             frame_count_per_second_ = frame_count_;
@@ -39,10 +42,6 @@ void Base::run() {
             std::this_thread::sleep_for(min_elapsed_ - update_elapsed);
         }
     }
-}
-
-void Base::quit() noexcept {
-
 }
 
 unsigned long Base::fps() const noexcept {
@@ -79,21 +78,6 @@ void Base::setError(std::error_code ec) noexcept {
 
 void Base::frame(Clock::duration elapsed) noexcept {
     runAllTasks();
-
-    world_->update(elapsed);
-    switch (world_->state()) {
-    case World::State::Loading:
-        state_ = State::Loading;
-        break;
-    case World::State::Ready:
-        state_ = State::Ready;
-        break;
-    case World::State::Error:
-        setError(world_->error());
-        break;
-    default:
-        break;
-    }
 
     switch (state_) {
     case State::Playing:

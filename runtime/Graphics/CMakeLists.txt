@@ -4,16 +4,16 @@ add_library(Graphics STATIC
     include/GL/glcorearb.h
     include/KHR/khrplatform.h
     src/GL/gl3w.c
-    include/Volcano/Graphics/Common.h
-    include/Volcano/Graphics/Config.h.in
-    include/Volcano/Graphics/Renderer.h
+    include/Volcano/Graphics/Common.hpp
+    include/Volcano/Graphics/Config.hpp.in
+    include/Volcano/Graphics/Renderer.hpp
     src/Volcano/Graphics/Common.cpp
     src/Volcano/Graphics/Renderer.cpp
 )
 
 configure_file(
-    include/Volcano/Graphics/Config.h.in
-    include/Volcano/Graphics/Config.h
+    include/Volcano/Graphics/Config.hpp.in
+    include/Volcano/Graphics/Config.hpp
 )
 
 target_include_directories(Graphics PUBLIC
