@@ -77,6 +77,8 @@ void World::setFpsMax(unsigned long v) noexcept {
 }
 
 void World::mainLoop(lua_State* L) {
+    initSyscalls(L);
+
 	setupFrameTimer();
     auto frame_timer_guard = scopeGuard([this]() {
         uv_timer_stop(&frame_timer_);
@@ -102,12 +104,6 @@ void World::mainLoop(lua_State* L) {
 	});
 
 	Vm::Kernel::mainLoop(L);
-}
-
-void World::scheduleTrappedTasks(lua_State* L) {
-    async::spawn(context(), [this, L] {
-        Vm::Kernel::scheduleTrappedTasks(L);
-    }).get();
 }
 
 void World::frame(Clock::duration elapsed) {
@@ -151,6 +147,23 @@ void World::updateFrame() {
     frame(elapsed);
     frame_last_ = now;
 	frame_count_++;
+}
+
+void World::initSyscalls(lua_State* L) {
+    Vm::GlobalTable api(L, "volcano");
+
+    lua_pushlightuserdata(L, this);
+    lua_pushcclosure(L, [](lua_State* T) {
+        auto world = reinterpret_cast<World*>(lua_touserdata(T, lua_upvalueindex(1)));
+        async::spawn(world->context_, [world] {
+            return world->context_.fps();
+        }).then(*world, [world, T](unsigned int fps) {
+            lua_pushinteger(T, fps);
+            world->resumeTask(T);
+        });
+        return lua_yield(T, 0);
+    }, 1);
+    lua_setglobal(L, "fps");
 }
 
 VOLCANO_FRAMEWORK_END

@@ -9,11 +9,11 @@ VOLCANO_VM_BEGIN
 
 using Task = VolcanoVmTask;
 
-inline Task* taskFromState(lua_State* L) {
+inline Task* taskFromState(lua_State* L) noexcept {
 	return reinterpret_cast<Task*>(lua_getextraspace(L));
 }
 
-inline lua_State* taskToState(Task* T) {
+inline lua_State* taskToState(Task* T) noexcept {
 	return reinterpret_cast<lua_State*>(VOLCANO_PMOVB(T, LUA_EXTRASPACE));
 }
 

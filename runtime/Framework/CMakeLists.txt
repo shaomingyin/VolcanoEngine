@@ -36,9 +36,6 @@ set_target_properties(Framework PROPERTIES OUTPUT_NAME VolcanoFramework)
 
 target_link_libraries(Framework PUBLIC Scene Graphics Gui Vm)
 
-find_package(Async++)
-target_link_libraries(Framework PUBLIC Async++)
-
 find_package(PhysFS)
 target_link_libraries(Framework PUBLIC physfs-static)
 

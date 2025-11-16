@@ -117,7 +117,6 @@ protected:
     }
 
 	void mainLoop(lua_State* L) override;
-    void scheduleTrappedTasks(lua_State* L) override;
 	virtual void frame(Clock::duration elapsed);
 	virtual void handleEvent(const sf::Event& evt);
 
@@ -125,6 +124,7 @@ private:
 	void setupFrameTimer();
     void processEvents();
     void updateFrame();
+    void initSyscalls(lua_State* L);
 
 private:
     Context& context_;

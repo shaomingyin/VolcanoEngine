@@ -9,7 +9,6 @@
 
 #include <async++.h>
 
-#include <Volcano/Version.hpp>
 #include <Volcano/Framework/Common.hpp>
 
 VOLCANO_FRAMEWORK_BEGIN
@@ -24,7 +23,7 @@ public:
 
 public:
     void schedule(async::task_run_handle t) {
-        scheduler_.schedule(std::move(t));
+		scheduler_.schedule(std::move(t));
     }
 
     virtual unsigned long fps() const noexcept  = 0;
