@@ -5,31 +5,25 @@
 
 #include <GL/gl3w.h>
 
+#include <SFML/Graphics/RenderTarget.hpp>
+
 #include <Volcano/Graphics/Common.hpp>
+#include <Volcano/Graphics/View.hpp>
+#include <Volcano/Graphics/Context.hpp>
 
 VOLCANO_GRAPHICS_BEGIN
 
 class Renderer {
 public:
-    Renderer(int width, int height);
+    Renderer(Context& contet, sf::RenderTarget& target);
     virtual ~Renderer() = default;
 
 public:
-    int width() const noexcept {
-        return width_;
-    }
-
-    int height() const noexcept {
-        return height_;
-    }
-
-    void resize(int width, int height);
-    void beginFrame();
-    void endFrame();
+    void render(const View& view);
 
 private:
-    int width_;
-    int height_;
+    Context& context_;
+    sf::RenderTarget& target_;
 };
 
 VOLCANO_GRAPHICS_END

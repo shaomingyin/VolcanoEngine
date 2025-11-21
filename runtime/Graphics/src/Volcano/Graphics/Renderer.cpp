@@ -4,22 +4,12 @@
 
 VOLCANO_GRAPHICS_BEGIN
 
-Renderer::Renderer(int width, int height) {
-    VOLCANO_ASSERT(gl3wProcs != nullptr);
-    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+Renderer::Renderer(Context& context, sf::RenderTarget& target)
+    : context_(context)
+    , target_(target) {
 }
 
-void Renderer::resize(int width, int height) {
-    width_ = width;
-    height_ = height;
-}
-
-void Renderer::beginFrame() {
-    glViewport(0, 0, width_, height_);
-    glClear(GL_COLOR_BUFFER_BIT);
-}
-
-void Renderer::endFrame() {
+void Renderer::render(const View& view) {
 }
 
 VOLCANO_GRAPHICS_END

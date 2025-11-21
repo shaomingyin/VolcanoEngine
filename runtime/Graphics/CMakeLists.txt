@@ -4,11 +4,17 @@ add_library(Graphics STATIC
     include/GL/glcorearb.h
     include/KHR/khrplatform.h
     src/GL/gl3w.c
+    include/Volcano/Graphics/Canvas.hpp
     include/Volcano/Graphics/Common.hpp
     include/Volcano/Graphics/Config.hpp.in
+    include/Volcano/Graphics/Context.hpp
     include/Volcano/Graphics/Renderer.hpp
+    include/Volcano/Graphics/View.hpp
+    src/Volcano/Graphics/Canvas.cpp
     src/Volcano/Graphics/Common.cpp
+    src/Volcano/Graphics/Context.cpp
     src/Volcano/Graphics/Renderer.cpp
+    src/Volcano/Graphics/View.cpp
 )
 
 configure_file(
@@ -25,3 +31,6 @@ volcano_target_setup(Graphics)
 set_target_properties(Graphics PROPERTIES OUTPUT_NAME VolcanoGraphics)
 
 target_link_libraries(Graphics PUBLIC Base)
+
+find_package(SFML REQUIRED COMPONENTS sfml-graphics)
+target_link_libraries(Graphics PUBLIC sfml-graphics)

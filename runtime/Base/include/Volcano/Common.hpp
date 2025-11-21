@@ -3,7 +3,6 @@
 #ifndef VOLCANO_COMMON_HPP
 #define VOLCANO_COMMON_HPP
 
-#include <Eigen/Core>
 #include <spdlog/spdlog.h>
 
 #include <Volcano/Common.h>

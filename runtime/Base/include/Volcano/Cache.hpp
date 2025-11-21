@@ -9,20 +9,21 @@
 #include <chrono>
 #include <functional>
 
-#include <SFML/System/NonCopyable.hpp>
-
 #include <Volcano/Common.hpp>
 
 VOLCANO_BEGIN
 
 template <typename T>
-class Cache: public sf::NonCopyable {
+class Cache {
 public:
 	using Type = T;
 	using Pointer = std::shared_ptr<T>;
 	using ToKey = std::function<std::string (const T&)>;
 
 public:
+	Cache(const Cache&) = delete;
+	Cache(Cache&&) = default;
+
 	Cache(size_t size = 8)
 		: size_(size) {
 	}
@@ -30,6 +31,9 @@ public:
 	virtual ~Cache() = default;
 
 public:
+	Cache& operator=(const Cache&) = delete;
+	Cache& operator=(Cache&&) = default;
+	
 	void clear() {
 		storage_.clear();
 	}

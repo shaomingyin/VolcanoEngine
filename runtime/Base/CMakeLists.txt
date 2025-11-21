@@ -30,6 +30,3 @@ target_link_libraries(Base PUBLIC spdlog::spdlog)
 
 find_package(Eigen3 REQUIRED)
 target_link_libraries(Base PUBLIC Eigen3::Eigen)
-
-find_package(SFML REQUIRED COMPONENTS sfml-system)
-target_link_libraries(Base PUBLIC sfml-system)

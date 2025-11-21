@@ -9,11 +9,15 @@
 #include <physfs.h>
 
 #include <Volcano/ScopeGuard.hpp>
-#include <Volcano/Framework/Local.hpp>
-#include <Volcano/Framework/Client.hpp>
+#include <Volcano/Launcher/Local.hpp>
+#include <Volcano/Launcher/Client.hpp>
 #include <Volcano/Launcher/Common.hpp>
 
 VOLCANO_LAUNCHER_BEGIN
+
+static Simulation::World* createWorld(Simulation::Context& context) {
+    return nullptr;
+}
 
 static void run(int argc, char* argv[]) {
     logInfo("VolcanoLauncher: Engine version - " VOLCANO_VERSION_STR);
@@ -43,11 +47,11 @@ static void run(int argc, char* argv[]) {
 
     ret = PHYSFS_mount(root.c_str(), "/", 1);
 
-    std::unique_ptr<Framework::Local> app;
+    std::unique_ptr<Local> app;
     if (true) {
-        app = std::make_unique<Framework::Local>(nullptr);
+        app = std::make_unique<Local>(&createWorld);
     } else {
-        app = std::make_unique<Framework::Client>(nullptr);
+        app = std::make_unique<Client>(&createWorld);
     }
 
     logInfo("Running...");
