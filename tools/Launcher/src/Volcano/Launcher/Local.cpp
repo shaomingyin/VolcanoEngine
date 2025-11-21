@@ -1,13 +1,16 @@
 //
 //
 #include <cassert>
+#include <thread>
 
 #include <Volcano/Launcher/Local.hpp>
 
 VOLCANO_LAUNCHER_BEGIN
 
-Local::Local(WorldCreator world_creator)
-    : world_creator_(std::move(world_creator))
+Local::Local(rttr::type scene_type)
+    : state_(State::Idle)
+    , scene_type_(std::move(scene_type))
+    , scene_(nullptr)
     , frame_last_(Clock::now())
     , frame_count_last_(frame_last_)
     , frame_count_(0)
@@ -15,12 +18,41 @@ Local::Local(WorldCreator world_creator)
     , window_({ 800, 600 }, "VolcanoLauncher")
     , console_(nullptr)
     /*, renderer_(window_.getSize().x, window_.getSize().y) */{
-    assert(world_creator_);
+    assert(scene_type_);
+    assert(scene_type_.is_base_of(rttr::type::get<World::Scene>()));
     window_.setFramerateLimit(60);
 }
 
 void Local::run() {
+    scene_instance_ = scene_type_.create({ *this });
+    if (!scene_instance_) {
+        throw std::runtime_error("Failed to create world scene instance.");
+    }
+    scene_ = &scene_instance_.get_value<World::Scene>();
 
+    // TODO start loading
+
+    frame_last_ = Clock::now();
+    frame_count_last_ = frame_last_;
+    frame_count_ = 0;
+    frame_count_per_second_ = 0;
+
+    while (window_.isOpen()) {
+        sf::Event event;
+        while (window_.pollEvent(event)) {
+            handleEvent(event);
+        }
+        scheduler_.run_all_tasks();
+        auto now = Clock::now();
+        auto elapsed = now - frame_last_;
+        if (elapsed >= elapsed_min_) {
+            scene_->stepSimulation(elapsed);
+            frame(elapsed);
+            frame_last_ = now;
+        } else {
+            std::this_thread::sleep_for(elapsed_min_ - elapsed);
+        }
+    }
 }
 
 void Local::schedule(async::task_run_handle t) {
@@ -39,18 +71,6 @@ void Local::setFpsMax(unsigned long v) noexcept {
 }
 
 void Local::frame(Clock::duration elapsed) noexcept {
-    scheduler_.run_all_tasks();
-
-    if (!window_.isOpen()) {
-        window_.close();
-        return;
-    }
-
-    sf::Event event;
-    while (window_.pollEvent(event)) {
-        handleEvent(event);
-    }
-
     //renderer_.beginFrame();
     //renderer_.endFrame();
     //hud_.render();

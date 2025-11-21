@@ -15,10 +15,6 @@
 
 VOLCANO_LAUNCHER_BEGIN
 
-static Simulation::World* createWorld(Simulation::Context& context) {
-    return nullptr;
-}
-
 static void run(int argc, char* argv[]) {
     logInfo("VolcanoLauncher: Engine version - " VOLCANO_VERSION_STR);
 
@@ -47,11 +43,18 @@ static void run(int argc, char* argv[]) {
 
     ret = PHYSFS_mount(root.c_str(), "/", 1);
 
+    auto world_types = rttr::type::get<World::Scene>().get_derived_classes();
+    if (world_types.empty()) {
+        throw std::runtime_error("No world scene found.");
+    }
+
+    auto world_type = *world_types.begin();
+
     std::unique_ptr<Local> app;
     if (true) {
-        app = std::make_unique<Local>(&createWorld);
+        app = std::make_unique<Local>(world_type);
     } else {
-        app = std::make_unique<Client>(&createWorld);
+        app = std::make_unique<Client>(world_type);
     }
 
     logInfo("Running...");

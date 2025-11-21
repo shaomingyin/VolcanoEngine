@@ -5,35 +5,43 @@
 
 #include <functional>
 
+#include <rttr/type>
+
 #include <SFML/Window/Event.hpp>
 
 #include <Volcano/Graphics/Context.hpp>
 #include <Volcano/Gui/Context.hpp>
 
-#include <Volcano/Simulation/Context.hpp>
-#include <Volcano/Simulation/World.hpp>
+#include <Volcano/World/Context.hpp>
+#include <Volcano/World/Scene.hpp>
 #include <Volcano/Launcher/Console.hpp>
 #include <Volcano/Launcher/Window.hpp>
 #include <Volcano/Launcher/Common.hpp>
 
 VOLCANO_LAUNCHER_BEGIN
 
-class Local: public Simulation::Context {
+class Local: public World::Context {
 public:
-    using WorldCreator = std::function<Simulation::World* (Simulation::Context&)>;
-
-public:
-    Local(WorldCreator world_creator);
+    Local(rttr::type scene_type);
     ~Local() override = default;
 
 public:
     void run();
     void schedule(async::task_run_handle t) override;
-    unsigned long fps() const noexcept override;
-    unsigned long fpsMax() const noexcept override;
-    void setFpsMax(unsigned long v) noexcept override;
+    unsigned long fps() const noexcept;
+    unsigned long fpsMax() const noexcept;
+    void setFpsMax(unsigned long v) noexcept;
 
 protected:
+    enum State {
+        Idle = 0,
+        Loading,
+        Ready,
+        Playing,
+        Paused,
+        Error
+    };
+
     virtual void frame(Clock::duration elapsed) noexcept;
     virtual void handleEvent(const sf::Event& event);
     virtual void onMouseMoved(const sf::Event::MouseMoveEvent& event);
@@ -44,9 +52,14 @@ protected:
     virtual void onResized(const sf::Event::SizeEvent& event);
 
 private:
-    WorldCreator world_creator_;
+
+private:
+    State state_;
+    rttr::type scene_type_;
+    rttr::variant scene_instance_;
+    World::Scene* scene_;
     async::fifo_scheduler scheduler_;
-    Clock::duration min_elapsed_;
+    Clock::duration elapsed_min_;
     Clock::time_point frame_last_;
     Clock::time_point frame_count_last_;
     unsigned long frame_count_;

@@ -25,6 +25,9 @@ target_include_directories(Base PUBLIC
 volcano_target_setup(Base)
 set_target_properties(Base PROPERTIES OUTPUT_NAME VolcanoBase)
 
+find_package(rttr REQUIRED)
+target_link_libraries(Base PUBLIC RTTR::Core_Lib)
+
 find_package(spdlog REQUIRED)
 target_link_libraries(Base PUBLIC spdlog::spdlog)
 

@@ -3,6 +3,9 @@
 #ifndef VOLCANO_GRAPHICS_COMMON_HPP
 #define VOLCANO_GRAPHICS_COMMON_HPP
 
+#include <rttr/type>
+#include <rttr/registration>
+
 #include <GL/gl3w.h>
 
 #include <Volcano/Common.hpp>

@@ -8,12 +8,20 @@ add_library(Graphics STATIC
     include/Volcano/Graphics/Common.hpp
     include/Volcano/Graphics/Config.hpp.in
     include/Volcano/Graphics/Context.hpp
+    include/Volcano/Graphics/DirectionalLight.hpp
+    include/Volcano/Graphics/Light.hpp
+    include/Volcano/Graphics/PointLight.hpp
     include/Volcano/Graphics/Renderer.hpp
+    include/Volcano/Graphics/SpotLight.hpp
     include/Volcano/Graphics/View.hpp
     src/Volcano/Graphics/Canvas.cpp
     src/Volcano/Graphics/Common.cpp
     src/Volcano/Graphics/Context.cpp
+    src/Volcano/Graphics/DirectionalLight.cpp
+    src/Volcano/Graphics/Light.cpp
+    src/Volcano/Graphics/PointLight.cpp
     src/Volcano/Graphics/Renderer.cpp
+    src/Volcano/Graphics/SpotLight.cpp
     src/Volcano/Graphics/View.cpp
 )
 

@@ -18,7 +18,7 @@ target_include_directories(Server PRIVATE
     ${CMAKE_CURRENT_BINARY_DIR}/include
 )
 
-target_link_libraries(Server PUBLIC Simulation)
+target_link_libraries(Server PUBLIC World)
 
 find_package(SFML REQUIRED COMPONENTS sfml-window)
 target_link_libraries(Server PUBLIC sfml-window)
