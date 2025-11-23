@@ -7,10 +7,10 @@
 
 VOLCANO_LAUNCHER_BEGIN
 
-Local::Local(rttr::type scene_type)
+Local::Local(rttr::type world_type)
     : state_(State::Idle)
-    , scene_type_(std::move(scene_type))
-    , scene_(nullptr)
+    , world_type_(world_type)
+    , world_(nullptr)
     , frame_last_(Clock::now())
     , frame_count_last_(frame_last_)
     , frame_count_(0)
@@ -18,17 +18,17 @@ Local::Local(rttr::type scene_type)
     , window_({ 800, 600 }, "VolcanoLauncher")
     , console_(nullptr)
     /*, renderer_(window_.getSize().x, window_.getSize().y) */{
-    assert(scene_type_);
-    assert(scene_type_.is_base_of(rttr::type::get<World::Scene>()));
+    assert(world_type_);
+    assert(world_type_.is_base_of(rttr::type::get<Game::World>()));
     window_.setFramerateLimit(60);
 }
 
 void Local::run() {
-    scene_instance_ = scene_type_.create({ *this });
-    if (!scene_instance_) {
-        throw std::runtime_error("Failed to create world scene instance.");
+    world_instance_ = world_type_.create({ *this });
+    if (!world_instance_) {
+        throw std::runtime_error("Failed to create game world instance.");
     }
-    scene_ = &scene_instance_.get_value<World::Scene>();
+    world_ = &world_instance_.get_value<Game::World>();
 
     // TODO start loading
 
@@ -46,7 +46,7 @@ void Local::run() {
         auto now = Clock::now();
         auto elapsed = now - frame_last_;
         if (elapsed >= elapsed_min_) {
-            scene_->stepSimulation(elapsed);
+            world_->stepSimulation(elapsed);
             frame(elapsed);
             frame_last_ = now;
         } else {

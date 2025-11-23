@@ -26,7 +26,7 @@ target_include_directories(Launcher PRIVATE
 )
 
 volcano_target_setup(Launcher)
-target_link_libraries(Launcher PUBLIC Fusion)
+target_link_libraries(Launcher PUBLIC Game Graphics Gui)
 
 find_package(argh REQUIRED)
 target_link_libraries(Launcher PUBLIC argh)

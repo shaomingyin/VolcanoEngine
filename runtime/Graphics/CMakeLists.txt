@@ -11,6 +11,7 @@ add_library(Graphics STATIC
     include/Volcano/Graphics/DirectionalLight.hpp
     include/Volcano/Graphics/Light.hpp
     include/Volcano/Graphics/PointLight.hpp
+    include/Volcano/Graphics/Renderable.hpp
     include/Volcano/Graphics/Renderer.hpp
     include/Volcano/Graphics/SpotLight.hpp
     include/Volcano/Graphics/View.hpp
@@ -20,6 +21,7 @@ add_library(Graphics STATIC
     src/Volcano/Graphics/DirectionalLight.cpp
     src/Volcano/Graphics/Light.cpp
     src/Volcano/Graphics/PointLight.cpp
+    src/Volcano/Graphics/Renderable.cpp
     src/Volcano/Graphics/Renderer.cpp
     src/Volcano/Graphics/SpotLight.cpp
     src/Volcano/Graphics/View.cpp
@@ -38,7 +40,7 @@ target_include_directories(Graphics PUBLIC
 volcano_target_setup(Graphics)
 set_target_properties(Graphics PROPERTIES OUTPUT_NAME VolcanoGraphics)
 
-target_link_libraries(Graphics PUBLIC Base)
+target_link_libraries(Graphics PUBLIC Game)
 
 find_package(SFML REQUIRED COMPONENTS sfml-graphics)
 target_link_libraries(Graphics PUBLIC sfml-graphics)

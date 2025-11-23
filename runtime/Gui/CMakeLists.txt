@@ -28,7 +28,7 @@ target_include_directories(Gui PUBLIC
 volcano_target_setup(Gui)
 set_target_properties(Gui PROPERTIES OUTPUT_NAME VolcanoGui)
 
-target_link_libraries(Gui PUBLIC Base)
+target_link_libraries(Gui PUBLIC Game)
 
 find_package(SFML REQUIRED COMPONENTS sfml-graphics sfml-window)
 target_link_libraries(Gui PUBLIC sfml-graphics sfml-window)

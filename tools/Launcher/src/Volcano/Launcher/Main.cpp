@@ -43,7 +43,7 @@ static void run(int argc, char* argv[]) {
 
     ret = PHYSFS_mount(root.c_str(), "/", 1);
 
-    auto world_types = rttr::type::get<World::Scene>().get_derived_classes();
+    auto world_types = rttr::type::get<Game::World>().get_derived_classes();
     if (world_types.empty()) {
         throw std::runtime_error("No world scene found.");
     }

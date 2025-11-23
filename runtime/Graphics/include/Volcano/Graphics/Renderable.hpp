@@ -3,6 +3,7 @@
 #ifndef VOLANO_GRAPHICS_RENDERABLE_HPP
 #define VOLANO_GRAPHICS_RENDERABLE_HPP
 
+#include <Volcano/Game/Component.hpp>
 #include <Volcano/Graphics/Common.hpp>
 #include <Volcano/Graphics/Context.hpp>
 
