@@ -32,17 +32,17 @@ include(Volcano/Utils)
 
 add_subdirectory(runtime)
 
-volcano_option(VOLCANO_TOOLS "Enable tools." ON)
+set(VOLCANO_TOOLS ON CACHE BOOL "Enable tools.")
 if(VOLCANO_TOOLS)
 	add_subdirectory(tools)
 endif()
 
-volcano_option(VOLCANO_EXAMPLES "Enable examples." OFF)
+set(VOLCANO_EXAMPLES OFF CACHE BOOL "Enable examples.")
 if(VOLCANO_EXAMPLES)
 	add_subdirectory(examples)
 endif()
 
-volcano_option(VOLCANO_DOCUMENTS "Enable documents." ON)
+set(VOLCANO_DOCUMENTS ON CACHE BOOL "Enable documents.")
 if(VOLCANO_DOCUMENTS)
 	add_subdirectory(documents)
 endif()

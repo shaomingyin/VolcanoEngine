@@ -1,11 +1,11 @@
 {
-    "trDisplayName": "Scene",
+    "trDisplayName": "World",
     "trDisplayCategory": "VolcanoEngine",
     "trDescription": "asdf",
 
     "version": 1,
     "supportedProjectTypes": [],
-    "id": "VolcanoEditor.Scene",
+    "id": "VolcanoEditor.World",
     "category": "VolcanoEngine",
 
     "pages":

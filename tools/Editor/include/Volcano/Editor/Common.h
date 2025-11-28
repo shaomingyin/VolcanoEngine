@@ -19,7 +19,7 @@ const char SDK_SETTINGS_PAGE[] = "Volcano.Editor.SdkSettingsPage";
 const char KIT_ASPECT[] = "Volcano.Editor.KitAspect";
 const char SDK[] = "Volcano.Editor.Sdk";
 
-const char SCENE_FILE_MIMETYPE[] = VOLCANO_EDITOR_MIMETYPE_SCENE_FILE;
+const char WORLD_FILE_MIMETYPE[] = VOLCANO_EDITOR_MIMETYPE_WORLD_FILE;
 
 VOLCANO_EDITOR_END
 

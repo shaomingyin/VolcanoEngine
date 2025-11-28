@@ -18,15 +18,15 @@ set(VOLCANO_EDITOR_SOURCES
     include/Volcano/Editor/Plugin.h
     include/Volcano/Editor/PropertyView.h
     include/Volcano/Editor/Qmlizer.h
-    include/Volcano/Editor/SceneDocument.h
-    include/Volcano/Editor/SceneEditor.h
-    include/Volcano/Editor/SceneEditorFactory.h
-    include/Volcano/Editor/SceneEditorToolBar.h
-    include/Volcano/Editor/SceneEditorViewport.h
-    include/Volcano/Editor/SceneTree.h
     include/Volcano/Editor/Sdk.h
     include/Volcano/Editor/SdkManager.h
     include/Volcano/Editor/SdkSettings.h
+    include/Volcano/Editor/WorldDocument.h
+    include/Volcano/Editor/WorldEditor.h
+    include/Volcano/Editor/WorldEditorFactory.h
+    include/Volcano/Editor/WorldEditorToolBar.h
+    include/Volcano/Editor/WorldEditorViewport.h
+    include/Volcano/Editor/WorldTree.h
     src/Volcano/Editor/AssetManager.cpp
     src/Volcano/Editor/Context.cpp
     src/Volcano/Editor/GeneralSettings.cpp
@@ -35,20 +35,20 @@ set(VOLCANO_EDITOR_SOURCES
     src/Volcano/Editor/Plugin.cpp
     src/Volcano/Editor/PropertyView.cpp
     src/Volcano/Editor/Qmlizer.cpp
-    src/Volcano/Editor/SceneDocument.cpp
-    src/Volcano/Editor/SceneEditor.cpp
-    src/Volcano/Editor/SceneEditorFactory.cpp
-    src/Volcano/Editor/SceneEditorToolBar.cpp
-    src/Volcano/Editor/SceneEditorViewport.cpp
-    src/Volcano/Editor/SceneTree.cpp
     src/Volcano/Editor/Sdk.cpp
     src/Volcano/Editor/SdkManager.cpp
     src/Volcano/Editor/SdkSettings.cpp
+    src/Volcano/Editor/WorldDocument.cpp
+    src/Volcano/Editor/WorldEditor.cpp
+    src/Volcano/Editor/WorldEditorFactory.cpp
+    src/Volcano/Editor/WorldEditorToolBar.cpp
+    src/Volcano/Editor/WorldEditorViewport.cpp
+    src/Volcano/Editor/WorldTree.cpp
     Editor.json.in
 )
 
 set(VOLCANO_EDITOR_MIMETYPE_PROJECT_FILE "application/volcano-project-file")
-set(VOLCANO_EDITOR_MIMETYPE_SCENE_FILE "application/volcano-scene-file")
+set(VOLCANO_EDITOR_MIMETYPE_WORLD_FILE "application/volcano-scene-file")
 
 configure_file(
     include/Volcano/Editor/Config.h.in
@@ -65,29 +65,25 @@ add_qtc_plugin(Editor
         QtCreator::GLSLEditor
         QtCreator::Core
     DEPENDS
-        World
-		Graphics
+        Game
+        Graphics
     SOURCES
         ${VOLCANO_EDITOR_SOURCES}
 )
 
-find_package(Qt6 REQUIRED COMPONENTS OpenGLWidgets)
-target_link_libraries(Editor PUBLIC Qt6::OpenGLWidgets)
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${VOLCANO_EDITOR_SOURCES})
 
-qt_add_resources(Editor res
-    PREFIX "/volcano/editor" FILES
-        templates/wizards/project/wizard.json
-        templates/wizards/project/CMakeLists.txt
-        templates/wizards/project/Resources.qrc
-        templates/wizards/project/Assets/CMakeLists.txt
-        templates/wizards/project/Modules/CMakeLists.txt
-        templates/wizards/project/World/CMakeLists.txt
-        templates/wizards/project/World/Startup.volcano-scene
-        templates/wizards/scene/wizard.json
-)
-
-volcano_source_tree(${VOLCANO_EDITOR_SOURCES})
-volcano_set_target_folder(Editor)
 set_target_properties(Editor PROPERTIES OUTPUT_NAME "VolcanoEditor")
 
+qt_add_resources(Editor res PREFIX "/volcano/editor" FILES
+    templates/wizards/project/wizard.json
+    templates/wizards/project/CMakeLists.txt
+    templates/wizards/project/Resources.qrc
+    templates/wizards/project/Assets/CMakeLists.txt
+    templates/wizards/project/Modules/CMakeLists.txt
+    templates/wizards/project/World/CMakeLists.txt
+    templates/wizards/project/World/Startup.volcano-scene
+    templates/wizards/scene/wizard.json
+)
 
+volcano_link_qt(Editor OpenGLWidgets)

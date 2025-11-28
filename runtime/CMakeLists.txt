@@ -1,5 +1,5 @@
 
 add_subdirectory(Base)
-add_subdirectory(World)
+add_subdirectory(Game)
 add_subdirectory(Acoustics)
 add_subdirectory(Graphics)

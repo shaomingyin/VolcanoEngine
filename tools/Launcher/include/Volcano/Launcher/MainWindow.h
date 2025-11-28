@@ -9,7 +9,7 @@
 #include <QTimerEvent>
 #include <QQuickView>
 
-#include <Volcano/World/Scene.h>
+#include <Volcano/Game/World.h>
 #include <Volcano/Acoustics/Space.h>
 #include <Volcano/Graphics/Renderer.h>
 #include <Volcano/Launcher/Common.h>
@@ -60,7 +60,7 @@ private:
     int frame_timer_;
     int frame_count_timer_;
 
-    World::Scene* scene_;
+    Game::World* game_world_;
     std::unique_ptr<Acoustics::Space> acoustics_space_;
     std::unique_ptr<Graphics::Renderer> graphics_renderer_;
 };
