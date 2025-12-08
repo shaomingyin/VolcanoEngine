@@ -25,6 +25,11 @@ add_library(Graphics STATIC
     src/Volcano/Graphics/VirtualTexture.cpp
 )
 
+configure_file(
+    include/Volcano/Graphics/Config.h.in
+    include/Volcano/Graphics/Config.h
+)
+
 set_target_properties(Graphics PROPERTIES OUTPUT_NAME VolcanoGraphics)
 
 target_include_directories(Graphics PUBLIC

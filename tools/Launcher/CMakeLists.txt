@@ -7,6 +7,11 @@ add_executable(Launcher
     src/Volcano/Launcher/MainWindow.cpp
 )
 
+configure_file(
+    include/Volcano/Launcher/Config.h.in
+    include/Volcano/Launcher/Config.h
+)
+
 set_target_properties(Launcher PROPERTIES OUTPUT_NAME VolcanoLauncher)
 
 target_include_directories(Launcher PRIVATE

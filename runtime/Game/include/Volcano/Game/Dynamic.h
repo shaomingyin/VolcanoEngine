@@ -1,0 +1,88 @@
+//
+//
+#ifndef VOLCANO_GAME_DYNAMIC_H
+#define VOLCANO_GAME_DYNAMIC_H
+
+#include <QObject>
+#include <QVector3D>
+
+#include <Volcano/Game/Common.h>
+#include <Volcano/Game/RigidBody.h>
+
+VOLCANO_GAME_BEGIN
+
+class Dynamic: public QObject {
+    Q_OBJECT
+    Q_PROPERTY(bool enabled READ isEnabled WRITE setEnabled NOTIFY enabledChanged FINAL)
+    Q_PROPERTY(QVector3D gravity READ gravity WRITE setGravity NOTIFY gravityChanged FINAL)
+
+public:
+    Dynamic(QObject* parent = nullptr);
+
+public:
+    bool isEnabled() const {
+        return enabled_;
+	}
+
+    void setEnabled(bool v) {
+        if (enabled_ != v) {
+            enabled_ = v;
+            emit enabledChanged(v);
+        }
+    }
+
+    void enable() {
+        setEnabled(true);
+    }
+
+    void disable() {
+        setEnabled(false);
+    }
+
+    const QVector3D& gravity() const {
+		return gravity_;
+	}
+
+    void setGravity(const QVector3D& v) {
+        if (!qFuzzyCompare(gravity_, v)) {
+            gravity_ = v;
+            world_.setGravity(btVector3(v.x(), v.y(), v.x()));
+            emit gravityChanged(v);
+        }
+	}
+
+    void addRigidBody(RigidBody* p) {
+        p->addToWorld(&world_);
+    }
+
+    void removeRigidBody(RigidBody* p) {
+        Q_ASSERT(p->ownerWorld() == &world_);
+        p->addToWorld(nullptr);
+    }
+
+    void update(Duration elapsed) {
+        if (enabled_) {
+            world_.stepSimulation(durationToMicroseconds(elapsed) / 1000000.0);
+        }
+    }
+
+    friend QDataStream& operator<<(QDataStream& s, const Dynamic& v);
+    friend QDataStream& operator>>(QDataStream& s, Dynamic& v);
+
+signals:
+    void enabledChanged(bool v);
+    void gravityChanged(const QVector3D& v);
+
+private:
+    bool enabled_;
+    QVector3D gravity_;
+    btDefaultCollisionConfiguration collision_configuration_;
+    btCollisionDispatcher  collision_dispatcher_;
+    btDbvtBroadphase overlapping_pair_cache_;
+    btSequentialImpulseConstraintSolver sequential_impulse_constraint_solver_;
+    btDiscreteDynamicsWorld world_;
+};
+
+VOLCANO_GAME_END
+
+#endif // VOLCANO_GAME_DYNAMIC_H
