@@ -18,6 +18,7 @@ class BoxRigidBody: public RigidBody {
 
 public:
     BoxRigidBody(QObject* parent = nullptr);
+    BoxRigidBody(Context& context, QObject* parent = nullptr);
 
 public:
     Vector3 size() const {

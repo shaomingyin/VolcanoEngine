@@ -9,6 +9,11 @@ CylinderRigidBody::CylinderRigidBody(QObject* parent)
     , size_(1.0f, 1.0f, 1.0f) {
 }
 
+CylinderRigidBody::CylinderRigidBody(Context& context, QObject* parent)
+    : RigidBody(context, parent)
+    , size_(1.0f, 1.0f, 1.0f) {
+}
+
 void CylinderRigidBody::resize(const Vector3& v) {
     if (shape_) {
         qmlWarning(this) << "Cannot set the 'size' property after component completed.";

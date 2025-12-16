@@ -9,6 +9,7 @@ add_library(Game STATIC
     include/Volcano/Game/Component.h
     include/Volcano/Game/ConeRigidBody.h
     include/Volcano/Game/Config.h.in
+    include/Volcano/Game/Context.h
     include/Volcano/Game/CylinderRigidBody.h
     include/Volcano/Game/DirectionalLight.h
     include/Volcano/Game/Dynamic.h
@@ -37,6 +38,7 @@ add_library(Game STATIC
     src/Volcano/Game/CapsuleRigidBody.cpp
     src/Volcano/Game/Component.cpp
     src/Volcano/Game/ConeRigidBody.cpp
+    src/Volcano/Game/Context.cpp
     src/Volcano/Game/CylinderRigidBody.cpp
     src/Volcano/Game/DirectionalLight.cpp
     src/Volcano/Game/Dynamic.cpp

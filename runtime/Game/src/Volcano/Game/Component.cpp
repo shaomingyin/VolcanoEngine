@@ -8,6 +8,10 @@ Component::Component(QObject* parent)
     : Object(parent) {
 }
 
+Component::Component(Context& context, QObject* parent)
+    : Object(context, parent) {
+}
+
 QDataStream& operator<<(QDataStream& s, const Component& v) {
     s << static_cast<const Object&>(v);
     // TODO

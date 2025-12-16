@@ -17,6 +17,7 @@ class CapsuleRigidBody: public RigidBody {
 
 public:
     CapsuleRigidBody(QObject* parent = nullptr);
+    CapsuleRigidBody(Context& context, QObject* parent = nullptr);
 
 public:
     float radius() const {

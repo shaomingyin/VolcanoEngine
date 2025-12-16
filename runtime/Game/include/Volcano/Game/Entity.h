@@ -23,6 +23,7 @@ class Entity: public Object {
 
 public:
     Entity(QObject* parent = nullptr);
+    Entity(QObject* parent = nullptr);
     ~Entity() override;
 
 public:

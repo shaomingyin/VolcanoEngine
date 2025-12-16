@@ -16,6 +16,7 @@ class CylinderRigidBody: public RigidBody {
 
 public:
     CylinderRigidBody(QObject* parent = nullptr);
+    CylinderRigidBody(Context& context, QObject* parent = nullptr);
 
 public:
     const Vector3& size() const {

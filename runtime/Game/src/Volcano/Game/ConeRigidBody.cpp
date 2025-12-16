@@ -10,6 +10,12 @@ ConeRigidBody::ConeRigidBody(QObject* parent)
     , height_(1.0f) {
 }
 
+ConeRigidBody::ConeRigidBody(Context& context, QObject* parent)
+    : RigidBody(context, parent)
+    , radius_(1.0f)
+    , height_(1.0f) {
+}
+
 void ConeRigidBody::setRadius(float v) {
     if (shape_) {
         qmlWarning(this) << "Cannot set the 'radius' property after component completed.";

@@ -9,6 +9,11 @@ BoxRigidBody::BoxRigidBody(QObject* parent)
     , size_(1.0f, 1.0f, 1.0f) {
 }
 
+BoxRigidBody::BoxRigidBody(Context& context, QObject* parent)
+    : RigidBody(context, parent)
+    , size_(1.0f, 1.0f, 1.0f) {
+}
+
 void BoxRigidBody::setWidth(float v) {
     if (shape_) {
         qmlWarning(this) << "Cannot set the 'width' property after component completed.";

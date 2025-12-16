@@ -10,6 +10,12 @@ CapsuleRigidBody::CapsuleRigidBody(QObject* parent)
     , height_(1.0f) {
 }
 
+CapsuleRigidBody::CapsuleRigidBody(Context& context, QObject* parent)
+    : RigidBody(context, parent)
+    , radius_(1.0f)
+    , height_(1.0f) {
+}
+
 void CapsuleRigidBody::setRadius(float v) {
     if (shape_) {
         qmlWarning(this) << "Cannot set the 'radius' property after component completed.";

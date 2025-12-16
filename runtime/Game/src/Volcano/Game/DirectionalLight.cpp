@@ -8,6 +8,10 @@ DirectionalLight::DirectionalLight(QObject* parent)
     : Light(parent) {
 }
 
+DirectionalLight::DirectionalLight(Context& context, QObject* parent)
+    : Light(context, parent) {
+}
+
 QDataStream& operator<<(QDataStream& s, const DirectionalLight& v) {
     s << static_cast<const Light&>(v);
     // TODO

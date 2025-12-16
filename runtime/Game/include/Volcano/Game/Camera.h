@@ -22,6 +22,7 @@ class Camera: public Transformable {
 
 public:
     Camera(QObject* parent = nullptr);
+    Camera(Context& context, QObject* parent = nullptr);
 
 public:
     void reset() {

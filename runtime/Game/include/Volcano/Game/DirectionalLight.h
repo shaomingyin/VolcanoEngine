@@ -16,6 +16,7 @@ class DirectionalLight: public Light {
 
 public:
     DirectionalLight(QObject* parent = nullptr);
+    DirectionalLight(Context& context, QObject* parent = nullptr);
 
 public:
     const QVector3D& direction() const {

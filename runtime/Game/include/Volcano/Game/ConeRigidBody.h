@@ -17,6 +17,7 @@ class ConeRigidBody: public RigidBody {
 
 public:
     ConeRigidBody(QObject* parent = nullptr);
+    ConeRigidBody(Context& context, QObject* parent = nullptr);
 
     float radius() const {
         return radius_;

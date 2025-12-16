@@ -13,6 +13,7 @@ class Component: public Object {
 
 public:
     Component(QObject* parent = nullptr);
+    Component(Context& context, QObject* parent = nullptr);
 
 public:
     friend QDataStream& operator<<(QDataStream& s, const Component& v);

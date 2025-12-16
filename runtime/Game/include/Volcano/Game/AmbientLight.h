@@ -18,6 +18,7 @@ class AmbientLight: public Object {
 
 public:
     AmbientLight(QObject* parent = nullptr);
+    AmbientLight(Context& context, QObject* parent = nullptr);
 
 public:
     const QColor& color() const {

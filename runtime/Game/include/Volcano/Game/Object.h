@@ -5,9 +5,9 @@
 
 #include <QObject>
 #include <QDataStream>
-#include <QNetworkAccessManager>
 
 #include <Volcano/Game/Common.h>
+#include <Volcano/Game/Context.h>
 
 VOLCANO_GAME_BEGIN
 
@@ -17,8 +17,11 @@ class Object: public QObject {
 
 public:
     Object(QObject* parent = nullptr);
+    Object(Context& context, QObject* parent = nullptr);
 
 public:
+    Context& context() noexcept;
+
     bool isEnabled() const {
         return enabled_;
     }
@@ -39,6 +42,7 @@ signals:
     void enabledChanged(bool v);
 
 private:
+    Context* context_;
     bool enabled_;
 };
 
