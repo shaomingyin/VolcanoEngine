@@ -6,3 +6,7 @@
 	path = extras/rttr/v0.9.7
 	url = https://github.com/rttrorg/rttr.git
 	branch = master
+[submodule "layout"]
+	path = extras/layout/master
+	url = https://github.com/randrew/layout.git
+	branch = master
