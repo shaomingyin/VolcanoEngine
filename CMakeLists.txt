@@ -21,6 +21,8 @@ set(VOLCANO_PROFILE ON CACHE BOOL "Enable profile functions.")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 include(Volcano/Utils)
 
+add_subdirectory(extras)
+add_subdirectory(schema)
 add_subdirectory(runtime)
 add_subdirectory(games)
 
