@@ -15,8 +15,6 @@ public:
     SpotLight(QObject* parent = nullptr);
 
 public:
-    friend QDataStream& operator<<(QDataStream& s, const SpotLight& v);
-    friend QDataStream& operator>>(QDataStream& s, SpotLight& v);
 };
 
 VOLCANO_GAME_END

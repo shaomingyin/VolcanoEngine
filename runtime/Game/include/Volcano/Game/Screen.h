@@ -59,9 +59,6 @@ public:
 
     void setSource(const QVariant& v);
 
-    friend QDataStream& operator<<(QDataStream& s, const Screen& v);
-    friend QDataStream& operator>>(QDataStream& s, Screen& v);
-
 signals:
     void statusChanged(Status v);
     void sizeChanged(const QSize& v);

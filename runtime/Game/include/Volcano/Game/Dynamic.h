@@ -60,14 +60,12 @@ public:
         p->addToWorld(nullptr);
     }
 
-    void update(Duration elapsed) {
+    void update(Clock::duration elapsed) {
         if (enabled_) {
-            world_.stepSimulation(durationToMicroseconds(elapsed) / 1000000.0);
+            auto us = std::chrono::duration_cast<std::chrono::microseconds>(elapsed).count();
+            world_.stepSimulation(us / 1000000.0);
         }
     }
-
-    friend QDataStream& operator<<(QDataStream& s, const Dynamic& v);
-    friend QDataStream& operator>>(QDataStream& s, Dynamic& v);
 
 signals:
     void enabledChanged(bool v);

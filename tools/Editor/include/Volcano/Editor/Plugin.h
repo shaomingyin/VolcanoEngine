@@ -11,7 +11,7 @@
 #include <Volcano/Editor/GeneralSettings.h>
 #include <Volcano/Editor/SdkSettings.h>
 #include <Volcano/Editor/KitAspectFactory.h>
-#include <Volcano/Editor/WorldEditorFactory.h>
+#include <Volcano/Editor/SceneEditorFactory.h>
 #include <Volcano/Editor/PropertyView.h>
 
 VOLCANO_EDITOR_BEGIN
@@ -38,7 +38,7 @@ private:
     GeneralSettingsPage general_settings_page_;
     SdkSettingsPage sdk_settings_page_;
     KitAspectFactory kit_aspect_factory_;
-    WorldEditorFactory world_editor_factory_;
+    SceneEditorFactory scene_editor_factory_;
     PropertyView property_view_;
 };
 

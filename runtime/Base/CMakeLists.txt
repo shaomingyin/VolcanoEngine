@@ -5,9 +5,7 @@ add_library(Base STATIC
     include/Volcano/Config.h.in
     include/Volcano/Common.h
     include/Volcano/Config.h.in
-    include/Volcano/Math.h
     src/Volcano/Common.cpp
-    src/Volcano/Math.cpp
 )
 
 configure_file(
@@ -27,7 +25,5 @@ target_compile_definitions(Base PUBLIC
 )
 
 volcano_link_qt(Base Concurrent)
-volcano_link_package(Base Async++ Async++)
-volcano_link_package(Base Eigen3 Eigen3::Eigen)
 volcano_link_package(Base microprofile microprofile::microprofile)
 volcano_setup_target(Base)

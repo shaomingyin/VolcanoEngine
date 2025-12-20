@@ -29,8 +29,8 @@ void Model::setDetailLevel(float level) {
 
 }
 
-void Model::tick(Duration elapsed) {
-    Drawable::tick(elapsed);
+void Model::tick() {
+    //Drawable::tick(elapsed);
 }
 
 void Model::draw() {

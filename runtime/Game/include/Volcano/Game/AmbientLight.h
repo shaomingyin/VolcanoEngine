@@ -6,7 +6,6 @@
 #include <QColor>
 
 #include <Volcano/Game/Common.h>
-#include <Volcano/Game/Transform.h>
 #include <Volcano/Game/Object.h>
 
 VOLCANO_GAME_BEGIN
@@ -18,7 +17,6 @@ class AmbientLight: public Object {
 
 public:
     AmbientLight(QObject* parent = nullptr);
-    AmbientLight(Context& context, QObject* parent = nullptr);
 
 public:
     const QColor& color() const {
@@ -40,9 +38,6 @@ public:
             emit strengthChanged(v);
         }
     }
-
-    friend QDataStream& operator<<(QDataStream& s, const AmbientLight& v);
-    friend QDataStream& operator>>(QDataStream& s, AmbientLight& v);
 
 signals:
     void colorChanged(const QColor& v);

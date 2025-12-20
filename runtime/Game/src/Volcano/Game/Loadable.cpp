@@ -16,16 +16,4 @@ QNetworkReply* Loadable::requestContent() {
     return nullptr;
 }
 
-QDataStream& operator<<(QDataStream& s, const Loadable& v) {
-    s << static_cast<const Transformable&>(v);
-    // TODO
-    return s;
-}
-
-QDataStream& operator>>(QDataStream& s, Loadable& v) {
-    s >> static_cast<Transformable&>(v);
-    // TODO
-    return s;
-}
-
 VOLCANO_GAME_END

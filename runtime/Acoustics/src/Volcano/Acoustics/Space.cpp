@@ -7,7 +7,7 @@ VOLCANO_ACOUSTICS_BEGIN
 Space::Space() {
 }
 
-void Space::update(Duration elapsed) {
+void Space::update() {
 }
 
 void Space::render() {

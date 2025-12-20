@@ -14,24 +14,39 @@ MainWindow::MainWindow()
     , game_world_(nullptr) {
 }
 
+void MainWindow::initializeGL() {
+}
+
+void MainWindow::paintGL() {
+}
+
+void MainWindow::paintOverGL() {
+}
+
+void MainWindow::paintUnderGL() {
+}
+
+void MainWindow::resizeGL(int w, int h) {
+}
+
 void MainWindow::keyPressEvent(QKeyEvent *p) {
-    QQuickView::keyPressEvent(p);
+    QOpenGLWindow::keyPressEvent(p);
 }
 
 void MainWindow::keyReleaseEvent(QKeyEvent *p) {
-    QQuickView::keyReleaseEvent(p);
+    QOpenGLWindow::keyReleaseEvent(p);
 }
 
 void MainWindow::mouseMoveEvent(QMouseEvent *p) {
-    QQuickView::mouseMoveEvent(p);
+    QOpenGLWindow::mouseMoveEvent(p);
 }
 
 void MainWindow::mousePressEvent(QMouseEvent *p) {
-    QQuickView::mousePressEvent(p);
+    QOpenGLWindow::mousePressEvent(p);
 }
 
 void MainWindow::mouseReleaseEvent(QMouseEvent *p) {
-    QQuickView::mouseReleaseEvent(p);
+    QOpenGLWindow::mouseReleaseEvent(p);
 }
 
 void MainWindow::timerEvent(QTimerEvent* p) {
@@ -48,10 +63,10 @@ void MainWindow::timerEvent(QTimerEvent* p) {
         frame_count_ = 0;
     }
 
-    QQuickView::timerEvent(p);
+    QOpenGLWindow::timerEvent(p);
 }
 
-void MainWindow::frame(Duration elapsed) {
+void MainWindow::frame(Clock::duration elapsed) {
     switch (state_) {
     case State::Playing:
         playingFrame(elapsed);
@@ -77,30 +92,30 @@ void MainWindow::frame(Duration elapsed) {
     }
 }
 
-void MainWindow::idleFrame(Duration elapsed) {
+void MainWindow::idleFrame(Clock::duration elapsed) {
 }
 
-void MainWindow::loadingFrame(Duration elapsed) {
-
-}
-
-void MainWindow::readyFrame(Duration elapsed) {
+void MainWindow::loadingFrame(Clock::duration elapsed) {
 
 }
 
-void MainWindow::playingFrame(Duration elapsed) {
+void MainWindow::readyFrame(Clock::duration elapsed) {
 
 }
 
-void MainWindow::pausedFrame(Duration elapsed) {
+void MainWindow::playingFrame(Clock::duration elapsed) {
 
 }
 
-void MainWindow::stoppingFrame(Duration elapsed) {
+void MainWindow::pausedFrame(Clock::duration elapsed) {
 
 }
 
-void MainWindow::errorFrame(Duration elapsed) {
+void MainWindow::stoppingFrame(Clock::duration elapsed) {
+
+}
+
+void MainWindow::errorFrame(Clock::duration elapsed) {
 
 }
 

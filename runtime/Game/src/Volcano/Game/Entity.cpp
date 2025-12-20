@@ -17,7 +17,7 @@ void Entity::appendComponent(Component* p) {
     components_.append(p);
     auto transformable = qobject_cast<Transformable*>(p);
     if (transformable != nullptr) {
-        transformable->attachParentTransform(&transform_);
+        transformable->setParentTransform(&transform_);
     }
     emit componentAdded(p);
 }
@@ -30,7 +30,7 @@ void Entity::clearComponents() {
     for (Component* p: components_) {
         auto transformable = qobject_cast<Transformable*>(p);
         if (transformable != nullptr) {
-            transformable->attachParentTransform(nullptr);
+            transformable->setParentTransform(nullptr);
         }
         emit componentRemoved(p);
     }
@@ -46,7 +46,7 @@ void Entity::removeLastComponent() {
         auto last = components_.last();
         auto transformable = qobject_cast<Transformable*>(last);
         if (transformable != nullptr) {
-            transformable->attachParentTransform(nullptr);
+            transformable->setParentTransform(nullptr);
         }
         components_.removeLast();
         emit componentRemoved(last);
@@ -58,13 +58,13 @@ void Entity::replaceComponent(qsizetype i, Component* p) {
         auto old = components_.at(i);
         auto transformable = qobject_cast<Transformable*>(old);
         if (transformable != nullptr) {
-            transformable->attachParentTransform(nullptr);
+            transformable->setParentTransform(nullptr);
         }
         emit componentRemoved(old);
         components_.replace(i, p);
         transformable = qobject_cast<Transformable*>(p);
         if (transformable != nullptr) {
-            transformable->attachParentTransform(&transform_);
+            transformable->setParentTransform(&transform_);
         }
         emit componentAdded(p);
     }
@@ -79,14 +79,6 @@ QQmlListProperty<Component> Entity::qmlComponents() {
         [](QQmlListProperty<Component>* prop, qsizetype i, Component* p) { reinterpret_cast<Entity*>(prop->data)->replaceComponent(i, p); },
         [](QQmlListProperty<Component>* prop) { reinterpret_cast<Entity*>(prop->data)->removeLastComponent(); }
     };
-}
-
-QDataStream& operator<<(QDataStream& s, const Entity& v) {
-    return s;
-}
-
-QDataStream& operator>>(QDataStream& s, Entity& v) {
-    return s;
 }
 
 VOLCANO_GAME_END

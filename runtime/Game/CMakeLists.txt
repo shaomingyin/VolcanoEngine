@@ -24,11 +24,11 @@ add_library(Game STATIC
     include/Volcano/Game/Particle.h
     include/Volcano/Game/PointLight.h
     include/Volcano/Game/RigidBody.h
+    include/Volcano/Game/Scene.h
     include/Volcano/Game/Screen.h
     include/Volcano/Game/SphereRigidBody.h
     include/Volcano/Game/SpotLight.h
     include/Volcano/Game/StaticPlaneRigidBody.h
-    include/Volcano/Game/Transform.h
     include/Volcano/Game/Transformable.h
     include/Volcano/Game/TriangleMeshRigidBody.h
     include/Volcano/Game/World.h
@@ -53,11 +53,11 @@ add_library(Game STATIC
     src/Volcano/Game/Particle.cpp
     src/Volcano/Game/PointLight.cpp
     src/Volcano/Game/RigidBody.cpp
+    src/Volcano/Game/Scene.cpp
     src/Volcano/Game/Screen.cpp
     src/Volcano/Game/SphereRigidBody.cpp
     src/Volcano/Game/SpotLight.cpp
     src/Volcano/Game/StaticPlaneRigidBody.cpp
-    src/Volcano/Game/Transform.cpp
     src/Volcano/Game/Transformable.cpp
     src/Volcano/Game/TriangleMeshRigidBody.cpp
     src/Volcano/Game/World.cpp

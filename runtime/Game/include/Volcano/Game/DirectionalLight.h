@@ -16,7 +16,6 @@ class DirectionalLight: public Light {
 
 public:
     DirectionalLight(QObject* parent = nullptr);
-    DirectionalLight(Context& context, QObject* parent = nullptr);
 
 public:
     const QVector3D& direction() const {
@@ -29,9 +28,6 @@ public:
             emit directionChanged(v);
         }
     }
-
-    friend QDataStream& operator<<(QDataStream& s, const DirectionalLight& v);
-    friend QDataStream& operator>>(QDataStream& s, DirectionalLight& v);
 
 signals:
     void directionChanged(const QVector3D& v);

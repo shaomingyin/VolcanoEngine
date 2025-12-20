@@ -9,7 +9,6 @@
 
 #include <Volcano/Game/Common.h>
 #include <Volcano/Game/Component.h>
-#include <Volcano/Game/Transform.h>
 #include <Volcano/Game/Object.h>
 
 VOLCANO_GAME_BEGIN
@@ -17,17 +16,16 @@ VOLCANO_GAME_BEGIN
 class Entity: public Object {
     Q_OBJECT
     Q_PROPERTY(bool enabled READ isEnabled WRITE setEnabled NOTIFY enabledChanged FINAL)
-    Q_PROPERTY(Transform* transform READ transform)
+    Q_PROPERTY(QMatrix4x4* transform READ transform)
     Q_PROPERTY(QQmlListProperty<Component> components READ qmlComponents)
     Q_CLASSINFO("DefaultProperty", "components")
 
 public:
     Entity(QObject* parent = nullptr);
-    Entity(QObject* parent = nullptr);
     ~Entity() override;
 
 public:
-    Transform* transform() {
+    QMatrix4x4* transform() {
         return &transform_;
     }
 
@@ -54,9 +52,6 @@ public:
     void replaceComponent(qsizetype i, Component* p);
     QQmlListProperty<Component> qmlComponents();
 
-    friend QDataStream& operator<<(QDataStream& s, const Entity& v);
-    friend QDataStream& operator>>(QDataStream& s, Entity& v);
-
 signals:
     void enabledChanged(bool v);
     void componentAdded(Component* p);
@@ -64,7 +59,7 @@ signals:
 
 private:
     bool enabled_;
-    Transform transform_;
+    QMatrix4x4 transform_;
     QList<Component*> components_;
 };
 

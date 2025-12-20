@@ -22,7 +22,6 @@ class Camera: public Transformable {
 
 public:
     Camera(QObject* parent = nullptr);
-    Camera(Context& context, QObject* parent = nullptr);
 
 public:
     void reset() {
@@ -131,9 +130,6 @@ public:
         far_plane_ = far_plane;
         updateProjection();
 	}
-
-    friend QDataStream& operator<<(QDataStream& s, const Camera& v);
-    friend QDataStream& operator>>(QDataStream& s, Camera& v);
 
 signals:
     void rectChanged(const QRectF& v);

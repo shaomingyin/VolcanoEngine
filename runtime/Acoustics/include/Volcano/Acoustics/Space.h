@@ -12,7 +12,7 @@ public:
     Space();
 
 public:
-    virtual void update(Duration elapsed);
+    virtual void update();
     virtual void render();
 };
 

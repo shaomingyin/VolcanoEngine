@@ -5,6 +5,8 @@
 
 #include <memory>
 
+#include <QVector3D>
+
 #include <Volcano/Game/Common.h>
 #include <Volcano/Game/RigidBody.h>
 
@@ -12,35 +14,31 @@ VOLCANO_GAME_BEGIN
 
 class StaticPlaneRigidBody: public RigidBody {
     Q_OBJECT
-    Q_PROPERTY(Vector3 normal READ normal WRITE setNormal NOTIFY normalChanged FINAL)
+    Q_PROPERTY(QVector3D normal READ normal WRITE setNormal NOTIFY normalChanged FINAL)
     Q_PROPERTY(float constant READ constant WRITE setConstant NOTIFY constantChanged FINAL)
 
 public:
     StaticPlaneRigidBody(QObject* parent = nullptr);
 
 public:
-    Vector3 normal() const {
+    QVector3D normal() const {
         return normal_;
     }
-
 
     float constant() const {
         return constant_;
     }
 
-    void setNormal(const Vector3& v);
+    void setNormal(const QVector3D& v);
     void setConstant(float v);
     void componentComplete() override;
 
-    friend QDataStream& operator<<(QDataStream& s, const StaticPlaneRigidBody& v);
-    friend QDataStream& operator>>(QDataStream& s, StaticPlaneRigidBody& v);
-
 signals:
-    void normalChanged(const Vector3& v);
+    void normalChanged(const QVector3D& v);
     void constantChanged(float v);
 
 private:
-    Vector3 normal_;
+    QVector3D normal_;
     float constant_;
     std::unique_ptr<btStaticPlaneShape> shape_;
 };

@@ -7,7 +7,7 @@
 
 #include <QUrl>
 #include <QTimerEvent>
-#include <QQuickView>
+#include <QOpenGLWindow>
 
 #include <Volcano/Game/World.h>
 #include <Volcano/Acoustics/Space.h>
@@ -16,13 +16,18 @@
 
 VOLCANO_LAUNCHER_BEGIN
 
-class MainWindow: public QQuickView {
+class MainWindow: public QOpenGLWindow {
     Q_OBJECT
 
 public:
     MainWindow();
 
 protected:
+    void initializeGL() override;
+    void paintGL() override;
+    void paintOverGL() override;
+    void paintUnderGL() override;
+    void resizeGL(int w, int h) override;
     void keyPressEvent(QKeyEvent *p) override;
     void keyReleaseEvent(QKeyEvent *p) override;
     void mouseMoveEvent(QMouseEvent *p) override;
@@ -31,14 +36,15 @@ protected:
     void timerEvent(QTimerEvent* p) override;
 
 private:
-    void frame(Duration elapsed);
-    void idleFrame(Duration elapsed);
-    void loadingFrame(Duration elapsed);
-    void readyFrame(Duration elapsed);
-    void playingFrame(Duration elapsed);
-    void pausedFrame(Duration elapsed);
-    void stoppingFrame(Duration elapsed);
-    void errorFrame(Duration elapsed);
+    using Clock = Game::Clock;
+    void frame(Clock::duration elapsed);
+    void idleFrame(Clock::duration elapsed);
+    void loadingFrame(Clock::duration elapsed);
+    void readyFrame(Clock::duration elapsed);
+    void playingFrame(Clock::duration elapsed);
+    void pausedFrame(Clock::duration elapsed);
+    void stoppingFrame(Clock::duration elapsed);
+    void errorFrame(Clock::duration elapsed);
 
 private:
     enum class State {
@@ -54,7 +60,7 @@ private:
 private:
     State state_;
 
-    TimePoint frame_last_;
+    Clock::time_point frame_last_;
     int frame_count_;
     int frame_count_per_second_;
     int frame_timer_;

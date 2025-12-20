@@ -17,7 +17,6 @@ class ConeRigidBody: public RigidBody {
 
 public:
     ConeRigidBody(QObject* parent = nullptr);
-    ConeRigidBody(Context& context, QObject* parent = nullptr);
 
     float radius() const {
         return radius_;
@@ -30,9 +29,6 @@ public:
     void setRadius(float v);
     void setHeight(float v);
     void componentComplete() override;
-
-    friend QDataStream& operator<<(QDataStream& s, const ConeRigidBody& v);
-    friend QDataStream& operator>>(QDataStream& s, ConeRigidBody& v);
 
 signals:
     void radiusChanged(float v);

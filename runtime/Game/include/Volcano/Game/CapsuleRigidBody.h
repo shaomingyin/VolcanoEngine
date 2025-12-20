@@ -17,7 +17,6 @@ class CapsuleRigidBody: public RigidBody {
 
 public:
     CapsuleRigidBody(QObject* parent = nullptr);
-    CapsuleRigidBody(Context& context, QObject* parent = nullptr);
 
 public:
     float radius() const {
@@ -32,9 +31,6 @@ public:
     void setRadius(float v);
     void setHeight(float v);
     void componentComplete() override;
-
-    friend QDataStream& operator<<(QDataStream& s, const CapsuleRigidBody& v);
-    friend QDataStream& operator>>(QDataStream& s, CapsuleRigidBody& v);
 
 signals:
     void radiusChanged(float v);

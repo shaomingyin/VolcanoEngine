@@ -3,36 +3,34 @@
 #ifndef VOLCANO_GAME_TRANSFORMABLE_H
 #define VOLCANO_GAME_TRANSFORMABLE_H
 
+#include <QMatrix4x4>
+
 #include <Volcano/Game/Common.h>
-#include <Volcano/Game/Transform.h>
 #include <Volcano/Game/Component.h>
 
 VOLCANO_GAME_BEGIN
 
 class Transformable: public Component {
     Q_OBJECT
-    Q_PROPERTY(Transform* offset READ offset)
+    Q_PROPERTY(QMatrix4x4* offset READ offset)
 
 public:
     Q_INVOKABLE Transformable(QObject* parent = nullptr);
 
 public:
-    Transform* offset() {
+    QMatrix4x4* offset() {
         return &transform_;
     }
 
-    Q_INVOKABLE Transform absoluteTransform() const {
-        return (*parent_transform_) * transform_.affine();
+    Q_INVOKABLE QMatrix4x4 absoluteTransform() const {
+        return (*parent_transform_) * transform_;
     }
 
-    void attachParentTransform(const Transform* p);
-
-    friend QDataStream& operator<<(QDataStream& s, const Transformable& v);
-    friend QDataStream& operator>>(QDataStream& s, Transformable& v);
+    void setParentTransform(const QMatrix4x4* p);
 
 private:
-    Transform transform_;
-    const Transform* parent_transform_;
+    QMatrix4x4 transform_;
+    const QMatrix4x4* parent_transform_;
 };
 
 VOLCANO_GAME_END

@@ -3,19 +3,17 @@
 #ifndef VOLCANO_GAME_RIGIDBODY_H
 #define VOLCANO_GAME_RIGIDBODY_H
 
-#include <QQmlParserStatus>
+#include <QVector3D>
 
-#include <Volcano/Math.h>
 #include <Volcano/Game/Common.h>
 #include <Volcano/Game/Transformable.h>
 
 VOLCANO_GAME_BEGIN
 
-class RigidBody: public Transformable, public QQmlParserStatus {
+class RigidBody: public Transformable {
     Q_OBJECT
-    Q_INTERFACES(QQmlParserStatus)
     Q_PROPERTY(float mass READ mass WRITE setMass NOTIFY massChanged)
-    Q_PROPERTY(Vector3 scaling READ scaling WRITE setScaling NOTIFY scalingChanged FINAL)
+    Q_PROPERTY(QVector3D scale READ scale WRITE setScale NOTIFY scaleChanged FINAL)
 
 public:
     RigidBody(QObject* parent = nullptr);
@@ -30,14 +28,14 @@ public:
         // TODO
     }
 
-    Vector3 scaling() const {
+    QVector3D scale() const {
         const btVector3& r = rigid_body_.getCollisionShape()->getLocalScaling();
         return { r.x(), r.y(), r.z() };
     }
 
-    void setScaling(const Vector3& v) {
+    void setScale(const QVector3D& v) {
         rigid_body_.getCollisionShape()->setLocalScaling({ v.x(), v.y(), v.z() });
-        emit scalingChanged(v);
+        emit scaleChanged(v);
     }
 
     btDynamicsWorld* ownerWorld() {
@@ -48,12 +46,9 @@ public:
     void classBegin() override;
     void componentComplete() override;
 
-    friend QDataStream& operator<<(QDataStream& s, const RigidBody& v);
-    friend QDataStream& operator>>(QDataStream& s, RigidBody& v);
-
 signals:
     void massChanged(float v);
-    void scalingChanged(const Vector3& v);
+    void scaleChanged(const QVector3D& v);
 
 protected:
     void preCollisionShapeChange() {

@@ -32,7 +32,7 @@ void Drawable::setDetailLevel(float level) {
     detail_level_ = level;
 }
 
-void Drawable::tick(Duration elapsed) {
+void Drawable::tick() {
 }
 
 void Drawable::draw() {

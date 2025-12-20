@@ -10,7 +10,7 @@ StaticPlaneRigidBody::StaticPlaneRigidBody(QObject* parent)
     , constant_(0.0f) {
 }
 
-void StaticPlaneRigidBody::setNormal(const Vector3& v) {
+void StaticPlaneRigidBody::setNormal(const QVector3D& v) {
     if (shape_) {
         qmlWarning(this) << "Cannot set the 'normal' property after component completed.";
         return;
@@ -37,18 +37,6 @@ void StaticPlaneRigidBody::componentComplete() {
     shape_ = std::make_unique<btStaticPlaneShape>(
         btVector3(normal_.x(), normal_.y(), normal_.z()), constant_);
     setCollisionShape(shape_.get());
-}
-
-QDataStream& operator<<(QDataStream& s, const StaticPlaneRigidBody& v) {
-    s << static_cast<const RigidBody&>(v);
-    // TODO
-    return s;
-}
-
-QDataStream& operator>>(QDataStream& s, StaticPlaneRigidBody& v) {
-    s >> static_cast<RigidBody&>(v);
-    // TODO
-    return s;
 }
 
 VOLCANO_GAME_END

@@ -10,12 +10,6 @@ CapsuleRigidBody::CapsuleRigidBody(QObject* parent)
     , height_(1.0f) {
 }
 
-CapsuleRigidBody::CapsuleRigidBody(Context& context, QObject* parent)
-    : RigidBody(context, parent)
-    , radius_(1.0f)
-    , height_(1.0f) {
-}
-
 void CapsuleRigidBody::setRadius(float v) {
     if (shape_) {
         qmlWarning(this) << "Cannot set the 'radius' property after component completed.";
@@ -41,18 +35,6 @@ void CapsuleRigidBody::setHeight(float v) {
 void CapsuleRigidBody::componentComplete() {
     shape_ = std::make_unique<btCapsuleShape>(radius_, height_);
     setCollisionShape(shape_.get());
-}
-
-QDataStream& operator<<(QDataStream& s, const CapsuleRigidBody& v) {
-    s << static_cast<const RigidBody&>(v);
-    // TODO
-    return s;
-}
-
-QDataStream& operator>>(QDataStream& s, CapsuleRigidBody& v) {
-    s >> static_cast<RigidBody&>(v);
-    // TODO
-    return s;
 }
 
 VOLCANO_GAME_END

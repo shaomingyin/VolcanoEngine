@@ -3,10 +3,6 @@
 #ifndef VOLCANO_COMMON_H
 #define VOLCANO_COMMON_H
 
-#include <chrono>
-#include <format>
-#include <stdexcept>
-
 #include <QtGlobal>
 #include <QtConcurrent>
 #include <QtLogging>
@@ -14,11 +10,6 @@
 #include <QVersionNumber>
 
 #include <Volcano/Config.h>
-
-#include <async++.h>
-
-#include <Eigen/Core>
-#include <Eigen/Geometry>
 
 #ifdef VOLCANO_PROFILE
 #   include <microprofile.h>
@@ -82,12 +73,6 @@
 
 VOLCANO_BEGIN
 
-using namespace std::chrono_literals;
-
-using Clock = std::chrono::steady_clock;
-using Duration = Clock::duration;
-using TimePoint = Clock::time_point;
-
 extern const QVersionNumber version;
 
 VOLCANO_FORCE_INLINE QDebug fatal() {
@@ -108,30 +93,6 @@ VOLCANO_FORCE_INLINE QDebug info() {
 
 VOLCANO_FORCE_INLINE QDebug debug() {
     return qDebug().noquote().nospace();
-}
-
-VOLCANO_FORCE_INLINE int64_t durationToSeconds(Duration d) {
-    return std::chrono::duration_cast<std::chrono::seconds>(d).count();
-}
-
-VOLCANO_FORCE_INLINE int64_t durationToMilliseconds(Duration d) {
-    return std::chrono::duration_cast<std::chrono::milliseconds>(d).count();
-}
-
-VOLCANO_FORCE_INLINE int64_t durationToMicroseconds(Duration d) {
-    return std::chrono::duration_cast<std::chrono::microseconds>(d).count();
-}
-
-VOLCANO_FORCE_INLINE int64_t timePointToSeconds(TimePoint tp) {
-    return durationToSeconds(tp.time_since_epoch());
-}
-
-VOLCANO_FORCE_INLINE int64_t timePointToMillieconds(TimePoint tp) {
-    return durationToMilliseconds(tp.time_since_epoch());
-}
-
-VOLCANO_FORCE_INLINE int64_t timePointToMicroseconds(TimePoint tp) {
-    return durationToMicroseconds(tp.time_since_epoch());
 }
 
 VOLCANO_END

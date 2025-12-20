@@ -10,12 +10,6 @@ ConeRigidBody::ConeRigidBody(QObject* parent)
     , height_(1.0f) {
 }
 
-ConeRigidBody::ConeRigidBody(Context& context, QObject* parent)
-    : RigidBody(context, parent)
-    , radius_(1.0f)
-    , height_(1.0f) {
-}
-
 void ConeRigidBody::setRadius(float v) {
     if (shape_) {
         qmlWarning(this) << "Cannot set the 'radius' property after component completed.";
@@ -41,18 +35,6 @@ void ConeRigidBody::setHeight(float v) {
 void ConeRigidBody::componentComplete() {
     shape_ = std::make_unique<btConeShape>(radius_, height_);
     setCollisionShape(shape_.get());
-}
-
-QDataStream& operator<<(QDataStream& s, const ConeRigidBody& v) {
-    s << static_cast<const RigidBody&>(v);
-    // TODO
-    return s;
-}
-
-QDataStream& operator>>(QDataStream& s, ConeRigidBody& v) {
-    s >> static_cast<RigidBody&>(v);
-    // TODO
-    return s;
 }
 
 VOLCANO_GAME_END

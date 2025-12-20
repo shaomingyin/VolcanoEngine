@@ -9,11 +9,6 @@ BoxRigidBody::BoxRigidBody(QObject* parent)
     , size_(1.0f, 1.0f, 1.0f) {
 }
 
-BoxRigidBody::BoxRigidBody(Context& context, QObject* parent)
-    : RigidBody(context, parent)
-    , size_(1.0f, 1.0f, 1.0f) {
-}
-
 void BoxRigidBody::setWidth(float v) {
     if (shape_) {
         qmlWarning(this) << "Cannot set the 'width' property after component completed.";
@@ -40,18 +35,6 @@ void BoxRigidBody::componentComplete() {
     shape_ = std::make_unique<btBoxShape>(
         btVector3{ size_.x() / 2.0f, size_.y() / 2.0f, size_.z() / 2.0f });
     setCollisionShape(shape_.get());
-}
-
-QDataStream& operator<<(QDataStream& s, const BoxRigidBody& v) {
-    s << static_cast<const RigidBody&>(v);
-    // TODO
-    return s;
-}
-
-QDataStream& operator>>(QDataStream& s, BoxRigidBody& v) {
-    s >> static_cast<RigidBody&>(v);
-    // TODO
-    return s;
 }
 
 VOLCANO_GAME_END

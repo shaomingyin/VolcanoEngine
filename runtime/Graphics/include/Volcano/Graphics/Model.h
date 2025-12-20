@@ -31,7 +31,7 @@ public:
     void setDetailLevel(float level) override;
 
 protected:
-    void tick(Duration elapsed) override;
+    void tick() override;
     void draw() override;
 
 private:

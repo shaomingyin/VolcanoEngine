@@ -9,14 +9,4 @@ const Transform& Transform::identity() {
     return Identity;
 }
 
-QDataStream& operator<<(QDataStream& s, const Transform& v) {
-    // TODO
-    return s;
-}
-
-QDataStream& operator>>(QDataStream& s, Transform& v) {
-    // TODO
-    return s;
-}
-
 VOLCANO_GAME_END

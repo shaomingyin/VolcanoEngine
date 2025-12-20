@@ -8,9 +8,9 @@
 	"Mimetypes": [
 	    "<?xml version='1.0' encoding='UTF-8'?>",
 		"<mime-info xmlns='http://www.freedesktop.org/standards/shared-mime-info'>",
-		"    <mime-type type='${VOLCANO_EDITOR_MIMETYPE_WORLD_FILE}'>",
+		"    <mime-type type='${VOLCANO_EDITOR_MIMETYPE_SCENE_FILE}'>",
 		"        <sub-class-of type='application/json'/>",
-		"        <comment>Volcano World File</comment>",
+		"        <comment>Volcano Scene File</comment>",
 		"        <glob pattern='*.volcano-scene'/>",
 		"    </mime-type>",
 		"</mime-info>"

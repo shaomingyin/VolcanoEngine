@@ -4,8 +4,10 @@
 #define VOLCANO_GAME_TRANSFORM_H
 
 #include <QObject>
+#include <QVector3D>
+#include <QMatrix4x4>
+#include <QQuaternion>
 
-#include <Volcano/Math.h>
 #include <Volcano/Game/Common.h>
 #include <Volcano/Game/Component.h>
 
@@ -13,16 +15,16 @@ VOLCANO_GAME_BEGIN
 
 class Transform: public QObject {
     Q_OBJECT
-    Q_PROPERTY(Vector3 translation READ translation WRITE setTranslation NOTIFY translationChanged FINAL)
-    Q_PROPERTY(Vector3 scaling READ scaling WRITE setScaling NOTIFY scalingChanged FINAL)
-    Q_PROPERTY(AngleAxis rotation READ rotation WRITE setRotation NOTIFY rotationChanged FINAL)
+    Q_PROPERTY(QVector3D translation READ translation WRITE setTranslation NOTIFY translationChanged FINAL)
+    Q_PROPERTY(QVector3D scaling READ scaling WRITE setScaling NOTIFY scalingChanged FINAL)
+    Q_PROPERTY(QQuaternion rotation READ rotation WRITE setRotation NOTIFY rotationChanged FINAL)
 
 public:
     Q_INVOKABLE Transform(QObject* parent = nullptr)
         : QObject(parent) {
     }
 
-    Q_INVOKABLE Transform(const Affine3& v, QObject* parent = nullptr)
+    Q_INVOKABLE Transform(const QMatrix4x4& v, QObject* parent = nullptr)
         : QObject(parent)
         , affine_transform_(v) {
     }
@@ -34,35 +36,35 @@ public:
         affine_transform_.setToIdentity();
     }
 
-    Affine3& affine() {
+    QMatrix4x4& matrix() {
         return affine_transform_;
     }
 
-    const Affine3& affine() const {
+    const QMatrix4x4& matrix() const {
         return affine_transform_;
     }
 
-    Vector3 translation() const {
+    QVector3D translation() const {
         return affine_transform_.translation();
     }
 
-    void setTranslation(const Vector3& v) {
+    void setTranslation(const QVector3D& v) {
         if (affine_transform_.translation() != v) {
             affine_transform_.setTranslation(v);
             emit translationChanged(v);
         }
     }
 
-    Vector3 scaling() const {
+    QVector3D scaling() const {
         return affine_transform_.scaling();
     }
 
-    void setScaling(const Vector3& v) {
+    void setScaling(const QVector3D& v) {
         affine_transform_.setScaling(v);
         emit scalingChanged(v);
     }
 
-    AngleAxis rotation() const {
+    QQuaternion rotation() const {
         return AngleAxis(affine_transform_.rotation());
     }
 
@@ -98,16 +100,15 @@ public:
         return (a.affine_transform_ * b);
     }
 
-    friend QDataStream& operator<<(QDataStream& s, const Transform& v);
-    friend QDataStream& operator>>(QDataStream& s, Transform& v);
-
 signals:
     void translationChanged(const Vector3& v);
     void scalingChanged(const Vector3& v);
     void rotationChanged(const AngleAxis& v);
 
 private:
-    Affine3 affine_transform_;
+    QVector3D translation_;
+    QVector3D scale_;
+    QQuaternion rotation_;
 };
 
 VOLCANO_GAME_END

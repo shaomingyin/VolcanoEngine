@@ -24,4 +24,12 @@ Context* Context::fromQmlEngine(QQmlEngine& qml_engine) {
     return nullptr;
 }
 
+Context* Context::fromQmlObject(QObject* qml_object) {
+    auto qml_engine = qmlEngine(qml_object);
+    if (qml_engine != nullptr) {
+        return fromQmlEngine(*qml_engine);
+    }
+    return nullptr;
+}
+
 VOLCANO_GAME_END

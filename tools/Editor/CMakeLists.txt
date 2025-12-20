@@ -17,16 +17,15 @@ set(VOLCANO_EDITOR_SOURCES
     include/Volcano/Editor/KitAspectFactory.h
     include/Volcano/Editor/Plugin.h
     include/Volcano/Editor/PropertyView.h
-    include/Volcano/Editor/Qmlizer.h
     include/Volcano/Editor/Sdk.h
     include/Volcano/Editor/SdkManager.h
     include/Volcano/Editor/SdkSettings.h
-    include/Volcano/Editor/WorldDocument.h
-    include/Volcano/Editor/WorldEditor.h
-    include/Volcano/Editor/WorldEditorFactory.h
-    include/Volcano/Editor/WorldEditorToolBar.h
-    include/Volcano/Editor/WorldEditorViewport.h
-    include/Volcano/Editor/WorldTree.h
+    include/Volcano/Editor/SceneDocument.h
+    include/Volcano/Editor/SceneEditor.h
+    include/Volcano/Editor/SceneEditorFactory.h
+    include/Volcano/Editor/SceneEditorToolBar.h
+    include/Volcano/Editor/SceneEditorViewport.h
+    include/Volcano/Editor/SceneTree.h
     src/Volcano/Editor/AssetManager.cpp
     src/Volcano/Editor/Context.cpp
     src/Volcano/Editor/GeneralSettings.cpp
@@ -34,21 +33,20 @@ set(VOLCANO_EDITOR_SOURCES
     src/Volcano/Editor/KitAspectFactory.cpp
     src/Volcano/Editor/Plugin.cpp
     src/Volcano/Editor/PropertyView.cpp
-    src/Volcano/Editor/Qmlizer.cpp
     src/Volcano/Editor/Sdk.cpp
     src/Volcano/Editor/SdkManager.cpp
     src/Volcano/Editor/SdkSettings.cpp
-    src/Volcano/Editor/WorldDocument.cpp
-    src/Volcano/Editor/WorldEditor.cpp
-    src/Volcano/Editor/WorldEditorFactory.cpp
-    src/Volcano/Editor/WorldEditorToolBar.cpp
-    src/Volcano/Editor/WorldEditorViewport.cpp
-    src/Volcano/Editor/WorldTree.cpp
+    src/Volcano/Editor/SceneDocument.cpp
+    src/Volcano/Editor/SceneEditor.cpp
+    src/Volcano/Editor/SceneEditorFactory.cpp
+    src/Volcano/Editor/SceneEditorToolBar.cpp
+    src/Volcano/Editor/SceneEditorViewport.cpp
+    src/Volcano/Editor/SceneTree.cpp
     Editor.json.in
 )
 
 set(VOLCANO_EDITOR_MIMETYPE_PROJECT_FILE "application/volcano-project-file")
-set(VOLCANO_EDITOR_MIMETYPE_WORLD_FILE "application/volcano-scene-file")
+set(VOLCANO_EDITOR_MIMETYPE_SCENE_FILE "application/volcano-scene-file")
 
 configure_file(
     include/Volcano/Editor/Config.h.in

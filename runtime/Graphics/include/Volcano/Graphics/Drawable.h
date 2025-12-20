@@ -37,9 +37,9 @@ public:
         return detail_level_;
     }
 
-    void update(Duration elapsed) {
+    void update() {
         if (flags_ & FlagEnabled) {
-            tick(elapsed);
+            //tick(elapsed);
         }
     }
 
@@ -56,7 +56,7 @@ public:
     virtual void setDetailLevel(float level);
 
 protected:
-    virtual void tick(Duration elapsed);
+    virtual void tick();
     virtual void draw();
 
 private:

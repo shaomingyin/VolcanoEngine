@@ -39,9 +39,6 @@ public:
         }
     }
 
-    friend QDataStream& operator<<(QDataStream& s, const Light& v);
-    friend QDataStream& operator>>(QDataStream& s, Light& v);
-
 signals:
     void colorChanged(const QColor& v);
     void strengthChanged(float v);

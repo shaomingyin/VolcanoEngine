@@ -10,109 +10,97 @@ World::World(QObject* parent)
 }
 
 World::~World() {
-    clearEntities();
+    clearScenes();
 }
 
-void World::update(Duration elapsed) {
+void World::update(Clock::duration elapsed) {
     dynamic_.update(elapsed);
 }
 
-void World::appendEntity(Entity* p) {
-    entities_.append(p);
-    onEntityAdded(p);
+void World::appendScene(Scene* p) {
+    scenes_.append(p);
+    onSceneAdded(p);
 }
 
-Entity* World::entityAt(qsizetype i) {
-    return entities_.at(i);
+Scene* World::sceneAt(qsizetype i) {
+    return scenes_.at(i);
 }
 
-void World::clearEntities() {
-    for (Entity* p: entities_) {
-        onEntityRemoved(p);
+void World::clearScenes() {
+    for (Scene* p: scenes_) {
+        onSceneRemoved(p);
     }
-    entities_.clear();
+    scenes_.clear();
 }
 
-qsizetype World::entityCount() {
-    return entities_.count();
+qsizetype World::sceneCount() {
+    return scenes_.count();
 }
 
-void World::removeLastEntity() {
-    if (!entities_.isEmpty()) {
-        onEntityRemoved(entities_.last());
-        entities_.removeLast();
-    }
-}
-
-void World::replaceEntity(qsizetype i, Entity* p) {
-    if (0 <= i && i < entities_.count()) {
-        onEntityRemoved(entities_.at(i));
-        entities_.replace(i, p);
-        onEntityAdded(p);
+void World::removeLastScene() {
+    if (!scenes_.isEmpty()) {
+        onSceneRemoved(scenes_.last());
+        scenes_.removeLast();
     }
 }
 
-QQmlListProperty<Entity> World::qmlEntities() {
+void World::replaceScene(qsizetype i, Scene* p) {
+    if (0 <= i && i < scenes_.count()) {
+        onSceneRemoved(scenes_.at(i));
+        scenes_.replace(i, p);
+        onSceneAdded(p);
+    }
+}
+
+QQmlListProperty<Scene> World::qmlScenes() {
     return { this, this,
-        [](QQmlListProperty<Entity>* prop, Entity* p) { reinterpret_cast<World*>(prop->data)->appendEntity(p); },
-        [](QQmlListProperty<Entity>* prop) { return reinterpret_cast<World*>(prop->data)->entityCount(); },
-        [](QQmlListProperty<Entity>* prop, qsizetype i) { return reinterpret_cast<World*>(prop->data)->entityAt(i); },
-        [](QQmlListProperty<Entity>* prop) { reinterpret_cast<World*>(prop->data)->clearEntities(); },
-        [](QQmlListProperty<Entity>* prop, qsizetype i, Entity* p) { reinterpret_cast<World*>(prop->data)->replaceEntity(i, p); },
-        [](QQmlListProperty<Entity>* prop) { reinterpret_cast<World*>(prop->data)->removeLastEntity(); }
+        [](QQmlListProperty<Scene>* prop, Scene* p) { reinterpret_cast<World*>(prop->data)->appendScene(p); },
+        [](QQmlListProperty<Scene>* prop) { return reinterpret_cast<World*>(prop->data)->sceneCount(); },
+        [](QQmlListProperty<Scene>* prop, qsizetype i) { return reinterpret_cast<World*>(prop->data)->sceneAt(i); },
+        [](QQmlListProperty<Scene>* prop) { reinterpret_cast<World*>(prop->data)->clearScenes(); },
+        [](QQmlListProperty<Scene>* prop, qsizetype i, Scene* p) { reinterpret_cast<World*>(prop->data)->replaceScene(i, p); },
+        [](QQmlListProperty<Scene>* prop) { reinterpret_cast<World*>(prop->data)->removeLastScene(); }
     };
 }
 
-void World::onEntityAdded(Entity* entity) {
-    auto& components = entity->components();
-    for (auto& component: components) {
-        emit componentAdded(entity, component);
-    }
-    connect(entity, &Entity::componentAdded, this, [this, entity](Component* component) {
-        onComponentAdded(entity, component);
-    });
-    connect(entity, &Entity::componentRemoved, this, [this, entity](Component* component) {
-        onComponentRemoved(entity, component);
-    });
-    emit entityAdded(entity);
+void World::onSceneAdded(Scene* scene) {
+    // auto& components = scene->components();
+    // for (auto& component: components) {
+    //     emit componentAdded(entity, component);
+    // }
+    // connect(scene, &Scene::entityAdded, this, [this, scene](Entity* entity) {
+    //     onComponentAdded(scene, entity, component);
+    // });
+    // connect(entity, &Entity::componentRemoved, this, [this, entity](Component* component) {
+    //     onComponentRemoved(entity, component);
+    // });
+    emit sceneAdded(scene);
 }
 
-void World::onComponentAdded(Entity* entity, Component* component) {
+void World::onComponentAdded(Scene* scene, Entity* entity, Component* component) {
     auto rigid_body = qobject_cast<RigidBody*>(component);
     if (rigid_body != nullptr) {
-        rigid_body->attachParentTransform(entity->transform());
+        rigid_body->setParentTransform(entity->transform());
         dynamic_.addRigidBody(rigid_body);
     }
-    emit componentAdded(entity, component);
+    emit componentAdded(scene, entity, component);
 }
 
-void World::onEntityRemoved(Entity* entity) {
-    auto& components = entity->components();
-    for (auto& component: components) {
-        emit componentRemoved(entity, component);
-    }
-    emit entityRemoved(entity);
+void World::onSceneRemoved(Scene* scene) {
+    // auto& components = entity->components();
+    // for (auto& component: components) {
+    //     emit componentRemoved(entity, component);
+    // }
+    emit sceneRemoved(scene);
 }
 
-void World::onComponentRemoved(Entity* entity, Component* component) {
+void World::onComponentRemoved(Scene* scene, Entity* entity, Component* component) {
     auto rigid_body = qobject_cast<RigidBody*>(component);
     if (rigid_body != nullptr) {
         dynamic_.removeRigidBody(rigid_body);
-        rigid_body->attachParentTransform(nullptr);
+        rigid_body->setParentTransform(nullptr);
     }
-    emit componentRemoved(entity, component);
-}
-
-QDataStream& operator<<(QDataStream& s, const World& v) {
-    s << static_cast<const Object&>(v);
-    // TODO
-    return s;
-}
-
-QDataStream& operator>>(QDataStream& s, World& v) {
-    s >> static_cast<Object&>(v);
-    // TODO
-    return s;
+    emit componentRemoved(scene, entity, component);
 }
 
 VOLCANO_GAME_END

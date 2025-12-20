@@ -5,6 +5,8 @@
 
 #include <memory>
 
+#include <QVector3D>
+
 #include <Volcano/Game/Common.h>
 #include <Volcano/Game/RigidBody.h>
 
@@ -12,28 +14,24 @@ VOLCANO_GAME_BEGIN
 
 class CylinderRigidBody: public RigidBody {
     Q_OBJECT
-    Q_PROPERTY(Vector3 size READ size WRITE resize NOTIFY sizeChanged FINAL)
+    Q_PROPERTY(QVector3D size READ size WRITE resize NOTIFY sizeChanged FINAL)
 
 public:
     CylinderRigidBody(QObject* parent = nullptr);
-    CylinderRigidBody(Context& context, QObject* parent = nullptr);
 
 public:
-    const Vector3& size() const {
+    const QVector3D& size() const {
         return size_;
     }
 
-    void resize(const Vector3& v);
+    void resize(const QVector3D& v);
     void componentComplete() override;
 
-    friend QDataStream& operator<<(QDataStream& s, const CylinderRigidBody& v);
-    friend QDataStream& operator>>(QDataStream& s, CylinderRigidBody& v);
-
 signals:
-    void sizeChanged(const Vector3& v);
+    void sizeChanged(const QVector3D& v);
 
 private:
-    Vector3 size_;
+    QVector3D size_;
     std::unique_ptr<btCylinderShape> shape_;
 };
 

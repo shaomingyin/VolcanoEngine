@@ -22,6 +22,7 @@ public:
 
     void attachToQmlEngine(QQmlEngine& qml_engine);
     static Context* fromQmlEngine(QQmlEngine& qml_engine);
+    static Context* fromQmlObject(QObject* qml_object);
 
 private:
 };
