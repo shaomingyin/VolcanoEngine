@@ -10,17 +10,17 @@
 #include <Volcano/Graphics/Context.hpp>
 #include <Volcano/Gui/Context.hpp>
 
-#include <Volcano/Simulation/Context.hpp>
-#include <Volcano/Simulation/World.hpp>
+#include <Volcano/Game/Context.hpp>
+#include <Volcano/Game/World.hpp>
 #include <Volcano/Launcher/Console.hpp>
 #include <Volcano/Launcher/Window.hpp>
 #include <Volcano/Launcher/Common.hpp>
 
 VOLCANO_LAUNCHER_BEGIN
 
-class Local: public Simulation::Context {
+class Local: public Game::Context {
 public:
-    using WorldCreator = std::function<Simulation::World* (Simulation::Context&)>;
+    using WorldCreator = std::function<Game::World* (Game::Context&)>;
 
 public:
     Local(WorldCreator world_creator);
@@ -36,12 +36,12 @@ public:
 protected:
     virtual void frame(Clock::duration elapsed) noexcept;
     virtual void handleEvent(const sf::Event& event);
-    virtual void onMouseMoved(const sf::Event::MouseMoveEvent& event);
-    virtual void onMouseButtonPressed(const sf::Event::MouseButtonEvent& event);
-    virtual void onMouseButtonReleased(const sf::Event::MouseButtonEvent& event);
-    virtual void onKeyPressed(const sf::Event::KeyEvent& event);
-    virtual void onKeyReleased(const sf::Event::KeyEvent& event);
-    virtual void onResized(const sf::Event::SizeEvent& event);
+    virtual void onMouseMoved(const sf::Event::MouseMoved& event);
+    virtual void onMouseButtonPressed(const sf::Event::MouseButtonPressed& event);
+    virtual void onMouseButtonReleased(const sf::Event::MouseButtonReleased& event);
+    virtual void onKeyPressed(const sf::Event::KeyPressed& event);
+    virtual void onKeyReleased(const sf::Event::KeyReleased& event);
+    virtual void onResized(const sf::Event::Resized& event);
 
 private:
     WorldCreator world_creator_;

@@ -18,10 +18,10 @@ target_include_directories(Server PRIVATE
     ${CMAKE_CURRENT_BINARY_DIR}/include
 )
 
-target_link_libraries(Server PUBLIC Simulation)
+target_link_libraries(Server PUBLIC Game)
 
-find_package(SFML REQUIRED COMPONENTS sfml-window)
-target_link_libraries(Server PUBLIC sfml-window)
+find_package(SFML REQUIRED COMPONENTS SFML::Window)
+target_link_libraries(Server PUBLIC SFML::Window)
 
 find_package(argh REQUIRED)
 target_link_libraries(Server PUBLIC argh)

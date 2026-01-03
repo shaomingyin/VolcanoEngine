@@ -12,7 +12,7 @@ VOLCANO_LAUNCHER_BEGIN
 
 class Window: public sf::RenderWindow {
 public:
-    Window(sf::VideoMode mode, const sf::String& title, sf::Uint32 style = sf::Style::Default, const sf::ContextSettings& settings = sf::ContextSettings());
+    Window(sf::VideoMode mode, const sf::String& title, uint32_t style = sf::Style::Default, const sf::ContextSettings& settings = sf::ContextSettings());
 
 public:
     void makeCurrent() noexcept {

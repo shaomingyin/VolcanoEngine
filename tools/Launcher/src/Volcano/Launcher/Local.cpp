@@ -12,7 +12,7 @@ Local::Local(WorldCreator world_creator)
     , frame_count_last_(frame_last_)
     , frame_count_(0)
     , frame_count_per_second_(0)
-    , window_({ 800, 600 }, "VolcanoLauncher")
+    , window_(sf::VideoMode::getDesktopMode(), "VolcanoLauncher")
     , console_(nullptr)
     /*, renderer_(window_.getSize().x, window_.getSize().y) */{
     assert(world_creator_);
@@ -46,9 +46,9 @@ void Local::frame(Clock::duration elapsed) noexcept {
         return;
     }
 
-    sf::Event event;
-    while (window_.pollEvent(event)) {
-        handleEvent(event);
+    std::optional<sf::Event> evt;
+    while (evt = window_.pollEvent()) {
+        handleEvent(*evt);
     }
 
     //renderer_.beginFrame();
@@ -57,7 +57,7 @@ void Local::frame(Clock::duration elapsed) noexcept {
     window_.display();
 }
 
-void Local::handleEvent(const sf::Event& event) {
+void Local::handleEvent(const sf::Event& evt) {
     // if (event.type == sf::Event::KeyPressed && event.key.code == sf::Event::KeyEvent::code) {
     //     console_.taggle();
     // }
@@ -67,61 +67,53 @@ void Local::handleEvent(const sf::Event& event) {
     //     return;
     // }
 
-    switch (event.type) {
-    case sf::Event::MouseMoved:
-        onMouseMoved(event.mouseMove);
-        break;
-    case sf::Event::MouseButtonPressed:
-        onMouseButtonPressed(event.mouseButton);
-        break;
-    case sf::Event::MouseButtonReleased:
-        onMouseButtonReleased(event.mouseButton);
-        break;
-    case sf::Event::KeyPressed:
-        onKeyPressed(event.key);
-        break;
-    case sf::Event::KeyReleased:
-        onKeyReleased(event.key);
-        break;
-    case sf::Event::MouseWheelMoved:
-        break;
-    case sf::Event::MouseWheelScrolled:
-        break;
-    case sf::Event::MouseEntered:
-        break;
-    case sf::Event::MouseLeft:
-        break;
-    case sf::Event::GainedFocus:
-        break;
-    case sf::Event::LostFocus:
-        break;
-    case sf::Event::Resized:
-        onResized(event.size);
-        break;
-    case sf::Event::Closed:
-        window_.close();
-        break;
-    default:
-        break;
+    auto mouse_moved = evt.getIf<sf::Event::MouseMoved>();
+    if (mouse_moved != nullptr) {
+        onMouseMoved(*mouse_moved);
+        return;
+    }
+
+    auto mouse_button_pressed = evt.getIf<sf::Event::MouseButtonPressed>();
+    if (mouse_button_pressed != nullptr) {
+        onMouseButtonPressed(*mouse_button_pressed);
+        return;
+    }
+
+    auto mouse_button_released = evt.getIf<sf::Event::MouseButtonReleased>();
+    if (mouse_button_released != nullptr) {
+        onMouseButtonReleased(*mouse_button_released);
+        return;
+    }
+
+    auto key_pressed = evt.getIf<sf::Event::KeyPressed>();
+    if (key_pressed != nullptr) {
+        onKeyPressed(*key_pressed);
+        return;
+    }
+
+    auto key_released = evt.getIf<sf::Event::KeyReleased>();
+    if (key_released != nullptr) {
+        onKeyReleased(*key_released);
+        return;
     }
 }
 
-void Local::onMouseMoved(const sf::Event::MouseMoveEvent& event) {
+void Local::onMouseMoved(const sf::Event::MouseMoved& event) {
 }
 
-void Local::onMouseButtonPressed(const sf::Event::MouseButtonEvent& event) {
+void Local::onMouseButtonPressed(const sf::Event::MouseButtonPressed& event) {
 }
 
-void Local::onMouseButtonReleased(const sf::Event::MouseButtonEvent& event) {
+void Local::onMouseButtonReleased(const sf::Event::MouseButtonReleased& event) {
 }
 
-void Local::onKeyPressed(const sf::Event::KeyEvent& event) {
+void Local::onKeyPressed(const sf::Event::KeyPressed& event) {
 }
 
-void Local::onKeyReleased(const sf::Event::KeyEvent& event) {
+void Local::onKeyReleased(const sf::Event::KeyReleased& event) {
 }
 
-void Local::onResized(const sf::Event::SizeEvent& event) {
+void Local::onResized(const sf::Event::Resized& event) {
     //hud_.resize(event.width, event.height);
     //renderer_.resize(event.width, event.height);
 }

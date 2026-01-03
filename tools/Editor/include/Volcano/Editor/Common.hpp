@@ -1,12 +1,12 @@
 //
 //
-#ifndef VOLCANO_EDITOR_COMMON_H
-#define VOLCANO_EDITOR_COMMON_H
+#ifndef VOLCANO_EDITOR_COMMON_HPP
+#define VOLCANO_EDITOR_COMMON_HPP
 
-#include <Volcano/Common.h>
-#include <Volcano/Editor/Config.h>
+#include <Volcano/Common.hpp>
+#include <Volcano/Editor/Config.hpp>
 
 #define VOLCANO_EDITOR_BEGIN VOLCANO_BEGIN namespace Editor {
 #define VOLCANO_EDITOR_END } VOLCANO_END
 
-#endif // VOLCANO_EDITOR_COMMON_H
+#endif // VOLCANO_EDITOR_COMMON_HPP

@@ -26,10 +26,10 @@ target_include_directories(Launcher PRIVATE
 )
 
 volcano_target_setup(Launcher)
-target_link_libraries(Launcher PUBLIC Utils)
+target_link_libraries(Launcher PUBLIC Game)
+
+find_package(PhysFS)
+target_link_libraries(Game PUBLIC physfs-static)
 
 find_package(argh REQUIRED)
 target_link_libraries(Launcher PUBLIC argh)
-
-find_package(SFML REQUIRED)
-target_link_libraries(Launcher PUBLIC sfml::sfml)

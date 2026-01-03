@@ -30,5 +30,5 @@ set_target_properties(Gui PROPERTIES OUTPUT_NAME VolcanoGui)
 
 target_link_libraries(Gui PUBLIC Base)
 
-find_package(SFML REQUIRED COMPONENTS sfml-graphics sfml-window)
-target_link_libraries(Gui PUBLIC sfml-graphics sfml-window)
+find_package(SFML REQUIRED COMPONENTS SFML::Graphics SFML::Window)
+target_link_libraries(Gui PUBLIC SFML::Graphics SFML::Window)

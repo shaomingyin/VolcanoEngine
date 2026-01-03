@@ -6,8 +6,8 @@
 
 VOLCANO_LAUNCHER_BEGIN
 
-Window::Window(sf::VideoMode mode, const sf::String& title, sf::Uint32 style, const sf::ContextSettings& settings)
-    : sf::RenderWindow(mode, title, style, settings) {
+Window::Window(sf::VideoMode mode, const sf::String& title, uint32_t style, const sf::ContextSettings& settings)
+    : sf::RenderWindow(mode, title, style, sf::State::Windowed, settings) {
     logInfo("Making current context...");
     if (!setActive(true)) {
         logError("Failed to make current context.");

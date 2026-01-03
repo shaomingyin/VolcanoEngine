@@ -15,7 +15,7 @@
 
 VOLCANO_LAUNCHER_BEGIN
 
-static Simulation::World* createWorld(Simulation::Context& context) {
+static Game::World* createWorld(Game::Context& context) {
     return nullptr;
 }
 

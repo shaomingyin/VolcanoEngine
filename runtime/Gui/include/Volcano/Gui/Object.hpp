@@ -77,13 +77,13 @@ public:
     }
 
     sf::FloatRect getRect() const noexcept {
-        auto& position = getPosition();
-        return { position.x, position.y, size_.x, size_.y };
+        auto position = getPosition();
+        return { { position.x, position.y }, { size_.x, size_.y } };
     }
 
     void setRect(const sf::FloatRect& v) noexcept {
-        setPosition(v.getPosition());
-        setSize(v.getSize());
+        setPosition(v.position);
+        setSize(v.size);
     }
 
     sf::Vector2f toLocal(float x, float y) const noexcept;
@@ -119,19 +119,19 @@ protected:
     virtual void onChildRemoved(Object* child);
     virtual void onPaint(sf::RenderTarget& target, sf::RenderStates state) const = 0;
     virtual bool onEvent(const sf::Event& evt);
-    virtual void onMouseMoved(const sf::Event::MouseMoveEvent& evt);
+    virtual void onMouseMoved(const sf::Event::MouseMoved& evt);
     virtual void onMouseEntered();
     virtual void onMouseLeft();
-    virtual void onMouseButtonPressed(const sf::Event::MouseButtonEvent& evt);
-    virtual void onMouseButtonReleased(const sf::Event::MouseButtonEvent& evt);
+    virtual void onMouseButtonPressed(const sf::Event::MouseButtonPressed& evt);
+    virtual void onMouseButtonReleased(const sf::Event::MouseButtonReleased& evt);
 
 private:
     void draw(sf::RenderTarget& target, sf::RenderStates states) const;
-    bool handleMouseMoved(const sf::Event::MouseMoveEvent& evt);
+    bool handleMouseMoved(const sf::Event::MouseMoved& evt);
     bool handleMouseEntered();
     bool handleMouseLeft();
-    bool handleMouseButtonPressed(const sf::Event::MouseButtonEvent& evt);
-    bool handleMouseButtonReleased(const sf::Event::MouseButtonEvent& evt);
+    bool handleMouseButtonPressed(const sf::Event::MouseButtonPressed& evt);
+    bool handleMouseButtonReleased(const sf::Event::MouseButtonReleased& evt);
 
 private:
     enum {

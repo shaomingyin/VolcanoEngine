@@ -16,16 +16,16 @@ Widget::Widget(Context& context, float width, float height, Object* parent)
 void Widget::onPaint(sf::RenderTarget& target, sf::RenderStates states) const noexcept {
 }
 
-void Widget::onMouseMoved(const sf::Event::MouseMoveEvent& evt) noexcept {
+void Widget::onMouseMoved(const sf::Event::MouseMoved& evt) noexcept {
 }
 
 void Widget::onMouseLeft() noexcept {
 }
 
-void Widget::onMouseButtonPressed(const sf::Event::MouseButtonEvent& evt) noexcept {
+void Widget::onMouseButtonPressed(const sf::Event::MouseButtonPressed& evt) noexcept {
 }
 
-void Widget::onMouseButtonReleased(const sf::Event::MouseButtonEvent& evt) noexcept {
+void Widget::onMouseButtonReleased(const sf::Event::MouseButtonReleased& evt) noexcept {
 }
 
 VOLCANO_GUI_END

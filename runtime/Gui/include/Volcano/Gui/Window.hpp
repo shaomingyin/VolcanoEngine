@@ -58,14 +58,14 @@ public:
     sf::FloatRect getClientRect() const noexcept {
         auto& size = getSize();
         auto title_height = title_bar_.getSize().y;
-        return { 0.0f, title_height, size.x, size.y - title_height };
+        return { { 0.0f, title_height }, { size.x, size.y - title_height } };
     }
 
 protected:
     void onPaint(sf::RenderTarget& target, sf::RenderStates states) const override;
-    void onMouseMoved(const sf::Event::MouseMoveEvent& evt) override;
-    void onMouseButtonPressed(const sf::Event::MouseButtonEvent& evt) override;
-    void onMouseButtonReleased(const sf::Event::MouseButtonEvent& evt) override;
+    void onMouseMoved(const sf::Event::MouseMoved& evt) override;
+    void onMouseButtonPressed(const sf::Event::MouseButtonPressed& evt) override;
+    void onMouseButtonReleased(const sf::Event::MouseButtonReleased& evt) override;
     virtual void onTitleChanged(const sf::String& title);
 
 private:

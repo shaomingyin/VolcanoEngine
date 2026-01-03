@@ -18,10 +18,10 @@ target_include_directories(Editor PRIVATE
     ${CMAKE_CURRENT_BINARY_DIR}/include
 )
 
-target_link_libraries(Editor PUBLIC Simulation Graphics Gui)
+target_link_libraries(Editor PUBLIC Game)
 
-find_package(SFML REQUIRED COMPONENTS sfml-window)
-target_link_libraries(Editor PUBLIC sfml-window)
+find_package(SFML REQUIRED COMPONENTS SFML::Window)
+target_link_libraries(Editor PUBLIC SFML::Window)
 
 find_package(argh REQUIRED)
 target_link_libraries(Editor PUBLIC argh)
