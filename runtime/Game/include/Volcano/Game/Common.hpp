@@ -3,13 +3,10 @@
 #ifndef VOLCANO_GAME_COMMON_HPP
 #define VOLCANO_GAME_COMMON_HPP
 
-#include <rttr/type>
-#include <rttr/registration>
+#include <chrono>
 
 #include <Eigen/Core>
 #include <Eigen/Geometry>
-
-#include <btBulletDynamicsCommon.h>
 
 #include <Volcano/Common.hpp>
 #include <Volcano/Game/Config.hpp>
@@ -19,6 +16,7 @@
 
 VOLCANO_GAME_BEGIN
 
+using Clock = std::chrono::steady_clock;
 
 VOLCANO_GAME_END
 

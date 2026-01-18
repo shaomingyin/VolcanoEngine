@@ -9,14 +9,12 @@
 
 #include <Volcano/Math.hpp>
 #include <Volcano/Graphics/Common.hpp>
-#include <Volcano/Graphics/Renderable.hpp>
+#include <Volcano/Graphics/VisibleSet.hpp>
 
 VOLCANO_GRAPHICS_BEGIN
 
-class View final {
+class View: public VisibleSet {
 public:
-    using Renderables = std::vector<Renderable*>;
-
     enum class Bool {
         Clear = 0,
         Max
@@ -69,23 +67,10 @@ public:
         affine3f_[static_cast<size_t>(k)] = v;
     }
 
-    void clear() noexcept {
-        renderables_.clear();
-    }
-
-    void add(Renderable& r) {
-        renderables_.push_back(&r);
-    }
-
-    const Renderables& renderables() const noexcept {
-        return renderables_;
-    }
-
 private:
     bool bool_[static_cast<size_t>(Bool::Max)];
     sf::Color color_[static_cast<size_t>(Color::Max)];
     Eigen::Affine3f affine3f_[static_cast<size_t>(Affine3f::Max)];
-    Renderables renderables_;
 };
 
 VOLCANO_GRAPHICS_END

@@ -12,7 +12,6 @@
 #include <Volcano/Graphics/Context.hpp>
 #include <Volcano/Gui/Context.hpp>
 
-#include <Volcano/Game/Context.hpp>
 #include <Volcano/Game/World.hpp>
 #include <Volcano/Launcher/Console.hpp>
 #include <Volcano/Launcher/Window.hpp>
@@ -20,7 +19,7 @@
 
 VOLCANO_LAUNCHER_BEGIN
 
-class Local: public Game::Context {
+class Local: public Game::World::Context {
 public:
     Local(rttr::type world_type);
     ~Local() override = default;
@@ -42,7 +41,7 @@ protected:
         Error
     };
 
-    virtual void frame(Clock::duration elapsed) noexcept;
+    virtual void frame(Game::Clock::duration elapsed) noexcept;
     virtual void handleEvent(const sf::Event& event);
     virtual void onMouseMoved(const sf::Event::MouseMoveEvent& event);
     virtual void onMouseButtonPressed(const sf::Event::MouseButtonEvent& event);

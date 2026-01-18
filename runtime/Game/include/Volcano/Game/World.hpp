@@ -3,152 +3,82 @@
 #ifndef VOLCANO_GAME_WORLD_HPP
 #define VOLCANO_GAME_WORLD_HPP
 
-#include <chrono>
 #include <string>
+#include <memory>
 #include <vector>
 
-#include <Volcano/Version.hpp>
+#include <Volcano/Graphics/View.hpp>
 #include <Volcano/Game/Common.hpp>
-#include <Volcano/Game/Entity.hpp>
-#include <Volcano/Game/Context.hpp>
+#include <Volcano/Game/Dynamic.hpp>
+#include <Volcano/Game/Camera.hpp>
+#include <Volcano/Game/Light.hpp>
+#include <Volcano/Game/DirectionalLight.hpp>
+#include <Volcano/Game/Scene.hpp>
+#include <Volcano/Game/Object.hpp>
 
 VOLCANO_GAME_BEGIN
 
-class World {
-    RTTR_ENABLE()
+class World: public Object {
+public:
+    using Scenes = std::vector<std::unique_ptr<Scene>>;
 
 public:
-    enum class State {
-        Idle = 0,
-        Loading,
-        Ready,
-        Error
-    };
-
-    using Clock = Context::Clock;
-    using Entities = std::vector<Entity>;
-
-public:
-    World(Context& context);
+    World();
     virtual ~World();
 
 public:
-    Context& context() noexcept {
-        return context_;
+    Dynamic& dynamic() noexcept {
+        return dynamic_;
     }
 
-    State state() const noexcept {
-        return state_;
+    const Dynamic& dynamic() const noexcept {
+        return dynamic_;
     }
 
-    void load();
-
-    bool isPhysicsEnabled() const noexcept {
-        return physics_enabled_;
+    Camera& mainCamera() noexcept {
+        return main_camera_;
     }
 
-    void enablePhysics() noexcept {
-        physics_enabled_ = true;
+    const Camera& mainCamera() const noexcept {
+        return main_camera_;
     }
 
-    void disablePhysics() noexcept {
-        physics_enabled_ = false;
+    Light& ambientLight() noexcept {
+        return ambient_light_;
     }
 
-    Eigen::Vector3f getGravity() const noexcept {
-		return gravity_;
+    const Light& ambientLight() const noexcept {
+        return ambient_light_;
     }
 
-	void setGravity(const Eigen::Vector3f& v) noexcept;
-
-    unsigned int loadingProgress() const noexcept {
-        VOLCANO_ASSERT(state_ == State::Loading);
-        return loading_progress_;
+    DirectionalLight& sunLight() noexcept {
+        return sun_light_;
     }
 
-    const std::string& loadingMessage() const noexcept {
-        VOLCANO_ASSERT(state_ == State::Loading);
-        return loading_message_;
+    const DirectionalLight& sunLight() const noexcept {
+        return sun_light_;
     }
 
-    const std::error_code& error() const noexcept {
-        VOLCANO_ASSERT(state_ == State::Error);
-        return error_;
+    Scenes& scenes() noexcept {
+        return scenes_;
     }
 
-    const Entities& entities() const noexcept {
-        return entities_;
+    const Scenes& scenes() const noexcept {
+        return scenes_;
     }
 
-    Entity& emplace() {
-        return entities_.emplace_back(context_);
-    }
-
-    Entity& global() noexcept {
-        return global_;
-    }
-
-    const Entity& global() const noexcept {
-        return global_;
-    }
-
-    Entity& avatar() noexcept {
-        return avatar_;
-    }
-
-    const Entity& avatar() const noexcept {
-        return avatar_;
-    }
-
-    virtual void stepSimulation(Clock::duration elapsed);
+    Graphics::View buildView(Scheduler& scheduler) const;
 
 protected:
-    void setLoadingCount(unsigned int count) noexcept {
-        VOLCANO_ASSERT(state_ == State::Loading);
-        loading_count_ = count;
-    }
-
-    void setLoadingProgress(unsigned int progress) noexcept {
-        VOLCANO_ASSERT(state_ == State::Loading);
-        loading_progress_ = std::clamp(progress, (unsigned int)0, loading_count_);
-    }
-
-    void setLoadingMessage(std::string message) noexcept {
-        VOLCANO_ASSERT(state_ == State::Loading);
-        loading_message_ = std::move(message);
-    }
-
-    void setReady() noexcept {
-		VOLCANO_ASSERT(state_ == State::Loading);
-        state_ = State::Ready;
-	}
-
-    void setError(std::error_code ec) noexcept {
-        state_ = State::Error;
-        error_ = ec;
-    }
+    void update(Clock::duration elapsed, Scheduler& scheduler) override;
+    void buildVisibleSet(Graphics::VisibleSet& visible_set, Scheduler& scheduler) const override;
 
 private:
-    Context& context_;
-    State state_;
-
-    unsigned int loading_count_;
-    unsigned int loading_progress_;
-    std::string loading_message_;
-
-    std::error_code error_;
-
-    bool physics_enabled_;
-	Eigen::Vector3f gravity_;
-    btDefaultCollisionConfiguration bt_config_;
-    btCollisionDispatcher bt_dispatcher_;
-    btDbvtBroadphase bt_broadphase_;
-    btSequentialImpulseConstraintSolver bt_solver_;
-    btDiscreteDynamicsWorld bt_world_;
-
-    Entities entities_;
-    Entity global_;
-    Entity avatar_;
+    Dynamic dynamic_;
+    Camera main_camera_;
+    Light ambient_light_;
+    DirectionalLight sun_light_;
+    Scenes scenes_;
 };
 
 VOLCANO_GAME_END

@@ -3,45 +3,32 @@
 #ifndef VOLCANO_GAME_COMPONENT_HPP
 #define VOLCANO_GAME_COMPONENT_HPP
 
-#include <cassert>
-
 #include <Volcano/Game/Common.hpp>
-#include <Volcano/Game/Context.hpp>
+#include <Volcano/Game/Transform.hpp>
+#include <Volcano/Game/Object.hpp>
 
 VOLCANO_GAME_BEGIN
 
-class ComponentBase {
-    RTTR_ENABLE()
+class Component: public Object {
+public:
+    Component();
+    virtual ~Component();
 
 public:
-    ComponentBase()
-        : context_(nullptr) {
+    Transform& transform() noexcept {
+        return transform_;
     }
 
-    virtual ~ComponentBase() = default;
-
-public:
-    Context& context() noexcept {
-        assert(context_ != nullptr);
-        return *context_;
+    const Transform& transform() const noexcept {
+        return transform_;
     }
 
-    const Context& context() const noexcept {
-        assert(context_ != nullptr);
-        return *context_;
-    }
-
-	void setContext(Context& context) noexcept {
-        assert(context_ == nullptr);
-        context_ = &context;
-    }
+    void update(Clock::duration elapsed, Scheduler& scheduler) override;
+    Graphics::VisibleSet buildVisibleSet(Scheduler& scheduler) const override;
 
 private:
-    Context* context_;
+    Transform transform_;
 };
-
-template <typename T>
-concept Component = std::is_base_of_v<ComponentBase, T>;
 
 VOLCANO_GAME_END
 
