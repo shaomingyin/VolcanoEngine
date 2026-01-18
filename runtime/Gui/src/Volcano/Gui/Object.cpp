@@ -56,7 +56,7 @@ sf::FloatRect Object::toLocal(const sf::FloatRect& v) const noexcept {
 }
 
 sf::FloatRect Object::toLocal(float left, float top, float width, float height) const noexcept {
-    return toLocal({ left, top, width, height });
+    return toLocal({ { left, top }, { width, height } });
 }
 
 sf::Vector2f Object::toGlobal(float x, float y) const noexcept {
@@ -80,7 +80,7 @@ sf::FloatRect Object::toGlobal(const sf::FloatRect& v) const noexcept {
 }
 
 sf::FloatRect Object::toGlobal(float left, float top, float width, float height) const noexcept {
-    return toGlobal({ left, top, width, height });
+    return toGlobal({ { left, top }, { width, height } });
 }
 
 void Object::toTop() {
@@ -113,25 +113,25 @@ void Object::onChildRemoved(Object* child) {
 }
 
 bool Object::onEvent(const sf::Event& evt) {
-    bool ret;
-    switch (evt.type) {
-    case sf::Event::MouseMoved:
-        ret = handleMouseMoved(evt.mouseMove);
-        break;
-    case sf::Event::MouseButtonPressed:
-        ret = handleMouseButtonPressed(evt.mouseButton);
-        break;
-    case sf::Event::MouseButtonReleased:
-        ret = handleMouseButtonReleased(evt.mouseButton);
-        break;
-    default:
-        ret = false;
-        break;
+    auto mouse_moved = evt.getIf<sf::Event::MouseMoved>();
+    if (mouse_moved != nullptr) {
+        return handleMouseMoved(*mouse_moved);
     }
-    return ret;
+
+    auto mouse_button_pressed = evt.getIf<sf::Event::MouseButtonPressed>();
+    if (mouse_button_pressed != nullptr) {
+        return handleMouseButtonPressed(*mouse_button_pressed);
+    }
+
+    auto mouse_button_released = evt.getIf<sf::Event::MouseButtonReleased>();
+    if (mouse_button_released != nullptr) {
+        return handleMouseButtonReleased(*mouse_button_released);
+    }
+
+    return false;
 }
 
-void Object::onMouseMoved(const sf::Event::MouseMoveEvent& evt) {
+void Object::onMouseMoved(const sf::Event::MouseMoved& evt) {
 }
 
 void Object::onMouseEntered() {
@@ -140,10 +140,10 @@ void Object::onMouseEntered() {
 void Object::onMouseLeft() {
 }
 
-void Object::onMouseButtonPressed(const sf::Event::MouseButtonEvent& evt) {
+void Object::onMouseButtonPressed(const sf::Event::MouseButtonPressed& evt) {
 }
 
-void Object::onMouseButtonReleased(const sf::Event::MouseButtonEvent& evt) {
+void Object::onMouseButtonReleased(const sf::Event::MouseButtonReleased& evt) {
 }
 
 void Object::draw(sf::RenderTarget& target, sf::RenderStates states) const {
@@ -159,11 +159,11 @@ void Object::draw(sf::RenderTarget& target, sf::RenderStates states) const {
     }
 }
 
-bool Object::handleMouseMoved(const sf::Event::MouseMoveEvent& evt) {
-    auto& position = getPosition();
-    sf::FloatRect rect(position.x, position.y, size_.x, size_.y);
+bool Object::handleMouseMoved(const sf::Event::MouseMoved& evt) {
+    auto position = getPosition();
+    sf::FloatRect rect({ { position.x, position.y }, { size_.x, size_.y } });
 
-    if (!rect.contains(float(evt.x), float(evt.y))) {
+    if (!rect.contains({ float(evt.position.x), float(evt.position.y) })) {
         if (flags_ & FlagMouseInside) {
             flags_ &= ~FlagMouseInside;
             onMouseLeft();
@@ -178,8 +178,8 @@ bool Object::handleMouseMoved(const sf::Event::MouseMoveEvent& evt) {
         onMouseEntered();
     }
 
-    auto local_pos = toLocal(float(evt.x), float(evt.y));
-    onMouseMoved({ int(local_pos.x), int(local_pos.y) });
+    auto local_pos = toLocal({ float(evt.position.x), float(evt.position.y) });
+    onMouseMoved({ { int(local_pos.x), int(local_pos.y) } });
 
     return true;
 }
@@ -192,23 +192,23 @@ bool Object::handleMouseLeft() {
     return true;
 }
 
-bool Object::handleMouseButtonPressed(const sf::Event::MouseButtonEvent& evt) {
-    auto& position = getPosition();
+bool Object::handleMouseButtonPressed(const sf::Event::MouseButtonPressed& evt) {
+    auto position = getPosition();
 
-    if (toGlobal(0, 0, size_.x, size_.y).contains(float(evt.x), float(evt.y))) {
-        auto local_pos = toLocal(float(evt.x), float(evt.y));
-        onMouseButtonPressed({ evt.button, int(local_pos.x), int(local_pos.y) });
+    if (toGlobal(0, 0, size_.x, size_.y).contains({ float(evt.position.x), float(evt.position.y) })) {
+        auto local_pos = toLocal(float(evt.position.x), float(evt.position.y));
+        onMouseButtonPressed({ evt.button, { int(local_pos.x), int(local_pos.y) } });
         return true;
     }
 
     return false;
 }
 
-bool Object::handleMouseButtonReleased(const sf::Event::MouseButtonEvent& evt) {
-    auto& position = getPosition();
+bool Object::handleMouseButtonReleased(const sf::Event::MouseButtonReleased& evt) {
+    auto position = getPosition();
 
-    if (toGlobal(0, 0, size_.x, size_.y).contains(float(evt.x), float(evt.y))) {
-        onMouseButtonReleased({ evt.button, evt.x - int(position.x), evt.y - int(position.y) });
+    if (toGlobal(0, 0, size_.x, size_.y).contains({ float(evt.position.x), float(evt.position.y) })) {
+        onMouseButtonReleased({ evt.button, { evt.position.x - int(position.x), evt.position.y - int(position.y) } });
         return true;
     }
 

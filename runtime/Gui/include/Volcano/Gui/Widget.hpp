@@ -28,10 +28,10 @@ public:
 
 protected:
     void onPaint(sf::RenderTarget& target, sf::RenderStates states) const noexcept override;
-    void onMouseMoved(const sf::Event::MouseMoveEvent& evt) noexcept override;
+    void onMouseMoved(const sf::Event::MouseMoved& evt) noexcept override;
     void onMouseLeft() noexcept override;
-    void onMouseButtonPressed(const sf::Event::MouseButtonEvent& evt) noexcept override;
-    void onMouseButtonReleased(const sf::Event::MouseButtonEvent& evt) noexcept override;
+    void onMouseButtonPressed(const sf::Event::MouseButtonPressed& evt) noexcept override;
+    void onMouseButtonReleased(const sf::Event::MouseButtonReleased& evt) noexcept override;
 
 private:
     int flags_;

@@ -1,15 +1,14 @@
 [requires]
 argh/1.3.2
-assimp/5.4.2
 asyncplusplus/1.2
 bullet3/3.25
-eigen/5.0.0
-libuv/1.51.0
+eigen/5.0.1
 microprofile/4.0
 nlohmann_json/3.12.0
 physfs/3.2.0
-sfml/2.6.2
+sfml/3.0.2
 spdlog/1.15.3
+tracy/0.12.2
 
 [generators]
 CMakeDeps

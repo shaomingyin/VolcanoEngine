@@ -10,7 +10,8 @@ VOLCANO_GUI_BEGIN
 Window::Window(Context& context, const sf::String& title, const sf::Vector2f& size, int flags, Object* parent)
     : Object(context, size, parent)
     , flags_(flags & (FlagTitle | FlagBorder))
-    , title_(title) {
+    , title_(title)
+    , title_text_(*context.getFont(context.getWindowTitleStyle())) {
     if (flags_ & FlagTitle) {
         auto window_title_height = context.getWindowTitleHeight();
         auto& title_style = context.getWindowTitleStyle();
@@ -51,10 +52,10 @@ void Window::onPaint(sf::RenderTarget& target, sf::RenderStates states) const {
     }
 }
 
-void Window::onMouseMoved(const sf::Event::MouseMoveEvent& evt) {
+void Window::onMouseMoved(const sf::Event::MouseMoved& evt) {
     if (flags_ & FlagTitleBarHold) {
-        auto gpos = toGlobal(evt.x, evt.y);
-        move(float(gpos.x) - title_bar_hold_pos_.x, float(gpos.y) - title_bar_hold_pos_.y);
+        auto gpos = toGlobal(evt.position.x, evt.position.y);
+        move({ float(gpos.x) - title_bar_hold_pos_.x, float(gpos.y) - title_bar_hold_pos_.y });
         title_bar_hold_pos_ = gpos;
     }
 
@@ -63,16 +64,16 @@ void Window::onMouseMoved(const sf::Event::MouseMoveEvent& evt) {
     }
 }
 
-void Window::onMouseButtonPressed(const sf::Event::MouseButtonEvent& evt) {
+void Window::onMouseButtonPressed(const sf::Event::MouseButtonPressed& evt) {
     auto size = title_bar_.getSize();
-    if (evt.x >= 0 && evt.x <= size.x && evt.y >= 0 && evt.y <= size.y) {
+    if (evt.position.x >= 0 && evt.position.x <= size.x && evt.position.y >= 0 && evt.position.y <= size.y) {
         flags_ |= FlagTitleBarHold;
         grabMouse();
-        title_bar_hold_pos_ = toGlobal(evt.x, evt.y);
+        title_bar_hold_pos_ = toGlobal(evt.position.x, evt.position.y);
     }
 }
 
-void Window::onMouseButtonReleased(const sf::Event::MouseButtonEvent& evt) {
+void Window::onMouseButtonReleased(const sf::Event::MouseButtonReleased& evt) {
     flags_ &= ~FlagTitleBarHold;
     releaseMouse();
 }
