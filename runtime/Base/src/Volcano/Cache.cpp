@@ -1,6 +1,6 @@
 //
 //
-#include <Volcano/Cache.hpp>
+#include <Volcano/Cache.h>
 
 VOLCANO_BEGIN
 

@@ -1,6 +1,6 @@
 //
 //
-#include <Volcano/Common.hpp>
+#include <Volcano/Common.h>
 
 VOLCANO_BEGIN
 
@@ -16,8 +16,8 @@ const std::string& appName() {
 }
 
 void setAppInfo(const std::string& organization, const std::string& name) {
-    VOLCANO_ASSERT(app_organization.empty());
-    VOLCANO_ASSERT(app_name.empty());
+    assert(app_organization.empty());
+    assert(app_name.empty());
     app_organization = organization;
     app_name = name;
 }

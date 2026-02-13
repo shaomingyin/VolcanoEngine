@@ -1,6 +1,6 @@
 //
 //
-#include <Volcano/Server/Application.hpp>
+#include <Volcano/Server/Application.h>
 
 VOLCANO_SERVER_BEGIN
 

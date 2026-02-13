@@ -1,11 +1,11 @@
 
 add_executable(Launcher
-    include/Volcano/Launcher/Client.hpp
-    include/Volcano/Launcher/Common.hpp
-    include/Volcano/Launcher/Config.hpp.in
-    include/Volcano/Launcher/Console.hpp
-    include/Volcano/Launcher/Local.hpp
-    include/Volcano/Launcher/Window.hpp
+    include/Volcano/Launcher/Client.h
+    include/Volcano/Launcher/Common.h
+    include/Volcano/Launcher/Config.h.in
+    include/Volcano/Launcher/Console.h
+    include/Volcano/Launcher/Local.h
+    include/Volcano/Launcher/Window.h
     src/Volcano/Launcher/Client.cpp
     src/Volcano/Launcher/Console.cpp
     src/Volcano/Launcher/Local.cpp
@@ -14,8 +14,8 @@ add_executable(Launcher
 )
 
 configure_file(
-    include/Volcano/Launcher/Config.hpp.in
-    include/Volcano/Launcher/Config.hpp
+    include/Volcano/Launcher/Config.h.in
+    include/Volcano/Launcher/Config.h
 )
 
 set_target_properties(Launcher PROPERTIES OUTPUT_NAME VolcanoLauncher)
@@ -26,10 +26,13 @@ target_include_directories(Launcher PRIVATE
 )
 
 volcano_target_setup(Launcher)
-target_link_libraries(Launcher PUBLIC Game Graphics Gui)
+target_link_libraries(Launcher PUBLIC World Graphics Gui)
 
 find_package(argh REQUIRED)
 target_link_libraries(Launcher PUBLIC argh)
 
 find_package(SFML REQUIRED)
 target_link_libraries(Launcher PUBLIC sfml::sfml)
+
+find_package(PhysFS REQUIRED)
+target_link_libraries(Launcher PUBLIC physfs-static)

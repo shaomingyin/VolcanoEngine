@@ -1,6 +1,6 @@
 //
 //
-#include <Volcano/Version.hpp>
+#include <Volcano/Version.h>
 
 VOLCANO_BEGIN
 

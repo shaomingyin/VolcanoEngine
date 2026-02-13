@@ -8,10 +8,10 @@
 #include <argh.h>
 #include <physfs.h>
 
-#include <Volcano/ScopeGuard.hpp>
-#include <Volcano/Launcher/Local.hpp>
-#include <Volcano/Launcher/Client.hpp>
-#include <Volcano/Launcher/Common.hpp>
+#include <Volcano/ScopeGuard.h>
+#include <Volcano/Launcher/Local.h>
+#include <Volcano/Launcher/Client.h>
+#include <Volcano/Launcher/Common.h>
 
 VOLCANO_LAUNCHER_BEGIN
 
@@ -43,18 +43,18 @@ static void run(int argc, char* argv[]) {
 
     ret = PHYSFS_mount(root.c_str(), "/", 1);
 
-    auto world_types = rttr::type::get<Game::World>().get_derived_classes();
-    if (world_types.empty()) {
+    auto scene_types = rttr::type::get<World::Scene>().get_derived_classes();
+    if (scene_types.empty()) {
         throw std::runtime_error("No world scene found.");
     }
 
-    auto world_type = *world_types.begin();
+    auto scene_type = *scene_types.begin();
 
     std::unique_ptr<Local> app;
     if (true) {
-        app = std::make_unique<Local>(world_type);
+        app = std::make_unique<Local>(scene_type);
     } else {
-        app = std::make_unique<Client>(world_type);
+        app = std::make_unique<Client>(scene_type);
     }
 
     logInfo("Running...");

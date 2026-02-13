@@ -1,6 +1,6 @@
 //
 //
-#include <Volcano/Graphics/VisibleSet.hpp>
+#include <Volcano/Graphics/VisibleSet.h>
 
 VOLCANO_GRAPHICS_BEGIN
 

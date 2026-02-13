@@ -182,12 +182,12 @@ set(RTTR_SOURCES
 
 add_library(Base STATIC
 	${RTTR_SOURCES}
-    include/Volcano/Cache.hpp
+    include/Volcano/Cache.h
     include/Volcano/Common.h
-	include/Volcano/Common.hpp
     include/Volcano/Config.h.in
-    include/Volcano/ScopeGuard.hpp
-    include/Volcano/Version.hpp
+	include/Volcano/Error.h
+    include/Volcano/ScopeGuard.h
+    include/Volcano/Version.h
     src/Volcano/Cache.cpp
     src/Volcano/Common.cpp
     src/Volcano/Error.cpp

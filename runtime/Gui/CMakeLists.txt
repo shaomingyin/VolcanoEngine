@@ -1,13 +1,13 @@
 
 add_library(Gui STATIC
-    include/Volcano/Gui/Common.hpp
-    include/Volcano/Gui/Config.hpp.in
-    include/Volcano/Gui/Context.hpp
-    include/Volcano/Gui/Layout.hpp
-    include/Volcano/Gui/Object.hpp
-    include/Volcano/Gui/Style.hpp
-    include/Volcano/Gui/Widget.hpp
-    include/Volcano/Gui/Window.hpp
+    include/Volcano/Gui/Common.h
+    include/Volcano/Gui/Config.h.in
+    include/Volcano/Gui/Context.h
+    include/Volcano/Gui/Layout.h
+    include/Volcano/Gui/Object.h
+    include/Volcano/Gui/Style.h
+    include/Volcano/Gui/Widget.h
+    include/Volcano/Gui/Window.h
     src/Volcano/Gui/Context.cpp
     src/Volcano/Gui/Layout.cpp
     src/Volcano/Gui/Object.cpp
@@ -16,8 +16,8 @@ add_library(Gui STATIC
 )
 
 configure_file(
-    include/Volcano/Gui/Config.hpp.in
-    include/Volcano/Gui/Config.hpp
+    include/Volcano/Gui/Config.h.in
+    include/Volcano/Gui/Config.h
 )
 
 target_include_directories(Gui PUBLIC
@@ -28,7 +28,7 @@ target_include_directories(Gui PUBLIC
 volcano_target_setup(Gui)
 set_target_properties(Gui PROPERTIES OUTPUT_NAME VolcanoGui)
 
-target_link_libraries(Gui PUBLIC Game)
+target_link_libraries(Gui PUBLIC World)
 
-find_package(SFML REQUIRED COMPONENTS SFML::Graphics SFML::Window)
+find_package(SFML REQUIRED COMPONENTS Graphics Window)
 target_link_libraries(Gui PUBLIC SFML::Graphics SFML::Window)

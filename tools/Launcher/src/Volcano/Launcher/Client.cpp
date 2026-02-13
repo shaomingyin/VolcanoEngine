@@ -1,6 +1,6 @@
 //
 //
-#include <Volcano/Launcher/Client.hpp>
+#include <Volcano/Launcher/Client.h>
 
 VOLCANO_LAUNCHER_BEGIN
 

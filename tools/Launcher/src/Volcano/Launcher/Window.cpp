@@ -2,7 +2,7 @@
 //
 #include <SFML/Window/Context.hpp>
 
-#include <Volcano/Launcher/Window.hpp>
+#include <Volcano/Launcher/Window.h>
 
 VOLCANO_LAUNCHER_BEGIN
 

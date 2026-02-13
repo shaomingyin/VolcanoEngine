@@ -4,17 +4,17 @@ add_library(Graphics STATIC
     include/GL/glcorearb.h
     include/KHR/khrplatform.h
     src/GL/gl3w.c
-    include/Volcano/Graphics/Common.hpp
-    include/Volcano/Graphics/Config.hpp.in
-    include/Volcano/Graphics/Context.hpp
-    include/Volcano/Graphics/DirectionalLight.hpp
-    include/Volcano/Graphics/Light.hpp
-    include/Volcano/Graphics/Model.hpp
-    include/Volcano/Graphics/PointLight.hpp
-    include/Volcano/Graphics/Renderer.hpp
-    include/Volcano/Graphics/SpotLight.hpp
-    include/Volcano/Graphics/View.hpp
-    include/Volcano/Graphics/VisibleSet.hpp
+    include/Volcano/Graphics/Common.h
+    include/Volcano/Graphics/Config.h.in
+    include/Volcano/Graphics/Context.h
+    include/Volcano/Graphics/DirectionalLight.h
+    include/Volcano/Graphics/Light.h
+    include/Volcano/Graphics/Model.h
+    include/Volcano/Graphics/PointLight.h
+    include/Volcano/Graphics/Renderer.h
+    include/Volcano/Graphics/SpotLight.h
+    include/Volcano/Graphics/View.h
+    include/Volcano/Graphics/VisibleSet.h
     src/Volcano/Graphics/Common.cpp
     src/Volcano/Graphics/Context.cpp
     src/Volcano/Graphics/DirectionalLight.cpp
@@ -28,8 +28,8 @@ add_library(Graphics STATIC
 )
 
 configure_file(
-    include/Volcano/Graphics/Config.hpp.in
-    include/Volcano/Graphics/Config.hpp
+    include/Volcano/Graphics/Config.h.in
+    include/Volcano/Graphics/Config.h
 )
 
 target_include_directories(Graphics PUBLIC
@@ -40,7 +40,7 @@ target_include_directories(Graphics PUBLIC
 volcano_target_setup(Graphics)
 set_target_properties(Graphics PROPERTIES OUTPUT_NAME VolcanoGraphics)
 
-target_link_libraries(Graphics PUBLIC Base)
+target_link_libraries(Graphics PUBLIC World)
 
-find_package(SFML REQUIRED COMPONENTS SFML::Graphics)
+find_package(SFML REQUIRED COMPONENTS Graphics)
 target_link_libraries(Graphics PUBLIC SFML::Graphics)

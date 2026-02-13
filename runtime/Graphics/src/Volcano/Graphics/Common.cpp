@@ -1,3 +1,3 @@
 //
 //
-#include <Volcano/Graphics/Common.hpp>
+#include <Volcano/Graphics/Common.h>

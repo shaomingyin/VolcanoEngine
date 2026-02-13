@@ -1,13 +1,13 @@
 
 add_executable(Server
-    include/Volcano/Server/Common.hpp
-    include/Volcano/Server/Config.hpp.in
+    include/Volcano/Server/Common.h
+    include/Volcano/Server/Config.h.in
     src/Volcano/Server/Main.cpp
 )
 
 configure_file(
-    include/Volcano/Server/Config.hpp.in
-    include/Volcano/Server/Config.hpp
+    include/Volcano/Server/Config.h.in
+    include/Volcano/Server/Config.h
 )
 
 volcano_target_setup(Server)
@@ -18,9 +18,9 @@ target_include_directories(Server PRIVATE
     ${CMAKE_CURRENT_BINARY_DIR}/include
 )
 
-target_link_libraries(Server PUBLIC Game)
+target_link_libraries(Server PUBLIC Base)
 
-find_package(SFML REQUIRED COMPONENTS SFML::Window)
+find_package(SFML REQUIRED COMPONENTS Window)
 target_link_libraries(Server PUBLIC SFML::Window)
 
 find_package(argh REQUIRED)

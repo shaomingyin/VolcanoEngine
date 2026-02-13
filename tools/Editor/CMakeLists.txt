@@ -1,13 +1,13 @@
 
 add_executable(Editor
-    include/Volcano/Editor/Common.hpp
-    include/Volcano/Editor/Config.hpp.in
+    include/Volcano/Editor/Common.h
+    include/Volcano/Editor/Config.h.in
     src/Volcano/Editor/Main.cpp
 )
 
 configure_file(
-    include/Volcano/Editor/Config.hpp.in
-    include/Volcano/Editor/Config.hpp
+    include/Volcano/Editor/Config.h.in
+    include/Volcano/Editor/Config.h
 )
 
 volcano_target_setup(Editor)
@@ -18,10 +18,10 @@ target_include_directories(Editor PRIVATE
     ${CMAKE_CURRENT_BINARY_DIR}/include
 )
 
-target_link_libraries(Editor PUBLIC Game Graphics Gui)
+target_link_libraries(Editor PUBLIC World Graphics Gui)
 
-find_package(SFML REQUIRED COMPONENTS sfml-window)
-target_link_libraries(Editor PUBLIC sfml-window)
+find_package(SFML REQUIRED COMPONENTS Window)
+target_link_libraries(Editor PUBLIC SFML::Window)
 
 find_package(argh REQUIRED)
 target_link_libraries(Editor PUBLIC argh)

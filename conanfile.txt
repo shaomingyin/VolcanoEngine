@@ -1,9 +1,9 @@
 [requires]
 argh/1.3.2
 asyncplusplus/1.2
-bullet3/3.25
 eigen/5.0.1
-microprofile/4.0
+entt/3.16.0
+joltphysics/5.2.0
 nlohmann_json/3.12.0
 physfs/3.2.0
 sfml/3.0.2

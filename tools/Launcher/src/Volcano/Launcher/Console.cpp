@@ -1,6 +1,6 @@
 //
 //
-#include <Volcano/Launcher/Console.hpp>
+#include <Volcano/Launcher/Console.h>
 
 VOLCANO_LAUNCHER_BEGIN
 

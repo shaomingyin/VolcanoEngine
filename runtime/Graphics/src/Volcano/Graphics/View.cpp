@@ -1,6 +1,6 @@
 //
 //
-#include <Volcano/Graphics/View.hpp>
+#include <Volcano/Graphics/View.h>
 
 VOLCANO_GRAPHICS_BEGIN
 

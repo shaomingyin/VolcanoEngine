@@ -1,6 +1,6 @@
 //
 //
-#include <Volcano/Error.hpp>
+#include <Volcano/Error.h>
 
 VOLCANO_BEGIN
 
