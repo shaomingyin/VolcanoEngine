@@ -25,5 +25,5 @@ target_compile_definitions(Base PUBLIC
 )
 
 volcano_link_qt(Base Concurrent)
-volcano_link_package(Base microprofile microprofile::microprofile)
+volcano_link_package(Base Tracy Tracy::TracyClient)
 volcano_setup_target(Base)
