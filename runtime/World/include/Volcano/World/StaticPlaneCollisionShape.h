@@ -1,24 +1,24 @@
 //
 //
-#ifndef VOLCANO_GAME_STATICPLANERIGIDBODY_H
-#define VOLCANO_GAME_STATICPLANERIGIDBODY_H
+#ifndef VOLCANO_WORLD_STATICPLANECOLLISIONSHAPE_H
+#define VOLCANO_WORLD_STATICPLANECOLLISIONSHAPE_H
 
 #include <memory>
 
 #include <QVector3D>
 
-#include <Volcano/Game/Common.h>
-#include <Volcano/Game/RigidBody.h>
+#include <Volcano/World/Common.h>
+#include <Volcano/World/CollisionShape.h>
 
-VOLCANO_GAME_BEGIN
+VOLCANO_WORLD_BEGIN
 
-class StaticPlaneRigidBody: public RigidBody {
+class StaticPlaneCollisionShape: public CollisionShape {
     Q_OBJECT
     Q_PROPERTY(QVector3D normal READ normal WRITE setNormal NOTIFY normalChanged FINAL)
     Q_PROPERTY(float constant READ constant WRITE setConstant NOTIFY constantChanged FINAL)
 
 public:
-    StaticPlaneRigidBody(QObject* parent = nullptr);
+    StaticPlaneCollisionShape(QObject* parent = nullptr);
 
 public:
     QVector3D normal() const {
@@ -43,6 +43,6 @@ private:
     std::unique_ptr<btStaticPlaneShape> shape_;
 };
 
-VOLCANO_GAME_END
+VOLCANO_WORLD_END
 
-#endif // VOLCANO_GAME_STATICPLANERIGIDBODY_H
+#endif // VOLCANO_WORLD_STATICPLANECOLLISIONSHAPE_H

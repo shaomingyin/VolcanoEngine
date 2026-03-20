@@ -1,12 +1,12 @@
 //
 //
-#ifndef VOLCANO_GAME_MODEL_H
-#define VOLCANO_GAME_MODEL_H
+#ifndef VOLCANO_WORLD_MODEL_H
+#define VOLCANO_WORLD_MODEL_H
 
-#include <Volcano/Game/Common.h>
-#include <Volcano/Game/Loadable.h>
+#include <Volcano/World/Common.h>
+#include <Volcano/World/Loadable.h>
 
-VOLCANO_GAME_BEGIN
+VOLCANO_WORLD_BEGIN
 
 class Model: public Loadable {
     Q_OBJECT
@@ -17,6 +17,6 @@ public:
 public:
 };
 
-VOLCANO_GAME_END
+VOLCANO_WORLD_END
 
-#endif // VOLCANO_GAME_MODEL_H
+#endif // VOLCANO_WORLD_MODEL_H

@@ -1,16 +1,16 @@
 //
 //
-#include <Volcano/Game/StaticPlaneRigidBody.h>
+#include <Volcano/World/StaticPlaneCollisionShape.h>
 
-VOLCANO_GAME_BEGIN
+VOLCANO_WORLD_BEGIN
 
-StaticPlaneRigidBody::StaticPlaneRigidBody(QObject* parent)
-    : RigidBody(parent)
+StaticPlaneCollisionShape::StaticPlaneCollisionShape(QObject* parent)
+    : CollisionShape(parent)
     , normal_(0.0f, 1.0f, 0.0f)
     , constant_(0.0f) {
 }
 
-void StaticPlaneRigidBody::setNormal(const QVector3D& v) {
+void StaticPlaneCollisionShape::setNormal(const QVector3D& v) {
     if (shape_) {
         qmlWarning(this) << "Cannot set the 'normal' property after component completed.";
         return;
@@ -21,7 +21,7 @@ void StaticPlaneRigidBody::setNormal(const QVector3D& v) {
     }
 }
 
-void StaticPlaneRigidBody::setConstant(float v) {
+void StaticPlaneCollisionShape::setConstant(float v) {
     if (shape_) {
         qmlWarning(this) << "Cannot set the 'constant' property after component completed.";
         return;
@@ -32,11 +32,11 @@ void StaticPlaneRigidBody::setConstant(float v) {
     }
 }
 
-void StaticPlaneRigidBody::componentComplete() {
+void StaticPlaneCollisionShape::componentComplete() {
     //setFlags()STATIC;
     shape_ = std::make_unique<btStaticPlaneShape>(
         btVector3(normal_.x(), normal_.y(), normal_.z()), constant_);
     setCollisionShape(shape_.get());
 }
 
-VOLCANO_GAME_END
+VOLCANO_WORLD_END

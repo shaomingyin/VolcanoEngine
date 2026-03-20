@@ -1,15 +1,15 @@
 //
 //
-#ifndef VOLCANO_GAME_CAMERA_H
-#define VOLCANO_GAME_CAMERA_H
+#ifndef VOLCANO_WORLD_CAMERA_H
+#define VOLCANO_WORLD_CAMERA_H
 
 #include <QRect>
 #include <QMatrix4x4>
 
-#include <Volcano/Game/Common.h>
-#include <Volcano/Game/Transformable.h>
+#include <Volcano/World/Common.h>
+#include <Volcano/World/Transformable.h>
 
-VOLCANO_GAME_BEGIN
+VOLCANO_WORLD_BEGIN
 
 class Camera: public Transformable {
     Q_OBJECT
@@ -158,6 +158,6 @@ private:
     float far_plane_;
 };
 
-VOLCANO_GAME_END
+VOLCANO_WORLD_END
 
-#endif // VOLCANO_GAME_CAMERA_H
+#endif // VOLCANO_WORLD_CAMERA_H

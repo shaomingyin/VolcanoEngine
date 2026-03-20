@@ -1,11 +1,11 @@
 //
 //
-#include <Volcano/Game/DirectionalLight.h>
+#include <Volcano/World/DirectionalLight.h>
 
-VOLCANO_GAME_BEGIN
+VOLCANO_WORLD_BEGIN
 
 DirectionalLight::DirectionalLight(QObject* parent)
     : Light(parent) {
 }
 
-VOLCANO_GAME_END
+VOLCANO_WORLD_END

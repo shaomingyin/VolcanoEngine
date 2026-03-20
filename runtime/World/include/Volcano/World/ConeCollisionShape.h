@@ -1,22 +1,22 @@
 //
 //
-#ifndef VOLCANO_GAME_CONERIGIDBODY_H
-#define VOLCANO_GAME_CONERIGIDBODY_H
+#ifndef VOLCANO_WORLD_CONECOLLISIONSHAPE_H
+#define VOLCANO_WORLD_CONECOLLISIONSHAPE_H
 
 #include <memory>
 
-#include <Volcano/Game/Common.h>
-#include <Volcano/Game/RigidBody.h>
+#include <Volcano/World/Common.h>
+#include <Volcano/World/CollisionShape.h>
 
-VOLCANO_GAME_BEGIN
+VOLCANO_WORLD_BEGIN
 
-class ConeRigidBody: public RigidBody {
+class ConeCollisionShape: public CollisionShape {
     Q_OBJECT
     Q_PROPERTY(float radius READ radius WRITE setRadius NOTIFY radiusChanged FINAL)
     Q_PROPERTY(float height READ height WRITE setHeight NOTIFY heightChanged FINAL)
 
 public:
-    ConeRigidBody(QObject* parent = nullptr);
+    ConeCollisionShape(QObject* parent = nullptr);
 
     float radius() const {
         return radius_;
@@ -40,6 +40,6 @@ private:
     std::unique_ptr<btConeShape> shape_;
 };
 
-VOLCANO_GAME_END
+VOLCANO_WORLD_END
 
-#endif // VOLCANO_GAME_CONERIGIDBODY_H
+#endif // VOLCANO_WORLD_CONECOLLISIONSHAPE_H

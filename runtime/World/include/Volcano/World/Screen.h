@@ -1,7 +1,7 @@
 //
 //
-#ifndef VOLCANO_GAME_SCREEN_H
-#define VOLCANO_GAME_SCREEN_H
+#ifndef VOLCANO_WORLD_SCREEN_H
+#define VOLCANO_WORLD_SCREEN_H
 
 #include <memory>
 
@@ -10,10 +10,10 @@
 #include <QQmlComponent>
 #include <QQuickItem>
 
-#include <Volcano/Game/Common.h>
-#include <Volcano/Game/Transformable.h>
+#include <Volcano/World/Common.h>
+#include <Volcano/World/Transformable.h>
 
-VOLCANO_GAME_BEGIN
+VOLCANO_WORLD_BEGIN
 
 class Screen: public Transformable {
     Q_OBJECT
@@ -74,6 +74,6 @@ private:
     QQuickItem* root_item_;
 };
 
-VOLCANO_GAME_END
+VOLCANO_WORLD_END
 
-#endif // VOLCANO_GAME_SCREEN_H
+#endif // VOLCANO_WORLD_SCREEN_H

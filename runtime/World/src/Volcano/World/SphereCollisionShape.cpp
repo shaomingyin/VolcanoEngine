@@ -1,15 +1,15 @@
 //
 //
-#include <Volcano/Game/SphereRigidBody.h>
+#include <Volcano/World/SphereCollisionShape.h>
 
-VOLCANO_GAME_BEGIN
+VOLCANO_WORLD_BEGIN
 
-SphereRigidBody::SphereRigidBody(QObject* parent)
-    : RigidBody(parent)
+SphereCollisionShape::SphereCollisionShape(QObject* parent)
+    : CollisionShape(parent)
     , radius_(1.0f) {
 }
 
-void SphereRigidBody::setRadius(float v) {
+void SphereCollisionShape::setRadius(float v) {
     if (shape_) {
         qmlWarning(this) << "Cannot set the 'radius' property after component completed.";
         return;
@@ -20,9 +20,9 @@ void SphereRigidBody::setRadius(float v) {
     }
 }
 
-void SphereRigidBody::componentComplete() {
+void SphereCollisionShape::componentComplete() {
     shape_ = std::make_unique<btSphereShape>(radius_);
     setCollisionShape(shape_.get());
 }
 
-VOLCANO_GAME_END
+VOLCANO_WORLD_END

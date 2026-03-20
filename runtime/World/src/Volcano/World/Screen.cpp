@@ -3,9 +3,9 @@
 #include <QUrl>
 #include <QString>
 
-#include <Volcano/Game/Screen.h>
+#include <Volcano/World/Screen.h>
 
-VOLCANO_GAME_BEGIN
+VOLCANO_WORLD_BEGIN
 
 Screen::Screen(QObject* parent)
     : Transformable(parent)
@@ -53,4 +53,4 @@ void Screen::onComponentStatusChanged(QQmlComponent::Status st) {
     emit statusChanged(st);
 }
 
-VOLCANO_GAME_END
+VOLCANO_WORLD_END

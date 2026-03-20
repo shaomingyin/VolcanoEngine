@@ -1,12 +1,12 @@
 //
 //
-#ifndef VOLCANO_GAME_MATERIAL_H
-#define VOLCANO_GAME_MATERIAL_H
+#ifndef VOLCANO_WORLD_MATERIAL_H
+#define VOLCANO_WORLD_MATERIAL_H
 
-#include <Volcano/Game/Common.h>
-#include <Volcano/Game/Component.h>
+#include <Volcano/World/Common.h>
+#include <Volcano/World/Component.h>
 
-VOLCANO_GAME_BEGIN
+VOLCANO_WORLD_BEGIN
 
 class Material: public Component {
 public:
@@ -15,6 +15,6 @@ public:
 public:
 };
 
-VOLCANO_GAME_END
+VOLCANO_WORLD_END
 
-#endif // VOLCANO_GAME_MATERIAL_H
+#endif // VOLCANO_WORLD_MATERIAL_H

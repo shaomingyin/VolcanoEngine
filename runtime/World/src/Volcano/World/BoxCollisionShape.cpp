@@ -1,15 +1,15 @@
 //
 //
-#include <Volcano/Game/BoxRigidBody.h>
+#include <Volcano/World/BoxCollisionShape.h>
 
-VOLCANO_GAME_BEGIN
+VOLCANO_WORLD_BEGIN
 
-BoxRigidBody::BoxRigidBody(QObject* parent)
-    : RigidBody(parent)
+BoxCollisionShape::BoxCollisionShape(QObject* parent)
+    : CollisionShape(parent)
     , size_(1.0f, 1.0f, 1.0f) {
 }
 
-void BoxRigidBody::setWidth(float v) {
+void BoxCollisionShape::setWidth(float v) {
     if (shape_) {
         qmlWarning(this) << "Cannot set the 'width' property after component completed.";
         return;
@@ -20,7 +20,7 @@ void BoxRigidBody::setWidth(float v) {
     }
 }
 
-void BoxRigidBody::setHeight(float v) {
+void BoxCollisionShape::setHeight(float v) {
     if (shape_) {
         qmlWarning(this) << "Cannot set the 'height' property after component completed.";
         return;
@@ -31,10 +31,10 @@ void BoxRigidBody::setHeight(float v) {
     }
 }
 
-void BoxRigidBody::componentComplete() {
+void BoxCollisionShape::componentComplete() {
     shape_ = std::make_unique<btBoxShape>(
         btVector3{ size_.x() / 2.0f, size_.y() / 2.0f, size_.z() / 2.0f });
     setCollisionShape(shape_.get());
 }
 
-VOLCANO_GAME_END
+VOLCANO_WORLD_END

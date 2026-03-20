@@ -1,25 +1,23 @@
 //
 //
-#ifndef VOLCANO_GAME_BOXRIGIDBODY_H
-#define VOLCANO_GAME_BOXRIGIDBODY_H
-
-#include <memory>
+#ifndef VOLCANO_WORLD_BOXCOLLISIONSHAPE_H
+#define VOLCANO_WORLD_BOXCOLLISIONSHAPE_H
 
 #include <QVector3D>
 
-#include <Volcano/Game/Common.h>
-#include <Volcano/Game/RigidBody.h>
+#include <Volcano/World/Common.h>
+#include <Volcano/World/CollisionShape.h>
 
-VOLCANO_GAME_BEGIN
+VOLCANO_WORLD_BEGIN
 
-class BoxRigidBody: public RigidBody {
+class BoxCollisionShape: public CollisionShape {
     Q_OBJECT
     Q_PROPERTY(float length READ length WRITE setLength NOTIFY lengthChanged FINAL)
     Q_PROPERTY(float width READ width WRITE setWidth NOTIFY widthChanged FINAL)
     Q_PROPERTY(float height READ height WRITE setHeight NOTIFY heightChanged FINAL)
 
 public:
-    BoxRigidBody(QObject* parent = nullptr);
+    BoxCollisionShape(QObject* parent = nullptr);
 
 public:
     QVector3D size() const {
@@ -47,7 +45,6 @@ public:
 
     void setWidth(float v);
     void setHeight(float v);
-    void componentComplete() override;
 
 signals:
     void lengthChanged(float v);
@@ -56,9 +53,9 @@ signals:
 
 private:
     QVector3D size_;
-    std::unique_ptr<btBoxShape> shape_;
+
 };
 
-VOLCANO_GAME_END
+VOLCANO_WORLD_END
 
-#endif // VOLCANO_GAME_BOXRIGIDBODY_H
+#endif // VOLCANO_WORLD_BOXCOLLISIONSHAPE_H

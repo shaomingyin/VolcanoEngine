@@ -1,22 +1,23 @@
 //
 //
-#ifndef VOLCANO_GAME_ENTITY_H
-#define VOLCANO_GAME_ENTITY_H
+#ifndef VOLCANO_WORLD_ENTITY_H
+#define VOLCANO_WORLD_ENTITY_H
 
 #include <QList>
 #include <QMatrix4x4>
 #include <QQmlListProperty>
+#include <QObject>
 
-#include <Volcano/Game/Common.h>
-#include <Volcano/Game/Component.h>
-#include <Volcano/Game/Object.h>
+#include <Volcano/World/Common.h>
+#include <Volcano/World/Transform.h>
+#include <Volcano/World/EntityPhysics.h>
 
-VOLCANO_GAME_BEGIN
+VOLCANO_WORLD_BEGIN
 
-class Entity: public Object {
+class Entity: public QObject {
     Q_OBJECT
     Q_PROPERTY(bool enabled READ isEnabled WRITE setEnabled NOTIFY enabledChanged FINAL)
-    Q_PROPERTY(QMatrix4x4* transform READ transform)
+    Q_PROPERTY(Transform* transform READ transform)
     Q_PROPERTY(QQmlListProperty<Component> components READ qmlComponents)
     Q_CLASSINFO("DefaultProperty", "components")
 
@@ -25,7 +26,7 @@ public:
     ~Entity() override;
 
 public:
-    QMatrix4x4* transform() {
+    Transform* transform() noexcept {
         return &transform_;
     }
 
@@ -40,29 +41,29 @@ public:
         }
     }
 
-    const QList<Component*>& components() const {
+    const QObjectList& components() const {
         return components_;
     }
 
-    void appendComponent(Component* p);
-    Component* componentAt(qsizetype i);
+    void appendComponent(QObject* p);
+    QObject* componentAt(qsizetype i);
     void clearComponents();
     qsizetype componentCount();
     void removeLastComponent();
-    void replaceComponent(qsizetype i, Component* p);
-    QQmlListProperty<Component> qmlComponents();
+    void replaceComponent(qsizetype i, QObject* p);
+    QQmlListProperty<QObject> qmlComponents();
 
 signals:
     void enabledChanged(bool v);
-    void componentAdded(Component* p);
-    void componentRemoved(Component* p);
+    void componentAdded(QObject* p);
+    void componentRemoved(QObject* p);
 
 private:
     bool enabled_;
-    QMatrix4x4 transform_;
-    QList<Component*> components_;
+    Transform transform_;
+    QObjectList components_;
 };
 
-VOLCANO_GAME_END
+VOLCANO_WORLD_END
 
-#endif // VOLCANO_GAME_ENTITY_H
+#endif // VOLCANO_WORLD_ENTITY_H

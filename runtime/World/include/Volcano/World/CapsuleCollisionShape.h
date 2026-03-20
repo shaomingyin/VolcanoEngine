@@ -1,22 +1,22 @@
 //
 //
-#ifndef VOLCANO_GAME_CAPSULERIGIDBODY_H
-#define VOLCANO_GAME_CAPSULERIGIDBODY_H
+#ifndef VOLCANO_WORLD_CAPSULECOLLISIONSHAPE_H
+#define VOLCANO_WORLD_CAPSULECOLLISIONSHAPE_H
 
 #include <memory>
 
-#include <Volcano/Game/Common.h>
-#include <Volcano/Game/RigidBody.h>
+#include <Volcano/World/Common.h>
+#include <Volcano/World/CollisionShape.h>
 
-VOLCANO_GAME_BEGIN
+VOLCANO_WORLD_BEGIN
 
-class CapsuleRigidBody: public RigidBody {
+class CapsuleCollisionShape: public CollisionShape {
     Q_OBJECT
     Q_PROPERTY(float radius READ radius WRITE setRadius NOTIFY radiusChanged FINAL)
     Q_PROPERTY(float height READ height WRITE setHeight NOTIFY heightChanged FINAL)
 
 public:
-    CapsuleRigidBody(QObject* parent = nullptr);
+    CapsuleCollisionShape(QObject* parent = nullptr);
 
 public:
     float radius() const {
@@ -42,6 +42,6 @@ private:
     std::unique_ptr<btCapsuleShape> shape_;
 };
 
-VOLCANO_GAME_END
+VOLCANO_WORLD_END
 
-#endif // VOLCANO_GAME_CAPSULERIGIDBODY_H
+#endif // VOLCANO_WORLD_CAPSULECOLLISIONSHAPE_H

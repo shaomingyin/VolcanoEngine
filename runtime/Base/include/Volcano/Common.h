@@ -12,7 +12,6 @@
 #include <Volcano/Config.h>
 
 #ifdef VOLCANO_PROFILE
-#   include <microprofile.h>
 #endif
 
 #ifdef __cplusplus

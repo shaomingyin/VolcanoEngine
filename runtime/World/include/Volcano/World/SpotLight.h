@@ -1,12 +1,12 @@
 //
 //
-#ifndef VOLCANO_GAME_SPOTLIGHT_H
-#define VOLCANO_GAME_SPOTLIGHT_H
+#ifndef VOLCANO_WORLD_SPOTLIGHT_H
+#define VOLCANO_WORLD_SPOTLIGHT_H
 
-#include <Volcano/Game/Common.h>
-#include <Volcano/Game/DirectionalLight.h>
+#include <Volcano/World/Common.h>
+#include <Volcano/World/DirectionalLight.h>
 
-VOLCANO_GAME_BEGIN
+VOLCANO_WORLD_BEGIN
 
 class SpotLight: public DirectionalLight {
     Q_OBJECT
@@ -17,6 +17,6 @@ public:
 public:
 };
 
-VOLCANO_GAME_END
+VOLCANO_WORLD_END
 
-#endif // VOLCANO_GAME_SPOTLIGHT_H
+#endif // VOLCANO_WORLD_SPOTLIGHT_H

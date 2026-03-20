@@ -1,11 +1,11 @@
 //
 //
-#include <Volcano/Game/Material.h>
+#include <Volcano/World/Material.h>
 
-VOLCANO_GAME_BEGIN
+VOLCANO_WORLD_BEGIN
 
 Material::Material(QObject* parent)
     : Component(parent) {
 }
 
-VOLCANO_GAME_END
+VOLCANO_WORLD_END

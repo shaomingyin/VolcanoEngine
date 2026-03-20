@@ -1,8 +1,8 @@
 //
 //
-#include <Volcano/Game/Light.h>
+#include <Volcano/World/Light.h>
 
-VOLCANO_GAME_BEGIN
+VOLCANO_WORLD_BEGIN
 
 Light::Light(QObject* parent)
     : Transformable(parent)
@@ -10,4 +10,4 @@ Light::Light(QObject* parent)
     , strength_(0.5f) {
 }
 
-VOLCANO_GAME_END
+VOLCANO_WORLD_END

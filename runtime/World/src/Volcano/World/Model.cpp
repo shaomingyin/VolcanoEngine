@@ -1,11 +1,11 @@
 //
 //
-#include <Volcano/Game/Model.h>
+#include <Volcano/World/Model.h>
 
-VOLCANO_GAME_BEGIN
+VOLCANO_WORLD_BEGIN
 
 Model::Model(QObject* parent)
     : Loadable(parent) {
 }
 
-VOLCANO_GAME_END
+VOLCANO_WORLD_END

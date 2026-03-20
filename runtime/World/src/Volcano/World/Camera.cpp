@@ -1,8 +1,8 @@
 //
 //
-#include <Volcano/Game/Camera.h>
+#include <Volcano/World/Camera.h>
 
-VOLCANO_GAME_BEGIN
+VOLCANO_WORLD_BEGIN
 
 Camera::Camera(QObject* parent)
     : Transformable(parent) {
@@ -10,4 +10,4 @@ Camera::Camera(QObject* parent)
     projection_matrix_.setToIdentity();
 }
 
-VOLCANO_GAME_END
+VOLCANO_WORLD_END

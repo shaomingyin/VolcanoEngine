@@ -1,17 +1,16 @@
 //
 //
-#ifndef VOLCANO_GAME_TRANSFORM_H
-#define VOLCANO_GAME_TRANSFORM_H
+#ifndef VOLCANO_WORLD_TRANSFORM_H
+#define VOLCANO_WORLD_TRANSFORM_H
 
-#include <QObject>
 #include <QVector3D>
 #include <QMatrix4x4>
 #include <QQuaternion>
+#include <QObject>
 
-#include <Volcano/Game/Common.h>
-#include <Volcano/Game/Component.h>
+#include <Volcano/World/Common.h>
 
-VOLCANO_GAME_BEGIN
+VOLCANO_WORLD_BEGIN
 
 class Transform: public QObject {
     Q_OBJECT
@@ -20,90 +19,52 @@ class Transform: public QObject {
     Q_PROPERTY(QQuaternion rotation READ rotation WRITE setRotation NOTIFY rotationChanged FINAL)
 
 public:
-    Q_INVOKABLE Transform(QObject* parent = nullptr)
-        : QObject(parent) {
-    }
-
-    Q_INVOKABLE Transform(const QMatrix4x4& v, QObject* parent = nullptr)
-        : QObject(parent)
-        , affine_transform_(v) {
-    }
+    static const Transform Identity;
 
 public:
-    static const Transform& identity();
+    Transform(QObject* parent = nullptr);
 
-    Q_INVOKABLE void setToIdentity() {
-        affine_transform_.setToIdentity();
+public:
+    Q_INVOKABLE void setToIdentity() noexcept;
+    Q_INVOKABLE QMatrix4x4 toMatrix() const noexcept;
+
+    const QVector3D& translation() const noexcept {
+        return translation_;
     }
 
-    QMatrix4x4& matrix() {
-        return affine_transform_;
-    }
-
-    const QMatrix4x4& matrix() const {
-        return affine_transform_;
-    }
-
-    QVector3D translation() const {
-        return affine_transform_.translation();
-    }
-
-    void setTranslation(const QVector3D& v) {
-        if (affine_transform_.translation() != v) {
-            affine_transform_.setTranslation(v);
+    void setTranslation(const QVector3D& v) noexcept {
+        if (translation_ != v) {
+            translation_ = v;
             emit translationChanged(v);
         }
     }
 
-    QVector3D scaling() const {
-        return affine_transform_.scaling();
+    const QVector3D& scale() const noexcept {
+        return scale_;
     }
 
-    void setScaling(const QVector3D& v) {
-        affine_transform_.setScaling(v);
-        emit scalingChanged(v);
+    void setScale(const QVector3D& v) noexcept {
+        if (scale_ != v) {
+            scale_ = v;
+            emit scalingChanged(v);
+        }
     }
 
-    QQuaternion rotation() const {
-        return AngleAxis(affine_transform_.rotation());
+    const QQuaternion& rotation() const noexcept {
+        return rotation_;
     }
 
-    void setRotation(const AngleAxis& v) {
-        if (rotation() != v) {
-            affine_transform_.setRotation(v);
+    void setRotation(const QQuaternion& v) noexcept {
+        if (rotation_ != v) {
+            rotation_ = v;
             emit rotationChanged(v);
         }
     }
 
-    Q_INVOKABLE Transform inverted() const {
-        return Transform(affine_transform_.inverted());
-    }
-
-public:
-    Transform& operator=(const Transform& other) {
-        if (this != &other) {
-            affine_transform_ = other.affine_transform_;
-        }
-        return (*this);
-    }
-
-    Transform& operator=(const Affine3& v) {
-        affine_transform_ = v;
-        return (*this);
-    }
-
-    friend Transform operator*(const Transform& a, const Transform& b) {
-        return Transform(a.affine_transform_ * b.affine_transform_);
-    }
-
-    friend Vector3 operator*(const Transform& a, const Vector3& b) {
-        return (a.affine_transform_ * b);
-    }
-
 signals:
-    void translationChanged(const Vector3& v);
-    void scalingChanged(const Vector3& v);
-    void rotationChanged(const AngleAxis& v);
+    void translationChanged(const QVector3D& v);
+    void scalingChanged(const QVector3D& v);
+    void rotationChanged(const QQuaternion& v);
 
 private:
     QVector3D translation_;
@@ -111,6 +72,6 @@ private:
     QQuaternion rotation_;
 };
 
-VOLCANO_GAME_END
+VOLCANO_WORLD_END
 
-#endif // VOLCANO_GAME_TRANSFORM_H
+#endif // VOLCANO_WORLD_TRANSFORM_H

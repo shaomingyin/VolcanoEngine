@@ -1,11 +1,11 @@
 //
 //
-#include <Volcano/Game/PointLight.h>
+#include <Volcano/World/PointLight.h>
 
-VOLCANO_GAME_BEGIN
+VOLCANO_WORLD_BEGIN
 
 PointLight::PointLight(QObject* parent)
     : Light(parent) {
 }
 
-VOLCANO_GAME_END
+VOLCANO_WORLD_END

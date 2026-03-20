@@ -1,24 +1,20 @@
 //
 //
-#include <Volcano/Game/BoxRigidBody.h>
-#include <Volcano/Game/Scene.h>
+#include <Volcano/World/Scene.h>
 
-VOLCANO_GAME_BEGIN
+VOLCANO_WORLD_BEGIN
 
 Scene::Scene(QObject* parent)
-    : Object(parent) {
+    : QObject(parent) {
 }
 
 Scene::~Scene() {
     clearEntities();
 }
 
-void Scene::update(Clock::duration elapsed) {
-}
-
 void Scene::appendEntity(Entity* p) {
     entities_.append(p);
-    onEntityAdded(p);
+    handleEntityAdded(p);
 }
 
 Entity* Scene::entityAt(qsizetype i) {
@@ -27,7 +23,7 @@ Entity* Scene::entityAt(qsizetype i) {
 
 void Scene::clearEntities() {
     for (Entity* p: entities_) {
-        onEntityRemoved(p);
+        handleEntityRemoved(p);
     }
     entities_.clear();
 }
@@ -38,16 +34,16 @@ qsizetype Scene::entityCount() {
 
 void Scene::removeLastEntity() {
     if (!entities_.isEmpty()) {
-        onEntityRemoved(entities_.last());
+        handleEntityRemoved(entities_.last());
         entities_.removeLast();
     }
 }
 
 void Scene::replaceEntity(qsizetype i, Entity* p) {
     if (0 <= i && i < entities_.count()) {
-        onEntityRemoved(entities_.at(i));
+        handleEntityRemoved(entities_.at(i));
         entities_.replace(i, p);
-        onEntityAdded(p);
+        handleEntityAdded(p);
     }
 }
 
@@ -62,25 +58,25 @@ QQmlListProperty<Entity> Scene::qmlEntities() {
     };
 }
 
-void Scene::onEntityAdded(Entity* entity) {
+void Scene::handleEntityAdded(Entity* entity) {
     auto& components = entity->components();
     for (auto& component: components) {
         emit componentAdded(entity, component);
     }
-    connect(entity, &Entity::componentAdded, this, [this, entity](Component* component) {
-        onComponentAdded(entity, component);
+    connect(entity, &Entity::componentAdded, this, [this, entity](QObject* component) {
+        handleComponentAdded(entity, component);
     });
-    connect(entity, &Entity::componentRemoved, this, [this, entity](Component* component) {
-        onComponentRemoved(entity, component);
+    connect(entity, &Entity::componentRemoved, this, [this, entity](QObject* component) {
+        handleComponentRemoved(entity, component);
     });
     emit entityAdded(entity);
 }
 
-void Scene::onComponentAdded(Entity* entity, Component* component) {
+void Scene::handleComponentAdded(Entity* entity, QObject* component) {
     emit componentAdded(entity, component);
 }
 
-void Scene::onEntityRemoved(Entity* entity) {
+void Scene::handleEntityRemoved(Entity* entity) {
     auto& components = entity->components();
     for (auto& component: components) {
         emit componentRemoved(entity, component);
@@ -88,8 +84,11 @@ void Scene::onEntityRemoved(Entity* entity) {
     emit entityRemoved(entity);
 }
 
-void Scene::onComponentRemoved(Entity* entity, Component* component) {
+void Scene::handleComponentRemoved(Entity* entity, QObject* component) {
     emit componentRemoved(entity, component);
 }
 
-VOLCANO_GAME_END
+void Scene::update(Clock::duration elapsed) {
+}
+
+VOLCANO_WORLD_END

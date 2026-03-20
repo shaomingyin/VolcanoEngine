@@ -1,14 +1,14 @@
 //
 //
-#ifndef VOLCANO_GAME_DIRECTIONALLIGHT_H
-#define VOLCANO_GAME_DIRECTIONALLIGHT_H
+#ifndef VOLCANO_WORLD_DIRECTIONALLIGHT_H
+#define VOLCANO_WORLD_DIRECTIONALLIGHT_H
 
 #include <QVector3D>
 
-#include <Volcano/Game/Common.h>
-#include <Volcano/Game/Light.h>
+#include <Volcano/World/Common.h>
+#include <Volcano/World/Light.h>
 
-VOLCANO_GAME_BEGIN
+VOLCANO_WORLD_BEGIN
 
 class DirectionalLight: public Light {
     Q_OBJECT
@@ -36,6 +36,6 @@ private:
     QVector3D direction_;
 };
 
-VOLCANO_GAME_END
+VOLCANO_WORLD_END
 
-#endif // VOLCANO_GAME_DIRECTIONALLIGHT_H
+#endif // VOLCANO_WORLD_DIRECTIONALLIGHT_H

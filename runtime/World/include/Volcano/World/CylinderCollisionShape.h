@@ -1,23 +1,23 @@
 //
 //
-#ifndef VOLCANO_GAME_CYLINDERRIGIDBODY_H
-#define VOLCANO_GAME_CYLINDERRIGIDBODY_H
+#ifndef VOLCANO_WORLD_CYLINDERCOLLISIONSHAPE_H
+#define VOLCANO_WORLD_CYLINDERCOLLISIONSHAPE_H
 
 #include <memory>
 
 #include <QVector3D>
 
-#include <Volcano/Game/Common.h>
-#include <Volcano/Game/RigidBody.h>
+#include <Volcano/World/Common.h>
+#include <Volcano/World/CollisionShape.h>
 
-VOLCANO_GAME_BEGIN
+VOLCANO_WORLD_BEGIN
 
-class CylinderRigidBody: public RigidBody {
+class CylinderCollisionShape: public CollisionShape {
     Q_OBJECT
     Q_PROPERTY(QVector3D size READ size WRITE resize NOTIFY sizeChanged FINAL)
 
 public:
-    CylinderRigidBody(QObject* parent = nullptr);
+    CylinderCollisionShape(QObject* parent = nullptr);
 
 public:
     const QVector3D& size() const {
@@ -35,6 +35,6 @@ private:
     std::unique_ptr<btCylinderShape> shape_;
 };
 
-VOLCANO_GAME_END
+VOLCANO_WORLD_END
 
-#endif // VOLCANO_GAME_CYLINDERRIGIDBODY_H
+#endif // VOLCANO_WORLD_CYLINDERCOLLISIONSHAPE_H

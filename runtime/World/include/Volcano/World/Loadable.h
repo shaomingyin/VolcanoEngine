@@ -1,15 +1,15 @@
 //
 //
-#ifndef VOLCANO_GAME_LOADABLE_H
-#define VOLCANO_GAME_LOADABLE_H
+#ifndef VOLCANO_WORLD_LOADABLE_H
+#define VOLCANO_WORLD_LOADABLE_H
 
 #include <QUrl>
 #include <QNetworkReply>
 
-#include <Volcano/Game/Common.h>
-#include <Volcano/Game/Transformable.h>
+#include <Volcano/World/Common.h>
+#include <Volcano/World/Transformable.h>
 
-VOLCANO_GAME_BEGIN
+VOLCANO_WORLD_BEGIN
 
 class Loadable: public Transformable {
     Q_OBJECT
@@ -39,6 +39,6 @@ private:
     QUrl source_;
 };
 
-VOLCANO_GAME_END
+VOLCANO_WORLD_END
 
-#endif // VOLCANO_GAME_LOADABLE_H
+#endif // VOLCANO_WORLD_LOADABLE_H

@@ -1,11 +1,11 @@
 //
 //
-#include <Volcano/Game/SpotLight.h>
+#include <Volcano/World/SpotLight.h>
 
-VOLCANO_GAME_BEGIN
+VOLCANO_WORLD_BEGIN
 
 SpotLight::SpotLight(QObject* parent)
     : DirectionalLight(parent) {
 }
 
-VOLCANO_GAME_END
+VOLCANO_WORLD_END

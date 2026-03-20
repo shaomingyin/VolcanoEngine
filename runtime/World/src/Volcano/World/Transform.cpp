@@ -1,12 +1,16 @@
 //
 //
-#include <Volcano/Game/Transform.h>
+#include <Volcano/World/Transform.h>
 
-VOLCANO_GAME_BEGIN
+VOLCANO_WORLD_BEGIN
 
-const Transform& Transform::identity() {
-    static const Transform Identity = Affine3::identity();
-    return Identity;
+const Transform Transform::Identity;
+
+Transform::Transform(QObject* parent)
+    : QObject(parent)
+    , translation_(0.0f, 0.0f, 0.0f)
+    , scale_(1.0f, 1.0f, 1.0f)
+    , rotation_(1.0f, 0.0f, 0.0f, 0.0f) {
 }
 
-VOLCANO_GAME_END
+VOLCANO_WORLD_END

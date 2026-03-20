@@ -1,16 +1,16 @@
 //
 //
-#include <Volcano/Game/ConeRigidBody.h>
+#include <Volcano/World/CapsuleCollisionShape.h>
 
-VOLCANO_GAME_BEGIN
+VOLCANO_WORLD_BEGIN
 
-ConeRigidBody::ConeRigidBody(QObject* parent)
-    : RigidBody(parent)
+CapsuleCollisionShape::CapsuleCollisionShape(QObject* parent)
+    : CollisionShape(parent)
     , radius_(1.0f)
     , height_(1.0f) {
 }
 
-void ConeRigidBody::setRadius(float v) {
+void CapsuleCollisionShape::setRadius(float v) {
     if (shape_) {
         qmlWarning(this) << "Cannot set the 'radius' property after component completed.";
         return;
@@ -21,7 +21,7 @@ void ConeRigidBody::setRadius(float v) {
     }
 }
 
-void ConeRigidBody::setHeight(float v) {
+void CapsuleCollisionShape::setHeight(float v) {
     if (shape_) {
         qmlWarning(this) << "Cannot set the 'height' property after component completed.";
         return;
@@ -32,9 +32,9 @@ void ConeRigidBody::setHeight(float v) {
     }
 }
 
-void ConeRigidBody::componentComplete() {
-    shape_ = std::make_unique<btConeShape>(radius_, height_);
+void CapsuleCollisionShape::componentComplete() {
+    shape_ = std::make_unique<btCapsuleShape>(radius_, height_);
     setCollisionShape(shape_.get());
 }
 
-VOLCANO_GAME_END
+VOLCANO_WORLD_END

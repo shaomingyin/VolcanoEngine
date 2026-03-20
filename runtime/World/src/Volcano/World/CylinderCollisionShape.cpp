@@ -1,15 +1,15 @@
 //
 //
-#include <Volcano/Game/CylinderRigidBody.h>
+#include <Volcano/World/CylinderCollisionShape.h>
 
-VOLCANO_GAME_BEGIN
+VOLCANO_WORLD_BEGIN
 
-CylinderRigidBody::CylinderRigidBody(QObject* parent)
-    : RigidBody(parent)
+CylinderCollisionShape::CylinderCollisionShape(QObject* parent)
+    : CollisionShape(parent)
     , size_(1.0f, 1.0f, 1.0f) {
 }
 
-void CylinderRigidBody::resize(const QVector3D& v) {
+void CylinderCollisionShape::resize(const QVector3D& v) {
     if (shape_) {
         qmlWarning(this) << "Cannot set the 'size' property after component completed.";
         return;
@@ -20,10 +20,10 @@ void CylinderRigidBody::resize(const QVector3D& v) {
     }
 }
 
-void CylinderRigidBody::componentComplete() {
+void CylinderCollisionShape::componentComplete() {
     shape_ = std::make_unique<btCylinderShape>(
         btVector3(size_.x(), size_.y(), size_.z()));
     setCollisionShape(shape_.get());
 }
 
-VOLCANO_GAME_END
+VOLCANO_WORLD_END

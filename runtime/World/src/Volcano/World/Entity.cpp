@@ -1,37 +1,29 @@
 //
 //
-#include <Volcano/Game/Transformable.h>
-#include <Volcano/Game/Entity.h>
+#include <Volcano/World/Entity.h>
 
-VOLCANO_GAME_BEGIN
+VOLCANO_WORLD_BEGIN
 
 Entity::Entity(QObject* parent)
-    : Object(parent) {
+    : QObject(parent) {
 }
 
 Entity::~Entity() {
     clearComponents();
 }
 
-void Entity::appendComponent(Component* p) {
+void Entity::appendComponent(QObject* p) {
     components_.append(p);
-    auto transformable = qobject_cast<Transformable*>(p);
-    if (transformable != nullptr) {
-        transformable->setParentTransform(&transform_);
-    }
+    p->setParent(this);
     emit componentAdded(p);
 }
 
-Component* Entity::componentAt(qsizetype i) {
+QObject* Entity::componentAt(qsizetype i) {
     return components_.at(i);
 }
 
 void Entity::clearComponents() {
-    for (Component* p: components_) {
-        auto transformable = qobject_cast<Transformable*>(p);
-        if (transformable != nullptr) {
-            transformable->setParentTransform(nullptr);
-        }
+    for (QObject* p: components_) {
         emit componentRemoved(p);
     }
     components_.clear();
@@ -44,41 +36,29 @@ qsizetype Entity::componentCount() {
 void Entity::removeLastComponent() {
     if (!components_.isEmpty()) {
         auto last = components_.last();
-        auto transformable = qobject_cast<Transformable*>(last);
-        if (transformable != nullptr) {
-            transformable->setParentTransform(nullptr);
-        }
         components_.removeLast();
         emit componentRemoved(last);
     }
 }
 
-void Entity::replaceComponent(qsizetype i, Component* p) {
+void Entity::replaceComponent(qsizetype i, QObject* p) {
     if (0 <= i && i < components_.count()) {
         auto old = components_.at(i);
-        auto transformable = qobject_cast<Transformable*>(old);
-        if (transformable != nullptr) {
-            transformable->setParentTransform(nullptr);
-        }
         emit componentRemoved(old);
         components_.replace(i, p);
-        transformable = qobject_cast<Transformable*>(p);
-        if (transformable != nullptr) {
-            transformable->setParentTransform(&transform_);
-        }
         emit componentAdded(p);
     }
 }
 
-QQmlListProperty<Component> Entity::qmlComponents() {
+QQmlListProperty<QObject> Entity::qmlComponents() {
     return { this, this,
-        [](QQmlListProperty<Component>* prop, Component* p) { reinterpret_cast<Entity*>(prop->data)->appendComponent(p); },
-        [](QQmlListProperty<Component>* prop) { return reinterpret_cast<Entity*>(prop->data)->componentCount(); },
-        [](QQmlListProperty<Component>* prop, qsizetype i) { return reinterpret_cast<Entity*>(prop->data)->componentAt(i); },
-        [](QQmlListProperty<Component>* prop) { reinterpret_cast<Entity*>(prop->data)->clearComponents(); },
-        [](QQmlListProperty<Component>* prop, qsizetype i, Component* p) { reinterpret_cast<Entity*>(prop->data)->replaceComponent(i, p); },
-        [](QQmlListProperty<Component>* prop) { reinterpret_cast<Entity*>(prop->data)->removeLastComponent(); }
+        [](QQmlListProperty<QObject>* prop, QObject* p) { reinterpret_cast<Entity*>(prop->data)->appendComponent(p); },
+        [](QQmlListProperty<QObject>* prop) { return reinterpret_cast<Entity*>(prop->data)->componentCount(); },
+        [](QQmlListProperty<QObject>* prop, qsizetype i) { return reinterpret_cast<Entity*>(prop->data)->componentAt(i); },
+        [](QQmlListProperty<QObject>* prop) { reinterpret_cast<Entity*>(prop->data)->clearComponents(); },
+        [](QQmlListProperty<QObject>* prop, qsizetype i, QObject* p) { reinterpret_cast<Entity*>(prop->data)->replaceComponent(i, p); },
+        [](QQmlListProperty<QObject>* prop) { reinterpret_cast<Entity*>(prop->data)->removeLastComponent(); }
     };
 }
 
-VOLCANO_GAME_END
+VOLCANO_WORLD_END

@@ -1,16 +1,16 @@
 //
 //
-#ifndef VOLCANO_GAME_LIGHT_H
-#define VOLCANO_GAME_LIGHT_H
+#ifndef VOLCANO_WORLD_LIGHT_H
+#define VOLCANO_WORLD_LIGHT_H
 
 #include <QColor>
+#include <QObject>
 
-#include <Volcano/Game/Common.h>
-#include <Volcano/Game/Transformable.h>
+#include <Volcano/World/Common.h>
 
-VOLCANO_GAME_BEGIN
+VOLCANO_WORLD_BEGIN
 
-class Light: public Transformable {
+class Light: public QObject {
     Q_OBJECT
     Q_PROPERTY(QColor color READ color WRITE setColor NOTIFY colorChanged FINAL)
     Q_PROPERTY(float strength READ strength WRITE setStrength NOTIFY strengthChanged FINAL)
@@ -48,6 +48,6 @@ private:
 	float strength_;
 };
 
-VOLCANO_GAME_END
+VOLCANO_WORLD_END
 
-#endif // VOLCANO_GAME_LIGHT_H
+#endif // VOLCANO_WORLD_LIGHT_H
