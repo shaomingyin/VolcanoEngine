@@ -25,3 +25,7 @@ target_link_libraries(Server PUBLIC SFML::Window)
 
 find_package(argh REQUIRED)
 target_link_libraries(Server PUBLIC argh)
+
+find_package(PalSigslot)
+find_package(rocket)
+target_link_libraries(Server PUBLIC Pal::Sigslot rocket::rocket)

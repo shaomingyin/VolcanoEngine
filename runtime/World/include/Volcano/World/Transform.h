@@ -31,7 +31,7 @@ struct Transform {
 inline Transform operator*(const Transform& a, const Transform& b) noexcept {
     Transform ret = a;
     ret.translation += b.translation;
-    ret.scale *= b.scale;
+    //ret.scale *= b.scale;
     ret.rotation *= b.rotation;
     return ret;
 }

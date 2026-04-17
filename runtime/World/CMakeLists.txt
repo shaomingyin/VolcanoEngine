@@ -33,8 +33,5 @@ target_link_libraries(World PUBLIC Base)
 find_package(Async++ REQUIRED)
 target_link_libraries(World PUBLIC Async++)
 
-find_package(EnTT REQUIRED)
-target_link_libraries(World PUBLIC EnTT::EnTT)
-
 find_package(Jolt REQUIRED)
 target_link_libraries(World PUBLIC Jolt::Jolt)
