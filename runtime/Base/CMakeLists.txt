@@ -186,6 +186,7 @@ add_library(Base STATIC
     include/Volcano/Common.h
     include/Volcano/Config.h.in
 	include/Volcano/Error.h
+	include/Volcano/Math.h
     include/Volcano/ScopeGuard.h
     include/Volcano/Version.h
     src/Volcano/Cache.cpp

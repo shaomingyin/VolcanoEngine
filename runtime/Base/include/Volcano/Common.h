@@ -5,6 +5,7 @@
 
 #include <cassert>
 #include <cstdint>
+#include <vector>
 
 #include <spdlog/spdlog.h>
 
@@ -25,6 +26,8 @@
 #define VOLCANO_END }
 
 VOLCANO_BEGIN
+
+using ByteArray = std::vector<uint8_t>;
 
 template <typename... Args>
 void logError(spdlog::format_string_t<Args...> fmt, Args... args) {

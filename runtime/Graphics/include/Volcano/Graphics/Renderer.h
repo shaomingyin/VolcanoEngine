@@ -3,27 +3,33 @@
 #ifndef VOLCANO_GRAPHICS_RENDERER_H
 #define VOLCANO_GRAPHICS_RENDERER_H
 
-#include <GL/gl3w.h>
-
-#include <SFML/Graphics/RenderTarget.hpp>
-
+#include <Volcano/Math.h>
+#include <Volcano/World/Map.h>
+#include <Volcano/World/Camera.h>
+#include <Volcano/World/Lighting.h>
+#include <Volcano/World/Model.h>
+#include <Volcano/World/Screen.h>
 #include <Volcano/Graphics/Common.h>
 #include <Volcano/Graphics/View.h>
-#include <Volcano/Graphics/Context.h>
 
 VOLCANO_GRAPHICS_BEGIN
 
 class Renderer {
 public:
-    Renderer(Context& contet, sf::RenderTarget& target);
+    Renderer(entt::registry& scene);
     virtual ~Renderer() = default;
 
 public:
-    void render(const View& view);
+    virtual void reset() noexcept;
+    virtual void build(entt::entity camera_ent) noexcept;
+    virtual void render() noexcept;
+
+protected:
 
 private:
-    Context& context_;
-    sf::RenderTarget& target_;
+    entt::registry& scene_;
+    Eigen::Matrix4f projection_matrix_;
+    Eigen::Affine3f view_matrix_;
 };
 
 VOLCANO_GRAPHICS_END

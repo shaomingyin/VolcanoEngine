@@ -3,29 +3,33 @@
 #ifndef VOLCANO_WORLD_SCENE_H
 #define VOLCANO_WORLD_SCENE_H
 
-#include <memory>
-#include <vector>
+#include <chrono>
 
 #include <Jolt/Jolt.h>
 #include <Jolt/Physics/PhysicsSystem.h>
 
 #include <Volcano/World/Common.h>
-#include <Volcano/World/Light.h>
 
 VOLCANO_WORLD_BEGIN
 
-class Scene {
+class Scene: public entt::registry {
 public:
-	Scene();
-	~Scene();
+    using Clock = std::chrono::steady_clock;
 
 public:
-	void update(Clock::duration elapsed);
+    Scene();
+    virtual ~Scene();
+
+public:
+    void update(Clock::duration elapsed) noexcept;
 
 private:
+    void onCollisionUpdate(entt::registry&, entt::entity ent) noexcept;
+    JPH::Shape* createShape(const Collision& collision);
 
 private:
-	JPH::PhysicsSystem physics_system_;
+    JPH::PhysicsSystem physics_system_;
+    JPH::BodyInterface& body_interface_;
 };
 
 VOLCANO_WORLD_END

@@ -7,8 +7,14 @@
 
 VOLCANO_WORLD_BEGIN
 
-struct Audio {
-    int foo;
+class Sound {
+public:
+    Sound();
+
+public:
+
+private:
+    int foo_;
 };
 
 VOLCANO_WORLD_END

@@ -1,16 +1,15 @@
 
 add_library(World STATIC
-    include/Volcano/World/Audio.h
     include/Volcano/World/Camera.h
     include/Volcano/World/Common.h
     include/Volcano/World/Config.h.in
-    include/Volcano/World/Kinetics.h
-    include/Volcano/World/Light.h
+    include/Volcano/World/Collision.h
+    include/Volcano/World/Lighting.h
+    include/Volcano/World/Map.h
+    include/Volcano/World/Model.h
     include/Volcano/World/Scene.h
     include/Volcano/World/Screen.h
-    include/Volcano/World/Transform.h
-    include/Volcano/World/Visual.h
-    src/Volcano/World/Camera.cpp
+    include/Volcano/World/Sound.h
     src/Volcano/World/Common.cpp
     src/Volcano/World/Scene.cpp
 )
@@ -33,5 +32,8 @@ target_link_libraries(World PUBLIC Base)
 find_package(Async++ REQUIRED)
 target_link_libraries(World PUBLIC Async++)
 
-find_package(Jolt REQUIRED)
+find_package(EnTT)
+target_link_libraries(World PUBLIC EnTT::EnTT)
+
+find_package(Jolt)
 target_link_libraries(World PUBLIC Jolt::Jolt)
