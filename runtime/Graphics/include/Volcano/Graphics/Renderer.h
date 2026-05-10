@@ -4,11 +4,12 @@
 #define VOLCANO_GRAPHICS_RENDERER_H
 
 #include <Volcano/Math.h>
-#include <Volcano/World/Map.h>
-#include <Volcano/World/Camera.h>
-#include <Volcano/World/Lighting.h>
-#include <Volcano/World/Model.h>
-#include <Volcano/World/Screen.h>
+#include <Volcano/Stage/Map.h>
+#include <Volcano/Stage/Camera.h>
+#include <Volcano/Stage/Lighting.h>
+//#include <Volcano/Stage/Model.h>
+#include <Volcano/Stage/Screen.h>
+#include <Volcano/Stage/Scene.h>
 #include <Volcano/Graphics/Common.h>
 #include <Volcano/Graphics/View.h>
 
@@ -16,7 +17,7 @@ VOLCANO_GRAPHICS_BEGIN
 
 class Renderer {
 public:
-    Renderer(entt::registry& scene);
+    Renderer(Stage::Scene& scene);
     virtual ~Renderer() = default;
 
 public:
@@ -27,7 +28,7 @@ public:
 protected:
 
 private:
-    entt::registry& scene_;
+    Stage::Scene& scene_;
     Eigen::Matrix4f projection_matrix_;
     Eigen::Affine3f view_matrix_;
 };

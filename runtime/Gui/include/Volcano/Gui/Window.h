@@ -5,13 +5,6 @@
 
 #include <layout.h>
 
-#include <SFML/System/String.hpp>
-#include <SFML/Graphics/Font.hpp>
-#include <SFML/Graphics/Text.hpp>
-#include <SFML/Graphics/RenderTexture.hpp>
-#include <SFML/Graphics/CircleShape.hpp>
-#include <SFML/Graphics/Image.hpp>
-
 #include <Volcano/Gui/Style.h>
 #include <Volcano/Gui/Object.h>
 

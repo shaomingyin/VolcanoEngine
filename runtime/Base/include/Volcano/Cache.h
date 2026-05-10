@@ -53,11 +53,11 @@ protected:
 	using Storage = std::map<Clock::time_point, Pointer>;
 
 	Pointer find(const std::string& family) const {
-		for (const auto it: storage_) {
+		/*for (const auto it: storage_) {
 			if (it.second->getInfo().family == family) {
 				return it.second;
 			}
-		}
+		}*/
 		return nullptr;
 	}
 

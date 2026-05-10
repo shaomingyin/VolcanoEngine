@@ -5,11 +5,19 @@
 
 #include <cassert>
 #include <cstdint>
+#include <stdexcept>
 #include <vector>
 
 #include <spdlog/spdlog.h>
 
 #include <Volcano/Config.h>
+
+#ifdef VOLCANO_DEBUG
+#   include <cassert>
+#   define VOLCANO_ASSERT(expr) assert(expr)
+#else
+#   define VOLCANO_ASSERT(expr) ((void)0)
+#endif
 
 #define VOLCANO_CON(a, b) VOLCANO_CON_(a, b)
 #define VOLCANO_CON_(a, b) a##b

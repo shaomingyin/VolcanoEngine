@@ -26,13 +26,10 @@ target_include_directories(Launcher PRIVATE
 )
 
 volcano_target_setup(Launcher)
-target_link_libraries(Launcher PUBLIC World Graphics Gui)
+target_link_libraries(Launcher PUBLIC Stage Graphics Gui)
 
 find_package(argh REQUIRED)
 target_link_libraries(Launcher PUBLIC argh)
 
 find_package(SFML REQUIRED)
 target_link_libraries(Launcher PUBLIC sfml::sfml)
-
-find_package(PhysFS REQUIRED)
-target_link_libraries(Launcher PUBLIC physfs-static)

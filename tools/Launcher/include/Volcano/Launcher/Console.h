@@ -3,14 +3,13 @@
 #ifndef VOLCANO_LAUNCHER_CONSOLE_H
 #define VOLCANO_LAUNCHER_CONSOLE_H
 
-#include <Volcano/Gui/Window.h>
 #include <Volcano/Launcher/Common.h>
 
 VOLCANO_LAUNCHER_BEGIN
 
-class Console: public Gui::Window {
+class Console {
 public:
-    Console(Gui::Context& context);
+    Console();
 };
 
 VOLCANO_LAUNCHER_END

@@ -40,7 +40,7 @@ target_include_directories(Graphics PUBLIC
 volcano_target_setup(Graphics)
 set_target_properties(Graphics PROPERTIES OUTPUT_NAME VolcanoGraphics)
 
-target_link_libraries(Graphics PUBLIC World)
+target_link_libraries(Graphics PUBLIC Stage)
 
 find_package(SFML REQUIRED COMPONENTS Graphics)
 target_link_libraries(Graphics PUBLIC SFML::Graphics)

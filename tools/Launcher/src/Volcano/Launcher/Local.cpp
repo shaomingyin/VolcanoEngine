@@ -19,7 +19,7 @@ Local::Local(rttr::type scene_type)
     , console_(nullptr)
     /*, renderer_(window_.getSize().x, window_.getSize().y) */{
     assert(scene_type_);
-    assert(scene_type_.is_base_of(rttr::type::get<World::Scene>()));
+    assert(scene_type_.is_base_of(rttr::type::get<Stage::Scene>()));
     window_.setFramerateLimit(60);
 }
 
@@ -28,7 +28,7 @@ void Local::run() {
     if (!scene_instance_) {
         throw std::runtime_error("Failed to create world scene instance.");
     }
-    scene_ = &scene_instance_.get_value<World::Scene>();
+    scene_ = &scene_instance_.get_value<Stage::Scene>();
 
     // TODO start loading
 

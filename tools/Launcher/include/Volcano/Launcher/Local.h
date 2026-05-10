@@ -12,7 +12,7 @@
 #include <Volcano/Graphics/Context.h>
 #include <Volcano/Gui/Context.h>
 
-#include <Volcano/World/Scene.h>
+#include <Volcano/Stage/Scene.h>
 #include <Volcano/Launcher/Console.h>
 #include <Volcano/Launcher/Window.h>
 #include <Volcano/Launcher/Common.h>
@@ -21,7 +21,7 @@ VOLCANO_LAUNCHER_BEGIN
 
 class Local {
 public:
-    using Clock = World::Clock;
+    using Clock = Stage::Scene::Clock;
 
 public:
     Local(rttr::type scene_type);
@@ -58,7 +58,7 @@ private:
     State state_;
     rttr::type scene_type_;
     rttr::variant scene_instance_;
-    World::Scene* scene_;
+    Stage::Scene* scene_;
     Clock::duration elapsed_min_;
     Clock::time_point frame_last_;
     Clock::time_point frame_count_last_;
