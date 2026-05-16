@@ -1,28 +1,38 @@
 
 add_library(Graphics STATIC
-    include/GL/gl3w.h
-    include/GL/glcorearb.h
-    include/KHR/khrplatform.h
-    src/GL/gl3w.c
+    include/Volcano/Graphics/Buffer.h
     include/Volcano/Graphics/Common.h
     include/Volcano/Graphics/Config.h.in
     include/Volcano/Graphics/Context.h
     include/Volcano/Graphics/DirectionalLight.h
     include/Volcano/Graphics/Light.h
     include/Volcano/Graphics/Model.h
+    include/Volcano/Graphics/Pass.h
+    include/Volcano/Graphics/Pipeline.h
     include/Volcano/Graphics/PointLight.h
+    include/Volcano/Graphics/Program.h
     include/Volcano/Graphics/Renderer.h
+    include/Volcano/Graphics/Shader.h
     include/Volcano/Graphics/SpotLight.h
+    include/Volcano/Graphics/Target.h
+    include/Volcano/Graphics/Texture.h
     include/Volcano/Graphics/View.h
     include/Volcano/Graphics/VisibleSet.h
+    src/Volcano/Graphics/Buffer.cpp
     src/Volcano/Graphics/Common.cpp
     src/Volcano/Graphics/Context.cpp
     src/Volcano/Graphics/DirectionalLight.cpp
     src/Volcano/Graphics/Light.cpp
     src/Volcano/Graphics/Model.cpp
+    src/Volcano/Graphics/Pass.cpp
+    src/Volcano/Graphics/Pipeline.cpp
+    src/Volcano/Graphics/Program.cpp
     src/Volcano/Graphics/PointLight.cpp
     src/Volcano/Graphics/Renderer.cpp
+    src/Volcano/Graphics/Shader.cpp
     src/Volcano/Graphics/SpotLight.cpp
+    src/Volcano/Graphics/Target.cpp
+    src/Volcano/Graphics/Texture.cpp
     src/Volcano/Graphics/View.cpp
     src/Volcano/Graphics/VisibleSet.cpp
 )
@@ -40,7 +50,4 @@ target_include_directories(Graphics PUBLIC
 volcano_target_setup(Graphics)
 set_target_properties(Graphics PROPERTIES OUTPUT_NAME VolcanoGraphics)
 
-target_link_libraries(Graphics PUBLIC Stage)
-
-find_package(SFML REQUIRED COMPONENTS Graphics)
-target_link_libraries(Graphics PUBLIC SFML::Graphics)
+target_link_libraries(Graphics PUBLIC World)

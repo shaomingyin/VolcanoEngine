@@ -3,34 +3,39 @@
 #ifndef VOLCANO_GRAPHICS_RENDERER_H
 #define VOLCANO_GRAPHICS_RENDERER_H
 
+#include <rttr/type>
+
 #include <Volcano/Math.h>
-#include <Volcano/Stage/Map.h>
-#include <Volcano/Stage/Camera.h>
-#include <Volcano/Stage/Lighting.h>
-//#include <Volcano/Stage/Model.h>
-#include <Volcano/Stage/Screen.h>
-#include <Volcano/Stage/Scene.h>
+#include <Volcano/World/Map.h>
+#include <Volcano/World/Camera.h>
+#include <Volcano/World/Lighting.h>
+//#include <Volcano/World/Model.h>
+#include <Volcano/World/Screen.h>
+#include <Volcano/World/Scene.h>
 #include <Volcano/Graphics/Common.h>
+#include <Volcano/Graphics/Context.h>
 #include <Volcano/Graphics/View.h>
+#include <Volcano/Graphics/Pass.h>
 
 VOLCANO_GRAPHICS_BEGIN
 
-class Renderer {
+class Renderer: public Context {
+    RTTR_ENABLE()
+
 public:
-    Renderer(Stage::Scene& scene);
+    Renderer();
     virtual ~Renderer() = default;
 
 public:
-    virtual void reset() noexcept;
-    virtual void build(entt::entity camera_ent) noexcept;
-    virtual void render() noexcept;
+    void reset() noexcept;
+    void build(const World::Scene& scene, entt::entity camera_ent) noexcept;
+    void render(Target& target) noexcept;
 
 protected:
+	virtual void draw(const View& view, Target& target) noexcept = 0;
 
 private:
-    Stage::Scene& scene_;
-    Eigen::Matrix4f projection_matrix_;
-    Eigen::Affine3f view_matrix_;
+    View views_[2];
 };
 
 VOLCANO_GRAPHICS_END

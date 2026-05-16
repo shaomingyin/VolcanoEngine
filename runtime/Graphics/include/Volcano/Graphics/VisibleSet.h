@@ -5,8 +5,6 @@
 
 #include <vector>
 
-#include <SFML/Graphics/Color.hpp>
-
 #include <Volcano/Math.h>
 #include <Volcano/Graphics/Common.h>
 

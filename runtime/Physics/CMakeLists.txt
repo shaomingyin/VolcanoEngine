@@ -2,8 +2,8 @@
 add_library(Physics STATIC
     include/Volcano/Physics/Common.h
     include/Volcano/Physics/Config.h.in
-    include/Volcano/Physics/World.h
-    src/Volcano/Physics/World.cpp
+    include/Volcano/Physics/System.h
+    src/Volcano/Physics/System.cpp
 )
 
 configure_file(
@@ -19,4 +19,4 @@ target_include_directories(Physics PUBLIC
 volcano_target_setup(Physics)
 set_target_properties(Physics PROPERTIES OUTPUT_NAME VolcanoPhysics)
 
-target_link_libraries(Physics PUBLIC Stage)
+target_link_libraries(Physics PUBLIC World)

@@ -2,8 +2,8 @@
 add_library(Jolt STATIC
     include/Volcano/Jolt/Common.h
     include/Volcano/Jolt/Config.h.in
-    include/Volcano/Jolt/World.h
-    src/Volcano/Jolt/World.cpp
+    include/Volcano/Jolt/System.h
+    src/Volcano/Jolt/System.cpp
 )
 
 configure_file(

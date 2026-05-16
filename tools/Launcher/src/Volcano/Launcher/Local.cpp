@@ -8,28 +8,29 @@
 VOLCANO_LAUNCHER_BEGIN
 
 Local::Local(rttr::type scene_type)
-    : state_(State::Idle)
-    , scene_type_(scene_type)
-    , scene_(nullptr)
-    , frame_last_(Clock::now())
+    : frame_last_(Clock::now())
     , frame_count_last_(frame_last_)
     , frame_count_(0)
     , frame_count_per_second_(0)
     , window_(sf::VideoMode::getDesktopMode(), "VolcanoLauncher")
-    , console_(nullptr)
-    /*, renderer_(window_.getSize().x, window_.getSize().y) */{
-    assert(scene_type_);
-    assert(scene_type_.is_base_of(rttr::type::get<Stage::Scene>()));
+    , console_(nullptr) {
+    VOLCANO_ASSERT(scene_type.is_derived_from<World::Scene>());
+    scene_instance_ = scene_type.create({ std::ref(*this) });
+    if (!scene_instance_) {
+		throw std::runtime_error(std::format("Failed to create scene of type {}", scene_type.get_name()));
+    }
+	scene_ = &scene_instance_.get_value<World::Scene>();
+    if (scene_ == nullptr) {
+        throw std::runtime_error(std::format("Failed to create scene of type {}", scene_type.get_name()));
+	}
     window_.setFramerateLimit(60);
 }
 
-void Local::run() {
-    scene_instance_ = scene_type_.create({ *this });
-    if (!scene_instance_) {
-        throw std::runtime_error("Failed to create world scene instance.");
-    }
-    scene_ = &scene_instance_.get_value<Stage::Scene>();
+void Local::schedule(async::task_run_handle task) {
+    scheduler_.schedule(std::move(task));
+}
 
+void Local::run() {
     // TODO start loading
 
     frame_last_ = Clock::now();
@@ -46,11 +47,10 @@ void Local::run() {
                 break;
             }
         }
-        //scheduler_.run_all_tasks();
+        scheduler_.run_all_tasks();
         auto now = Clock::now();
         auto elapsed = now - frame_last_;
         if (elapsed >= elapsed_min_) {
-            //scene_->stepSimulation(elapsed);
             frame(elapsed);
             frame_last_ = now;
         } else {
@@ -71,6 +71,8 @@ void Local::setFpsMax(unsigned long v) noexcept {
 }
 
 void Local::frame(Clock::duration elapsed) noexcept {
+    scene_->frame(elapsed);
+    //renderer_.build(game_->scene(), )
     //renderer_.beginFrame();
     //renderer_.endFrame();
     //hud_.render();

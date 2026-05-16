@@ -18,14 +18,7 @@ target_include_directories(Server PRIVATE
     ${CMAKE_CURRENT_BINARY_DIR}/include
 )
 
-target_link_libraries(Server PUBLIC Base)
-
-find_package(SFML REQUIRED COMPONENTS Window)
-target_link_libraries(Server PUBLIC SFML::Window)
+target_link_libraries(Server PUBLIC World)
 
 find_package(argh REQUIRED)
 target_link_libraries(Server PUBLIC argh)
-
-find_package(PalSigslot)
-find_package(rocket)
-target_link_libraries(Server PUBLIC Pal::Sigslot rocket::rocket)

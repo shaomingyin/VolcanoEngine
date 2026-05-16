@@ -3,11 +3,6 @@
 #ifndef VOLCANO_GRAPHICS_COMMON_H
 #define VOLCANO_GRAPHICS_COMMON_H
 
-#include <rttr/type>
-#include <rttr/registration>
-
-#include <GL/gl3w.h>
-
 #include <Volcano/Common.h>
 #include <Volcano/Graphics/Config.h>
 

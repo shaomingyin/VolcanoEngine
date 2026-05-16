@@ -43,18 +43,17 @@ static void run(int argc, char* argv[]) {
 
     ret = PHYSFS_mount(root.c_str(), "/", 1);
 
-    auto scene_types = rttr::type::get<Stage::Scene>().get_derived_classes();
+    auto scene_base_type = rttr::type::get<World::Scene>();
+	auto scene_types = scene_base_type.get_derived_classes();
     if (scene_types.empty()) {
-        throw std::runtime_error("No stage scene found.");
-    }
-
-    auto scene_type = *scene_types.begin();
+        throw std::runtime_error("No scene type found.");
+	}
 
     std::unique_ptr<Local> app;
     if (true) {
-        //app = std::make_unique<Local>(scene_type);
+        app = std::make_unique<Local>(*scene_types.begin());
     } else {
-        //app = std::make_unique<Client>(scene_type);
+        app = std::make_unique<Client>(*scene_types.begin());
     }
 
     logInfo("Running...");
