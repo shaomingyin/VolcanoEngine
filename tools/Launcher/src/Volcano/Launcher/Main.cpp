@@ -4,68 +4,101 @@
 #include <format>
 #include <memory>
 #include <stdexcept>
+#include <filesystem>
 
 #include <argh.h>
 #include <physfs.h>
+#include <rttr/type>
 
 #include <Volcano/ScopeGuard.h>
+#include <Volcano/World/Scene.h>
 #include <Volcano/Launcher/Local.h>
 #include <Volcano/Launcher/Client.h>
 #include <Volcano/Launcher/Common.h>
 
 VOLCANO_LAUNCHER_BEGIN
 
-static void run(int argc, char* argv[]) {
-    logInfo("VolcanoLauncher: Engine version - " VOLCANO_VERSION_STR);
+class Application {
+public:
+    Application(int argc, char* argv[]) {
+        spdlog::info("VolcanoLauncher: Engine version - " VOLCANO_VERSION_STR);
+        spdlog::info("Inializing...");
 
-    argh::parser cmdline(argv);
 
-    logInfo("Inializing...");
+        argh::parser cmdline(argv);
 
-    spdlog::set_pattern("%Y-%m-%d %H:%M:%S.%e %t [%L] %v");
+        spdlog::set_pattern("%Y-%m-%d %H:%M:%S.%e %t [%L] %v");
+
 #ifdef VOLCANO_DEBUG
-    spdlog::set_level(spdlog::level::debug);
+        spdlog::set_level(spdlog::level::debug);
 #else
-    spdlog::set_level(spdlog::level::warn);
+        if (cmdline({ "-d", "--debug" })) {
+            spdlog::set_level(spdlog::level::debug);
+        } else {
+            spdlog::set_level(spdlog::level::warn);
+        }
 #endif
 
-    int ret = PHYSFS_init(argv[0]);
-    if (!ret) {
-        throw std::runtime_error(std::format("Failed to init PHYSFS: {}",
-            PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode())));
+        int ret = PHYSFS_init(argv[0]);
+        if (!ret) {
+            throw std::runtime_error(std::format("Failed to init PHYSFS: {}",
+                PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode())));
+        }
+        auto physfs_guard = scopeGuard([] {
+            PHYSFS_deinit();
+        });
+
+        std::string root;
+        std::string cwd = std::filesystem::current_path().generic_string();
+        cmdline({ "-r", cwd.c_str() }) >> root;
+
+        ret = PHYSFS_mount(root.c_str(), "/", 1);
+        if (!ret) {
+            throw std::runtime_error(std::format("Failed to mount rootfs: {}",
+                PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode())));
+        }
+
+        auto scene_types = rttr::type::get<World::Scene>().get_derived_classes();
+        if (scene_types.size() == 0) {
+            throw std::runtime_error("No scene found.");
+        }
+
+        scene_instance_ = scene_types.begin()->create();
+        scene_ = &scene_instance_.get_value<World::Scene>();
+
+        if (cmdline({ "-c", "--client" })) {
+            local_ = std::make_unique<Client>(*scene_);
+        } else {
+            local_ = std::make_unique<Local>(*scene_);
+        }
+
+        physfs_guard.dismiss();
     }
-    auto physfs_guard = scopeGuard([] {
+
+    ~Application() {
         PHYSFS_deinit();
-    });
-
-    std::string root;
-    cmdline({ "-r", PHYSFS_getBaseDir() }) >> root;
-
-    ret = PHYSFS_mount(root.c_str(), "/", 1);
-
-    auto scene_base_type = rttr::type::get<World::Scene>();
-	auto scene_types = scene_base_type.get_derived_classes();
-    if (scene_types.empty()) {
-        throw std::runtime_error("No scene type found.");
-	}
-
-    std::unique_ptr<Local> app;
-    if (true) {
-        app = std::make_unique<Local>(*scene_types.begin());
-    } else {
-        app = std::make_unique<Client>(*scene_types.begin());
     }
 
-    logInfo("Running...");
-    app->run();
-}
+public:
+    void run() {
+        VOLCANO_ASSERT(local_);
+        spdlog::info("Running...");
+        local_->run();
+    }
+
+private:
+    rttr::variant scene_instance_;
+    World::Scene* scene_;
+    std::unique_ptr<Local> local_;
+};
 
 VOLCANO_LAUNCHER_END
 
 int main(int argc, char* argv[]) {
     int exit_code;
     try {
-        Volcano::Launcher::run(argc, argv);
+        Volcano::Launcher::Application app(argc, argv);
+        app.run();
         exit_code = EXIT_SUCCESS;
     } catch (const std::exception& e) {
         spdlog::error(e.what());

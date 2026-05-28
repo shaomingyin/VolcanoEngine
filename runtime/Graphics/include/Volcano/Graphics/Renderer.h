@@ -3,39 +3,29 @@
 #ifndef VOLCANO_GRAPHICS_RENDERER_H
 #define VOLCANO_GRAPHICS_RENDERER_H
 
-#include <rttr/type>
+#include <entt/entt.hpp>
+
+#include <SFML/Graphics/RenderTarget.hpp>
 
 #include <Volcano/Math.h>
-#include <Volcano/World/Map.h>
-#include <Volcano/World/Camera.h>
-#include <Volcano/World/Lighting.h>
-//#include <Volcano/World/Model.h>
-#include <Volcano/World/Screen.h>
-#include <Volcano/World/Scene.h>
 #include <Volcano/Graphics/Common.h>
-#include <Volcano/Graphics/Context.h>
-#include <Volcano/Graphics/View.h>
-#include <Volcano/Graphics/Pass.h>
+#include <Volcano/Graphics/Frame.h>
 
 VOLCANO_GRAPHICS_BEGIN
 
-class Renderer: public Context {
-    RTTR_ENABLE()
-
+class Renderer {
 public:
-    Renderer();
+    Renderer(const entt::registry& registry);
     virtual ~Renderer() = default;
 
 public:
     void reset() noexcept;
-    void build(const World::Scene& scene, entt::entity camera_ent) noexcept;
-    void render(Target& target) noexcept;
-
-protected:
-	virtual void draw(const View& view, Target& target) noexcept = 0;
+    void build(entt::entity camera_ent) noexcept;
+    void render(const sf::RenderTarget& target) const noexcept;
 
 private:
-    View views_[2];
+    const entt::registry& registry_;
+    Frame frames_[2];
 };
 
 VOLCANO_GRAPHICS_END

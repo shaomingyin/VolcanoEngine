@@ -7,22 +7,15 @@
 
 VOLCANO_LAUNCHER_BEGIN
 
-Local::Local(rttr::type scene_type)
-    : frame_last_(Clock::now())
+Local::Local(World::Scene& scene)
+    : scene_(scene)
+    , frame_last_(Clock::now())
     , frame_count_last_(frame_last_)
     , frame_count_(0)
     , frame_count_per_second_(0)
     , window_(sf::VideoMode::getDesktopMode(), "VolcanoLauncher")
+    , renderer_(scene_)
     , console_(nullptr) {
-    VOLCANO_ASSERT(scene_type.is_derived_from<World::Scene>());
-    scene_instance_ = scene_type.create({ std::ref(*this) });
-    if (!scene_instance_) {
-		throw std::runtime_error(std::format("Failed to create scene of type {}", scene_type.get_name()));
-    }
-	scene_ = &scene_instance_.get_value<World::Scene>();
-    if (scene_ == nullptr) {
-        throw std::runtime_error(std::format("Failed to create scene of type {}", scene_type.get_name()));
-	}
     window_.setFramerateLimit(60);
 }
 
@@ -71,7 +64,7 @@ void Local::setFpsMax(unsigned long v) noexcept {
 }
 
 void Local::frame(Clock::duration elapsed) noexcept {
-    scene_->frame(elapsed);
+    scene_.update(elapsed);
     //renderer_.build(game_->scene(), )
     //renderer_.beginFrame();
     //renderer_.endFrame();

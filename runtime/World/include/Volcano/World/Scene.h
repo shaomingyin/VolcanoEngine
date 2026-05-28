@@ -7,7 +7,7 @@
 #include <entt/entt.hpp>
 
 #include <Volcano/World/Common.h>
-#include <Volcano/World/Context.h>
+#include <Volcano/World/Physics.h>
 
 VOLCANO_WORLD_BEGIN
 
@@ -15,18 +15,27 @@ class Scene: public entt::registry {
     RTTR_ENABLE()
 
 public:
-    Scene(Context& context);
+    Scene();
 	virtual ~Scene() = default;
 
 public:
-    Context& context() noexcept {
-        return context_;
-	}
+    Physics& physics() noexcept {
+        return physics_;
+    }
 
-	virtual void frame(Clock::duration elapsed) noexcept;
+    const Physics& physics() const noexcept {
+        return physics_;
+    }
+
+    virtual entt::entity mainCamera() const noexcept = 0;
+	virtual void update(Clock::duration elapsed) noexcept;
 
 private:
-    Context& context_;
+    void onEntityAdded(entt::entity ent) noexcept;
+    void onEntityRemoved(entt::entity ent) noexcept;
+
+private:
+    Physics physics_;
 };
 
 VOLCANO_WORLD_END

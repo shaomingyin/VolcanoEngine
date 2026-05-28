@@ -4,8 +4,7 @@
 
 VOLCANO_GRAPHICS_BEGIN
 
-Pass::Pass(Context& context)
-	: context_(context) {
+Pass::Pass() {
 }
 
 VOLCANO_GRAPHICS_END

@@ -12,7 +12,7 @@ VOLCANO_LAUNCHER_BEGIN
 
 class Client: public Local {
 public:
-    Client(rttr::type scene_type);
+    Client(World::Scene& scene);
     virtual ~Client() = default;
 };
 

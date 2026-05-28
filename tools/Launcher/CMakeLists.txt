@@ -26,10 +26,13 @@ target_include_directories(Launcher PRIVATE
 )
 
 volcano_target_setup(Launcher)
-target_link_libraries(Launcher PUBLIC World Gui OpenGL Jolt)
+target_link_libraries(Launcher PUBLIC World Gui Graphics)
 
 find_package(argh REQUIRED)
 target_link_libraries(Launcher PUBLIC argh)
 
 find_package(SFML REQUIRED)
 target_link_libraries(Launcher PUBLIC sfml::sfml)
+
+find_package(PhysFS)
+target_link_libraries(Launcher PUBLIC physfs-static)

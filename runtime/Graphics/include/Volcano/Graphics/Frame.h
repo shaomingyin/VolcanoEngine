@@ -1,17 +1,17 @@
 //
 //
-#ifndef VOLCANO_GRAPHICS_VIEW_H
-#define VOLCANO_GRAPHICS_VIEW_H
+#ifndef VOLCANO_GRAPHICS_FRAME_H
+#define VOLCANO_GRAPHICS_FRAME_H
 
 #include <vector>
 
 #include <Volcano/Math.h>
 #include <Volcano/Graphics/Common.h>
-#include <Volcano/Graphics/VisibleSet.h>
+#include <Volcano/Graphics/Pass.h>
 
 VOLCANO_GRAPHICS_BEGIN
 
-class View: public VisibleSet {
+class Frame final {
 public:
     enum class Bool {
         Clear = 0,
@@ -34,7 +34,7 @@ public:
     };
 
 public:
-    View();
+    Frame();
 
 public:
     bool get(Bool k) const noexcept {
@@ -53,6 +53,8 @@ public:
         affine3f_[static_cast<size_t>(k)] = v;
     }
 
+    void draw() const noexcept;
+
 private:
     bool bool_[static_cast<size_t>(Bool::Max)];
     Eigen::Affine3f affine3f_[static_cast<size_t>(Affine3f::Max)];
@@ -60,4 +62,4 @@ private:
 
 VOLCANO_GRAPHICS_END
 
-#endif // VOLCANO_GRAPHICS_VIEW_H
+#endif // VOLCANO_GRAPHICS_FRAME_H

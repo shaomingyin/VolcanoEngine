@@ -37,26 +37,6 @@ VOLCANO_BEGIN
 
 using ByteArray = std::vector<uint8_t>;
 
-template <typename... Args>
-void logError(spdlog::format_string_t<Args...> fmt, Args... args) {
-    spdlog::log(spdlog::level::err, fmt, std::forward<Args>(args)...);
-}
-
-template <typename... Args>
-void logWarn(spdlog::format_string_t<Args...> fmt, Args... args) {
-    spdlog::log(spdlog::level::warn, fmt, std::forward<Args>(args)...);
-}
-
-template <typename... Args>
-void logInfo(spdlog::format_string_t<Args...> fmt, Args... args) {
-    spdlog::log(spdlog::level::info, fmt, std::forward<Args>(args)...);
-}
-
-template <typename... Args>
-void logDebug(spdlog::format_string_t<Args...> fmt, Args... args) {
-    spdlog::log(spdlog::level::debug, fmt, std::forward<Args>(args)...);
-}
-
 const std::string& appOrganization();
 const std::string& appName();
 void setAppInfo(const std::string& organization, const std::string& name);
