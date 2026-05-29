@@ -186,9 +186,7 @@ add_library(Base STATIC
     include/Volcano/Common.h
     include/Volcano/Config.h.in
 	include/Volcano/Error.h
-	include/Volcano/FileSystem.h
 	include/Volcano/Math.h
-	include/Volcano/PhysFS.h
     include/Volcano/ScopeGuard.h
     include/Volcano/Version.h
     src/Volcano/Cache.cpp
@@ -226,3 +224,6 @@ target_link_libraries(Base PUBLIC Async++)
 
 find_package(PhysFS REQUIRED)
 target_link_libraries(Base PUBLIC physfs-static)
+
+find_package(SFML REQUIRED)
+target_link_libraries(Base PUBLIC SFML::System)

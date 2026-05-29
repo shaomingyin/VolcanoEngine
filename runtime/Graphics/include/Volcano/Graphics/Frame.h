@@ -6,6 +6,7 @@
 #include <vector>
 
 #include <Volcano/Math.h>
+#include <Volcano/World/Lighting.h>
 #include <Volcano/Graphics/Common.h>
 #include <Volcano/Graphics/Pass.h>
 
@@ -15,6 +16,7 @@ class Frame final {
 public:
     enum class Bool {
         Clear = 0,
+        AmbientLight,
         Max
     };
 
@@ -29,7 +31,17 @@ public:
     };
 
     enum class Affine3f {
-        View = 0,
+        Model = 0,
+        View,
+        Max
+    };
+
+    enum class Vector4i {
+        Max
+    };
+
+    enum class Matrix4f {
+        Projection = 0,
         Max
     };
 
@@ -37,27 +49,52 @@ public:
     Frame();
 
 public:
-    bool get(Bool k) const noexcept {
-        return bool_[static_cast<size_t>(k)];
+    void reset() noexcept;
+    void commit(int x, int y, int width, int height) const noexcept;
+
+    void add(const World::Light& v) noexcept {
+        lights_.push_back(v);
     }
 
-    void set(Bool k, bool v) noexcept {
-        bool_[static_cast<size_t>(k)] = v;
+    void add(const World::DirectionalLight& v) noexcept {
+        directional_lights_.push_back(v);
     }
 
-    const Eigen::Affine3f& get(Affine3f k) const noexcept {
-        return affine3f_[static_cast<size_t>(k)];
+    void add(const Transform& transform, const World::PointLight& v) noexcept {
+        point_lights_.push_back(std::make_pair(transform, v));
     }
 
-    void set(Affine3f k, const Eigen::Affine3f& v) noexcept {
-        affine3f_[static_cast<size_t>(k)] = v;
+    void add(const Transform& transform, const World::SpotLight& v) noexcept {
+        spot_lights_.push_back(std::make_pair(transform, v));
     }
 
-    void draw() const noexcept;
+    void add(const Transform& transform) noexcept {
+    }
+
+#define OPS(T, K, M) \
+    const T& get(K k) const noexcept { return M[static_cast<size_t>(k)]; } \
+    T& get(K k) noexcept { return M[static_cast<size_t>(k)]; } \
+    T operator[](K k) const noexcept { return get(k); } \
+    T& operator[](K k) noexcept { return get(k); }
+
+    OPS(bool, Bool, bool_)
+    OPS(sf::Color, Color, color_)
+    OPS(Eigen::Affine3f, Affine3f, affine3f_)
+    //OPS(Eigen::Vector4i, Vector4i, vector4i_)
+    OPS(Eigen::Matrix4f, Matrix4f, matrix4f_)
 
 private:
     bool bool_[static_cast<size_t>(Bool::Max)];
+    sf::Color color_[static_cast<size_t>(Color::Max)];
     Eigen::Affine3f affine3f_[static_cast<size_t>(Affine3f::Max)];
+    //Eigen::Vector4i vector4i_[static_cast<size_t>(Vector4i::Max)];
+    Eigen::Matrix4f matrix4f_[static_cast<size_t>(Matrix4f::Max)];
+
+private:
+    std::vector<World::Light> lights_;
+    std::vector<World::DirectionalLight> directional_lights_;
+    std::vector<std::pair<Transform, World::PointLight>> point_lights_;
+    std::vector<std::pair<Transform, World::SpotLight>> spot_lights_;
 };
 
 VOLCANO_GRAPHICS_END

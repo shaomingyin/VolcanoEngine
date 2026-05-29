@@ -43,12 +43,15 @@ void Local::run() {
         scheduler_.run_all_tasks();
         auto now = Clock::now();
         auto elapsed = now - frame_last_;
-        if (elapsed >= elapsed_min_) {
-            frame(elapsed);
-            frame_last_ = now;
+        frame(elapsed);
+        if ((now - frame_count_last_) >= std::chrono::seconds(1)) {
+            frame_count_per_second_ = frame_count_;
+            frame_count_ = 0;
+            frame_count_last_ = now;
         } else {
-            std::this_thread::sleep_for(elapsed_min_ - elapsed);
+            frame_count_ += 1;
         }
+        frame_last_ = now;
     }
 }
 
@@ -65,10 +68,8 @@ void Local::setFpsMax(unsigned long v) noexcept {
 
 void Local::frame(Clock::duration elapsed) noexcept {
     scene_.update(elapsed);
-    //renderer_.build(game_->scene(), )
-    //renderer_.beginFrame();
-    //renderer_.endFrame();
-    //hud_.render();
+    renderer_.build(scene_.mainCamera());
+    renderer_.draw(window_);
     window_.display();
 }
 

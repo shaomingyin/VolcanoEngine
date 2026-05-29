@@ -5,10 +5,14 @@
 
 #include <cassert>
 #include <cstdint>
-#include <stdexcept>
+#include <memory>
 #include <vector>
+#include <stdexcept>
+#include <filesystem>
 
+#include <physfs.h>
 #include <spdlog/spdlog.h>
+#include <SFML/System/InputStream.hpp>
 
 #include <Volcano/Config.h>
 
@@ -32,6 +36,8 @@
 
 #define VOLCANO_BEGIN namespace Volcano {
 #define VOLCANO_END }
+
+std::unique_ptr<sf::InputStream> PHYSFS_openRead(const std::filesystem::path& filepath);
 
 VOLCANO_BEGIN
 

@@ -18,7 +18,7 @@ struct PerspectiveCamera: Camera {
     float fov{ 60.0f };
 	float aspect_ratio{ 1.0f };
 
-    void set(float fov, float znear, float zfar, float aspect_ratio) noexcept {
+    PerspectiveCamera(float fov, float znear, float zfar, float aspect_ratio) noexcept {
         this->fov = fov;
         this->znear = znear;
         this->zfar = zfar;

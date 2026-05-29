@@ -1,6 +1,5 @@
 
 add_library(World STATIC
-    include/Volcano/World/Appearance.h
     include/Volcano/World/Camera.h
     include/Volcano/World/Common.h
     include/Volcano/World/Config.h.in
@@ -8,13 +7,16 @@ add_library(World STATIC
     include/Volcano/World/Inherent.h
     include/Volcano/World/Lighting.h
     include/Volcano/World/Map.h
+    include/Volcano/World/Model.h
 	include/Volcano/World/Physics.h
     include/Volcano/World/Scene.h
     include/Volcano/World/Screen.h
+    include/Volcano/World/Session.h
     include/Volcano/World/Sound.h
     src/Volcano/World/Common.cpp
     src/Volcano/World/Physics.cpp
     src/Volcano/World/Scene.cpp
+    src/Volcano/World/Session.cpp
 )
 
 configure_file(

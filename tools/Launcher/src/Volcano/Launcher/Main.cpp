@@ -50,13 +50,15 @@ public:
 
         std::string root;
         std::string cwd = std::filesystem::current_path().generic_string();
-        cmdline({ "-r", cwd.c_str() }) >> root;
+        cmdline({ "-r", "--root" }, cwd) >> root;
 
         ret = PHYSFS_mount(root.c_str(), "/", 1);
         if (!ret) {
-            throw std::runtime_error(std::format("Failed to mount rootfs: {}",
-                PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode())));
+            auto ec = PHYSFS_getLastErrorCode();
+            throw std::runtime_error(std::format("Failed to mount rootfs: {}", PHYSFS_getErrorByCode(ec)));
         }
+
+        World::Physics::init();
 
         auto scene_types = rttr::type::get<World::Scene>().get_derived_classes();
         if (scene_types.size() == 0) {
@@ -64,7 +66,7 @@ public:
         }
 
         scene_instance_ = scene_types.begin()->create();
-        scene_ = &scene_instance_.get_value<World::Scene>();
+        scene_ = scene_instance_.get_value<World::Scene*>();
 
         if (cmdline({ "-c", "--client" })) {
             local_ = std::make_unique<Client>(*scene_);
