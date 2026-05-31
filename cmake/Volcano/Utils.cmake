@@ -7,4 +7,3 @@ macro(volcano_target_setup TARGET)
         set_target_properties(${TARGET} PROPERTIES FOLDER ${RDIR})
     endif()
 endmacro()
-

@@ -18,23 +18,22 @@ VOLCANO_GRAPHICS_BEGIN
 
 class Renderer {
 public:
-    Renderer(World::Scene& scene);
+    Renderer(entt::registry& scene);
     virtual ~Renderer();
 
 public:
     void build(entt::entity camera_ent = entt::null) noexcept;
+	void build(const Transform& transform, const World::PerspectiveCamera& camera) noexcept;
+	void build(const Transform& transform, const World::OrthographicCamera& camera) noexcept;
     void draw(const sf::RenderTarget& target) const noexcept;
 
 private:
-    void buildCamera(entt::entity ent) noexcept;
-    void buildLoading() noexcept;
-    void buildPlaying() noexcept;
-    void buildError() noexcept;
+	void buildWorld() noexcept;
     void onModelAdded(entt::entity ent) noexcept;
     void onModelRemoved(entt::entity ent) noexcept;
 
 private:
-    World::Scene& scene_;
+    entt::registry& registry_;
     Frame frame_;
     std::atomic_int current_frame_;
 };

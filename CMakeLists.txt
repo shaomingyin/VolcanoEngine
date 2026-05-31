@@ -22,6 +22,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 include(Volcano/Utils)
 
 add_subdirectory(runtime)
+#add_subdirectory(extensions)
 add_subdirectory(games)
 
 set(VOLCANO_TOOLS ON CACHE BOOL "Enable tools.")

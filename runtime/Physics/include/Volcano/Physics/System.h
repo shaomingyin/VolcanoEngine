@@ -1,7 +1,7 @@
 //
 //
-#ifndef VOLCANO_WORLD_PHYSICS_H
-#define VOLCANO_WORLD_PHYSICS_H
+#ifndef VOLCANO_PHYSICS_SYSTEM_H
+#define VOLCANO_PHYSICS_SYSTEM_H
 
 #include <memory>
 
@@ -17,17 +17,17 @@
 #include <Jolt/Physics/Body/BodyID.h>
 
 #include <Volcano/Math.h>
-#include <Volcano/World/Common.h>
+#include <Volcano/Physics/Common.h>
 
-VOLCANO_WORLD_BEGIN
+VOLCANO_PHYSICS_BEGIN
 
-namespace Layers {
+namespace PhysicsLayers {
 	static constexpr JPH::ObjectLayer NON_MOVING = 0;
 	static constexpr JPH::ObjectLayer MOVING = 1;
 	static constexpr JPH::ObjectLayer NUM_LAYERS = 2;
 }
 
-namespace BroadPhaseLayers {
+namespace PhysicsBroadPhaseLayers {
 	static constexpr JPH::BroadPhaseLayer NON_MOVING(0);
 	static constexpr JPH::BroadPhaseLayer MOVING(1);
 	static constexpr JPH::uint NUM_LAYERS = 2;
@@ -36,12 +36,12 @@ namespace BroadPhaseLayers {
 class PhysicsBroadPhaseLayerInterface final: public JPH::BroadPhaseLayerInterface {
 public:
 	PhysicsBroadPhaseLayerInterface() {
-		object_to_broad_phase_[Layers::NON_MOVING] = BroadPhaseLayers::NON_MOVING;
-		object_to_broad_phase_[Layers::MOVING] = BroadPhaseLayers::MOVING;
+		object_to_broad_phase_[PhysicsLayers::NON_MOVING] = PhysicsBroadPhaseLayers::NON_MOVING;
+		object_to_broad_phase_[PhysicsLayers::MOVING] = PhysicsBroadPhaseLayers::MOVING;
 	}
 
 	JPH::uint GetNumBroadPhaseLayers() const override {
-		return BroadPhaseLayers::NUM_LAYERS;
+		return PhysicsBroadPhaseLayers::NUM_LAYERS;
 	}
 
 	JPH::BroadPhaseLayer GetBroadPhaseLayer(JPH::ObjectLayer inLayer) const override {
@@ -49,7 +49,7 @@ public:
 	}
 
 private:
-	JPH::BroadPhaseLayer object_to_broad_phase_[Layers::NUM_LAYERS];
+	JPH::BroadPhaseLayer object_to_broad_phase_[PhysicsLayers::NUM_LAYERS];
 };
 
 class PhysicsObjectLayerPairFilter final: public JPH::ObjectLayerPairFilter {
@@ -57,10 +57,10 @@ public:
 	bool ShouldCollide(JPH::ObjectLayer a, JPH::ObjectLayer b) const override {
 		bool ret;
 		switch (a) {
-		case Layers::NON_MOVING:
-			ret = (b == Layers::MOVING);
+		case PhysicsLayers::NON_MOVING:
+			ret = (b == PhysicsLayers::MOVING);
 			break;
-		case Layers::MOVING:
+		case PhysicsLayers::MOVING:
 			ret = true;
 			break;
 		default:
@@ -76,10 +76,10 @@ public:
 	bool ShouldCollide(JPH::ObjectLayer objectLayer, JPH::BroadPhaseLayer broadPhaseLayer) const override {
 		bool ret;
 		switch (objectLayer) {
-		case Layers::NON_MOVING:
-			ret = (broadPhaseLayer == BroadPhaseLayers::MOVING);
+		case PhysicsLayers::NON_MOVING:
+			ret = (broadPhaseLayer == PhysicsBroadPhaseLayers::MOVING);
 			break;
-		case Layers::MOVING:
+		case PhysicsLayers::MOVING:
 			ret = true;
 			break;
 		default:
@@ -96,18 +96,6 @@ public:
     virtual ~Physics();
 
 public:
-	bool isEnabled() const noexcept {
-		return enabled_;
-	}
-
-	void enable() noexcept {
-		enabled_ = true;
-	}
-
-	void disable() noexcept {
-		enabled_ = false;
-	}
-
     const Eigen::Vector3f& gravity() const noexcept {
         return gravity_;
     }
@@ -121,7 +109,6 @@ protected:
     void onBodyRemoved(entt::entity ent) noexcept;
 
 private:
-	bool enabled_;
     entt::registry& registry_;
     Eigen::Vector3f gravity_;
     PhysicsBroadPhaseLayerInterface broad_phase_layer_interface_;
@@ -133,6 +120,6 @@ private:
     JPH::BodyInterface* body_interface_;
 };
 
-VOLCANO_WORLD_END
+VOLCANO_PHYSICS_END
 
-#endif // VOLCANO_WORLD_PHYSICS_H
+#endif // VOLCANO_PHYSICS_SYSTEM_H

@@ -2,6 +2,8 @@
 //
 #include <Volcano/Common.h>
 
+VOLCANO_BEGIN
+
 class PHYSFS_File_InputStream final : public sf::InputStream {
 public:
 	PHYSFS_File_InputStream(PHYSFS_File* fp, bool owned = true)
@@ -54,7 +56,7 @@ private:
 	bool owned_;
 };
 
-std::unique_ptr<sf::InputStream> PHYSFS_openRead(const std::filesystem::path& filepath) {
+std::unique_ptr<sf::InputStream> PHYSFS_openInputStream(const std::filesystem::path& filepath) {
 	VOLCANO_ASSERT(!filepath.empty());
 	VOLCANO_ASSERT(filepath.is_absolute());
 	auto fp = PHYSFS_openRead(filepath.generic_string().c_str());
@@ -64,7 +66,17 @@ std::unique_ptr<sf::InputStream> PHYSFS_openRead(const std::filesystem::path& fi
 	return std::make_unique<PHYSFS_File_InputStream>(fp);
 }
 
-VOLCANO_BEGIN
+ByteArray PHYSFS_readAll(const std::filesystem::path& filepath) {
+	VOLCANO_ASSERT(!filepath.empty());
+	VOLCANO_ASSERT(filepath.is_absolute());
+	auto fp = PHYSFS_openInputStream(filepath);
+	ByteArray data(fp->getSize().value_or(0));
+	auto read_ret = fp->read(data.data(), data.size());
+	if (!read_ret.has_value() || read_ret.value() != data.size()) {
+		throw std::runtime_error(std::format("Failed to read physfs file: {}", filepath.generic_string()));
+	}
+	return data;
+}
 
 static std::string app_organization;
 static std::string app_name;

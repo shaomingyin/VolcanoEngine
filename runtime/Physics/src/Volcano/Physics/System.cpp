@@ -6,9 +6,9 @@
 #include <Jolt/Physics/Collision/Shape/SphereShape.h>
 
 #include <Volcano/Math.h>
-#include <Volcano/World/Physics.h>
+#include <Volcano/Physics/System.h>
 
-VOLCANO_WORLD_BEGIN
+VOLCANO_PHYSICS_BEGIN
 
 constexpr JPH::uint maxBodies = 1024;
 constexpr JPH::uint numBodyMutexes = 0;
@@ -17,7 +17,6 @@ constexpr JPH::uint maxContactConstraints = 1024;
 
 Physics::Physics(entt::registry& registry)
 	: registry_(registry)
-	, enabled_(false)
 	, gravity_({ 0.0f, -9.81f, 0.0f })
 	, temp_allocator_(10 * 1024 * 1024)
 	, job_system_(JPH::cMaxPhysicsJobs, JPH::cMaxPhysicsBarriers, std::thread::hardware_concurrency() - 1) {
@@ -60,10 +59,6 @@ void Physics::setGravity(const Eigen::Vector3f& v) noexcept {
 }
 
 void Physics::update(Clock::duration elapsed) noexcept {
-	if (!enabled_) {
-		return;
-	}
-
 	auto elapsed_us = std::chrono::duration_cast<std::chrono::microseconds>(elapsed).count();
 	physics_system_.Update(elapsed_us / 1000000.0f, 1, &temp_allocator_, &job_system_);
 
@@ -102,4 +97,4 @@ void Physics::onBodyRemoved(entt::entity ent) noexcept {
 	registry_.remove<JPH::BodyID>(ent);
 }
 
-VOLCANO_WORLD_END
+VOLCANO_PHYSICS_END

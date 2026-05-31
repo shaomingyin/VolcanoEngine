@@ -5,6 +5,7 @@
 
 #include <cassert>
 #include <cstdint>
+#include <chrono>
 #include <memory>
 #include <vector>
 #include <stdexcept>
@@ -37,11 +38,13 @@
 #define VOLCANO_BEGIN namespace Volcano {
 #define VOLCANO_END }
 
-std::unique_ptr<sf::InputStream> PHYSFS_openRead(const std::filesystem::path& filepath);
-
 VOLCANO_BEGIN
 
+using Clock = std::chrono::steady_clock;
 using ByteArray = std::vector<uint8_t>;
+
+std::unique_ptr<sf::InputStream> PHYSFS_openInputStream(const std::filesystem::path& filepath);
+ByteArray PHYSFS_readAll(const std::filesystem::path& filepath);
 
 const std::string& appOrganization();
 const std::string& appName();

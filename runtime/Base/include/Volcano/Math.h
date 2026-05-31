@@ -23,7 +23,7 @@ public:
 public:
     Transform& operator=(const Transform&) = default;
 
-    Eigen::Affine3f toMatrix() const noexcept {
+    Eigen::Affine3f toAffine() const noexcept {
         auto m(Eigen::Affine3f::Identity());
         m.scale(scale_);
         m.rotate(rotation_);

@@ -7,50 +7,27 @@
 #include <string>
 #include <filesystem>
 
+#include <rttr/type>
 #include <entt/entt.hpp>
 
 #include <Volcano/World/Common.h>
-#include <Volcano/World/Physics.h>
 
 VOLCANO_WORLD_BEGIN
 
 class Scene: public entt::registry {
-public:
-    enum class State {
-        Idle = 0,
-        Loading,
-        Ready,
-        Playing,
-        Paused,
-        Error,
-        Max
-    };
+    RTTR_ENABLE()
 
 public:
     Scene();
 	virtual ~Scene() = default;
 
 public:
-    Physics& physics() noexcept {
-        return physics_;
-    }
-
-    const Physics& physics() const noexcept {
-        return physics_;
-    }
-
-    void load(const std::filesystem::path& path);
-    virtual entt::entity mainCamera() const noexcept = 0;
+    virtual entt::entity mainCamera() const noexcept;
 	virtual void update(Clock::duration elapsed) noexcept;
 
 protected:
-    virtual void onLoad(const std::filesystem::path& path);
     virtual void onEntityAdded(entt::entity ent) noexcept;
     virtual void onEntityRemoved(entt::entity ent) noexcept;
-
-private:
-    State state_;
-    Physics physics_;
 };
 
 VOLCANO_WORLD_END

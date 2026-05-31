@@ -18,9 +18,6 @@ VOLCANO_LAUNCHER_BEGIN
 
 class Local {
 public:
-	using Clock = World::Clock;
-
-public:
     Local(World::Scene& scene);
     virtual ~Local() = default;
 

@@ -5,18 +5,17 @@
 
 VOLCANO_WORLD_BEGIN
 
-Scene::Scene()
-	: physics_(*this) {
+Scene::Scene() {
 	on_construct<entt::entity>().connect<&Scene::onEntityAdded>(this);
 	on_destroy<entt::entity>().connect<&Scene::onEntityRemoved>(this);
 }
 
-void Scene::update(Clock::duration elapsed) noexcept {
-	physics_.update(elapsed);
+entt::entity Scene::mainCamera() const noexcept {
+	return entt::null;
 }
 
 void Scene::onEntityAdded(entt::entity ent) noexcept {
-	//emplace<Inherent>(ent);
+	emplace<Inherent>(ent);
 }
 
 void Scene::onEntityRemoved(entt::entity ent) noexcept {

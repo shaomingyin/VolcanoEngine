@@ -21,13 +21,11 @@ VOLCANO_LAUNCHER_BEGIN
 class Application {
 public:
     Application(int argc, char* argv[]) {
+        spdlog::set_pattern("%Y-%m-%d %H:%M:%S.%e %t [%L] %v");
         spdlog::info("VolcanoLauncher: Engine version - " VOLCANO_VERSION_STR);
         spdlog::info("Inializing...");
 
-
         argh::parser cmdline(argv);
-
-        spdlog::set_pattern("%Y-%m-%d %H:%M:%S.%e %t [%L] %v");
 
 #ifdef VOLCANO_DEBUG
         spdlog::set_level(spdlog::level::debug);
@@ -58,7 +56,7 @@ public:
             throw std::runtime_error(std::format("Failed to mount rootfs: {}", PHYSFS_getErrorByCode(ec)));
         }
 
-        World::Physics::init();
+        //Physics::init();
 
         auto scene_types = rttr::type::get<World::Scene>().get_derived_classes();
         if (scene_types.size() == 0) {
