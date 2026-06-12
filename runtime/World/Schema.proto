@@ -1,0 +1,137 @@
+
+syntax = "proto3";
+
+package Volcano.World.Schema;
+
+message Vector3 {
+    float x = 1;
+    float y = 2;
+    float z = 3;
+}
+
+message Vector4 {
+    float x = 1;
+    float y = 2;
+    float z = 3;
+    float w = 4;
+}
+
+message Quaternion {
+    float x = 1;
+    float y = 2;
+    float z = 3;
+    float w = 4;
+}
+
+message Matrix4 {
+    Vector4 col1 = 1;
+    Vector4 col2 = 2;
+    Vector4 col3 = 3;
+    Vector4 col4 = 4;
+}
+
+message Transform {
+    Vector3 translation = 1;
+    Vector3 scale = 2;
+    Quaternion rotation = 3;
+}
+
+message Color {
+    float red = 1;
+    float green = 2;
+    float blue = 3;
+    float alpha = 4;
+}
+
+message Box {
+    float length = 1;
+    float width = 2;
+    float height = 3;
+}
+
+message Sphere {
+    float radius = 1;
+}
+
+message Inherent {
+	string name = 1;
+	bool enabled = 2;
+    bool visibled = 3;
+}
+
+message Camera {
+    Transform offset = 1;
+    float znear = 2;
+    float zfar = 3;
+
+    message Perspective {
+        float fov = 1;
+	    float aspect_ratio = 2;
+    }
+
+    message Orthography {
+        Vector4 rect = 1;
+    }
+
+    oneof type {
+        Perspective perspective = 100;
+        Orthography orthography = 101;
+    }
+}
+
+message Light {
+    Transform offset = 1;
+    Color color = 2;
+    float strength = 3;
+    float range = 4;
+    Vector3 direction = 5;
+    float inner_angle = 6;
+	float outer_angle = 7;
+};
+
+message Texture {
+    int32 format = 1;
+    string filepath = 2;
+}
+
+message Material {
+    Color color = 1;
+    Texture texture = 2;
+
+    message PBR {
+        Material common = 1;
+        Vector3 emissive = 2;
+        float metallic = 3;
+        float roughness = 4;
+        string normal_map_filepath = 5;
+    }
+
+    oneof type {
+        PBR pbr = 100;
+    }
+}
+
+message Mesh {
+    Material material = 1;
+}
+
+message Model {
+    repeated Mesh meshes = 1;
+    string filepath = 2;
+}
+
+message Body {
+    Transform offset = 1;
+    float mass = 2;
+
+    oneof shape {
+        Box box = 100;
+        Sphere sphere = 101;
+    }
+}
+
+message Scene {
+    string name = 1;
+    Vector3 gravity = 2;
+    string map_filepath = 3;
+}

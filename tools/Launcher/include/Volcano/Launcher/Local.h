@@ -18,11 +18,20 @@ VOLCANO_LAUNCHER_BEGIN
 
 class Local {
 public:
+    enum class State {
+        Idle = 0,
+        Loading,
+        Ready,
+        Playing,
+        Paused,
+        Error
+    };
+
+public:
     Local(World::Scene& scene);
     virtual ~Local() = default;
 
 public:
-    void schedule(async::task_run_handle task);
     void run();
     unsigned long fps() const noexcept;
     unsigned long fpsMax() const noexcept;
@@ -40,6 +49,7 @@ protected:
 
 private:
 	async::fifo_scheduler scheduler_;
+    async::task<void> loading_task_;
 	World::Scene& scene_;
     Clock::duration elapsed_min_;
     Clock::time_point frame_last_;

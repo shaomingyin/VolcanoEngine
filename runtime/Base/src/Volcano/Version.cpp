@@ -17,31 +17,58 @@ VersionNumber::VersionNumber(int major, int minor, int patch)
 }
 
 std::string VersionNumber::toString() const {
-    return std::string();
+    return std::format("{}.{}.{}", major_, minor_, patch_);
 }
 
 bool VersionNumber::operator==(const VersionNumber& other) const noexcept {
-    return false;
+    return
+        major_ == other.major_ &&
+        minor_ == other.minor_ &&
+        patch_ == other.patch_;
 }
 
 bool VersionNumber::operator!=(const VersionNumber& other) const noexcept {
-    return false;
+    return !operator==(other);
 }
 
 bool VersionNumber::operator<(const VersionNumber& other) const noexcept {
-    return false;
+    if (major_ < other.major_) {
+        return true;
+    }
+    if (major_ > other.major_) {
+        return false;
+    }
+    if (minor_ < other.minor_) {
+        return true;
+    }
+    if (minor_ > other.minor_) {
+        return false;
+    }
+    return (patch_ < other.patch_);
 }
 
 bool VersionNumber::operator<=(const VersionNumber& other) const noexcept {
-    return false;
+    return !operator>(other);
 }
 
 bool VersionNumber::operator>(const VersionNumber& other) const noexcept {
-    return false;
+    if (major_ > other.major_) {
+        return true;
+    }
+    if (major_ < other.major_) {
+        return false;
+    }
+    if (minor_ > other.minor_) {
+        return true;
+    }
+    if (minor_ < other.minor_) {
+        return false;
+    }
+    return (patch_ > other.patch_);
 }
 
 bool VersionNumber::operator>=(const VersionNumber& other) const noexcept {
-    return false;
+    return !operator<(other);
 }
 
 const VersionNumber Version(VOLCANO_VERSION_MAJOR, VOLCANO_VERSION_MINOR, VOLCANO_VERSION_PATCH);

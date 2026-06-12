@@ -1,9 +1,5 @@
 //
 //
-#include <Volcano/World/Inherent.h>
-#include <Volcano/World/Camera.h>
-#include <Volcano/World/Lighting.h>
-#include <Volcano/World/Model.h>
 #include <Volcano/Graphics/Renderer.h>
 
 VOLCANO_GRAPHICS_BEGIN
@@ -32,7 +28,7 @@ void Renderer::build(entt::entity camera_ent) noexcept {
     }
 
     auto& camera_inherent = registry_.get<World::Inherent>(camera_ent);
-    if (!camera_inherent.isEnabled()) {
+    if (!camera_inherent.enabled()) {
         return;
     }
 
@@ -41,27 +37,21 @@ void Renderer::build(entt::entity camera_ent) noexcept {
         return;
     }
 
-    auto perspective_camera = registry_.try_get<World::PerspectiveCamera>(camera_ent);
-    if (perspective_camera == nullptr) {
-        auto orthographic_camera = registry_.try_get<World::OrthographicCamera>(camera_ent);
-        if (orthographic_camera != nullptr) {
-		    build(*camera_transform, *orthographic_camera);
-        }
-    } else {
-		build(*camera_transform, *perspective_camera);
+    auto camera = registry_.try_get<World::Camera>(camera_ent);
+    if (camera != nullptr) {
+		build(*camera_transform, *camera);
     }
 }
 
-void Renderer::build(const Transform& transform, const World::PerspectiveCamera& camera) noexcept {
+void Renderer::build(const Transform& transform, const World::Camera& camera) noexcept {
     frame_[Frame::Affine3f::View] = transform.toAffine().inverse();
-    frame_[Frame::Matrix4f::Projection] = camera.toMatrix();
-    buildWorld();
-}
-
-void Renderer::build(const Transform& transform, const World::OrthographicCamera& camera) noexcept {
-    frame_[Frame::Affine3f::View] = transform.toAffine().inverse();
-    frame_[Frame::Matrix4f::Projection] = camera.toMatrix();
-    buildWorld();
+    //frame_[Frame::Matrix4f::Projection] = camera.toMatrix();
+    auto lights = registry_.view<World::Light>();
+    for (auto&& [ent, light] : lights.each()) {
+        if (registry_.get<World::Inherent>(ent).enabled()) {
+            frame_.add(light);
+        }
+    }
 }
 
 void Renderer::draw(const sf::RenderTarget& target) const noexcept {
@@ -69,36 +59,6 @@ void Renderer::draw(const sf::RenderTarget& target) const noexcept {
     auto center = view.getCenter();
     auto size = view.getSize();
     frame_.commit(center.x + size.x / 2.0f, center.y + size.y / 2.0f, size.x, size.y);
-}
-
-void Renderer::buildWorld() noexcept {
-    auto lights = registry_.view<World::Light>();
-    for (auto&& [ent, light] : lights.each()) {
-        if (registry_.get<World::Inherent>(ent).isEnabled()) {
-            frame_.add(light);
-        }
-    }
-
-    auto directional_lights = registry_.view<World::DirectionalLight>();
-    for (auto&& [ent, directional_light] : directional_lights.each()) {
-        if (registry_.get<World::Inherent>(ent).isEnabled()) {
-            frame_.add(directional_light);
-        }
-    }
-
-    auto point_lights = registry_.view<Transform, World::PointLight>();
-    for (auto&& [ent, transform, point_light] : point_lights.each()) {
-        if (registry_.get<World::Inherent>(ent).isEnabled()) {
-            frame_.add(transform, point_light);
-        }
-    }
-
-    auto spot_lights = registry_.view<Transform, World::SpotLight>();
-    for (auto&& [ent, transform, spot_light] : spot_lights.each()) {
-        if (registry_.get<World::Inherent>(ent).isEnabled()) {
-            frame_.add(transform, spot_light);
-        }
-    }
 }
 
 void Renderer::onModelAdded(entt::entity ent) noexcept {

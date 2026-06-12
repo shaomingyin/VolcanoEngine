@@ -90,10 +90,10 @@ public:
 	}
 };
 
-class Physics {
+class System {
 public:
-    Physics(entt::registry& registry);
-    virtual ~Physics();
+	System(entt::registry& registry);
+    virtual ~System();
 
 public:
     const Eigen::Vector3f& gravity() const noexcept {

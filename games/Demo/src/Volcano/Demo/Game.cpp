@@ -1,32 +1,32 @@
 //
 //
-#include <rttr/registration>
-
-#include <Volcano/World/Camera.h>
 #include <Volcano/Demo/Game.h>
 
 VOLCANO_DEMO_BEGIN
 
 Game::Game()
-    : main_camera_(create()) {
-    emplace<World::PerspectiveCamera>(main_camera_, 90.0f, 0.5f, 999.0f, 16.0f / 9.0f);
-    physics().enable();
+    : physics_system_(*this)
+    , player_(create()) {
+    emplace<World::
 }
 
 Game::~Game() {
 }
 
-entt::entity Game::mainCamera() const noexcept {
-    return main_camera_;
+const std::string& Game::name() const noexcept {
+    static std::string n("Demo");
+    return n;
 }
 
-void Game::update(World::Clock::duration elapsed) noexcept {
-    World::Scene::update(elapsed);
+entt::entity Game::mainCamera() const noexcept {
+    return player_;
+}
+
+void Game::update(Clock::duration elapsed) noexcept {
 }
 
 VOLCANO_DEMO_END
 
-RTTR_REGISTRATION {
-    rttr::registration::class_<Volcano::Demo::Game>("VolcanoGame")
-        .constructor<>()(rttr::policy::ctor::as_raw_ptr);
+std::unique_ptr<Volcano::World::Scene> createVolcanoWorldScene() {
+    return std::make_unique<Volcano::Demo::Game>();
 }

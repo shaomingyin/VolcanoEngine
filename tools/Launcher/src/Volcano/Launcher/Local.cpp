@@ -13,18 +13,20 @@ Local::Local(World::Scene& scene)
     , frame_count_last_(frame_last_)
     , frame_count_(0)
     , frame_count_per_second_(0)
-    , window_(sf::VideoMode::getDesktopMode(), "VolcanoLauncher")
-    , renderer_(scene_)
+    , window_(sf::VideoMode({ 800, 600 }), "VolcanoLauncher")
+    , renderer_(scene)
     , console_(nullptr) {
     window_.setFramerateLimit(60);
 }
 
-void Local::schedule(async::task_run_handle task) {
-    scheduler_.schedule(std::move(task));
-}
-
 void Local::run() {
-    // TODO start loading
+    scene_.clear();
+
+    loading_task_ = async::spawn(async::thread_scheduler(), [this] {
+        auto config_data = PHYSFS_readAll("/config.json");
+        auto config_json = nlohmann::json::parse(std::move(config_data));
+        scene_.load(std::move(config_json));
+    });
 
     frame_last_ = Clock::now();
     frame_count_last_ = frame_last_;

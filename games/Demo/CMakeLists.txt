@@ -19,4 +19,4 @@ target_include_directories(Game PUBLIC
 volcano_target_setup(Game)
 set_target_properties(Game PROPERTIES OUTPUT_NAME VolcanoGame)
 
-target_link_libraries(Game PUBLIC World)
+target_link_libraries(Game PUBLIC Physics World)

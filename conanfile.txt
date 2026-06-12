@@ -11,8 +11,6 @@ sigslot/1.2.3
 spdlog/1.15.3
 tracy/0.12.2
 
-[tool_requires]
-
 [generators]
 CMakeDeps
 CMakeToolchain

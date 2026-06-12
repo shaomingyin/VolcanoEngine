@@ -12,9 +12,6 @@ void Frame::reset() noexcept {
     get(Bool::Clear) = true;
     get(Affine3f::View) = Eigen::Affine3f::Identity();
     lights_.clear();
-    directional_lights_.clear();
-    point_lights_.clear();
-    spot_lights_.clear();
 }
 
 void Frame::commit(int x, int y, int width, int height) const noexcept {

@@ -6,6 +6,7 @@
 #include <Jolt/Physics/Collision/Shape/SphereShape.h>
 
 #include <Volcano/Math.h>
+#include <Volcano/World/Physical.h>
 #include <Volcano/Physics/System.h>
 
 VOLCANO_PHYSICS_BEGIN
@@ -15,7 +16,7 @@ constexpr JPH::uint numBodyMutexes = 0;
 constexpr JPH::uint maxBodyPairs = 1024;
 constexpr JPH::uint maxContactConstraints = 1024;
 
-Physics::Physics(entt::registry& registry)
+System::System(entt::registry& registry)
 	: registry_(registry)
 	, gravity_({ 0.0f, -9.81f, 0.0f })
 	, temp_allocator_(10 * 1024 * 1024)
@@ -37,28 +38,28 @@ Physics::Physics(entt::registry& registry)
 		onBodyAdded(ent);
 	}
 
-	registry_.on_construct<Transform>().connect<&Physics::onBodyAdded>(this);
-	registry_.on_construct<JPH::BodyCreationSettings>().connect<&Physics::onBodyAdded>(this);
+	registry_.on_construct<Transform>().connect<&System::onBodyAdded>(this);
+	registry_.on_construct<World::RigidBody>().connect<&System::onBodyAdded>(this);
 }
 
-Physics::~Physics() {
+System::~System() {
 	auto view = registry_.view<Transform, JPH::BodyCreationSettings>();
 	for (auto ent: view) {
 		onBodyRemoved(ent);
 	}
 
-	registry_.on_construct<Transform>().disconnect<&Physics::onBodyAdded>(this);
-	registry_.on_construct<JPH::BodyCreationSettings>().disconnect<&Physics::onBodyAdded>(this);
+	registry_.on_construct<Transform>().disconnect<&System::onBodyAdded>(this);
+	registry_.on_construct<World::RigidBody>().disconnect<&System::onBodyAdded>(this);
 }
 
-void Physics::setGravity(const Eigen::Vector3f& v) noexcept {
+void System::setGravity(const Eigen::Vector3f& v) noexcept {
 	if (!gravity_.isApprox(v)) {
 		gravity_ = v;
 		physics_system_.SetGravity({ v.x(), v.y(), v.z() });
 	}
 }
 
-void Physics::update(Clock::duration elapsed) noexcept {
+void System::update(Clock::duration elapsed) noexcept {
 	auto elapsed_us = std::chrono::duration_cast<std::chrono::microseconds>(elapsed).count();
 	physics_system_.Update(elapsed_us / 1000000.0f, 1, &temp_allocator_, &job_system_);
 
@@ -68,30 +69,33 @@ void Physics::update(Clock::duration elapsed) noexcept {
 	}
 }
 
-void Physics::init() {
+void System::init() {
 	JPH::RegisterDefaultAllocator();
 	JPH::Factory::sInstance = new JPH::Factory();
 	JPH::RegisterTypes();
 }
 
-void Physics::onBodyAdded(entt::entity ent) noexcept {
+void System::onBodyAdded(entt::entity ent) noexcept {
 	auto transform = registry_.try_get<Transform>(ent);
 	if (transform == nullptr) {
 		return;
 	}
 
-	auto settings = registry_.try_get<JPH::BodyCreationSettings>(ent);
-	if (settings == nullptr) {
+	auto rigid_body = registry_.try_get<World::RigidBody>(ent);
+	if (rigid_body == nullptr) {
 		return;
 	}
 
-	auto body_id = body_interface_->CreateAndAddBody(*settings, JPH::EActivation::Activate);
+	JPH::BodyCreationSettings settings;
+	// TODO settings from rigid_body...
+
+	auto body_id = body_interface_->CreateAndAddBody(settings, JPH::EActivation::Activate);
 	if (body_id.IsInvalid()) {
 		registry_.emplace<JPH::BodyID>(ent, body_id);
 	}
 }
 
-void Physics::onBodyRemoved(entt::entity ent) noexcept {
+void System::onBodyRemoved(entt::entity ent) noexcept {
 	auto body_id = registry_.get<JPH::BodyID>(ent);
 	body_interface_->RemoveBody(body_id);
 	registry_.remove<JPH::BodyID>(ent);

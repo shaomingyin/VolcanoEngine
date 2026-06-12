@@ -6,7 +6,7 @@
 #include <vector>
 
 #include <Volcano/Math.h>
-#include <Volcano/World/Lighting.h>
+#include <Volcano/World/Schema.pb.h>
 #include <Volcano/Graphics/Common.h>
 #include <Volcano/Graphics/Pass.h>
 
@@ -56,18 +56,6 @@ public:
         lights_.push_back(v);
     }
 
-    void add(const World::DirectionalLight& v) noexcept {
-        directional_lights_.push_back(v);
-    }
-
-    void add(const Transform& transform, const World::PointLight& v) noexcept {
-        point_lights_.push_back(std::make_pair(transform, v));
-    }
-
-    void add(const Transform& transform, const World::SpotLight& v) noexcept {
-        spot_lights_.push_back(std::make_pair(transform, v));
-    }
-
     void add(const Transform& transform) noexcept {
     }
 
@@ -92,9 +80,6 @@ private:
 
 private:
     std::vector<World::Light> lights_;
-    std::vector<World::DirectionalLight> directional_lights_;
-    std::vector<std::pair<Transform, World::PointLight>> point_lights_;
-    std::vector<std::pair<Transform, World::SpotLight>> spot_lights_;
 };
 
 VOLCANO_GRAPHICS_END

@@ -10,9 +10,12 @@ VOLCANO_BEGIN
 class VersionNumber final {
 public:
     VersionNumber();
+    VersionNumber(const VersionNumber&) = default;
     VersionNumber(int major, int minor, int patch);
 
 public:
+    VersionNumber& operator=(const VersionNumber&) = default;
+
     int major() const noexcept {
         return major_;
     }

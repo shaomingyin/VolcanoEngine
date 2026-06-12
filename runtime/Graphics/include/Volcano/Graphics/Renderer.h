@@ -23,12 +23,10 @@ public:
 
 public:
     void build(entt::entity camera_ent = entt::null) noexcept;
-	void build(const Transform& transform, const World::PerspectiveCamera& camera) noexcept;
-	void build(const Transform& transform, const World::OrthographicCamera& camera) noexcept;
+	void build(const Transform& transform, const World::Camera& camera) noexcept;
     void draw(const sf::RenderTarget& target) const noexcept;
 
 private:
-	void buildWorld() noexcept;
     void onModelAdded(entt::entity ent) noexcept;
     void onModelRemoved(entt::entity ent) noexcept;
 

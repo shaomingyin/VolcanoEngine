@@ -37,6 +37,7 @@ public:
         }
 #endif
 
+        spdlog::info("Initializing physfs...");
         int ret = PHYSFS_init(argv[0]);
         if (!ret) {
             throw std::runtime_error(std::format("Failed to init PHYSFS: {}",
@@ -50,6 +51,7 @@ public:
         std::string cwd = std::filesystem::current_path().generic_string();
         cmdline({ "-r", "--root" }, cwd) >> root;
 
+        spdlog::info("Mounting rootfs {}...", root);
         ret = PHYSFS_mount(root.c_str(), "/", 1);
         if (!ret) {
             auto ec = PHYSFS_getLastErrorCode();
@@ -58,13 +60,9 @@ public:
 
         //Physics::init();
 
-        auto scene_types = rttr::type::get<World::Scene>().get_derived_classes();
-        if (scene_types.size() == 0) {
-            throw std::runtime_error("No scene found.");
-        }
-
-        scene_instance_ = scene_types.begin()->create();
-        scene_ = scene_instance_.get_value<World::Scene*>();
+        spdlog::info("Setup world...");
+        scene_ = createVolcanoWorldScene();
+        spdlog::info("World: {} - {}", scene_->name(), scene_->version().toString());
 
         if (cmdline({ "-c", "--client" })) {
             local_ = std::make_unique<Client>(*scene_);
@@ -87,8 +85,7 @@ public:
     }
 
 private:
-    rttr::variant scene_instance_;
-    World::Scene* scene_;
+    std::unique_ptr<World::Scene> scene_;
     std::unique_ptr<Local> local_;
 };
 
