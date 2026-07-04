@@ -102,7 +102,6 @@ public:
 
     void setGravity(const Eigen::Vector3f& v) noexcept;
     void update(Clock::duration elapsed) noexcept;
-	static void init();
 
 protected:
     void onBodyAdded(entt::entity ent) noexcept;

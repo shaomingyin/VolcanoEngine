@@ -4,6 +4,45 @@
 
 VOLCANO_BEGIN
 
+void to_json(nlohmann::json& json, const ByteArray& v) {
+	json = nlohmann::json::array();
+	json.push_back(v);
+}
+
+void from_json(const nlohmann::json& json, ByteArray& v) {
+	if (json.is_array()) {
+		v = json.get<ByteArray>();
+	} else {
+		throw std::runtime_error("Invalid JSON format for ByteArray");
+    }
+}
+
+void to_json(nlohmann::json& json, const Clock::duration& v) {
+	json = nlohmann::json::object();
+    json["duration"] = std::chrono::duration_cast<std::chrono::milliseconds>(v).count();
+}
+
+void from_json(const nlohmann::json& json, Clock::duration& v) {
+	if (json.is_object() && json.contains("duration")) {
+		v = std::chrono::milliseconds(json["duration"].get<int64_t>());
+	} else {
+		throw std::runtime_error("Invalid JSON format for Clock::duration");
+	}
+}
+
+void to_json(nlohmann::json& json, const Clock::time_point& v) {
+	json = nlohmann::json::object();
+	json["time_point"] = std::chrono::duration_cast<std::chrono::milliseconds>(v.time_since_epoch()).count();
+}
+
+void from_json(const nlohmann::json& json, Clock::time_point& v) {
+	if (json.is_object() && json.contains("time_point")) {
+		v = Clock::time_point(std::chrono::milliseconds(json["time_point"].get<int64_t>()));
+	} else {
+		throw std::runtime_error("Invalid JSON format for Clock::time_point");
+	}
+}
+
 class PHYSFS_File_InputStream final : public sf::InputStream {
 public:
 	PHYSFS_File_InputStream(PHYSFS_File* fp, bool owned = true)
@@ -58,7 +97,6 @@ private:
 
 std::unique_ptr<sf::InputStream> PHYSFS_openInputStream(const std::filesystem::path& filepath) {
 	VOLCANO_ASSERT(!filepath.empty());
-	VOLCANO_ASSERT(filepath.is_absolute());
 	auto fp = PHYSFS_openRead(filepath.generic_string().c_str());
 	if (fp == nullptr) {
 		throw std::runtime_error(std::format("Failed to read physfs file: {}", filepath.generic_string()));
@@ -68,7 +106,6 @@ std::unique_ptr<sf::InputStream> PHYSFS_openInputStream(const std::filesystem::p
 
 ByteArray PHYSFS_readAll(const std::filesystem::path& filepath) {
 	VOLCANO_ASSERT(!filepath.empty());
-	VOLCANO_ASSERT(filepath.is_absolute());
 	auto fp = PHYSFS_openInputStream(filepath);
 	ByteArray data(fp->getSize().value_or(0));
 	auto read_ret = fp->read(data.data(), data.size());
@@ -90,8 +127,8 @@ const std::string& appName() {
 }
 
 void setAppInfo(const std::string& organization, const std::string& name) {
-    assert(app_organization.empty());
-    assert(app_name.empty());
+	VOLCANO_ASSERT(app_organization.empty());
+	VOLCANO_ASSERT(app_name.empty());
     app_organization = organization;
     app_name = name;
 }

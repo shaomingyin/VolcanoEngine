@@ -6,8 +6,8 @@
 #include <memory>
 #include <string>
 
+#include <async++.h>
 #include <entt/entt.hpp>
-#include <nlohmann/json.hpp>
 
 #include <Volcano/Version.h>
 #include <Volcano/World/Common.h>
@@ -17,23 +17,39 @@ VOLCANO_WORLD_BEGIN
 class Scene: public entt::registry {
 public:
     Scene();
-	virtual ~Scene();
+    virtual ~Scene();
 
 public:
-    virtual const std::string& name() const noexcept;
-    virtual const std::string& description() const noexcept;
-    virtual const VersionNumber& version() const noexcept;
-    virtual entt::entity mainCamera() const noexcept;
-	virtual void update(Clock::duration elapsed) noexcept;
-    virtual void load(nlohmann::json&& json);
+    const std::string& name() const noexcept {
+        return name_;
+    }
 
-protected:
-    virtual void onEntityAdded(entt::entity ent) noexcept;
-    virtual void onEntityRemoved(entt::entity ent) noexcept;
+    const std::string& description() const noexcept {
+        return description_;
+    }
+
+    const VersionNumber& version() const noexcept {
+        return version_;
+    }
+
+    virtual void load(const nlohmann::json& metadata);
+    virtual void update(Clock::duration elapsed) noexcept = 0;
+    virtual entt::entity player() const noexcept = 0;
+
+
+
+private:
+    void handleEntityAdded(entt::entity ent) noexcept;
+    void handleEntityRemoved(entt::entity ent) noexcept;
+
+private:
+    std::string name_;
+    std::string description_;
+    VersionNumber version_;
 };
 
 VOLCANO_WORLD_END
 
-extern std::unique_ptr<Volcano::World::Scene> createVolcanoWorldScene();
+extern std::unique_ptr<Volcano::World::Scene> volcanoCreateGame();
 
 #endif // VOLCANO_WORLD_SCENE_H

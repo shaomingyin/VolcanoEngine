@@ -1,5 +1,5 @@
 
-add_library(Game STATIC
+add_library(Demo STATIC
     include/Volcano/Demo/Common.h
     include/Volcano/Demo/Config.h.in
     include/Volcano/Demo/Game.h
@@ -11,12 +11,12 @@ configure_file(
     include/Volcano/Demo/Config.h
 )
 
-target_include_directories(Game PUBLIC
+target_include_directories(Demo PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_BINARY_DIR}/include
 )
 
-volcano_target_setup(Game)
-set_target_properties(Game PROPERTIES OUTPUT_NAME VolcanoGame)
-
-target_link_libraries(Game PUBLIC Physics World)
+volcano_game_setup(Demo)
+target_link_libraries(Demo PUBLIC World)
+target_link_libraries(Demo PUBLIC Physics)
+set_target_properties(Demo PROPERTIES OUTPUT_NAME VolcanoDemo)

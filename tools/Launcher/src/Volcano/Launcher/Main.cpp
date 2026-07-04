@@ -7,11 +7,11 @@
 #include <filesystem>
 
 #include <argh.h>
-#include <physfs.h>
-#include <rttr/type>
 
 #include <Volcano/ScopeGuard.h>
+#include <Volcano/FileSystem.h>
 #include <Volcano/World/Scene.h>
+#include <Volcano/Physics/Common.h>
 #include <Volcano/Launcher/Local.h>
 #include <Volcano/Launcher/Client.h>
 #include <Volcano/Launcher/Common.h>
@@ -37,44 +37,42 @@ public:
         }
 #endif
 
-        spdlog::info("Initializing physfs...");
-        int ret = PHYSFS_init(argv[0]);
-        if (!ret) {
-            throw std::runtime_error(std::format("Failed to init PHYSFS: {}",
-                PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode())));
-        }
-        auto physfs_guard = scopeGuard([] {
-            PHYSFS_deinit();
-        });
-
         std::string root;
         std::string cwd = std::filesystem::current_path().generic_string();
         cmdline({ "-r", "--root" }, cwd) >> root;
+        std::filesystem::path root_path(root);
 
         spdlog::info("Mounting rootfs {}...", root);
-        ret = PHYSFS_mount(root.c_str(), "/", 1);
-        if (!ret) {
-            auto ec = PHYSFS_getLastErrorCode();
-            throw std::runtime_error(std::format("Failed to mount rootfs: {}", PHYSFS_getErrorByCode(ec)));
-        }
+        FileSystem::init(argv[0]);
+        auto fs_guard = scopeGuard([] {
+            FileSystem::shutdown();
+        });
+        FileSystem::mount("/", root_path.native().c_str());
 
-        //Physics::init();
+        Physics::init();
+        auto physics_guard = scopeGuard([] {
+            Physics::shutdown();
+        });
 
-        spdlog::info("Setup world...");
-        scene_ = createVolcanoWorldScene();
-        spdlog::info("World: {} - {}", scene_->name(), scene_->version().toString());
+        spdlog::info("Initializing game...");
+        auto game = volcanoCreateGame();
+        spdlog::info("{} - {}", game->name(), game->version().toString());
 
         if (cmdline({ "-c", "--client" })) {
-            local_ = std::make_unique<Client>(*scene_);
+            local_ = std::make_unique<Client>(*game);
         } else {
-            local_ = std::make_unique<Local>(*scene_);
+            local_ = std::make_unique<Local>(*game);
         }
 
-        physfs_guard.dismiss();
+        game_ = std::move(game);
+
+        physics_guard.dismiss();
+        fs_guard.dismiss();
     }
 
     ~Application() {
-        PHYSFS_deinit();
+        Physics::shutdown();
+        FileSystem::shutdown();
     }
 
 public:
@@ -85,7 +83,7 @@ public:
     }
 
 private:
-    std::unique_ptr<World::Scene> scene_;
+    std::unique_ptr<World::Scene> game_;
     std::unique_ptr<Local> local_;
 };
 

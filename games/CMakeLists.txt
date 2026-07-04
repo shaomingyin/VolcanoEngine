@@ -1,4 +1,10 @@
 
+macro(volcano_game_setup TARGET)
+	volcano_target_setup(${TARGET})
+	target_link_libraries(${TARGET} PUBLIC World)
+	add_library(Gameplay ALIAS ${TARGET})
+endmacro()
+
 set(VOLCANO_GAMES)
 
 file(GLOB DENTS LIST_DIRECTORIES true "${CMAKE_CURRENT_SOURCE_DIR}/*")

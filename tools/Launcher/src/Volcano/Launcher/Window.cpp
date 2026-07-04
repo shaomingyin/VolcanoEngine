@@ -8,9 +8,10 @@ VOLCANO_LAUNCHER_BEGIN
 
 Window::Window(sf::VideoMode mode, const sf::String& title, uint32_t style, const sf::ContextSettings& settings)
     : sf::RenderWindow(mode, title, style, sf::State::Windowed, settings) {
-    spdlog::info("Making current context...");
+    spdlog::info("Initializing window...");
+    spdlog::info("Making current GL context...");
     if (!setActive(true)) {
-        spdlog::error("Failed to make current context.");
+        spdlog::error("Failed to make current GL context.");
     }
     spdlog::info("Initializing GL3W...");
     int ret = gl3wInit(&gl3w_, [](const char* name) {

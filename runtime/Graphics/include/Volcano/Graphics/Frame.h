@@ -6,9 +6,13 @@
 #include <vector>
 
 #include <Volcano/Math.h>
-#include <Volcano/World/Schema.pb.h>
 #include <Volcano/Graphics/Common.h>
 #include <Volcano/Graphics/Pass.h>
+#include <Volcano/Graphics/Model.h>
+#include <Volcano/Graphics/Light.h>
+#include <Volcano/Graphics/DirectionalLight.h>
+#include <Volcano/Graphics/PointLight.h>
+#include <Volcano/Graphics/SpotLight.h>
 
 VOLCANO_GRAPHICS_BEGIN
 
@@ -52,7 +56,7 @@ public:
     void reset() noexcept;
     void commit(int x, int y, int width, int height) const noexcept;
 
-    void add(const World::Light& v) noexcept {
+    void add(const Light& v) noexcept {
         lights_.push_back(v);
     }
 
@@ -79,7 +83,7 @@ private:
     Eigen::Matrix4f matrix4f_[static_cast<size_t>(Matrix4f::Max)];
 
 private:
-    std::vector<World::Light> lights_;
+    std::vector<Light> lights_;
 };
 
 VOLCANO_GRAPHICS_END

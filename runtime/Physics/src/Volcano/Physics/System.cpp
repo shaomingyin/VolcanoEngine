@@ -1,12 +1,13 @@
 //
 //
+#include <thread>
+
 #include <Jolt/Jolt.h>
 #include <Jolt/Physics/Body/BodyCreationSettings.h>
 #include <Jolt/Physics/Collision/Shape/BoxShape.h>
 #include <Jolt/Physics/Collision/Shape/SphereShape.h>
 
 #include <Volcano/Math.h>
-#include <Volcano/World/Physical.h>
 #include <Volcano/Physics/System.h>
 
 VOLCANO_PHYSICS_BEGIN
@@ -39,7 +40,7 @@ System::System(entt::registry& registry)
 	}
 
 	registry_.on_construct<Transform>().connect<&System::onBodyAdded>(this);
-	registry_.on_construct<World::RigidBody>().connect<&System::onBodyAdded>(this);
+	registry_.on_construct<JPH::BodyCreationSettings>().connect<&System::onBodyAdded>(this);
 }
 
 System::~System() {
@@ -49,7 +50,7 @@ System::~System() {
 	}
 
 	registry_.on_construct<Transform>().disconnect<&System::onBodyAdded>(this);
-	registry_.on_construct<World::RigidBody>().disconnect<&System::onBodyAdded>(this);
+	registry_.on_construct<JPH::BodyCreationSettings>().disconnect<&System::onBodyAdded>(this);
 }
 
 void System::setGravity(const Eigen::Vector3f& v) noexcept {
@@ -69,27 +70,18 @@ void System::update(Clock::duration elapsed) noexcept {
 	}
 }
 
-void System::init() {
-	JPH::RegisterDefaultAllocator();
-	JPH::Factory::sInstance = new JPH::Factory();
-	JPH::RegisterTypes();
-}
-
 void System::onBodyAdded(entt::entity ent) noexcept {
 	auto transform = registry_.try_get<Transform>(ent);
 	if (transform == nullptr) {
 		return;
 	}
 
-	auto rigid_body = registry_.try_get<World::RigidBody>(ent);
-	if (rigid_body == nullptr) {
+	auto settings = registry_.try_get<JPH::BodyCreationSettings>(ent);
+	if (settings == nullptr) {
 		return;
 	}
 
-	JPH::BodyCreationSettings settings;
-	// TODO settings from rigid_body...
-
-	auto body_id = body_interface_->CreateAndAddBody(settings, JPH::EActivation::Activate);
+	auto body_id = body_interface_->CreateAndAddBody(*settings, JPH::EActivation::Activate);
 	if (body_id.IsInvalid()) {
 		registry_.emplace<JPH::BodyID>(ent, body_id);
 	}

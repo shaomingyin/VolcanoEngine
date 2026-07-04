@@ -13,6 +13,7 @@
 
 #include <physfs.h>
 #include <spdlog/spdlog.h>
+#include <nlohmann/json.hpp>
 #include <SFML/System/InputStream.hpp>
 
 #include <Volcano/Config.h>
@@ -42,6 +43,13 @@ VOLCANO_BEGIN
 
 using Clock = std::chrono::steady_clock;
 using ByteArray = std::vector<uint8_t>;
+
+void to_json(nlohmann::json& json, const ByteArray& v);
+void from_json(const nlohmann::json& json, ByteArray& v);
+void to_json(nlohmann::json& json, const Clock::duration& v);
+void from_json(const nlohmann::json& json, Clock::duration& v);
+void to_json(nlohmann::json& json, const Clock::time_point& v);
+void from_json(const nlohmann::json& json, Clock::time_point& v);
 
 std::unique_ptr<sf::InputStream> PHYSFS_openInputStream(const std::filesystem::path& filepath);
 ByteArray PHYSFS_readAll(const std::filesystem::path& filepath);

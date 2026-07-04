@@ -1,47 +1,52 @@
 //
 //
+#include <nlohmann/json.hpp>
+
+#include <Volcano/Math.h>
+#include <Volcano/FileSystem.h>
+#include <Volcano/World/Inherent.h>
 #include <Volcano/World/Scene.h>
 
 VOLCANO_WORLD_BEGIN
 
-Scene::Scene() {
-	on_construct<entt::entity>().connect<&Scene::onEntityAdded>(this);
-	on_destroy<entt::entity>().connect<&Scene::onEntityRemoved>(this);
+Scene::Scene(const nlohmann::json& metadata) {
+	on_construct<entt::entity>().connect<&Scene::handleEntityAdded>(this);
+	on_destroy<entt::entity>().connect<&Scene::handleEntityRemoved>(this);
 }
 
 Scene::~Scene() {
 	clear();
+	on_construct<entt::entity>().disconnect<&Scene::handleEntityAdded>(this);
+	on_destroy<entt::entity>().disconnect<&Scene::handleEntityRemoved>(this);
 }
 
-const std::string& Scene::name() const noexcept {
-	static const std::string ret(std::format("Scene{}", intptr_t(this)));
-	return ret;
+void Scene::load(const nlohmann::json& metadata) {
+	name_ = metadata["name"].get<std::string>();
+	description_ = metadata["description"].get<std::string>();
+	version_ = metadata["version"].get<VersionNumber>();
+
+	auto& entities = metadata.at("entities");
+	if (!entities.is_array()) {
+		throw std::runtime_error("Scene metadata 'entities' field is not an array.");
+	}
+
+	for (const auto& entity : entities) {
+		auto ent = create();
+		patch<Inherent>(ent, [&entity](Inherent& v) {
+			v = entity.get<Inherent>();
+			});
+		auto transform = metadata.find("transform");
+		if (transform != metadata.end()) {
+			emplace<Transform>(ent, transform->get<Transform>());
+		}
+	}
 }
 
-const std::string& Scene::description() const noexcept {
-	static const std::string ret("<No description>");
-	return ret;
+void Scene::handleEntityAdded(entt::entity ent) noexcept {
+	emplace<Inherent>(ent);
 }
 
-const VersionNumber& Scene::version() const noexcept {
-	static VersionNumber ret(0, 0, 0);
-	return ret;
-}
-
-entt::entity Scene::mainCamera() const noexcept {
-	return entt::null;
-}
-
-void Scene::load(nlohmann::json&& json) {
-}
-
-void Scene::update(Clock::duration elapsed) noexcept {
-}
-
-void Scene::onEntityAdded(entt::entity ent) noexcept {
-}
-
-void Scene::onEntityRemoved(entt::entity ent) noexcept {
+void Scene::handleEntityRemoved(entt::entity ent) noexcept {
 }
 
 VOLCANO_WORLD_END

@@ -18,7 +18,7 @@ target_include_directories(Editor PRIVATE
     ${CMAKE_CURRENT_BINARY_DIR}/include
 )
 
-target_link_libraries(Launcher PRIVATE "$<LINK_LIBRARY:WHOLE_ARCHIVE,Game>")
+target_link_libraries(Launcher PRIVATE "$<LINK_LIBRARY:WHOLE_ARCHIVE,Gameplay>")
 target_link_libraries(Editor PUBLIC Graphics Gui)
 
 find_package(SFML REQUIRED COMPONENTS Window)

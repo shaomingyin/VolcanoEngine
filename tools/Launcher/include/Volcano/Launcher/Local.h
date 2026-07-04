@@ -18,16 +18,6 @@ VOLCANO_LAUNCHER_BEGIN
 
 class Local {
 public:
-    enum class State {
-        Idle = 0,
-        Loading,
-        Ready,
-        Playing,
-        Paused,
-        Error
-    };
-
-public:
     Local(World::Scene& scene);
     virtual ~Local() = default;
 
@@ -57,8 +47,8 @@ private:
     unsigned long frame_count_;
     unsigned long frame_count_per_second_;
     Window window_;
-    Graphics::Renderer renderer_;
-    Console* console_;
+    //Graphics::Renderer renderer_;
+    //Console* console_;
     //Graphics::Context graphics_context_;
     //Gui::Context gui_context_;
 };

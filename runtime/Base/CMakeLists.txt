@@ -3,13 +3,17 @@ add_library(Base STATIC
     include/Volcano/Cache.h
     include/Volcano/Common.h
     include/Volcano/Config.h.in
-	include/Volcano/Error.h
-	include/Volcano/Math.h
+    include/Volcano/Error.h
+    include/Volcano/FileSystem.h
+    include/Volcano/Math.h
     include/Volcano/ScopeGuard.h
     include/Volcano/Version.h
     src/Volcano/Cache.cpp
     src/Volcano/Common.cpp
     src/Volcano/Error.cpp
+    src/Volcano/FileSystem.cpp
+    src/Volcano/Math.cpp
+    src/Volcano/Transform.cpp
     src/Volcano/Version.cpp
 )
 
@@ -24,8 +28,8 @@ target_include_directories(Base PUBLIC
 )
 
 target_compile_definitions(Base PUBLIC
-	RTTR_STATIC
-	NOMINMAX
+    RTTR_STATIC
+    NOMINMAX
 )
 
 volcano_target_setup(Base)
@@ -37,8 +41,8 @@ target_link_libraries(Base PUBLIC spdlog::spdlog)
 find_package(Eigen3 REQUIRED)
 target_link_libraries(Base PUBLIC Eigen3::Eigen)
 
-find_package(PalSigslot)
-target_link_libraries(Base PUBLIC Pal::Sigslot)
+find_package(nlohmann_json)
+target_link_libraries(Base PUBLIC nlohmann_json::nlohmann_json)
 
 find_package(Async++ REQUIRED)
 target_link_libraries(Base PUBLIC Async++)

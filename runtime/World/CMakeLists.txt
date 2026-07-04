@@ -1,17 +1,11 @@
 
 add_library(World STATIC
-    include/Volcano/World/Camera.h
     include/Volcano/World/Common.h
     include/Volcano/World/Config.h.in
     include/Volcano/World/Inherent.h
-    include/Volcano/World/Lighting.h
-    include/Volcano/World/Map.h
-    include/Volcano/World/Model.h
-    include/Volcano/World/Physical.h
     include/Volcano/World/Scene.h
-    include/Volcano/World/Screen.h
-    include/Volcano/World/Sound.h
     src/Volcano/World/Common.cpp
+    src/Volcano/World/Inherent.cpp
     src/Volcano/World/Scene.cpp
 )
 
@@ -33,9 +27,6 @@ target_link_libraries(World PUBLIC Base)
 
 find_package(EnTT REQUIRED)
 target_link_libraries(World PUBLIC EnTT::EnTT)
-
-find_package(nlohmann_json)
-target_link_libraries(World PUBLIC nlohmann_json::nlohmann_json)
 
 #set(SCHEMA_GEN_DIR ${CMAKE_CURRENT_BINARY_DIR}/gen)
 #find_package(protobuf)

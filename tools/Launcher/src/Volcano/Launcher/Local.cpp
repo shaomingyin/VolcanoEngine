@@ -3,6 +3,7 @@
 #include <cassert>
 #include <thread>
 
+#include <Volcano/FileSystem.h>
 #include <Volcano/Launcher/Local.h>
 
 VOLCANO_LAUNCHER_BEGIN
@@ -14,26 +15,20 @@ Local::Local(World::Scene& scene)
     , frame_count_(0)
     , frame_count_per_second_(0)
     , window_(sf::VideoMode({ 800, 600 }), "VolcanoLauncher")
-    , renderer_(scene)
-    , console_(nullptr) {
+    //, renderer_(scene)
+    {
     window_.setFramerateLimit(60);
 }
 
 void Local::run() {
-    scene_.clear();
-
-    loading_task_ = async::spawn(async::thread_scheduler(), [this] {
-        auto config_data = PHYSFS_readAll("/config.json");
-        auto config_json = nlohmann::json::parse(std::move(config_data));
-        scene_.load(std::move(config_json));
-    });
-
     frame_last_ = Clock::now();
     frame_count_last_ = frame_last_;
     frame_count_ = 0;
     frame_count_per_second_ = 0;
 
     while (window_.isOpen()) {
+        scheduler_.run_all_tasks();
+
         while (true) {
             auto event = window_.pollEvent();
             if (event) {
@@ -42,10 +37,12 @@ void Local::run() {
                 break;
             }
         }
-        scheduler_.run_all_tasks();
+
         auto now = Clock::now();
         auto elapsed = now - frame_last_;
+
         frame(elapsed);
+
         if ((now - frame_count_last_) >= std::chrono::seconds(1)) {
             frame_count_per_second_ = frame_count_;
             frame_count_ = 0;
@@ -70,8 +67,8 @@ void Local::setFpsMax(unsigned long v) noexcept {
 
 void Local::frame(Clock::duration elapsed) noexcept {
     scene_.update(elapsed);
-    renderer_.build(scene_.mainCamera());
-    renderer_.draw(window_);
+    //renderer_.build(scene_.player());
+    //renderer_.draw(window_);
     window_.display();
 }
 

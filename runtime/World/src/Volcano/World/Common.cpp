@@ -3,7 +3,7 @@
 #include <format>
 #include <stdexcept>
 
-#include <Volcano/WORLD/Common.h>
+#include <Volcano/World/Common.h>
 
 VOLCANO_WORLD_BEGIN
 

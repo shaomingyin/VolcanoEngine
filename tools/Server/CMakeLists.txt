@@ -18,7 +18,7 @@ target_include_directories(Server PRIVATE
     ${CMAKE_CURRENT_BINARY_DIR}/include
 )
 
-target_link_libraries(Launcher PRIVATE "$<LINK_LIBRARY:WHOLE_ARCHIVE,Game>")
+target_link_libraries(Server PRIVATE "$<LINK_LIBRARY:WHOLE_ARCHIVE,Gameplay>")
 
 find_package(argh REQUIRED)
 target_link_libraries(Server PUBLIC argh)

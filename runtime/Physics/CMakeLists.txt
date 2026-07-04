@@ -3,6 +3,7 @@ add_library(Physics STATIC
     include/Volcano/Physics/Common.h
     include/Volcano/Physics/Config.h.in
     include/Volcano/Physics/System.h
+    src/Volcano/Physics/Common.cpp
     src/Volcano/Physics/System.cpp
 )
 
@@ -19,7 +20,10 @@ target_include_directories(Physics PUBLIC
 volcano_target_setup(Physics)
 set_target_properties(Physics PROPERTIES OUTPUT_NAME VolcanoPhysics)
 
-target_link_libraries(Physics PUBLIC World)
+target_link_libraries(Physics PUBLIC Base)
+
+find_package(EnTT REQUIRED)
+target_link_libraries(Physics PUBLIC EnTT::EnTT)
 
 find_package(Jolt)
 target_link_libraries(Physics PUBLIC Jolt::Jolt)

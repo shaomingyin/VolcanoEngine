@@ -26,7 +26,7 @@ target_include_directories(Launcher PRIVATE
 )
 
 volcano_target_setup(Launcher)
-target_link_libraries(Launcher PRIVATE "$<LINK_LIBRARY:WHOLE_ARCHIVE,Game>")
+target_link_libraries(Launcher PRIVATE "$<LINK_LIBRARY:WHOLE_ARCHIVE,Gameplay>")
 target_link_libraries(Launcher PRIVATE Gui Graphics)
 
 find_package(argh REQUIRED)
