@@ -50,10 +50,4 @@ target_include_directories(Graphics PUBLIC
 volcano_target_setup(Graphics)
 set_target_properties(Graphics PROPERTIES OUTPUT_NAME VolcanoGraphics)
 
-target_link_libraries(Graphics PUBLIC Base)
-
-find_package(EnTT REQUIRED)
-target_link_libraries(Graphics PUBLIC EnTT::EnTT)
-
-find_package(SFML)
-target_link_libraries(Graphics PUBLIC SFML::Graphics)
+target_link_libraries(Graphics PUBLIC World)

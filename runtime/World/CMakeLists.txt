@@ -2,6 +2,7 @@
 add_library(World STATIC
     include/Volcano/World/Common.h
     include/Volcano/World/Config.h.in
+    include/Volcano/World/Context.h
     include/Volcano/World/Inherent.h
     include/Volcano/World/Scene.h
     src/Volcano/World/Common.cpp

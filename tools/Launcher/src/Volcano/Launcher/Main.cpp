@@ -56,7 +56,6 @@ public:
 
         spdlog::info("Initializing game...");
         auto game = volcanoCreateGame();
-        spdlog::info("{} - {}", game->name(), game->version().toString());
 
         if (cmdline({ "-c", "--client" })) {
             local_ = std::make_unique<Client>(*game);

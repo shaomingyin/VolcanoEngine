@@ -4,15 +4,10 @@
 #define VOLCANO_PHYSICS_COMMON_H
 
 #include <Jolt/Jolt.h>
-#include <Jolt/Physics/Body/BodyCreationSettings.h>
 
 #include <Volcano/Common.h>
+#include <Volcano/Math.h>
 #include <Volcano/Physics/Config.h>
-
-namespace JPH {
-    void to_json(nlohmann::json& json, const BodyCreationSettings& v);
-    void from_json(const nlohmann::json& json, BodyCreationSettings& v);
-}
 
 #define VOLCANO_PHYSICS_BEGIN VOLCANO_BEGIN namespace Physics {
 #define VOLCANO_PHYSICS_END } VOLCANO_END

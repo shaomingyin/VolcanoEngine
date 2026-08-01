@@ -3,8 +3,6 @@
 #ifndef VOLCANO_GRAPHICS_PASS_H
 #define VOLCANO_GRAPHICS_PASS_H
 
-#include <SFML/Graphics/RenderTarget.hpp>
-
 #include <Volcano/Graphics/Common.h>
 
 VOLCANO_GRAPHICS_BEGIN

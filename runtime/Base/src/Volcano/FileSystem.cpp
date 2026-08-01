@@ -13,7 +13,13 @@
 
 VOLCANO_FILESYSTEM_BEGIN
 
-std::string toNativeString(const std::filesystem::path& p) noexcept {
+static void throwError(std::string&& text) {
+	auto errmsg = text + PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode());
+	spdlog::error("Filesystem exception: {}", errmsg);
+	throw std::runtime_error(errmsg);
+}
+
+static std::string toNativeString(const std::filesystem::path& p) noexcept {
 #if defined(_WIN32)
 	std::wstring w = p.native();
 
@@ -43,7 +49,7 @@ std::string toNativeString(const std::filesystem::path& p) noexcept {
 #endif
 }
 
-class PHYSFS_FileInputStream final : public sf::InputStream {
+class PHYSFS_FileInputStream final: public sf::InputStream {
 public:
 	PHYSFS_FileInputStream(PHYSFS_File* fp, bool owned = true)
 		: fp_(fp)
@@ -98,18 +104,20 @@ private:
 void init(const char* argv0) {
 	spdlog::info("Initializing filesystem...");
 	if (PHYSFS_isInit()) {
-		throw std::runtime_error("Filesystem is already initialized.");
+		throw std::runtime_error("Filesystem is already initialized");
 	}
 	int ret = PHYSFS_init(argv0);
 	if (!ret) {
-		throw std::runtime_error("Failed to initialize filesystem: " + std::string(PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode())));
+		throwError("Failed to initialize filesystem: ");
 	}
 }
 
 void shutdown() {
 	spdlog::info("Shutting down filesystem...");
 	if (PHYSFS_isInit()) {
-		PHYSFS_deinit();
+		if (!PHYSFS_deinit()) {
+			throwError("Failed to deinitialize filesystem: ");
+		}
 	}
 }
 
@@ -118,7 +126,7 @@ void mount(const std::filesystem::path& path, const std::filesystem::path& os_pa
 	VOLCANO_ASSERT(!os_path.empty());
 	int ret = PHYSFS_mount(os_path.generic_string().c_str(), path.generic_string().c_str(), 0);
 	if (!ret) {
-		throw std::runtime_error("Failed to mount path '" + os_path.string() + "' at '" + path.string() + "': " + std::string(PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode())));
+		throwError("Failed to mount path '" + os_path.string() + "' at '" + path.string() + "': ");
 	}
 }
 
@@ -126,7 +134,7 @@ void unmount(const std::filesystem::path& path) {
 	VOLCANO_ASSERT(!path.empty());
 	int ret = PHYSFS_unmount(path.string().c_str());
 	if (!ret) {
-		throw std::runtime_error("Failed to unmount path '" + path.string() + "': " + std::string(PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode())));
+		throwError("Failed to unmount path '" + path.string() + "': ");
 	}
 }
 
@@ -140,7 +148,7 @@ bool isFile(const std::filesystem::path& path) {
 	PHYSFS_Stat st;
 	int ret = PHYSFS_stat(path.string().c_str(), &st);
 	if (!ret) {
-		throw std::runtime_error("Failed to stat path '" + path.string() + "': " + std::string(PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode())));
+		throwError("Failed to stat path '" + path.string() + "': ");
 	}
 	return st.filetype == PHYSFS_FILETYPE_REGULAR;
 }
@@ -150,7 +158,7 @@ bool isDirectory(const std::filesystem::path& path) {
 	PHYSFS_Stat st;
 	int ret = PHYSFS_stat(path.string().c_str(), &st);
 	if (!ret) {
-		throw std::runtime_error("Failed to stat path '" + path.string() + "': " + std::string(PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode())));
+		throwError("Failed to stat path '" + path.string() + "': ");
 	}
 	return st.filetype == PHYSFS_FILETYPE_DIRECTORY;
 }
@@ -159,7 +167,7 @@ void remove(const std::filesystem::path& path) {
 	VOLCANO_ASSERT(!path.empty());
 	int ret = PHYSFS_delete(path.string().c_str());
 	if (!ret) {
-		throw std::runtime_error("Failed to remove path '" + path.string() + "': " + std::string(PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode())));
+		throwError("Failed to remove path '" + path.string() + "': ");
 	}
 }
 
@@ -167,7 +175,7 @@ void createDirectory(const std::filesystem::path& dirpath) {
 	VOLCANO_ASSERT(!dirpath.empty());
 	int ret = PHYSFS_mkdir(dirpath.string().c_str());
 	if (!ret) {
-		throw std::runtime_error("Failed to create directory '" + dirpath.string() + "': " + std::string(PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode())));
+		throwError("Failed to create directory '" + dirpath.string() + "': ");
 	}
 }
 
@@ -197,7 +205,7 @@ size_t fileSize(const std::filesystem::path& filepath) {
 	PHYSFS_Stat st;
 	int ret = PHYSFS_stat(filepath.string().c_str(), &st);
 	if (!ret) {
-		throw std::runtime_error("Failed to stat file '" + filepath.string() + "': " + std::string(PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode())));
+		throwError("Failed to stat file '" + filepath.string() + "': ");
 	}
 	return st.filesize;
 }
@@ -206,7 +214,7 @@ std::unique_ptr<sf::InputStream> openFileForRead(const std::filesystem::path& fi
 	VOLCANO_ASSERT(!filepath.empty());
 	auto fp = PHYSFS_openRead(filepath.generic_string().c_str());
 	if (fp == nullptr) {
-		throw std::runtime_error(std::format("Failed to read physfs file: {}", filepath.generic_string()));
+		throwError(std::format("Failed to read physfs file: {}", filepath.generic_string()));
 	}
 	return std::make_unique<PHYSFS_FileInputStream>(fp);
 }

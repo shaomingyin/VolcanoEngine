@@ -18,8 +18,8 @@ void Frame::commit(int x, int y, int width, int height) const noexcept {
     glViewport(x, y, width, height);
 
     if (get(Bool::Clear)) {
-        auto& color = get(Color::Clear);
-        glClearColor(color.r / 255.0f, color.g / 255.0f, color.b / 255.0f, color.a / 255.0f);
+        auto& color = get(Vector4f::ClearColor);
+        glClearColor(color.x() / 255.0f, color.y() / 255.0f, color.z() / 255.0f, color.w() / 255.0f);
         glClear(GL_COLOR_BUFFER_BIT);
     }
 }

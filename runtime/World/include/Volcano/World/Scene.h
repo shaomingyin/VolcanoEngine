@@ -3,10 +3,8 @@
 #ifndef VOLCANO_WORLD_SCENE_H
 #define VOLCANO_WORLD_SCENE_H
 
-#include <memory>
 #include <string>
 
-#include <async++.h>
 #include <entt/entt.hpp>
 
 #include <Volcano/Version.h>
@@ -24,19 +22,28 @@ public:
         return name_;
     }
 
+    void setName(const std::string& v) noexcept {
+        name_ = v;
+    }
+
     const std::string& description() const noexcept {
         return description_;
+    }
+
+    void setDescription(const std::string& v) noexcept {
+        description_ = v;
     }
 
     const VersionNumber& version() const noexcept {
         return version_;
     }
 
-    virtual void load(const nlohmann::json& metadata);
+    void setVersion(const VersionNumber& v) noexcept {
+        version_ = v;
+    }
+
     virtual void update(Clock::duration elapsed) noexcept = 0;
     virtual entt::entity player() const noexcept = 0;
-
-
 
 private:
     void handleEntityAdded(entt::entity ent) noexcept;

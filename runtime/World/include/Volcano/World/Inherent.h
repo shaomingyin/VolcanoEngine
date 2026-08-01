@@ -12,6 +12,7 @@ VOLCANO_WORLD_BEGIN
 class Inherent {
 public:
 	Inherent() noexcept;
+	Inherent(std::string&& name, bool enabled = true, bool visible = true) noexcept;
 	Inherent(const Inherent&) = default;
 	Inherent(Inherent&&) = default;
 

@@ -15,7 +15,7 @@ VOLCANO_DEMO_BEGIN
 
 class Game: public World::Scene {
 public:
-    Game(const nlohmann::json& metadata);
+    Game();
     ~Game() override;
 
 public:

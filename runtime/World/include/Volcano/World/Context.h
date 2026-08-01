@@ -3,7 +3,7 @@
 #ifndef VOLCANO_WORLD_CONTEXT_H
 #define VOLCANO_WORLD_CONTEXT_H
 
-#include <async++.h>
+#include <entt/entt.hpp>
 
 #include <Volcano/World/Common.h>
 
@@ -15,19 +15,9 @@ public:
     virtual ~Context() = default;
 
 public:
-    void schedule(async::task_run_handle rh) {
-        scheduler_.schedule(std::move(rh));
-    }
-
-    virtual void load(nlohmann::json&& metadata, async::cancellation_token& cancellation);
-
-protected:
-    void runAllTasks() {
-        scheduler_.run_all_tasks();
-    }
-
-private:
-    async::fifo_scheduler scheduler_;
+    virtual void save(nlohmann::json& json) const = 0;
+    virtual void load(const nlohmann::json& json) = 0;
+    virtual void loadEntity(entt::handle ent, const nlohmann::json& json) = 0;
 };
 
 VOLCANO_WORLD_END

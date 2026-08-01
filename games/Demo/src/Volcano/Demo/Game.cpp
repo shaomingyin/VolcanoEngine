@@ -4,14 +4,8 @@
 
 VOLCANO_DEMO_BEGIN
 
-Game::Game(const nlohmann::json& metadata)
-    : World::Scene(metadata)
-    , physics_(*this) {
-    auto gravity_it = metadata.find("gravity");
-    if (gravity_it != metadata.end()) {
-        physics_.setGravity(gravity_it->get<Eigen::Vector3f>());
-    }
-
+Game::Game()
+    : physics_(*this) {
 }
 
 Game::~Game() {

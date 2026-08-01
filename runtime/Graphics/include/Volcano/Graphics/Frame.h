@@ -24,13 +24,14 @@ public:
         Max
     };
 
-    enum class Color {
-        Clear = 0,
-        AmbientLight,
+    enum class Vector3f {
+        AmbientLight = 0,
         Max
     };
 
-    enum class Vector3f {
+    enum class Vector4f {
+        ClearColor = 0,
+        AmbientLight,
         Max
     };
 
@@ -70,17 +71,17 @@ public:
     T& operator[](K k) noexcept { return get(k); }
 
     OPS(bool, Bool, bool_)
-    OPS(sf::Color, Color, color_)
-    OPS(Eigen::Affine3f, Affine3f, affine3f_)
-    //OPS(Eigen::Vector4i, Vector4i, vector4i_)
+    OPS(Eigen::Vector3f, Vector3f, vector3f_)
+    OPS(Eigen::Vector4f, Vector4f, vector4f_)
     OPS(Eigen::Matrix4f, Matrix4f, matrix4f_)
+    OPS(Eigen::Affine3f, Affine3f, affine3f_)
 
 private:
     bool bool_[static_cast<size_t>(Bool::Max)];
-    sf::Color color_[static_cast<size_t>(Color::Max)];
-    Eigen::Affine3f affine3f_[static_cast<size_t>(Affine3f::Max)];
-    //Eigen::Vector4i vector4i_[static_cast<size_t>(Vector4i::Max)];
+    Eigen::Vector3f vector3f_[static_cast<size_t>(Vector3f::Max)];
+    Eigen::Vector4f vector4f_[static_cast<size_t>(Vector4f::Max)];
     Eigen::Matrix4f matrix4f_[static_cast<size_t>(Matrix4f::Max)];
+    Eigen::Affine3f affine3f_[static_cast<size_t>(Affine3f::Max)];
 
 private:
     std::vector<Light> lights_;

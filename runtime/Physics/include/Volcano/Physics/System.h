@@ -17,6 +17,7 @@
 #include <Jolt/Physics/Body/BodyID.h>
 
 #include <Volcano/Math.h>
+#include <Volcano/World/Scene.h>
 #include <Volcano/Physics/Common.h>
 
 VOLCANO_PHYSICS_BEGIN
@@ -92,7 +93,7 @@ public:
 
 class System {
 public:
-	System(entt::registry& registry);
+	System(World::Scene& scene);
     virtual ~System();
 
 public:
@@ -108,7 +109,7 @@ protected:
     void onBodyRemoved(entt::entity ent) noexcept;
 
 private:
-    entt::registry& registry_;
+    World::Scene& scene_;
     Eigen::Vector3f gravity_;
     PhysicsBroadPhaseLayerInterface broad_phase_layer_interface_;
     PhysicsObjectVsBroadPhaseLayerFilter object_vs_broad_phase_layer_filter_;
