@@ -4,9 +4,10 @@
 #define VOLCANO_COMMON_H
 
 #include <QtGlobal>
-#include <QtConcurrent>
 #include <QtLogging>
+#include <QtConcurrent>
 
+#include <QDebug>
 #include <QVersionNumber>
 
 #include <Volcano/Config.h>

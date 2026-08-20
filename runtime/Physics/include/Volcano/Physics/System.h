@@ -1,0 +1,13 @@
+//
+//
+#ifndef VOLCANO_PHYSICS_SYSTEM_H
+#define VOLCANO_PHYSICS_SYSTEM_H
+
+#include <Volcano/Physics/Common.h>
+
+VOLCANO_PHYSICS_BEGIN
+
+
+VOLCANO_PHYSICS_END
+
+#endif // VOLCANO_PHYSICS_SYSTEM_H

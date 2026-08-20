@@ -9,14 +9,18 @@
 #include <QObject>
 
 #include <Volcano/World/Common.h>
+#include <Volcano/World/Component.h>
 #include <Volcano/World/Transform.h>
-#include <Volcano/World/EntityPhysics.h>
 
 VOLCANO_WORLD_BEGIN
 
+using ComponentList = QList<Component*>;
+
+class World;
+
 class Entity: public QObject {
     Q_OBJECT
-    Q_PROPERTY(bool enabled READ isEnabled WRITE setEnabled NOTIFY enabledChanged FINAL)
+    Q_PROPERTY(bool enabled READ isEnabled WRITE setEnabled NOTIFY enabledChanged)
     Q_PROPERTY(Transform* transform READ transform)
     Q_PROPERTY(QQmlListProperty<Component> components READ qmlComponents)
     Q_CLASSINFO("DefaultProperty", "components")
@@ -26,42 +30,30 @@ public:
     ~Entity() override;
 
 public:
-    Transform* transform() noexcept {
-        return &transform_;
-    }
-
-    bool isEnabled() const {
-        return enabled_;
-    }
-
-    void setEnabled(bool v) {
-        if (enabled_ != v) {
-            enabled_ = v;
-            emit enabledChanged(v);
-        }
-    }
-
-    const QObjectList& components() const {
-        return components_;
-    }
-
-    void appendComponent(QObject* p);
-    QObject* componentAt(qsizetype i);
+    void init(entt::registry& registry);
+    entt::handle handle() noexcept;
+    Transform* transform() noexcept;
+    bool isEnabled() const noexcept;
+    void setEnabled(bool v) noexcept;
+    const ComponentList& components() const noexcept;
+    void appendComponent(Component* p);
+    Component* componentAt(qsizetype i);
     void clearComponents();
     qsizetype componentCount();
     void removeLastComponent();
-    void replaceComponent(qsizetype i, QObject* p);
-    QQmlListProperty<QObject> qmlComponents();
+    void replaceComponent(qsizetype i, Component* p);
+    QQmlListProperty<Component> qmlComponents();
 
 signals:
     void enabledChanged(bool v);
-    void componentAdded(QObject* p);
-    void componentRemoved(QObject* p);
+    void componentAdded(Component* p);
+    void componentRemoved(Component* p);
 
 private:
     bool enabled_;
     Transform transform_;
-    QObjectList components_;
+    entt::handle handle_;
+    ComponentList components_;
 };
 
 VOLCANO_WORLD_END

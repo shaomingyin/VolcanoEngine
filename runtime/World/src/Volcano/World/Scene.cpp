@@ -12,8 +12,13 @@ Scene::~Scene() {
     clearEntities();
 }
 
+const EntityList& Scene::entities() const noexcept {
+    return entities_;
+}
+
 void Scene::appendEntity(Entity* p) {
     entities_.append(p);
+    p->init(registry_);
     handleEntityAdded(p);
 }
 
@@ -86,9 +91,6 @@ void Scene::handleEntityRemoved(Entity* entity) {
 
 void Scene::handleComponentRemoved(Entity* entity, QObject* component) {
     emit componentRemoved(entity, component);
-}
-
-void Scene::update(Clock::duration elapsed) {
 }
 
 VOLCANO_WORLD_END
