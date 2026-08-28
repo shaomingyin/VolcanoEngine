@@ -4,9 +4,31 @@ add_library(World STATIC
     include/Volcano/World/Config.h.in
     include/Volcano/World/Context.h
     include/Volcano/World/Inherent.h
+    include/Volcano/World/Physics.h
     include/Volcano/World/Scene.h
+    include/Volcano/World/Camera.h
+    include/Volcano/World/DirectionalLight.h
+    include/Volcano/World/Light.h
+    include/Volcano/World/Material.h
+    include/Volcano/World/Mesh.h
+    include/Volcano/World/Model.h
+    include/Volcano/World/OrthographicCamera.h
+    include/Volcano/World/PerspectiveCamera.h
+    include/Volcano/World/PointLight.h
+    include/Volcano/World/SpotLight.h
+    src/Volcano/World/Camera.cpp
+    src/Volcano/World/DirectionalLight.cpp
+    src/Volcano/World/Light.cpp
+    src/Volcano/World/Material.cpp
+    src/Volcano/World/Mesh.cpp
+    src/Volcano/World/Model.cpp
+    src/Volcano/World/OrthographicCamera.cpp
+    src/Volcano/World/PerspectiveCamera.cpp
+    src/Volcano/World/PointLight.cpp
+    src/Volcano/World/SpotLight.cpp
     src/Volcano/World/Common.cpp
     src/Volcano/World/Inherent.cpp
+    src/Volcano/World/Physics.cpp
     src/Volcano/World/Scene.cpp
 )
 
@@ -28,6 +50,9 @@ target_link_libraries(World PUBLIC Base)
 
 find_package(EnTT REQUIRED)
 target_link_libraries(World PUBLIC EnTT::EnTT)
+
+find_package(Jolt)
+target_link_libraries(World PUBLIC Jolt::Jolt)
 
 #set(SCHEMA_GEN_DIR ${CMAKE_CURRENT_BINARY_DIR}/gen)
 #find_package(protobuf)

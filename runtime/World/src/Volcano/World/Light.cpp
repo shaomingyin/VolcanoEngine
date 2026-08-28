@@ -1,8 +1,8 @@
 //
 //
-#include <Volcano/Graphics/Light.h>
+#include <Volcano/World/Light.h>
 
-VOLCANO_GRAPHICS_BEGIN
+VOLCANO_WORLD_BEGIN
 
 Light::Light() noexcept
     : color_(1.0f, 1.0f, 1.0f)
@@ -33,4 +33,4 @@ void from_json(const nlohmann::json& json, Light& v) {
     }
 }
 
-VOLCANO_GRAPHICS_END
+VOLCANO_WORLD_END

@@ -1,8 +1,8 @@
 //
 //
-#include <Volcano/Graphics/OrthographicCamera.h>
+#include <Volcano/World/OrthographicCamera.h>
 
-VOLCANO_GRAPHICS_BEGIN
+VOLCANO_WORLD_BEGIN
 
 OrthographicCamera::OrthographicCamera() noexcept
     : rect_(0.0f, 1.0f, 0.0f, 1.0f) {
@@ -36,4 +36,4 @@ void from_json(const nlohmann::json& json, OrthographicCamera& v) {
     v.rect_ = json["rect"].get<Eigen::Vector4f>();
 }
 
-VOLCANO_GRAPHICS_END
+VOLCANO_WORLD_END

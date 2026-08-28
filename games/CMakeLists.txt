@@ -9,7 +9,7 @@ set(VOLCANO_GAMES)
 
 file(GLOB DENTS LIST_DIRECTORIES true "${CMAKE_CURRENT_SOURCE_DIR}/*")
 foreach(DENT ${DENTS})
-	if(IS_READABLE ${DENT}/CMakeLists.txt)
+	if(EXISTS ${DENT}/CMakeLists.txt)
 		get_filename_component(DIR ${DENT} NAME)
 		list(APPEND VOLCANO_GAMES ${DIR})
 	endif()

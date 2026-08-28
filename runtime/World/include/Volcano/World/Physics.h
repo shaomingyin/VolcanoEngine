@@ -1,7 +1,7 @@
 //
 //
-#ifndef VOLCANO_PHYSICS_SYSTEM_H
-#define VOLCANO_PHYSICS_SYSTEM_H
+#ifndef VOLCANO_WORLD_PHYSICS_H
+#define VOLCANO_WORLD_PHYSICS_H
 
 #include <memory>
 
@@ -17,10 +17,25 @@
 #include <Jolt/Physics/Body/BodyID.h>
 
 #include <Volcano/Math.h>
-#include <Volcano/World/Scene.h>
-#include <Volcano/Physics/Common.h>
+#include <Volcano/World/Common.h>
 
-VOLCANO_PHYSICS_BEGIN
+VOLCANO_WORLD_BEGIN
+
+inline Eigen::Vector3f fromJPH(JPH::Vec3 v) noexcept {
+    return Eigen::Vector3f(v.GetX(), v.GetY(), v.GetZ());
+}
+
+inline JPH::Vec3 toJPH(Eigen::Vector3f v) noexcept {
+    return JPH::Vec3(v.x(), v.y(), v.z());
+}
+
+inline Eigen::Quaternionf fromJPH(JPH::Quat v) noexcept {
+    return Eigen::Quaternionf(v.GetW(), v.GetX(), v.GetY(), v.GetZ());
+}
+
+inline JPH::Quat toJPH(Eigen::Quaternionf v) noexcept {
+    return JPH::Quat(v.w(), v.x(), v.y(), v.z());
+}
 
 namespace PhysicsLayers {
 	static constexpr JPH::ObjectLayer NON_MOVING = 0;
@@ -91,12 +106,15 @@ public:
 	}
 };
 
-class System {
+class Physics {
 public:
-	System(World::Scene& scene);
-    virtual ~System();
+	Physics(entt::registry& registry);
+    virtual ~Physics();
 
 public:
+	static void init();
+	static void shutdown();
+
     const Eigen::Vector3f& gravity() const noexcept {
         return gravity_;
     }
@@ -109,7 +127,7 @@ protected:
     void onBodyRemoved(entt::entity ent) noexcept;
 
 private:
-    World::Scene& scene_;
+    entt::registry& registry_;
     Eigen::Vector3f gravity_;
     PhysicsBroadPhaseLayerInterface broad_phase_layer_interface_;
     PhysicsObjectVsBroadPhaseLayerFilter object_vs_broad_phase_layer_filter_;
@@ -120,6 +138,6 @@ private:
     JPH::BodyInterface* body_interface_;
 };
 
-VOLCANO_PHYSICS_END
+VOLCANO_WORLD_END
 
-#endif // VOLCANO_PHYSICS_SYSTEM_H
+#endif // VOLCANO_WORLD_PHYSICS_H

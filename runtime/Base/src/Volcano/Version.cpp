@@ -2,6 +2,8 @@
 //
 #include <Volcano/Version.h>
 
+#include <fmt/format.h>
+
 VOLCANO_BEGIN
 
 VersionNumber::VersionNumber()
@@ -17,7 +19,7 @@ VersionNumber::VersionNumber(int major, int minor, int patch)
 }
 
 std::string VersionNumber::toString() const {
-    return std::format("{}.{}.{}", major_, minor_, patch_);
+    return fmt::format("{}.{}.{}", major_, minor_, patch_);
 }
 
 bool VersionNumber::operator==(const VersionNumber& other) const noexcept {

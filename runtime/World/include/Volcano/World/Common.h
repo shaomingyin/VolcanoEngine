@@ -3,7 +3,10 @@
 #ifndef VOLCANO_WORLD_COMMON_H
 #define VOLCANO_WORLD_COMMON_H
 
+#include <Jolt/Jolt.h>
+
 #include <Volcano/Common.h>
+#include <Volcano/Math.h>
 #include <Volcano/World/Config.h>
 
 #define VOLCANO_WORLD_BEGIN VOLCANO_BEGIN namespace World {

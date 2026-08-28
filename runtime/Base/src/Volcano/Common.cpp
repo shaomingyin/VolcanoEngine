@@ -2,6 +2,8 @@
 //
 #include <Volcano/Common.h>
 
+#include <fmt/format.h>
+
 VOLCANO_BEGIN
 
 void to_json(nlohmann::json& json, const ByteArray& v) {
@@ -99,7 +101,7 @@ std::unique_ptr<sf::InputStream> PHYSFS_openInputStream(const std::filesystem::p
 	VOLCANO_ASSERT(!filepath.empty());
 	auto fp = PHYSFS_openRead(filepath.generic_string().c_str());
 	if (fp == nullptr) {
-		throw std::runtime_error(std::format("Failed to read physfs file: {}", filepath.generic_string()));
+		throw std::runtime_error(fmt::format("Failed to read physfs file: {}", filepath.generic_string()));
 	}
 	return std::make_unique<PHYSFS_File_InputStream>(fp);
 }
@@ -110,7 +112,7 @@ ByteArray PHYSFS_readAll(const std::filesystem::path& filepath) {
 	ByteArray data(fp->getSize().value_or(0));
 	auto read_ret = fp->read(data.data(), data.size());
 	if (!read_ret.has_value() || read_ret.value() != data.size()) {
-		throw std::runtime_error(std::format("Failed to read physfs file: {}", filepath.generic_string()));
+		throw std::runtime_error(fmt::format("Failed to read physfs file: {}", filepath.generic_string()));
 	}
 	return data;
 }

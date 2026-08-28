@@ -1,8 +1,8 @@
 //
 //
-#include <Volcano/Graphics/SpotLight.h>
+#include <Volcano/World/SpotLight.h>
 
-VOLCANO_GRAPHICS_BEGIN
+VOLCANO_WORLD_BEGIN
 
 SpotLight::SpotLight() noexcept
     : inner_angle_(15.0f)
@@ -21,4 +21,4 @@ SpotLight::SpotLight(float dx, float dy, float dz, float r, float g, float b, fl
     , outer_angle_(outer_angle) {
 }
 
-VOLCANO_GRAPHICS_END
+VOLCANO_WORLD_END

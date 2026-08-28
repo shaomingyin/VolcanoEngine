@@ -1,11 +1,11 @@
 //
 //
-#include <Volcano/Graphics/Light.h>
-#include <Volcano/Graphics/DirectionalLight.h>
-#include <Volcano/Graphics/PointLight.h>
-#include <Volcano/Graphics/SpotLight.h>
-#include <Volcano/Graphics/OrthographicCamera.h>
-#include <Volcano/Graphics/PerspectiveCamera.h>
+#include <Volcano/World/Light.h>
+#include <Volcano/World/DirectionalLight.h>
+#include <Volcano/World/PointLight.h>
+#include <Volcano/World/SpotLight.h>
+#include <Volcano/World/OrthographicCamera.h>
+#include <Volcano/World/PerspectiveCamera.h>
 #include <Volcano/Graphics/Renderer.h>
 
 VOLCANO_GRAPHICS_BEGIN

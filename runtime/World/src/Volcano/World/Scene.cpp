@@ -6,7 +6,8 @@
 
 VOLCANO_WORLD_BEGIN
 
-Scene::Scene() {
+Scene::Scene()
+	: physics_(*this) {
 }
 
 Scene::~Scene() {

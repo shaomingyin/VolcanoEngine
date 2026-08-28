@@ -1,12 +1,12 @@
 //
 //
-#ifndef VOLCANO_GRAPHICS_SPOTLIGHT_H
-#define VOLCANO_GRAPHICS_SPOTLIGHT_H
+#ifndef VOLCANO_WORLD_SPOTLIGHT_H
+#define VOLCANO_WORLD_SPOTLIGHT_H
 
-#include <Volcano/Graphics/Common.h>
-#include <Volcano/Graphics/DirectionalLight.h>
+#include <Volcano/World/Common.h>
+#include <Volcano/World/DirectionalLight.h>
 
-VOLCANO_GRAPHICS_BEGIN
+VOLCANO_WORLD_BEGIN
 
 class SpotLight: public DirectionalLight {
 public:
@@ -41,6 +41,6 @@ private:
 	float outer_angle_;
 };
 
-VOLCANO_GRAPHICS_END
+VOLCANO_WORLD_END
 
-#endif // VOLCANO_GRAPHICS_SPOTLIGHT_H
+#endif // VOLCANO_WORLD_SPOTLIGHT_H

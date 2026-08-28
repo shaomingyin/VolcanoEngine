@@ -1,12 +1,12 @@
 //
 //
-#ifndef VOLCANO_GRAPHICS_CAMERA_H
-#define VOLCANO_GRAPHICS_CAMERA_H
+#ifndef VOLCANO_WORLD_CAMERA_H
+#define VOLCANO_WORLD_CAMERA_H
 
 #include <Volcano/Math.h>
-#include <Volcano/Graphics/Common.h>
+#include <Volcano/World/Common.h>
 
-VOLCANO_GRAPHICS_BEGIN
+VOLCANO_WORLD_BEGIN
 
 class Camera {
 public:
@@ -45,6 +45,6 @@ private:
     Eigen::Vector2f zrange_;
 };
 
-VOLCANO_GRAPHICS_END
+VOLCANO_WORLD_END
 
-#endif // VOLCANO_GRAPHICS_CAMERA_H
+#endif // VOLCANO_WORLD_CAMERA_H

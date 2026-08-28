@@ -1,8 +1,8 @@
 //
 //
-#include <Volcano/Graphics/DirectionalLight.h>
+#include <Volcano/World/DirectionalLight.h>
 
-VOLCANO_GRAPHICS_BEGIN
+VOLCANO_WORLD_BEGIN
 
 DirectionalLight::DirectionalLight() noexcept
     : direction_(0.0f, -1.0f, 0.0f) {
@@ -28,4 +28,4 @@ void from_json(const nlohmann::json& json, DirectionalLight& v) {
     v.direction_ = json["direction"];
 }
 
-VOLCANO_GRAPHICS_END
+VOLCANO_WORLD_END

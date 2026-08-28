@@ -1,12 +1,12 @@
 //
 //
-#ifndef VOLCANO_GRAPHICS_LIGHT_H
-#define VOLCANO_GRAPHICS_LIGHT_H
+#ifndef VOLCANO_WORLD_LIGHT_H
+#define VOLCANO_WORLD_LIGHT_H
 
 #include <Volcano/Math.h>
-#include <Volcano/Graphics/Common.h>
+#include <Volcano/World/Common.h>
 
-VOLCANO_GRAPHICS_BEGIN
+VOLCANO_WORLD_BEGIN
 
 class Light {
 public:
@@ -53,6 +53,6 @@ private:
     float strength_;
 };
 
-VOLCANO_GRAPHICS_END
+VOLCANO_WORLD_END
 
-#endif // VOLCANO_GRAPHICS_LIGHT_H
+#endif // VOLCANO_WORLD_LIGHT_H

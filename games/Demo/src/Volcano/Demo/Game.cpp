@@ -4,8 +4,7 @@
 
 VOLCANO_DEMO_BEGIN
 
-Game::Game()
-    : physics_(*this) {
+Game::Game() {
 }
 
 Game::~Game() {

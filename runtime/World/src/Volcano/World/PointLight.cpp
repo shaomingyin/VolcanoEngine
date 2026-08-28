@@ -1,8 +1,8 @@
 //
 //
-#include <Volcano/Graphics/PointLight.h>
+#include <Volcano/World/PointLight.h>
 
-VOLCANO_GRAPHICS_BEGIN
+VOLCANO_WORLD_BEGIN
 
 PointLight::PointLight() noexcept
     : range_(10.0f) {
@@ -18,4 +18,4 @@ PointLight::PointLight(float r, float g, float b, float strength, float range) n
     , range_(range) {
 }
 
-VOLCANO_GRAPHICS_END
+VOLCANO_WORLD_END

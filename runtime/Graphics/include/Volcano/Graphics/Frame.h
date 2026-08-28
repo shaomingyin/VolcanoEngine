@@ -8,11 +8,6 @@
 #include <Volcano/Math.h>
 #include <Volcano/Graphics/Common.h>
 #include <Volcano/Graphics/Pass.h>
-#include <Volcano/Graphics/Model.h>
-#include <Volcano/Graphics/Light.h>
-#include <Volcano/Graphics/DirectionalLight.h>
-#include <Volcano/Graphics/PointLight.h>
-#include <Volcano/Graphics/SpotLight.h>
 
 VOLCANO_GRAPHICS_BEGIN
 
@@ -57,10 +52,6 @@ public:
     void reset() noexcept;
     void commit(int x, int y, int width, int height) const noexcept;
 
-    void add(const Light& v) noexcept {
-        lights_.push_back(v);
-    }
-
     void add(const Transform& transform) noexcept {
     }
 
@@ -84,7 +75,6 @@ private:
     Eigen::Affine3f affine3f_[static_cast<size_t>(Affine3f::Max)];
 
 private:
-    std::vector<Light> lights_;
 };
 
 VOLCANO_GRAPHICS_END

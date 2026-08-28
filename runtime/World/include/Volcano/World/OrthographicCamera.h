@@ -1,12 +1,12 @@
 //
 //
-#ifndef VOLCANO_GRAPHICS_ORTHOGRAPHICSCAMERA_H
-#define VOLCANO_GRAPHICS_ORTHOGRAPHICSCAMERA_H
+#ifndef VOLCANO_WORLD_ORTHOGRAPHICSCAMERA_H
+#define VOLCANO_WORLD_ORTHOGRAPHICSCAMERA_H
 
-#include <Volcano/Graphics/Common.h>
-#include <Volcano/Graphics/Camera.h>
+#include <Volcano/World/Common.h>
+#include <Volcano/World/Camera.h>
 
-VOLCANO_GRAPHICS_BEGIN
+VOLCANO_WORLD_BEGIN
 
 class OrthographicCamera: public Camera {
 public:
@@ -28,6 +28,6 @@ private:
     Eigen::Vector4f rect_;
 };
 
-VOLCANO_GRAPHICS_END
+VOLCANO_WORLD_END
 
-#endif // VOLCANO_GRAPHICS_ORTHOGRAPHICSCAMERA_H
+#endif // VOLCANO_WORLD_ORTHOGRAPHICSCAMERA_H

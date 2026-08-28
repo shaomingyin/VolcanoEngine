@@ -8,7 +8,6 @@
 #include <Volcano/Math.h>
 #include <Volcano/World/Scene.h>
 #include <Volcano/Graphics/Common.h>
-#include <Volcano/Graphics/Camera.h>
 #include <Volcano/Graphics/Frame.h>
 
 VOLCANO_GRAPHICS_BEGIN

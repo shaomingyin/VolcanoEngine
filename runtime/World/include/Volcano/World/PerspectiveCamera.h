@@ -1,12 +1,12 @@
 //
 //
-#ifndef VOLCANO_GRAPHICS_PERSPECTIVECAMERA_H
-#define VOLCANO_GRAPHICS_PERSPECTIVECAMERA_H
+#ifndef VOLCANO_WORLD_PERSPECTIVECAMERA_H
+#define VOLCANO_WORLD_PERSPECTIVECAMERA_H
 
-#include <Volcano/Graphics/Common.h>
-#include <Volcano/Graphics/Camera.h>
+#include <Volcano/World/Common.h>
+#include <Volcano/World/Camera.h>
 
-VOLCANO_GRAPHICS_BEGIN
+VOLCANO_WORLD_BEGIN
 
 class PerspectiveCamera: public Camera {
 public:
@@ -29,6 +29,6 @@ private:
 	float aspect_;
 };
 
-VOLCANO_GRAPHICS_END
+VOLCANO_WORLD_END
 
-#endif // VOLCANO_GRAPHICS_PERSPECTIVECAMERA_H
+#endif // VOLCANO_WORLD_PERSPECTIVECAMERA_H

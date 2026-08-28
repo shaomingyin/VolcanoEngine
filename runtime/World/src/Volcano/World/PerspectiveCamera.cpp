@@ -1,8 +1,8 @@
 //
 //
-#include <Volcano/Graphics/PerspectiveCamera.h>
+#include <Volcano/World/PerspectiveCamera.h>
 
-VOLCANO_GRAPHICS_BEGIN
+VOLCANO_WORLD_BEGIN
 
 PerspectiveCamera::PerspectiveCamera() noexcept
     : fov_(90.0f)
@@ -40,4 +40,4 @@ void from_json(const nlohmann::json& json, PerspectiveCamera& v) {
     v.aspect_ = json["aspect"].get<float>();
 }
 
-VOLCANO_GRAPHICS_END
+VOLCANO_WORLD_END

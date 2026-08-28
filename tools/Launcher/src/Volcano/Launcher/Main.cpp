@@ -1,7 +1,6 @@
 //
 //
 #include <string>
-#include <format>
 #include <memory>
 #include <stdexcept>
 #include <filesystem>
@@ -11,7 +10,6 @@
 #include <Volcano/ScopeGuard.h>
 #include <Volcano/FileSystem.h>
 #include <Volcano/World/Scene.h>
-#include <Volcano/Physics/Common.h>
 #include <Volcano/Launcher/Local.h>
 #include <Volcano/Launcher/Client.h>
 #include <Volcano/Launcher/Common.h>
@@ -49,9 +47,9 @@ public:
         });
         FileSystem::mount("/", root_path.native().c_str());
 
-        Physics::init();
+        World::Physics::init();
         auto physics_guard = scopeGuard([] {
-            Physics::shutdown();
+            World::Physics::shutdown();
         });
 
         spdlog::info("Initializing game...");
@@ -70,7 +68,7 @@ public:
     }
 
     ~Application() {
-        Physics::shutdown();
+        World::Physics::shutdown();
         FileSystem::shutdown();
     }
 

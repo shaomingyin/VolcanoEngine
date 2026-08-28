@@ -9,6 +9,7 @@
 
 #include <Volcano/Version.h>
 #include <Volcano/World/Common.h>
+#include <Volcano/World/Physics.h>
 
 VOLCANO_WORLD_BEGIN
 
@@ -42,6 +43,14 @@ public:
         version_ = v;
     }
 
+    Physics& physics() noexcept {
+        return physics_;
+    }
+
+    const Physics& physics() const noexcept {
+        return physics_;
+    }
+
     virtual void update(Clock::duration elapsed) noexcept = 0;
     virtual entt::entity player() const noexcept = 0;
 
@@ -53,6 +62,7 @@ private:
     std::string name_;
     std::string description_;
     VersionNumber version_;
+    Physics physics_;
 };
 
 VOLCANO_WORLD_END

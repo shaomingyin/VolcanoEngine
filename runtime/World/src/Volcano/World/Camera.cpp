@@ -1,8 +1,8 @@
 //
 //
-#include <Volcano/Graphics/Camera.h>
+#include <Volcano/World/Camera.h>
 
-VOLCANO_GRAPHICS_BEGIN
+VOLCANO_WORLD_BEGIN
 
 Camera::Camera() noexcept
     : Camera(0.1f, 100.0f) {
@@ -34,4 +34,4 @@ void from_json(const nlohmann::json& json, Camera& v) {
     }
 }
 
-VOLCANO_GRAPHICS_END
+VOLCANO_WORLD_END

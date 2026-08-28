@@ -11,6 +11,8 @@
 
 #include <Volcano/FileSystem.h>
 
+#include <fmt/format.h>
+
 VOLCANO_FILESYSTEM_BEGIN
 
 static void throwError(std::string&& text) {
@@ -19,7 +21,7 @@ static void throwError(std::string&& text) {
 	throw std::runtime_error(errmsg);
 }
 
-static std::string toNativeString(const std::filesystem::path& p) noexcept {
+std::string toNativeString(const std::filesystem::path& p) noexcept {
 #if defined(_WIN32)
 	std::wstring w = p.native();
 
@@ -214,7 +216,7 @@ std::unique_ptr<sf::InputStream> openFileForRead(const std::filesystem::path& fi
 	VOLCANO_ASSERT(!filepath.empty());
 	auto fp = PHYSFS_openRead(filepath.generic_string().c_str());
 	if (fp == nullptr) {
-		throwError(std::format("Failed to read physfs file: {}", filepath.generic_string()));
+		throwError(fmt::format("Failed to read physfs file: {}", filepath.generic_string()));
 	}
 	return std::make_unique<PHYSFS_FileInputStream>(fp);
 }
