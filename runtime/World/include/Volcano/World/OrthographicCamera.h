@@ -19,10 +19,15 @@ public:
     OrthographicCamera& operator=(const OrthographicCamera&) noexcept = default;
     OrthographicCamera& operator=(OrthographicCamera&&) noexcept = default;
 
-    Eigen::Matrix4f toMatrix() const noexcept override;
+    Eigen::Vector4f& rect() noexcept {
+        return rect_;
+    }
 
-    friend void to_json(nlohmann::json& json, const OrthographicCamera& v);
-    friend void from_json(const nlohmann::json& json, OrthographicCamera& v);
+    const Eigen::Vector4f& rect() const noexcept {
+        return rect_;
+    }
+
+    Eigen::Matrix4f toMatrix() const noexcept override;
 
 private:
     Eigen::Vector4f rect_;

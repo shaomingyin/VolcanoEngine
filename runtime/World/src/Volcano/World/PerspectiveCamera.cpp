@@ -2,6 +2,8 @@
 //
 #include <Volcano/World/PerspectiveCamera.h>
 
+#include <cmath>
+
 VOLCANO_WORLD_BEGIN
 
 PerspectiveCamera::PerspectiveCamera() noexcept
@@ -19,25 +21,14 @@ Eigen::Matrix4f PerspectiveCamera::toMatrix() const noexcept {
     Eigen::Matrix4f m = Eigen::Matrix4f::Zero();
     float znear = zRange().x();
     float zfar = zRange().y();
-    float f = 1.0f / std::tan(fov_ * 0.5f);
+    constexpr float Pi = 3.14159265358979323846f;
+    float f = 1.0f / std::tan(fov_ * Pi / 360.0f);
     m(0, 0) = f / aspect_;
     m(1, 1) = f;
     m(2, 2) = -(zfar + znear) / (zfar - znear);
     m(2, 3) = -(2.0f * zfar * znear) / (zfar - znear);
     m(3, 2) = -1.0f;
     return m;
-}
-
-void to_json(nlohmann::json& json, const PerspectiveCamera& v) {
-    to_json(json, static_cast<const Camera&>(v));
-    json["fov"] = v.fov_;
-    json["aspect"] = v.aspect_;
-}
-
-void from_json(const nlohmann::json& json, PerspectiveCamera& v) {
-    from_json(json, static_cast<Camera&>(v));
-    v.fov_ = json["fov"].get<float>();
-    v.aspect_ = json["aspect"].get<float>();
 }
 
 VOLCANO_WORLD_END

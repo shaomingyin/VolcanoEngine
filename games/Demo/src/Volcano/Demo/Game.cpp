@@ -10,7 +10,7 @@ Game::Game() {
 Game::~Game() {
 }
 
-void Game::update(Clock::duration elapsed) noexcept {
+void Game::onUpdate(Clock::duration elapsed) noexcept {
 }
 
 entt::entity Game::player() const noexcept {

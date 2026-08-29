@@ -26,14 +26,4 @@ Eigen::Matrix4f OrthographicCamera::toMatrix() const noexcept {
     return m;
 }
 
-void to_json(nlohmann::json& json, const OrthographicCamera& v) {
-    to_json(json, static_cast<const Camera&>(v));
-    json["rect"] = v.rect_;
-}
-
-void from_json(const nlohmann::json& json, OrthographicCamera& v) {
-    from_json(json, static_cast<Camera&>(v));
-    v.rect_ = json["rect"].get<Eigen::Vector4f>();
-}
-
 VOLCANO_WORLD_END

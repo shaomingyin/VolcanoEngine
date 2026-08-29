@@ -44,9 +44,6 @@ public:
         return strength_;
     }
 
-    friend void to_json(nlohmann::json& json, const Light& v);
-    friend void from_json(const nlohmann::json& json, Light& v);
-
 private:
     Transform offset_;
     Eigen::Vector3f color_;

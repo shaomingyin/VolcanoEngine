@@ -37,9 +37,6 @@ public:
     bool operator>(const VersionNumber& other) const noexcept;
     bool operator>=(const VersionNumber& other) const noexcept;
 
-    friend void to_json(nlohmann::json& json, const VersionNumber& v);
-    friend void from_json(const nlohmann::json& json, VersionNumber& v);
-
 private:
     int major_;
     int minor_;

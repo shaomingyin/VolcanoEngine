@@ -1,33 +1,31 @@
-//
-//
-#include <Volcano/World/Light.h>
-#include <Volcano/World/DirectionalLight.h>
-#include <Volcano/World/PointLight.h>
-#include <Volcano/World/SpotLight.h>
-#include <Volcano/World/OrthographicCamera.h>
-#include <Volcano/World/PerspectiveCamera.h>
 #include <Volcano/Graphics/Renderer.h>
 
 VOLCANO_GRAPHICS_BEGIN
 
 Renderer::Renderer(World::Scene& scene)
     : scene_(scene) {
-	spdlog::info("Initializing graphics renderer...");
-    //auto models_view = registry_.view<Transform, Game::Model>();
-    //for (auto ent: models_view) {
-    //    onModelAdded(ent);
-    //}
+    spdlog::info("Initializing graphics renderer...");
 }
 
 Renderer::~Renderer() {
 }
 
 void Renderer::build() noexcept {
-
 }
 
-void Renderer::render() const noexcept {
+void Renderer::resize(int width, int height) noexcept {
+    width_ = width;
+    height_ = height;
+    frame_.setViewport(width, height);
+}
 
+void Renderer::beginFrame() noexcept {
+    frame_.reset();
+    frame_.setViewport(width_, height_);
+}
+
+void Renderer::render() {
+    frame_.commit(0, 0, width_, height_);
 }
 
 VOLCANO_GRAPHICS_END

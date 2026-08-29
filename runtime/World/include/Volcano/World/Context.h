@@ -15,9 +15,6 @@ public:
     virtual ~Context() = default;
 
 public:
-    virtual void save(nlohmann::json& json) const = 0;
-    virtual void load(const nlohmann::json& json) = 0;
-    virtual void loadEntity(entt::handle ent, const nlohmann::json& json) = 0;
 };
 
 VOLCANO_WORLD_END

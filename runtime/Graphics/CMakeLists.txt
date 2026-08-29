@@ -8,11 +8,23 @@ add_library(Graphics STATIC
 	
     include/Volcano/Graphics/Common.h
     include/Volcano/Graphics/Config.h.in
+    include/Volcano/Graphics/DeferredRenderer.h
     include/Volcano/Graphics/Frame.h
+    include/Volcano/Graphics/GBuffer.h
+    include/Volcano/Graphics/GeometryPass.h
+    include/Volcano/Graphics/LightingPass.h
+    include/Volcano/Graphics/Material.h
+    include/Volcano/Graphics/Mesh.h
     include/Volcano/Graphics/Pass.h
     include/Volcano/Graphics/Renderer.h
     src/Volcano/Graphics/Common.cpp
+    src/Volcano/Graphics/DeferredRenderer.cpp
     src/Volcano/Graphics/Frame.cpp
+    src/Volcano/Graphics/GBuffer.cpp
+    src/Volcano/Graphics/GeometryPass.cpp
+    src/Volcano/Graphics/LightingPass.cpp
+    src/Volcano/Graphics/Material.cpp
+    src/Volcano/Graphics/Mesh.cpp
     src/Volcano/Graphics/Pass.cpp
     src/Volcano/Graphics/Renderer.cpp
 )

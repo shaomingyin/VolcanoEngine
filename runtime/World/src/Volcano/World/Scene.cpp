@@ -15,6 +15,8 @@ Scene::~Scene() {
 }
 
 void Scene::update(Clock::duration elapsed) noexcept {
+	onUpdate(elapsed);
+	physics_.update(elapsed);
 }
 
 VOLCANO_WORLD_END

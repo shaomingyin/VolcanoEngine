@@ -18,8 +18,10 @@ public:
     ~Game() override;
 
 public:
-    void update(Clock::duration elapsed) noexcept override;
     entt::entity player() const noexcept override;
+
+protected:
+    void onUpdate(Clock::duration elapsed) noexcept override;
 
 private:
 };

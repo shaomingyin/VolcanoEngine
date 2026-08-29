@@ -41,9 +41,6 @@ target_link_libraries(Base PUBLIC spdlog::spdlog)
 find_package(Eigen3 REQUIRED)
 target_link_libraries(Base PUBLIC Eigen3::Eigen)
 
-find_package(nlohmann_json)
-target_link_libraries(Base PUBLIC nlohmann_json::nlohmann_json)
-
 find_package(Async++ REQUIRED)
 target_link_libraries(Base PUBLIC Async++)
 

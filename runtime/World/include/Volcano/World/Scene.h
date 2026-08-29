@@ -51,8 +51,11 @@ public:
         return physics_;
     }
 
-    virtual void update(Clock::duration elapsed) noexcept = 0;
+    virtual void update(Clock::duration elapsed) noexcept final;
     virtual entt::entity player() const noexcept = 0;
+
+protected:
+    virtual void onUpdate(Clock::duration elapsed) noexcept = 0;
 
 private:
     void handleEntityAdded(entt::entity ent) noexcept;

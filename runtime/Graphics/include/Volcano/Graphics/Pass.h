@@ -7,13 +7,16 @@
 
 VOLCANO_GRAPHICS_BEGIN
 
+class Frame;
+
 class Pass {
 public:
-	Pass();
+	Pass() = default;
 	virtual ~Pass() = default;
 
 public:
-	//virtual void draw(const sf::RenderTarget& target) const noexcept = 0;
+	virtual void resize(int width, int height) noexcept = 0;
+	virtual void execute(const Frame& frame) = 0;
 
 private:
 };

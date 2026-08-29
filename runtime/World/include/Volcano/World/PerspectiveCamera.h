@@ -19,10 +19,23 @@ public:
     PerspectiveCamera& operator=(const PerspectiveCamera&) noexcept = default;
     PerspectiveCamera& operator=(PerspectiveCamera&&) noexcept = default;
 
-    Eigen::Matrix4f toMatrix() const noexcept override;
+    float& fov() noexcept {
+        return fov_;
+    }
 
-    friend void to_json(nlohmann::json& json, const PerspectiveCamera& v);
-    friend void from_json(const nlohmann::json& json, PerspectiveCamera& v);
+    const float& fov() const noexcept {
+        return fov_;
+    }
+
+    float& aspect() noexcept {
+        return aspect_;
+    }
+
+    const float& aspect() const noexcept {
+        return aspect_;
+    }
+
+    Eigen::Matrix4f toMatrix() const noexcept override;
 
 private:
     float fov_;

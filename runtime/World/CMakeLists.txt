@@ -3,6 +3,7 @@ add_library(World STATIC
     include/Volcano/World/Common.h
     include/Volcano/World/Config.h.in
     include/Volcano/World/Context.h
+    include/Volcano/World/Bounds.h
     include/Volcano/World/Inherent.h
     include/Volcano/World/Physics.h
     include/Volcano/World/Scene.h
@@ -17,6 +18,7 @@ add_library(World STATIC
     include/Volcano/World/PointLight.h
     include/Volcano/World/SpotLight.h
     src/Volcano/World/Camera.cpp
+    src/Volcano/World/Bounds.cpp
     src/Volcano/World/DirectionalLight.cpp
     src/Volcano/World/Light.cpp
     src/Volcano/World/Material.cpp

@@ -37,9 +37,6 @@ public:
 
 	virtual Eigen::Matrix4f toMatrix() const noexcept = 0;
 
-    friend void to_json(nlohmann::json& json, const Camera& v);
-    friend void from_json(const nlohmann::json& json, Camera& v);
-
 private:
     Transform offset_;
     Eigen::Vector2f zrange_;

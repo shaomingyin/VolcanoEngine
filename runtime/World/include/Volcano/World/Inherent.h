@@ -52,9 +52,6 @@ public:
 		flags_ &= ~FlagVisible;
 	}
 
-	friend void to_json(nlohmann::json& json, const Inherent& v);
-	friend void from_json(const nlohmann::json& json, Inherent& v);
-
 private:
 	enum {
 		FlagEnabled = 0x1,

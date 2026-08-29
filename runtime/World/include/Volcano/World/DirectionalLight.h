@@ -28,9 +28,6 @@ public:
         return direction_;
     }
 
-    friend void to_json(nlohmann::json& json, const DirectionalLight& v);
-    friend void from_json(const nlohmann::json& json, DirectionalLight& v);
-
 private:
     Eigen::Vector3f direction_;
 };

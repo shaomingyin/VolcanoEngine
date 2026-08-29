@@ -15,6 +15,7 @@
 #include <Jolt/Physics/PhysicsSystem.h>
 #include <Jolt/Physics/Body/BodyInterface.h>
 #include <Jolt/Physics/Body/BodyID.h>
+#include <Jolt/Physics/Body/BodyCreationSettings.h>
 
 #include <Volcano/Math.h>
 #include <Volcano/World/Common.h>
@@ -125,6 +126,7 @@ public:
 protected:
     void onBodyAdded(entt::entity ent) noexcept;
     void onBodyRemoved(entt::entity ent) noexcept;
+    void onBodyChanged(entt::entity ent) noexcept;
 
 private:
     entt::registry& registry_;
