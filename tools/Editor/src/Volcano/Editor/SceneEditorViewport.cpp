@@ -10,15 +10,15 @@ SceneEditorViewport::SceneEditorViewport(QWidget* parent)
 }
 
 void SceneEditorViewport::initializeGL() {
-    graphics_renderer_ = std::make_unique<Graphics::Renderer>();
+    renderer_ = std::make_unique<Graphics::Renderer>();
 }
 
 void SceneEditorViewport::resizeGL(int w, int h) {
-    graphics_renderer_ = std::make_unique<Graphics::Renderer>();
+    renderer_ = std::make_unique<Graphics::Renderer>();
 }
 
 void SceneEditorViewport::paintGL() {
-    if (!graphics_renderer_ || !game_scene_) {
+    if (!renderer_ || !scene_) {
         return;
     }
 

@@ -8,7 +8,7 @@
 #include <QPointer>
 #include <QOpenGLWidget>
 
-#include <Volcano/Game/Scene.h>
+#include <Volcano/World/Scene.h>
 #include <Volcano/Graphics/Renderer.h>
 #include <Volcano/Editor/Common.h>
 
@@ -26,8 +26,8 @@ protected:
     void paintGL() override;
 
 private:
-    std::unique_ptr<Graphics::Renderer> graphics_renderer_;
-    QPointer<Game::Scene> game_scene_;
+    std::unique_ptr<Graphics::Renderer> renderer_;
+    QPointer<World::Scene> scene_;
 };
 
 VOLCANO_EDITOR_END

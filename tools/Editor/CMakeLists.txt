@@ -63,7 +63,7 @@ add_qtc_plugin(Editor
         QtCreator::GLSLEditor
         QtCreator::Core
     DEPENDS
-        Game
+        World
         Graphics
     SOURCES
         ${VOLCANO_EDITOR_SOURCES}

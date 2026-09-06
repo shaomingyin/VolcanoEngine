@@ -18,7 +18,6 @@ const EntityList& Scene::entities() const noexcept {
 
 void Scene::appendEntity(Entity* p) {
     entities_.append(p);
-    p->init(registry_);
     handleEntityAdded(p);
 }
 
@@ -61,6 +60,14 @@ QQmlListProperty<Entity> Scene::qmlEntities() {
         [](QQmlListProperty<Entity>* prop, qsizetype i, Entity* p) { reinterpret_cast<Scene*>(prop->data)->replaceEntity(i, p); },
         [](QQmlListProperty<Entity>* prop) { reinterpret_cast<Scene*>(prop->data)->removeLastEntity(); }
     };
+}
+
+Physics* Scene::physics() noexcept {
+    return &physics_;
+}
+
+void Scene::update(Clock::duration deltaTime, int collisionSteps) {
+    physics_.update(deltaTime, collisionSteps);
 }
 
 void Scene::handleEntityAdded(Entity* entity) {

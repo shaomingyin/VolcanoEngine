@@ -8,7 +8,7 @@
 #include <coreplugin/idocument.h>
 #include <coreplugin/idocumentfactory.h>
 
-#include <Volcano/Game/World.h>
+#include <Volcano/World/Scene.h>
 
 #include <Volcano/Editor/Common.h>
 
@@ -31,7 +31,7 @@ protected:
     //Utils::Result<> saveImpl(const Utils::FilePath& filepath, bool auto_save) override;
 
 private:
-    std::unique_ptr<Game::World> game_world_;
+    std::unique_ptr<World::Scene> scene_;
 };
 
 VOLCANO_EDITOR_END

@@ -9,12 +9,9 @@
 #include <QObject>
 
 #include <Volcano/World/Common.h>
-#include <Volcano/World/Component.h>
 #include <Volcano/World/Transform.h>
 
 VOLCANO_WORLD_BEGIN
-
-using ComponentList = QList<Component*>;
 
 class World;
 
@@ -22,7 +19,7 @@ class Entity: public QObject {
     Q_OBJECT
     Q_PROPERTY(bool enabled READ isEnabled WRITE setEnabled NOTIFY enabledChanged)
     Q_PROPERTY(Transform* transform READ transform)
-    Q_PROPERTY(QQmlListProperty<Component> components READ qmlComponents)
+    Q_PROPERTY(QQmlListProperty<QObject> components READ qmlComponents)
     Q_CLASSINFO("DefaultProperty", "components")
 
 public:
@@ -30,30 +27,27 @@ public:
     ~Entity() override;
 
 public:
-    void init(entt::registry& registry);
-    entt::handle handle() noexcept;
     Transform* transform() noexcept;
     bool isEnabled() const noexcept;
     void setEnabled(bool v) noexcept;
-    const ComponentList& components() const noexcept;
-    void appendComponent(Component* p);
-    Component* componentAt(qsizetype i);
+    const QObjectList& components() const noexcept;
+    void appendComponent(QObject* p);
+    QObject* componentAt(qsizetype i);
     void clearComponents();
     qsizetype componentCount();
     void removeLastComponent();
-    void replaceComponent(qsizetype i, Component* p);
-    QQmlListProperty<Component> qmlComponents();
+    void replaceComponent(qsizetype i, QObject* p);
+    QQmlListProperty<QObject> qmlComponents();
 
 signals:
     void enabledChanged(bool v);
-    void componentAdded(Component* p);
-    void componentRemoved(Component* p);
+    void componentAdded(QObject* p);
+    void componentRemoved(QObject* p);
 
 private:
     bool enabled_;
     Transform transform_;
-    entt::handle handle_;
-    ComponentList components_;
+    QObjectList components_;
 };
 
 VOLCANO_WORLD_END

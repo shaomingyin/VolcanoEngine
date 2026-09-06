@@ -9,8 +9,7 @@
 #include <QTimerEvent>
 #include <QOpenGLWindow>
 
-#include <Volcano/Game/World.h>
-#include <Volcano/Acoustics/Space.h>
+#include <Volcano/World/Scene.h>
 #include <Volcano/Graphics/Renderer.h>
 #include <Volcano/Launcher/Common.h>
 
@@ -36,7 +35,7 @@ protected:
     void timerEvent(QTimerEvent* p) override;
 
 private:
-    using Clock = Game::Clock;
+    using Clock = World::Clock;
     void frame(Clock::duration elapsed);
     void idleFrame(Clock::duration elapsed);
     void loadingFrame(Clock::duration elapsed);
@@ -66,8 +65,7 @@ private:
     int frame_timer_;
     int frame_count_timer_;
 
-    Game::World* game_world_;
-    std::unique_ptr<Acoustics::Space> acoustics_space_;
+    World::Scene scene_;
     std::unique_ptr<Graphics::Renderer> graphics_renderer_;
 };
 

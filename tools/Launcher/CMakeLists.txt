@@ -19,7 +19,6 @@ target_include_directories(Launcher PRIVATE
     ${CMAKE_CURRENT_BINARY_DIR}/include
 )
 
-target_link_libraries(Launcher PRIVATE Game Acoustics Graphics)
+target_link_libraries(Launcher PRIVATE World Graphics)
 
-volcano_link_qt(Launcher Quick)
 volcano_setup_target(Launcher)

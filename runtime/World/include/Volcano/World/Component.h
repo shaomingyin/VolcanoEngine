@@ -5,8 +5,6 @@
 
 #include <QObject>
 
-#include <entt/entt.hpp>
-
 #include <Volcano/World/Common.h>
 
 VOLCANO_WORLD_BEGIN
@@ -21,12 +19,6 @@ public:
     ~Component() override;
 
 public:
-    entt::handle handle() noexcept;
-    virtual void attach(entt::handle entity);
-    virtual void detach();
-
-private:
-    entt::handle handle_;
 };
 
 VOLCANO_WORLD_END

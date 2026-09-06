@@ -7,10 +7,9 @@
 #include <QQmlListProperty>
 #include <QObject>
 
-#include <entt/entt.hpp>
-
 #include <Volcano/World/Common.h>
 #include <Volcano/World/Entity.h>
+#include <Volcano/World/Physics.h>
 
 VOLCANO_WORLD_BEGIN
 
@@ -18,8 +17,8 @@ using EntityList = QList<Entity*>;
 
 class Scene: public QObject {
     Q_OBJECT
-    Q_PROPERTY(QVector3D gravity READ gravity WRITE setGravity NOTIFY gravityChanged)
     Q_PROPERTY(QQmlListProperty<Entity> entities READ qmlEntities)
+    Q_PROPERTY(Physics* physics READ physics)
     Q_CLASSINFO("DefaultProperty", "entities")
 
 public:
@@ -35,6 +34,8 @@ public:
     void removeLastEntity();
     void replaceEntity(qsizetype i, Entity* p);
     QQmlListProperty<Entity> qmlEntities();
+    Physics* physics() noexcept;
+    void update(Clock::duration deltaTime, int collisionSteps = 1);
 
 signals:
     void entityAdded(Entity* p);
@@ -50,7 +51,7 @@ private:
 
 private:
     EntityList entities_;
-    entt::registry registry_;
+    Physics physics_;
 };
 
 VOLCANO_WORLD_END

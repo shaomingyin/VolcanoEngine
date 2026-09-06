@@ -10,8 +10,7 @@ MainWindow::MainWindow()
     , frame_count_(0)
     , frame_count_per_second_(0)
     , frame_timer_(startTimer(15, Qt::PreciseTimer))
-    , frame_count_timer_(startTimer(1000, Qt::PreciseTimer))
-    , game_world_(nullptr) {
+    , frame_count_timer_(startTimer(1000, Qt::PreciseTimer)) {
 }
 
 void MainWindow::initializeGL() {
