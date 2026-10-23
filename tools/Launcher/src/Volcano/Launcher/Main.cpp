@@ -8,7 +8,7 @@
 #include <argh.h>
 
 #include <Volcano/ScopeGuard.h>
-#include <Volcano/FileSystem.h>
+#include <Volcano/VirtualFileSystem.h>
 #include <Volcano/World/Scene.h>
 #include <Volcano/Launcher/Local.h>
 #include <Volcano/Launcher/Client.h>
@@ -41,11 +41,7 @@ public:
         std::filesystem::path root_path(root);
 
         spdlog::info("Mounting rootfs {}...", root);
-        FileSystem::init(argv[0]);
-        auto fs_guard = scopeGuard([] {
-            FileSystem::shutdown();
-        });
-        FileSystem::mount("/", root_path.native().c_str());
+        filesystem_.mount("/", root_path);
 
         World::Physics::init();
         auto physics_guard = scopeGuard([] {
@@ -64,12 +60,10 @@ public:
         game_ = std::move(game);
 
         physics_guard.dismiss();
-        fs_guard.dismiss();
     }
 
     ~Application() {
         World::Physics::shutdown();
-        FileSystem::shutdown();
     }
 
 public:
@@ -80,6 +74,7 @@ public:
     }
 
 private:
+    VirtualFileSystem filesystem_;
     std::unique_ptr<World::Scene> game_;
     std::unique_ptr<Local> local_;
 };

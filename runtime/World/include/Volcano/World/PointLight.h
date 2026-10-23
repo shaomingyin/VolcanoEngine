@@ -11,7 +11,7 @@ VOLCANO_WORLD_BEGIN
 class PointLight: public Light {
 public:
     PointLight() noexcept;
-    PointLight(const Eigen::Vector3f& color, float strength, float range) noexcept;
+    PointLight(const Volcano::Math::Vector3f& color, float strength, float range) noexcept;
     PointLight(float r, float g, float b, float strength, float range) noexcept;
     PointLight(const PointLight&) noexcept = default;
     PointLight(PointLight&&) noexcept = default;

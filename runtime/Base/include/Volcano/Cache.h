@@ -3,76 +3,68 @@
 #ifndef VOLCANO_CACHE_H
 #define VOLCANO_CACHE_H
 
-#include <map>
+#include <algorithm>
+#include <cstddef>
+#include <functional>
+#include <list>
 #include <memory>
 #include <string>
-#include <chrono>
-#include <functional>
+#include <utility>
 
 #include <Volcano/Common.h>
 
 VOLCANO_BEGIN
 
+// Access to a shared cache must be synchronized by its caller.
 template <typename T>
 class Cache {
 public:
-	using Type = T;
-	using Pointer = std::shared_ptr<T>;
-	using ToKey = std::function<std::string (const T&)>;
+    using Type = T;
+    using Pointer = std::shared_ptr<T>;
+    using ToKey = std::function<std::string (const T&)>;
 
-public:
-	Cache(const Cache&) = delete;
-	Cache(Cache&&) = default;
+    Cache(std::size_t size = 8) : size_(size) {
+    }
 
-	Cache(size_t size = 8)
-		: size_(size) {
-	}
+    Cache(const Cache&) = delete;
 
-	virtual ~Cache() = default;
+    Cache(Cache&&) = default;
 
-public:
-	Cache& operator=(const Cache&) = delete;
-	Cache& operator=(Cache&&) = default;
-	
-	void clear() {
-		storage_.clear();
-	}
+    virtual ~Cache() = default;
 
-	Pointer get(const std::string& key) {
-		auto font = find(key);
-		if (!font) {
-			font = load(key);
-			storage_.emplace(Clock::now(), font);
-			gc();
-		}
-		return font;
-	}
+    Cache& operator=(const Cache&) = delete;
+
+    Cache& operator=(Cache&&) = default;
+
+    void clear() noexcept {
+        storage_.clear();
+    }
+
+    Pointer get(const std::string& key) {
+        // shortcut: linear lookup suits small caches; add a key index if large caches need it.
+        const auto found = std::find_if(storage_.begin(), storage_.end(), [&](const auto& entry) {
+            return entry.first == key;
+        });
+        if (found != storage_.end()) {
+            storage_.splice(storage_.begin(), storage_, found);
+            return found->second;
+        }
+        auto value = load(key);
+        if (value && size_ != 0) {
+            storage_.emplace_front(key, value);
+            if (storage_.size() > size_) {
+                storage_.pop_back();
+            }
+        }
+        return value;
+    }
 
 protected:
-	using Clock = std::chrono::steady_clock;
-	using Storage = std::map<Clock::time_point, Pointer>;
-
-	Pointer find(const std::string& family) const {
-		/*for (const auto it: storage_) {
-			if (it.second->getInfo().family == family) {
-				return it.second;
-			}
-		}*/
-		return nullptr;
-	}
-
-	void gc() noexcept {
-		if (storage_.size() > size_) {
-			storage_.erase(storage_.begin());
-		}
-		// TODO
-	}
-
-	virtual Pointer load(const std::string& family) = 0;
+    virtual Pointer load(const std::string& key) = 0;
 
 private:
-	const size_t size_;
-	Storage storage_;
+    std::size_t size_;
+    std::list<std::pair<std::string, Pointer>> storage_;
 };
 
 VOLCANO_END

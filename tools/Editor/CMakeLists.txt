@@ -20,8 +20,6 @@ target_include_directories(Editor PRIVATE
 
 target_link_libraries(Editor PUBLIC Graphics Gui)
 
-find_package(SFML REQUIRED COMPONENTS Window)
-target_link_libraries(Editor PUBLIC SFML::Window)
 
 find_package(argh REQUIRED)
 target_link_libraries(Editor PUBLIC argh)

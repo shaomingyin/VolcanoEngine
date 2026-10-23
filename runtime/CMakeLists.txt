@@ -1,5 +1,6 @@
 
 add_subdirectory(Base)
+add_subdirectory(Math)
 add_subdirectory(World)
 add_subdirectory(Acoustics)
 add_subdirectory(Graphics)

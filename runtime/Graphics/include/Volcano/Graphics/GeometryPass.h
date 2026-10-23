@@ -1,31 +1,15 @@
 #ifndef VOLCANO_GRAPHICS_GEOMETRYPASS_H
 #define VOLCANO_GRAPHICS_GEOMETRYPASS_H
 
-#include <GL/gl.hpp>
-
-#include <Volcano/Graphics/GBuffer.h>
-#include <Volcano/Graphics/Pass.h>
+#include <Volcano/Graphics/Common.h>
 
 VOLCANO_GRAPHICS_BEGIN
 
-class GeometryPass final : public Pass {
+struct RenderContext;
+
+class GeometryPass final {
 public:
-    explicit GeometryPass(GBuffer& gbuffer);
-    ~GeometryPass() override = default;
-
-    GeometryPass(const GeometryPass&) = delete;
-    GeometryPass(GeometryPass&&) = delete;
-
-public:
-    GeometryPass& operator=(const GeometryPass&) = delete;
-    GeometryPass& operator=(GeometryPass&&) = delete;
-
-    void resize(int width, int height) noexcept override;
-    void execute(const Frame& frame) override;
-
-private:
-    GBuffer& gbuffer_;
-    gl::Program program_;
+    void render(const RenderContext& context);
 };
 
 VOLCANO_GRAPHICS_END

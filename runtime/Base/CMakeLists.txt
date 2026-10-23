@@ -5,15 +5,21 @@ add_library(Base STATIC
     include/Volcano/Config.h.in
     include/Volcano/Error.h
     include/Volcano/FileSystem.h
-    include/Volcano/Math.h
+    include/Volcano/ByteArray.h
+    include/Volcano/File.h
+    include/Volcano/Stream.h
+    include/Volcano/DirEntry.h
+    include/Volcano/NativeFileSystem.h
+    include/Volcano/VirtualFileSystem.h
     include/Volcano/ScopeGuard.h
     include/Volcano/Version.h
     src/Volcano/Cache.cpp
     src/Volcano/Common.cpp
     src/Volcano/Error.cpp
     src/Volcano/FileSystem.cpp
-    src/Volcano/Math.cpp
-    src/Volcano/Transform.cpp
+    src/Volcano/Stream.cpp
+    src/Volcano/NativeFileSystem.cpp
+    src/Volcano/VirtualFileSystem.cpp
     src/Volcano/Version.cpp
 )
 
@@ -38,14 +44,13 @@ set_target_properties(Base PROPERTIES OUTPUT_NAME VolcanoBase)
 find_package(spdlog REQUIRED)
 target_link_libraries(Base PUBLIC spdlog::spdlog)
 
-find_package(Eigen3 REQUIRED)
-target_link_libraries(Base PUBLIC Eigen3::Eigen)
-
 find_package(Async++ REQUIRED)
 target_link_libraries(Base PUBLIC Async++)
 
-find_package(PhysFS REQUIRED)
-target_link_libraries(Base PUBLIC physfs-static)
-
-find_package(SFML REQUIRED)
-target_link_libraries(Base PUBLIC SFML::System)
+if(BUILD_TESTING)
+    foreach(test IN ITEMS FileSystem Stream Version Utility)
+        add_executable(Base${test}Check tests/${test}.cpp)
+        target_link_libraries(Base${test}Check PRIVATE Base GTest::gtest_main)
+        gtest_discover_tests(Base${test}Check)
+    endforeach()
+endif()

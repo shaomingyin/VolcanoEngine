@@ -11,9 +11,7 @@
 #include <stdexcept>
 #include <filesystem>
 
-#include <physfs.h>
 #include <spdlog/spdlog.h>
-#include <SFML/System/InputStream.hpp>
 
 #include <Volcano/Config.h>
 
@@ -41,7 +39,6 @@
 VOLCANO_BEGIN
 
 using Clock = std::chrono::steady_clock;
-using ByteArray = std::vector<uint8_t>;
 
 const std::string& appOrganization();
 const std::string& appName();

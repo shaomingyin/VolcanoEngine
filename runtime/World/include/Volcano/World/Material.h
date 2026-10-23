@@ -12,7 +12,7 @@ VOLCANO_WORLD_BEGIN
 class Material final {
 public:
     Material() noexcept;
-    Material(const Eigen::Vector4f& albedo, float specular = 0.5f) noexcept;
+    Material(const Volcano::Math::Vector4f& albedo, float specular = 0.5f) noexcept;
     Material(const Material&) = default;
     Material(Material&&) noexcept = default;
 
@@ -20,8 +20,8 @@ public:
     Material& operator=(const Material&) = default;
     Material& operator=(Material&&) noexcept = default;
 
-    Eigen::Vector4f& albedo() noexcept;
-    const Eigen::Vector4f& albedo() const noexcept;
+    Volcano::Math::Vector4f& albedo() noexcept;
+    const Volcano::Math::Vector4f& albedo() const noexcept;
 
     float& specular() noexcept;
     const float& specular() const noexcept;
@@ -32,8 +32,8 @@ public:
     float& roughness() noexcept;
     const float& roughness() const noexcept;
 
-    Eigen::Vector3f& emissive() noexcept;
-    const Eigen::Vector3f& emissive() const noexcept;
+    Volcano::Math::Vector3f& emissive() noexcept;
+    const Volcano::Math::Vector3f& emissive() const noexcept;
 
     std::filesystem::path& source() noexcept;
     const std::filesystem::path& source() const noexcept;
@@ -48,11 +48,11 @@ public:
     const std::filesystem::path& metallicRoughnessTexture() const noexcept;
 
 private:
-    Eigen::Vector4f albedo_;
+    Volcano::Math::Vector4f albedo_;
     float specular_;
     float metallic_;
     float roughness_;
-    Eigen::Vector3f emissive_;
+    Volcano::Math::Vector3f emissive_;
     std::filesystem::path source_;
     std::filesystem::path albedo_texture_;
     std::filesystem::path normal_texture_;

@@ -21,6 +21,12 @@ set(VOLCANO_PROFILE ON CACHE BOOL "Enable profile functions.")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 include(Volcano/Utils)
 
+include(CTest)
+if(BUILD_TESTING)
+    find_package(GTest CONFIG REQUIRED)
+    include(GoogleTest)
+endif()
+
 add_subdirectory(runtime)
 #add_subdirectory(extensions)
 add_subdirectory(games)

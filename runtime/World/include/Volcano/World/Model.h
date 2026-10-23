@@ -7,6 +7,7 @@
 #include <vector>
 
 #include <Volcano/World/Common.h>
+#include <Volcano/World/Transform.h>
 
 VOLCANO_WORLD_BEGIN
 

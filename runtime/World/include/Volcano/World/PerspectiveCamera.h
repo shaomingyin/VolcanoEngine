@@ -35,7 +35,7 @@ public:
         return aspect_;
     }
 
-    Eigen::Matrix4f toMatrix() const noexcept override;
+    Volcano::Math::Matrix4f toMatrix() const override;
 
 private:
     float fov_;

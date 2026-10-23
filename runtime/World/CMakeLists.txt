@@ -1,9 +1,10 @@
 
 add_library(World STATIC
     include/Volcano/World/Common.h
+    include/Volcano/World/Transform.h
     include/Volcano/World/Config.h.in
     include/Volcano/World/Context.h
-    include/Volcano/World/Bounds.h
+    include/Volcano/World/BoundingBox.h
     include/Volcano/World/Inherent.h
     include/Volcano/World/Physics.h
     include/Volcano/World/Scene.h
@@ -18,7 +19,6 @@ add_library(World STATIC
     include/Volcano/World/PointLight.h
     include/Volcano/World/SpotLight.h
     src/Volcano/World/Camera.cpp
-    src/Volcano/World/Bounds.cpp
     src/Volcano/World/DirectionalLight.cpp
     src/Volcano/World/Light.cpp
     src/Volcano/World/Material.cpp
@@ -48,7 +48,7 @@ volcano_target_setup(World)
 
 set_target_properties(World PROPERTIES OUTPUT_NAME VolcanoWorld)
 
-target_link_libraries(World PUBLIC Base)
+target_link_libraries(World PUBLIC Base Math)
 
 find_package(EnTT REQUIRED)
 target_link_libraries(World PUBLIC EnTT::EnTT)
@@ -65,3 +65,9 @@ target_link_libraries(World PUBLIC Jolt::Jolt)
 #)
 #source_group(\\gen FILES ${SCHEMA_SOURCES})
 #target_include_directories(World PUBLIC ${SCHEMA_GEN_DIR})
+
+if(BUILD_TESTING)
+    add_executable(WorldMathCheck tests/Math.cpp)
+    target_link_libraries(WorldMathCheck PRIVATE World GTest::gtest_main)
+    gtest_discover_tests(WorldMathCheck)
+endif()

@@ -1,26 +1,26 @@
-//
-//
 #ifndef VOLCANO_LAUNCHER_WINDOW_H
 #define VOLCANO_LAUNCHER_WINDOW_H
 
-#include <GL/gl3w.h>
-#include <SFML/Graphics/RenderWindow.hpp>
-
+#include <Volcano/Graphics/Target.h>
 #include <Volcano/Launcher/Common.h>
+
+struct GLFWwindow;
 
 VOLCANO_LAUNCHER_BEGIN
 
-class Window: public sf::RenderWindow {
+// GLFW must be initialized before construction and terminated after destruction.
+class Window final : public Graphics::Target {
 public:
-    Window(sf::VideoMode mode, const sf::String& title, uint32_t style = sf::Style::Default, const sf::ContextSettings& settings = sf::ContextSettings());
+    Window(int width, int height, const char* title);
+    ~Window() override;
 
-public:
-    void makeCurrent() noexcept {
-        gl3wProcs = &gl3w_;
-    }
+    GLFWwindow* handle() const noexcept { return handle_; }
+    int width() const noexcept override;
+    int height() const noexcept override;
 
 private:
-    GL3WProcs gl3w_;
+    std::uint32_t framebuffer() const noexcept override { return 0; }
+    GLFWwindow* handle_;
 };
 
 VOLCANO_LAUNCHER_END

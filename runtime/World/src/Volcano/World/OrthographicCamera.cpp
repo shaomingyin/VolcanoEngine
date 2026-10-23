@@ -13,17 +13,8 @@ OrthographicCamera::OrthographicCamera(float left, float right, float bottom, fl
     , rect_(left, right, bottom, top) {
 }
 
-Eigen::Matrix4f OrthographicCamera::toMatrix() const noexcept {
-    Eigen::Matrix4f m = Eigen::Matrix4f::Identity();
-    float znear = zRange().x();
-    float zfar = zRange().y();
-    m(0, 0) = 2.0f / (rect_[1] - rect_[0]);
-    m(1, 1) = 2.0f / (rect_[3] - rect_[2]);
-    m(2, 2) = -2.0f / (zfar - znear);
-    m(0, 3) = -(rect_[1] + rect_[0]) / (rect_[1] - rect_[0]);
-    m(1, 3) = -(rect_[3] + rect_[2]) / (rect_[3] - rect_[2]);
-    m(2, 3) = -(zfar + znear) / (zfar - znear);
-    return m;
+Math::Matrix4f OrthographicCamera::toMatrix() const {
+    return Math::Matrix4f::ortho(rect_.x, rect_.y, rect_.z, rect_.w, zRange().x, zRange().y);
 }
 
 VOLCANO_WORLD_END

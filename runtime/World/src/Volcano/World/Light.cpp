@@ -9,13 +9,13 @@ Light::Light() noexcept
     , strength_(1.0f) {
 }
 
-Light::Light(const Eigen::Vector3f& color, float strength) noexcept
+Light::Light(const Volcano::Math::Vector3f& color, float strength) noexcept
     : color_(color)
     , strength_(strength) {
 }
 
 Light::Light(float r, float g, float b, float strength) noexcept
-    : Light(Eigen::Vector3f(r, g, b), strength) {
+    : Light(Volcano::Math::Vector3f(r, g, b), strength) {
 }
 
 VOLCANO_WORLD_END

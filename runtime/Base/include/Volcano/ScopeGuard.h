@@ -4,6 +4,7 @@
 #define VOLCANO_SCOPEGUARD_H
 
 #include <utility>
+#include <type_traits>
 
 #include <Volcano/Common.h>
 
@@ -12,19 +13,21 @@ VOLCANO_BEGIN
 template <typename FN>
 class ScopeGuard final {
 public:
-    explicit ScopeGuard(FN&& fn) noexcept
+    explicit ScopeGuard(FN&& fn) noexcept(std::is_nothrow_move_constructible_v<FN>)
         : fn_(std::move(fn)) {
     }
 
-    explicit ScopeGuard(const FN& fn) noexcept
+    explicit ScopeGuard(const FN& fn) noexcept(std::is_nothrow_copy_constructible_v<FN>)
         : fn_(fn) {
     }
 
     ScopeGuard(const ScopeGuard&) = delete;
 
-    ScopeGuard(ScopeGuard &&other) noexcept
-        : fn_(std::move(other.fn_))
+    ScopeGuard(ScopeGuard &&other) noexcept(
+        std::is_nothrow_move_constructible_v<FN> || std::is_nothrow_copy_constructible_v<FN>)
+        : fn_(std::move_if_noexcept(other.fn_))
         , dismissed_(other.dismissed_) {
+        other.dismissed_ = true;
     }
 
     ~ScopeGuard() noexcept {
@@ -38,14 +41,8 @@ public:
 
     ScopeGuard& operator=(const ScopeGuard&) = delete;
 
-    ScopeGuard& operator=(ScopeGuard&& other) noexcept {
-        if (this != &other) {
-            fn_ = std::move(other.fn_);
-            dismissed_ = other.dismissed_;
-            other.dismissed_ = true;
-        }
-        return (*this);
-    }
+    // Assignment would discard the cleanup already owned by the destination.
+    ScopeGuard& operator=(ScopeGuard&&) = delete;
 
  public:
     void dismiss() noexcept {
@@ -58,7 +55,8 @@ private:
 };
 
 template <typename FN>
-ScopeGuard<typename std::decay<FN>::type> scopeGuard(FN&& fn) noexcept {
+ScopeGuard<typename std::decay<FN>::type> scopeGuard(FN&& fn) noexcept(
+    std::is_nothrow_constructible_v<std::decay_t<FN>, FN&&>) {
     return ScopeGuard<typename std::decay<FN>::type>(std::forward<FN>(fn));
 }
 

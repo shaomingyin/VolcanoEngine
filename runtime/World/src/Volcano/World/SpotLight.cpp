@@ -10,7 +10,7 @@ SpotLight::SpotLight() noexcept
     , outer_angle_(30.0f) {
 }
 
-SpotLight::SpotLight(const Eigen::Vector3f& direction, const Eigen::Vector3f& color, float strength, float range, float inner_angle, float outer_angle) noexcept
+SpotLight::SpotLight(const Volcano::Math::Vector3f& direction, const Volcano::Math::Vector3f& color, float strength, float range, float inner_angle, float outer_angle) noexcept
     : DirectionalLight(direction, color, strength)
     , range_(range)
     , inner_angle_(inner_angle)

@@ -3,8 +3,9 @@
 #ifndef VOLCANO_WORLD_CAMERA_H
 #define VOLCANO_WORLD_CAMERA_H
 
-#include <Volcano/Math.h>
+#include <Volcano/Math/Math.h>
 #include <Volcano/World/Common.h>
+#include <Volcano/World/Transform.h>
 
 VOLCANO_WORLD_BEGIN
 
@@ -27,19 +28,19 @@ public:
         return offset_;
     }
 
-    Eigen::Vector2f& zRange() noexcept {
+    Volcano::Math::Vector2f& zRange() noexcept {
         return zrange_;
     }
 
-    const Eigen::Vector2f& zRange() const noexcept {
+    const Volcano::Math::Vector2f& zRange() const noexcept {
         return zrange_;
     }
 
-	virtual Eigen::Matrix4f toMatrix() const noexcept = 0;
+	virtual Volcano::Math::Matrix4f toMatrix() const = 0;
 
 private:
     Transform offset_;
-    Eigen::Vector2f zrange_;
+    Volcano::Math::Vector2f zrange_;
 };
 
 VOLCANO_WORLD_END

@@ -3,7 +3,7 @@
 
 #include <array>
 #include <cstdint>
-#include <vector>
+#include <span>
 
 #include <GL/gl.hpp>
 
@@ -22,16 +22,15 @@ public:
     using index_type = uint32_t;
 
 public:
-    Mesh();
-    Mesh(std::vector<Vertex>&& vertices, std::vector<index_type>&& indices);
+    Mesh(std::span<const Vertex> vertices, std::span<const index_type> indices);
     ~Mesh() = default;
 
     Mesh(const Mesh&) = delete;
-    Mesh(Mesh&&) noexcept = default;
+    Mesh(Mesh&&) = delete;
 
 public:
     Mesh& operator=(const Mesh&) = delete;
-    Mesh& operator=(Mesh&&) noexcept = default;
+    Mesh& operator=(Mesh&&) = delete;
 
     bool empty() const noexcept {
         return count_ == 0;

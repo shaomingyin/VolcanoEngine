@@ -5,10 +5,10 @@
 VOLCANO_WORLD_BEGIN
 
 Material::Material() noexcept
-    : Material(Eigen::Vector4f(1.0f, 1.0f, 1.0f, 1.0f)) {
+    : Material(Volcano::Math::Vector4f(1.0f, 1.0f, 1.0f, 1.0f)) {
 }
 
-Material::Material(const Eigen::Vector4f& albedo, float specular) noexcept
+Material::Material(const Volcano::Math::Vector4f& albedo, float specular) noexcept
     : albedo_(albedo)
     , specular_(specular)
     , metallic_(0.0f)
@@ -16,11 +16,11 @@ Material::Material(const Eigen::Vector4f& albedo, float specular) noexcept
     , emissive_(0.0f, 0.0f, 0.0f) {
 }
 
-Eigen::Vector4f& Material::albedo() noexcept {
+Volcano::Math::Vector4f& Material::albedo() noexcept {
     return albedo_;
 }
 
-const Eigen::Vector4f& Material::albedo() const noexcept {
+const Volcano::Math::Vector4f& Material::albedo() const noexcept {
     return albedo_;
 }
 
@@ -48,11 +48,11 @@ const float& Material::roughness() const noexcept {
     return roughness_;
 }
 
-Eigen::Vector3f& Material::emissive() noexcept {
+Volcano::Math::Vector3f& Material::emissive() noexcept {
     return emissive_;
 }
 
-const Eigen::Vector3f& Material::emissive() const noexcept {
+const Volcano::Math::Vector3f& Material::emissive() const noexcept {
     return emissive_;
 }
 

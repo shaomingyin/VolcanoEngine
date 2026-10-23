@@ -31,7 +31,7 @@ std::vector<uint32_t>& Mesh::indices() noexcept {
     return indices_;
 }
 
-const Bounds& Mesh::bounds() const noexcept {
+const BoundingBox& Mesh::bounds() const noexcept {
     return bounds_;
 }
 
@@ -47,11 +47,12 @@ const std::filesystem::path& Mesh::source() const noexcept {
     return source_;
 }
 
-void Mesh::recalculateBounds() noexcept {
-    bounds_.reset();
+void Mesh::recalculateBounds() {
+    BoundingBox bounds;
     for (const auto& vertex : vertices_) {
-        bounds_.extend(vertex.position);
+        bounds.extend(vertex.position);
     }
+    bounds_ = bounds;
 }
 
 VOLCANO_WORLD_END

@@ -1,27 +1,49 @@
-//
-//
-#include <SFML/Window/Context.hpp>
-
+#define GLFW_INCLUDE_NONE
+#include <GLFW/glfw3.h>
 #include <Volcano/Launcher/Window.h>
+#include <stdexcept>
+#include <string>
 
 VOLCANO_LAUNCHER_BEGIN
 
-Window::Window(sf::VideoMode mode, const sf::String& title, uint32_t style, const sf::ContextSettings& settings)
-    : sf::RenderWindow(mode, title, style, sf::State::Windowed, settings) {
-    spdlog::info("Initializing window...");
-    spdlog::info("Making current GL context...");
-    if (!setActive(true)) {
-        spdlog::error("Failed to make current GL context.");
+Window::Window(int width, int height, const char* title) {
+    if (width <= 0 || height <= 0 || title == nullptr) {
+        throw std::invalid_argument("Window requires positive dimensions and a title");
     }
-    spdlog::info("Initializing GL3W...");
-    int ret = gl3wInit(&gl3w_, [](const char* name) {
-        return GL3WglProc(sf::Context::getFunction(name));
-    });
-    if (ret != GL3W_OK) {
-        spdlog::error("Failed to initialize GL3W.");
-        throw std::runtime_error("Failed to init GL3W.");
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
+    glfwWindowHint(GLFW_DEPTH_BITS, 24);
+    glfwWindowHint(GLFW_STENCIL_BITS, 8);
+    handle_ = glfwCreateWindow(width, height, title, nullptr, nullptr);
+    if (handle_ == nullptr) {
+        const char* description = nullptr;
+        glfwGetError(&description);
+        throw std::runtime_error(std::string("Cannot create GLFW window: ") +
+            (description != nullptr ? description : "unknown error"));
     }
-    gl3wProcs = &gl3w_;
+    glfwMakeContextCurrent(handle_);
+    if (glfwGetCurrentContext() != handle_) {
+        glfwDestroyWindow(handle_);
+        throw std::runtime_error("Cannot activate GLFW OpenGL context");
+    }
+}
+
+Window::~Window() {
+    glfwDestroyWindow(handle_);
+}
+
+int Window::width() const noexcept {
+    int width, height;
+    glfwGetFramebufferSize(handle_, &width, &height);
+    return width;
+}
+
+int Window::height() const noexcept {
+    int width, height;
+    glfwGetFramebufferSize(handle_, &width, &height);
+    return height;
 }
 
 VOLCANO_LAUNCHER_END

@@ -39,7 +39,7 @@ public:
         return version_;
     }
 
-    void setVersion(const VersionNumber& v) noexcept {
+    void setVersion(const VersionNumber& v) {
         version_ = v;
     }
 

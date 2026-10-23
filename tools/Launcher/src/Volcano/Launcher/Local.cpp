@@ -1,128 +1,84 @@
 //
 //
-#include <cassert>
+#define GLFW_INCLUDE_NONE
+#include <GLFW/glfw3.h>
+#include <stdexcept>
+#include <string>
 #include <thread>
 
-#include <Volcano/FileSystem.h>
+#include <Volcano/ScopeGuard.h>
+#include <Volcano/Graphics/Renderer.h>
+#include <Volcano/Launcher/Window.h>
 #include <Volcano/Launcher/Local.h>
 
 VOLCANO_LAUNCHER_BEGIN
 
 Local::Local(World::Scene& scene)
     : scene_(scene)
+    , elapsed_min_(std::chrono::nanoseconds(1'000'000'000 / 60))
     , frame_last_(Clock::now())
     , frame_count_last_(frame_last_)
     , frame_count_(0)
-    , frame_count_per_second_(0)
-    , window_(sf::VideoMode({ 800, 600 }), "VolcanoLauncher")
-    //, renderer_(scene)
-    {
-    window_.setFramerateLimit(60);
+    , frame_count_per_second_(0) {
 }
 
 void Local::run() {
-    frame_last_ = Clock::now();
-    frame_count_last_ = frame_last_;
-    frame_count_ = 0;
-    frame_count_per_second_ = 0;
+    if (!glfwInit()) {
+        const char* description = nullptr;
+        glfwGetError(&description);
+        throw std::runtime_error(std::string("Cannot initialize GLFW: ") +
+            (description != nullptr ? description : "unknown error"));
+    }
+    auto glfw_guard = scopeGuard([] { glfwTerminate(); });
+    Window window(800, 600, "VolcanoLauncher");
+    Graphics::Renderer renderer(glfwGetProcAddress);
+    glfwSwapInterval(1);
 
-    while (window_.isOpen()) {
-        scheduler_.run_all_tasks();
-
-        while (true) {
-            auto event = window_.pollEvent();
-            if (event) {
-                handleEvent(*event);
-            } else {
-                break;
-            }
+    frame_last_ = frame_count_last_ = Clock::now();
+    frame_count_ = frame_count_per_second_ = 0;
+    while (!glfwWindowShouldClose(window.handle())) {
+        glfwPollEvents();
+        if (glfwWindowShouldClose(window.handle())) break;
+        if (window.width() == 0 || window.height() == 0) {
+            glfwWaitEventsTimeout(0.1);
+            frame_last_ = Clock::now();
+            continue;
         }
-
-        auto now = Clock::now();
-        auto elapsed = now - frame_last_;
-
-        frame(elapsed);
-
-        if ((now - frame_count_last_) >= std::chrono::seconds(1)) {
-            frame_count_per_second_ = frame_count_;
+        scheduler_.run_all_tasks();
+        const auto now = Clock::now();
+        frame(now - frame_last_);
+        renderer.begin(window);
+        renderer.clear();
+        glfwSwapBuffers(window.handle());
+        ++frame_count_;
+        if (now - frame_count_last_ >= std::chrono::seconds(1)) {
+            frame_count_per_second_ = static_cast<unsigned long>(
+                frame_count_ / std::chrono::duration<double>(now - frame_count_last_).count());
             frame_count_ = 0;
             frame_count_last_ = now;
-        } else {
-            frame_count_ += 1;
         }
         frame_last_ = now;
+        std::this_thread::sleep_until(now + elapsed_min_);
     }
+    // Destruction order keeps the Context alive until renderer releases its GPU objects.
 }
 
 unsigned long Local::fps() const noexcept {
-    return 0;
+    return frame_count_per_second_;
 }
 
 unsigned long Local::fpsMax() const noexcept {
-    return 0;
+    return fps_max_;
 }
 
 void Local::setFpsMax(unsigned long v) noexcept {
+    fps_max_ = v;
+    elapsed_min_ = v == 0 ? Clock::duration::zero() :
+        std::chrono::duration_cast<Clock::duration>(std::chrono::duration<double>(1.0 / v));
 }
 
-void Local::frame(Clock::duration elapsed) noexcept {
+void Local::frame(Clock::duration elapsed) {
     scene_.update(elapsed);
-    //renderer_.build(scene_.player());
-    //renderer_.draw(window_);
-    window_.display();
-}
-
-void Local::handleEvent(const sf::Event& event) {
-    // if (event.type == sf::Event::KeyPressed && event.key.code == sf::Event::KeyEvent::code) {
-    //     console_.taggle();
-    // }
-
-    // if (current_gui_ != nullptr) {
-    //     current_gui_->handleEvent(event);
-    //     return;
-    // }
-
-    if (auto p = event.getIf<sf::Event::MouseMoved>()) {
-        onMouseMoved(*p);
-    } else if (auto p = event.getIf<sf::Event::MouseButtonPressed>()) {
-        onMouseButtonPressed(*p);
-    } else if (auto p = event.getIf<sf::Event::MouseButtonReleased>()) {
-        onMouseButtonReleased(*p);
-    } else if (auto p = event.getIf<sf::Event::KeyPressed>()) {
-        onKeyPressed(*p);
-    } else if (auto p = event.getIf<sf::Event::KeyReleased>()) {
-        onKeyReleased(*p);
-    } else if (auto p = event.getIf<sf::Event::MouseWheelScrolled>()) {
-    } else if (auto p = event.getIf<sf::Event::MouseEntered>()) {
-    } else if (auto p = event.getIf<sf::Event::MouseLeft>()) {
-    } else if (auto p = event.getIf<sf::Event::FocusGained>()) {
-    } else if (auto p = event.getIf<sf::Event::FocusLost>()) {
-    } else if (auto p = event.getIf<sf::Event::Resized>()) {
-        onResized(*p);
-    } else if (auto p = event.getIf<sf::Event::Closed>()) {
-        window_.close();
-    } else {
-    }
-}
-
-void Local::onMouseMoved(const sf::Event::MouseMoved& event) {
-}
-
-void Local::onMouseButtonPressed(const sf::Event::MouseButtonPressed& event) {
-}
-
-void Local::onMouseButtonReleased(const sf::Event::MouseButtonReleased& event) {
-}
-
-void Local::onKeyPressed(const sf::Event::KeyPressed& event) {
-}
-
-void Local::onKeyReleased(const sf::Event::KeyReleased& event) {
-}
-
-void Local::onResized(const sf::Event::Resized& event) {
-    //hud_.resize(event.width, event.height);
-    //renderer_.resize(event.width, event.height);
 }
 
 VOLCANO_LAUNCHER_END

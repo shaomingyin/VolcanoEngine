@@ -79,10 +79,10 @@ void Physics::shutdown() {
     JPH::Factory::sInstance = nullptr;
 }
 
-void Physics::setGravity(const Eigen::Vector3f& v) noexcept {
-	if (!gravity_.isApprox(v)) {
+void Physics::setGravity(const Volcano::Math::Vector3f& v) noexcept {
+	if (gravity_ != v) {
 		gravity_ = v;
-		physics_system_.SetGravity({ v.x(), v.y(), v.z() });
+		physics_system_.SetGravity({ v.x, v.y, v.z });
 	}
 }
 
@@ -99,7 +99,7 @@ void Physics::update(Clock::duration elapsed) noexcept {
 		}
 
 		const auto position = body_interface_->GetPosition(body_id);
-		transform.translation() = Eigen::Vector3f(position.GetX(), position.GetY(), position.GetZ());
+		transform.translation() = Volcano::Math::Vector3f(position.GetX(), position.GetY(), position.GetZ());
 		transform.rotation() = fromJPH(body_interface_->GetRotation(body_id));
 	}
 }

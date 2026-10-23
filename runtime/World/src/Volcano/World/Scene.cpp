@@ -1,6 +1,6 @@
 //
 //
-#include <Volcano/Math.h>
+#include <Volcano/Math/Math.h>
 #include <Volcano/World/Inherent.h>
 #include <Volcano/World/Scene.h>
 

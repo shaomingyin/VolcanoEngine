@@ -27,10 +27,18 @@ target_include_directories(Launcher PRIVATE
 
 volcano_target_setup(Launcher)
 target_link_libraries(Launcher PRIVATE "$<LINK_LIBRARY:WHOLE_ARCHIVE,Gameplay>")
-target_link_libraries(Launcher PRIVATE Gui Graphics)
+find_package(glfw3 CONFIG REQUIRED)
+target_link_libraries(Launcher PRIVATE Gui Graphics glfw)
 
 find_package(argh REQUIRED)
 target_link_libraries(Launcher PUBLIC argh)
 
-find_package(SFML REQUIRED)
-target_link_libraries(Launcher PUBLIC sfml::sfml)
+if(BUILD_TESTING)
+    add_executable(LauncherWindowCheck tests/Window.cpp src/Volcano/Launcher/Window.cpp)
+    target_include_directories(LauncherWindowCheck PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+        ${CMAKE_CURRENT_BINARY_DIR}/include
+    )
+    target_link_libraries(LauncherWindowCheck PRIVATE Graphics glfw GTest::gtest_main)
+    gtest_discover_tests(LauncherWindowCheck PROPERTIES LABELS display TIMEOUT 30)
+endif()
