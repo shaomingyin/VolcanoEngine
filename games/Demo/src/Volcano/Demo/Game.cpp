@@ -1,10 +1,13 @@
 //
 //
+#include <Volcano/Game.h>
+#include <Volcano/World/PerspectiveCamera.h>
 #include <Volcano/Demo/Game.h>
 
 VOLCANO_DEMO_BEGIN
 
 Game::Game() {
+    emplace<World::PerspectiveCamera>(create(), 60.0f, 4.0f / 3.0f, 0.1f, 1000.0f);
 }
 
 Game::~Game() {

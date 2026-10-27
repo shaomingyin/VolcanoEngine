@@ -49,6 +49,7 @@ public:
             storage_.splice(storage_.begin(), storage_, found);
             return found->second;
         }
+
         auto value = load(key);
         if (value && size_ != 0) {
             storage_.emplace_front(key, value);
@@ -56,6 +57,7 @@ public:
                 storage_.pop_back();
             }
         }
+
         return value;
     }
 

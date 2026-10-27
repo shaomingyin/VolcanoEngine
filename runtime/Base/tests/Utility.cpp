@@ -1,6 +1,7 @@
-#include <gtest/gtest.h>
 #include <stdexcept>
 #include <type_traits>
+
+#include <gtest/gtest.h>
 
 #include <Volcano/Cache.h>
 #include <Volcano/ScopeGuard.h>
@@ -10,6 +11,8 @@ namespace {
 class IntCache final : public Volcano::Cache<int> {
 public:
     using Cache::Cache;
+
+public:
     int loads = 0;
 
 private:
@@ -21,6 +24,7 @@ private:
         if (key == "error") {
             throw std::runtime_error("Load failed");
         }
+
         return std::make_shared<int>(loads);
     }
 };
@@ -41,8 +45,12 @@ TEST(BaseUtility, Cache) {
     EXPECT_TRUE((!failures.get("missing") && !failures.get("missing")));
     EXPECT_TRUE((failures.loads == 3));
     bool caught = false;
-    try { failures.get("error"); }
-    catch (const std::runtime_error&) { caught = true; }
+    try {
+        failures.get("error");
+    } catch (const std::runtime_error&) {
+        caught = true;
+    }
+
     EXPECT_TRUE((caught && failures.get("a") == retained));
 
     IntCache disabled(0);
@@ -56,9 +64,7 @@ TEST(BaseUtility, Cache) {
 }
 
 struct CopyableCleanup {
-    int& calls;
-    bool& fail;
-
+public:
     CopyableCleanup(int& calls, bool& fail) : calls(calls), fail(fail) {
     }
 
@@ -75,29 +81,44 @@ struct CopyableCleanup {
     void operator()() const noexcept {
         ++calls;
     }
+
+public:
+    int& calls;
+    bool& fail;
 };
 
 TEST(BaseUtility, ScopeGuard) {
     int calls = 0;
     {
-        auto source = Volcano::scopeGuard([&] { ++calls; });
+        auto source = Volcano::scopeGuard([&] {
+            ++calls;
+        });
         auto moved = std::move(source);
     }
+
     EXPECT_TRUE((calls == 1));
     {
-        auto guard = Volcano::scopeGuard([&] { ++calls; });
+        auto guard = Volcano::scopeGuard([&] {
+            ++calls;
+        });
         guard.dismiss();
         auto moved = std::move(guard);
     }
+
     EXPECT_TRUE((calls == 1));
     try {
-        auto guard = Volcano::scopeGuard([&] { ++calls; });
+        auto guard = Volcano::scopeGuard([&] {
+            ++calls;
+        });
         throw std::runtime_error("Unwind");
     } catch (const std::runtime_error&) {
     }
+
     EXPECT_TRUE((calls == 2));
     {
-        auto guard = Volcano::scopeGuard([] { throw std::runtime_error("Cleanup"); });
+        auto guard = Volcano::scopeGuard([] {
+            throw std::runtime_error("Cleanup");
+        });
     }
 
     {
@@ -107,6 +128,7 @@ TEST(BaseUtility, ScopeGuard) {
         static_assert(!std::is_move_assignable_v<decltype(source)>);
         auto moved = std::move(source);
     }
+
     EXPECT_TRUE((calls == 5));
 
     bool fail = false;
@@ -117,16 +139,22 @@ TEST(BaseUtility, ScopeGuard) {
         static_assert(!std::is_nothrow_move_constructible_v<decltype(source)>);
         fail = true;
         bool caught = false;
-        try { auto moved = std::move(source); }
-        catch (const std::runtime_error&) { caught = true; }
+        try {
+            auto moved = std::move(source);
+        } catch (const std::runtime_error&) {
+            caught = true;
+        }
+
         EXPECT_TRUE((caught));
     }
+
     EXPECT_TRUE((calls == 6));
     fail = false;
     {
         auto source = Volcano::scopeGuard(cleanup);
         auto moved = std::move(source);
     }
+
     EXPECT_TRUE((calls == 7));
 }
 

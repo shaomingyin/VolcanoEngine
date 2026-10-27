@@ -1,6 +1,6 @@
-#include <Volcano/Stream.h>
-
 #include <array>
+
+#include <Volcano/Stream.h>
 
 VOLCANO_BEGIN
 
@@ -12,6 +12,7 @@ std::size_t Stream::read(std::span<std::uint8_t> data) {
     if (data.empty()) {
         return 0;
     }
+
     throw std::runtime_error("Stream is not readable");
 }
 
@@ -19,6 +20,7 @@ std::size_t Stream::write(std::span<const std::uint8_t> data) {
     if (data.empty()) {
         return 0;
     }
+
     throw std::runtime_error("Stream is not writable");
 }
 
@@ -43,6 +45,7 @@ void Stream::readExact(std::span<std::uint8_t> data) {
         if (count == 0 || count > data.size()) {
             throw std::runtime_error("Stream did not supply the requested bytes");
         }
+
         data = data.subspan(count);
     }
 }
@@ -53,6 +56,7 @@ void Stream::writeAll(std::span<const std::uint8_t> data) {
         if (count == 0 || count > data.size()) {
             throw std::runtime_error("Stream did not accept the requested bytes");
         }
+
         data = data.subspan(count);
     }
 }
@@ -68,6 +72,7 @@ ByteArray Stream::readAll() {
         if (count == 0) {
             return result;
         }
+
         result.insert(result.end(), buffer.begin(), buffer.begin() + count);
     }
 }
@@ -76,6 +81,7 @@ std::size_t Stream::read(void *data, std::size_t size) {
     if (data == nullptr && size != 0) {
         throw std::invalid_argument("Read buffer is null");
     }
+
     return read(std::span(static_cast<std::uint8_t *>(data), size));
 }
 
@@ -83,6 +89,7 @@ std::size_t Stream::write(const void *data, std::size_t size) {
     if (data == nullptr && size != 0) {
         throw std::invalid_argument("Write buffer is null");
     }
+
     return write(std::span(static_cast<const std::uint8_t *>(data), size));
 }
 

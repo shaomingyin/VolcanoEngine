@@ -1,8 +1,8 @@
 //
 //
-#include <Volcano/Common.h>
-
 #include <fmt/format.h>
+
+#include <Volcano/Common.h>
 
 VOLCANO_BEGIN
 

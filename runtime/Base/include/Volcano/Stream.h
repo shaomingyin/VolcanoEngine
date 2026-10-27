@@ -6,9 +6,8 @@
 #include <span>
 #include <stdexcept>
 
-#include <Volcano/ByteArray.h>
-
 #include <Volcano/Common.h>
+#include <Volcano/ByteArray.h>
 
 VOLCANO_BEGIN
 

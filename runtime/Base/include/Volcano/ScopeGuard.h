@@ -32,7 +32,7 @@ public:
 
     ~ScopeGuard() noexcept {
         if (!dismissed_) {
-            try{
+            try {
                 fn_();
             } catch (...) {
             }

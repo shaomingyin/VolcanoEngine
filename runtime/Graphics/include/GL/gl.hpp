@@ -3,8 +3,6 @@
 #ifndef GL_HPP
 #define GL_HPP
 
-#include <GL/gl3w.h>
-
 #include <cassert>
 #include <cstdint>
 #include <stdexcept>
@@ -12,6 +10,8 @@
 #include <string_view>
 #include <utility>
 #include <vector>
+
+#include <GL/gl3w.h>
 
 namespace gl {
 
@@ -98,6 +98,7 @@ public:
 			id_ = std::exchange(other.id_, 0);
 			target_ = other.target_;
 		}
+
 		return *this;
 	}
 
@@ -121,6 +122,7 @@ public:
 		if (id_ != 0) {
 			glDeleteBuffers(1, &id_);
 		}
+
 		id_ = id;
 	}
 
@@ -224,6 +226,7 @@ public:
 			reset();
 			id_ = std::exchange(other.id_, 0);
 		}
+
 		return *this;
 	}
 
@@ -243,6 +246,7 @@ public:
 		if (id_ != 0) {
 			glDeleteVertexArrays(1, &id_);
 		}
+
 		id_ = id;
 	}
 
@@ -326,6 +330,7 @@ public:
 			id_ = std::exchange(other.id_, 0);
 			target_ = other.target_;
 		}
+
 		return *this;
 	}
 
@@ -349,6 +354,7 @@ public:
 		if (id_ != 0) {
 			glDeleteTextures(1, &id_);
 		}
+
 		id_ = id;
 	}
 
@@ -462,6 +468,7 @@ public:
 			id_ = std::exchange(other.id_, 0);
 			type_ = other.type_;
 		}
+
 		return *this;
 	}
 
@@ -492,6 +499,7 @@ public:
 		if (id_ != 0) {
 			glDeleteShader(id_);
 		}
+
 		id_ = id;
 	}
 
@@ -543,6 +551,7 @@ public:
 			reset();
 			id_ = std::exchange(other.id_, 0);
 		}
+
 		return *this;
 	}
 
@@ -562,6 +571,7 @@ public:
 		if (id_ != 0) {
 			glDeleteProgram(id_);
 		}
+
 		id_ = id;
 	}
 
@@ -602,36 +612,140 @@ public:
 		return glGetUniformLocation(id_, name);
 	}
 
+	GLint uniformLocation(const char* name, GLenum expectedType, GLint minimumCount = 1, bool required = true) const {
+		if (minimumCount <= 0) {
+			throw std::invalid_argument("Uniform array count must be positive");
+		}
+
+		const GLint location = uniformLocation(name);
+		if (location < 0) {
+			if (required) {
+				throw std::runtime_error(std::string("Required shader uniform is missing: ") + name);
+			}
+
+			return -1;
+		}
+
+		GLuint index = GL_INVALID_INDEX;
+		glGetUniformIndices(id_, 1, &name, &index);
+		if (index == GL_INVALID_INDEX) {
+			throw std::runtime_error(std::string("Cannot inspect shader uniform: ") + name);
+		}
+
+		GLint type = 0;
+		GLint count = 0;
+		glGetActiveUniformsiv(id_, 1, &index, GL_UNIFORM_TYPE, &type);
+		glGetActiveUniformsiv(id_, 1, &index, GL_UNIFORM_SIZE, &count);
+		if (static_cast<GLenum>(type) != expectedType || count < minimumCount) {
+			throw std::runtime_error(std::string("Shader uniform type or array size does not match: ") + name);
+		}
+
+		return location;
+	}
+
+	GLint attributeLocation(const char* name, GLenum expectedType, GLuint expectedLocation) const {
+		const GLint location = glGetAttribLocation(id_, name);
+		if (location < 0 || static_cast<GLuint>(location) != expectedLocation) {
+			throw std::runtime_error(std::string("Shader vertex attribute location does not match: ") + name);
+		}
+
+		GLint count = 0;
+		GLint maximumLength = 0;
+		glGetProgramiv(id_, GL_ACTIVE_ATTRIBUTES, &count);
+		glGetProgramiv(id_, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &maximumLength);
+		std::vector<GLchar> buffer(static_cast<std::size_t>(maximumLength));
+		for (GLint index = 0; index < count; ++index) {
+			GLsizei length = 0;
+			GLint size = 0;
+			GLenum type = 0;
+			glGetActiveAttrib(id_, static_cast<GLuint>(index), maximumLength, &length, &size, &type, buffer.data());
+			if (std::string_view(buffer.data(), static_cast<std::size_t>(length)) == name) {
+				if (type != expectedType || size != 1) {
+					throw std::runtime_error(std::string("Shader vertex attribute type does not match: ") + name);
+				}
+
+				return location;
+			}
+		}
+
+		throw std::runtime_error(std::string("Cannot inspect shader vertex attribute: ") + name);
+	}
+
+	GLint fragmentLocation(const char* name) const noexcept {
+		return glGetFragDataLocation(id_, name);
+	}
+
+	GLint fragmentLocation(const char* name, GLuint expectedLocation) const {
+		const GLint location = fragmentLocation(name);
+		if (location < 0 || static_cast<GLuint>(location) != expectedLocation) {
+			throw std::runtime_error(std::string("Shader fragment output location does not match: ") + name);
+		}
+
+		return location;
+	}
+
+	void uniform(GLint location, GLint value) const noexcept {
+		glUniform1i(location, value);
+	}
+
 	void uniform(const char* name, GLint value) const noexcept {
-		glUniform1i(uniformLocation(name), value);
+		uniform(uniformLocation(name), value);
+	}
+
+	void uniform(GLint location, GLuint value) const noexcept {
+		glUniform1ui(location, value);
 	}
 
 	void uniform(const char* name, GLuint value) const noexcept {
-		glUniform1ui(uniformLocation(name), value);
+		uniform(uniformLocation(name), value);
+	}
+
+	void uniform(GLint location, GLfloat value) const noexcept {
+		glUniform1f(location, value);
 	}
 
 	void uniform(const char* name, GLfloat value) const noexcept {
-		glUniform1f(uniformLocation(name), value);
+		uniform(uniformLocation(name), value);
+	}
+
+	void uniform2f(GLint location, GLfloat x, GLfloat y) const noexcept {
+		glUniform2f(location, x, y);
 	}
 
 	void uniform2f(const char* name, GLfloat x, GLfloat y) const noexcept {
-		glUniform2f(uniformLocation(name), x, y);
+		uniform2f(uniformLocation(name), x, y);
+	}
+
+	void uniform3f(GLint location, GLfloat x, GLfloat y, GLfloat z) const noexcept {
+		glUniform3f(location, x, y, z);
 	}
 
 	void uniform3f(const char* name, GLfloat x, GLfloat y, GLfloat z) const noexcept {
-		glUniform3f(uniformLocation(name), x, y, z);
+		uniform3f(uniformLocation(name), x, y, z);
+	}
+
+	void uniform4f(GLint location, GLfloat x, GLfloat y, GLfloat z, GLfloat w) const noexcept {
+		glUniform4f(location, x, y, z, w);
 	}
 
 	void uniform4f(const char* name, GLfloat x, GLfloat y, GLfloat z, GLfloat w) const noexcept {
-		glUniform4f(uniformLocation(name), x, y, z, w);
+		uniform4f(uniformLocation(name), x, y, z, w);
+	}
+
+	void uniformMatrix3fv(GLint location, const GLfloat* value, GLboolean transpose = GL_FALSE, GLsizei count = 1) const noexcept {
+		glUniformMatrix3fv(location, count, transpose, value);
 	}
 
 	void uniformMatrix3fv(const char* name, const GLfloat* value, GLboolean transpose = GL_FALSE, GLsizei count = 1) const noexcept {
-		glUniformMatrix3fv(uniformLocation(name), count, transpose, value);
+		uniformMatrix3fv(uniformLocation(name), value, transpose, count);
+	}
+
+	void uniformMatrix4fv(GLint location, const GLfloat* value, GLboolean transpose = GL_FALSE, GLsizei count = 1) const noexcept {
+		glUniformMatrix4fv(location, count, transpose, value);
 	}
 
 	void uniformMatrix4fv(const char* name, const GLfloat* value, GLboolean transpose = GL_FALSE, GLsizei count = 1) const noexcept {
-		glUniformMatrix4fv(uniformLocation(name), count, transpose, value);
+		uniformMatrix4fv(uniformLocation(name), value, transpose, count);
 	}
 
 	std::string infoLog() const {
@@ -665,6 +779,7 @@ public:
 			reset();
 			id_ = std::exchange(other.id_, 0);
 		}
+
 		return *this;
 	}
 
@@ -684,6 +799,7 @@ public:
 		if (id_ != 0) {
 			glDeleteRenderbuffers(1, &id_);
 		}
+
 		id_ = id;
 	}
 
@@ -735,6 +851,7 @@ public:
 			id_ = std::exchange(other.id_, 0);
 			target_ = other.target_;
 		}
+
 		return *this;
 	}
 
@@ -758,6 +875,7 @@ public:
 		if (id_ != 0) {
 			glDeleteFramebuffers(1, &id_);
 		}
+
 		id_ = id;
 	}
 
@@ -842,6 +960,7 @@ public:
 			reset();
 			id_ = std::exchange(other.id_, 0);
 		}
+
 		return *this;
 	}
 
@@ -861,6 +980,7 @@ public:
 		if (id_ != 0) {
 			glDeleteSamplers(1, &id_);
 		}
+
 		id_ = id;
 	}
 

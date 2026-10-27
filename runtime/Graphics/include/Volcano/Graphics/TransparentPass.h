@@ -1,15 +1,25 @@
 #ifndef VOLCANO_GRAPHICS_TRANSPARENTPASS_H
 #define VOLCANO_GRAPHICS_TRANSPARENTPASS_H
 
-#include <Volcano/Graphics/Common.h>
+#include <cstddef>
+
+#include <Volcano/Graphics/View.h>
+#include <Volcano/Graphics/Pass.h>
 
 VOLCANO_GRAPHICS_BEGIN
 
-struct RenderContext;
-
-class TransparentPass final {
+class TransparentPass final : public Pass {
 public:
-    void render(const RenderContext& context);
+    explicit TransparentPass(std::size_t maxLights = 16);
+
+    void render(const View& view);
+
+private:
+    static constexpr GLuint ColorOutput = 0;
+
+private:
+    ObjectUniforms object_uniforms_;
+    LightingUniforms lighting_uniforms_;
 };
 
 VOLCANO_GRAPHICS_END

@@ -1,55 +1,54 @@
 #ifndef VOLCANO_GRAPHICS_RENDERER_H
 #define VOLCANO_GRAPHICS_RENDERER_H
 
-#include <optional>
+#include <cstddef>
+#include <memory>
+
+#include <GL/gl3w.h>
+
 #include <Volcano/Graphics/GeometryPass.h>
+#include <Volcano/Graphics/GBuffer.h>
 #include <Volcano/Graphics/LightingPass.h>
 #include <Volcano/Graphics/TransparentPass.h>
-#include <Volcano/Graphics/RenderContext.h>
-#include <Volcano/Graphics/Material.h>
-#include <Volcano/Graphics/Mesh.h>
+#include <Volcano/Graphics/View.h>
 #include <Volcano/Graphics/Target.h>
-#include <Volcano/Math/Math.h>
 
 VOLCANO_GRAPHICS_BEGIN
 
 class Renderer final {
 public:
-    // The caller must activate the Context before construction.
+    // The caller must activate the OpenGL context before construction.
     explicit Renderer(GL3WGetProcAddressProc resolver);
     ~Renderer();
     Renderer(const Renderer&) = delete;
     Renderer& operator=(const Renderer&) = delete;
 
-    // Multi-pass entry point; execution is not implemented yet.
-    void render(const RenderContext& context);
+    std::size_t maxLights() const noexcept {
+        return max_lights_;
+    }
 
-    void begin(Target& target, const Math::Matrix4f& projection = Math::Matrix4f(), const Math::Matrix4f& view = Math::Matrix4f());
-    void clear(const Math::Colorf& color = Math::Colorf::Black);
-    void draw(const Mesh& mesh, const Material& material = {}, const Math::Affine3f& transform = {});
-    // The quad occupies [0, 1] in local X/Y, with its origin at the bottom left.
-    void draw(const Texture& texture, const Math::Affine3f& transform = {}, const Math::Colorf& color = Math::Colorf::White);
+    // Rebuilds both lighting programs; failure preserves the current capacity and passes.
+    void setMaxLights(std::size_t maxLights);
 
-    void setDepthTest(bool enabled) noexcept { depth_test_ = enabled; }
+    // Requires a completed View submission; clears the target and executes the rendering passes.
+    void render(const View& view, Target& target);
+
+    const GBuffer& geometryBuffer() const noexcept {
+        return *geometry_buffer_;
+    }
 
 private:
-    GL3WProcs functions_{};
+    void release() noexcept;
+    void bind(Target& target) noexcept;
+    void clear(const Colorf& color);
 
-    GeometryPass geometry_pass_;
-    LightingPass lighting_pass_;
-    TransparentPass transparent_pass_;
-
-    void bind();
-    struct Resources {
-        Resources();
-        gl::Program program;
-        Mesh quad;
-    };
-    std::optional<Resources> resources_;
-    Target* target_ = nullptr;
-    Math::Matrix4f projection_;
-    Math::Matrix4f view_;
-    bool depth_test_ = true;
+private:
+    GL3WProcs procs_{};
+    std::size_t max_lights_ = 0;
+    std::unique_ptr<GBuffer> geometry_buffer_;
+    std::unique_ptr<GeometryPass> geometry_pass_;
+    std::unique_ptr<LightingPass> lighting_pass_;
+    std::unique_ptr<TransparentPass> transparent_pass_;
 };
 
 VOLCANO_GRAPHICS_END

@@ -8,7 +8,7 @@ PointLight::PointLight() noexcept
     : range_(10.0f) {
 }
 
-PointLight::PointLight(const Volcano::Math::Vector3f& color, float strength, float range) noexcept
+PointLight::PointLight(const Eigen::Vector3f& color, float strength, float range) noexcept
     : Light(color, strength)
     , range_(range) {
 }

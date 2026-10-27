@@ -2,26 +2,36 @@
 #define VOLCANO_GRAPHICS_TARGET_H
 
 #include <Volcano/Graphics/Common.h>
+#include <Volcano/Size.h>
 
 VOLCANO_GRAPHICS_BEGIN
 
-class Renderer;
+class Texture;
 
+// Implementations provide a color output and depth storage for the built-in renderer.
 class Target {
 public:
     virtual ~Target() = default;
     Target(const Target&) = delete;
     Target& operator=(const Target&) = delete;
 
+    // Selects this output in the caller's current graphics context.
+    virtual void bind() const noexcept = 0;
+
     virtual int width() const noexcept = 0;
     virtual int height() const noexcept = 0;
 
+    // Texture-backed targets override this query to prevent sampling their own attachments.
+    virtual bool contains(const Texture&) const noexcept {
+        return false;
+    }
+
+    Size size() const noexcept {
+        return {width(), height()};
+    }
+
 protected:
     Target() = default;
-
-private:
-    friend class Renderer;
-    virtual std::uint32_t framebuffer() const noexcept = 0;
 };
 
 VOLCANO_GRAPHICS_END

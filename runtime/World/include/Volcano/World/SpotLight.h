@@ -11,7 +11,7 @@ VOLCANO_WORLD_BEGIN
 class SpotLight: public DirectionalLight {
 public:
     SpotLight() noexcept;
-    SpotLight(const Volcano::Math::Vector3f& direction, const Volcano::Math::Vector3f& color, float strength, float range, float inner_angle, float outer_angle) noexcept;
+    SpotLight(const Eigen::Vector3f& direction, const Eigen::Vector3f& color, float strength, float range, float inner_angle, float outer_angle) noexcept;
     SpotLight(float dx, float dy, float dz, float r, float g, float b, float strength, float range, float inner_angle, float outer_angle) noexcept;
     SpotLight(const SpotLight&) noexcept = default;
     SpotLight(SpotLight&&) noexcept = default;

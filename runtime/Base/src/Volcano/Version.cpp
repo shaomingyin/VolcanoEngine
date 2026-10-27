@@ -1,8 +1,8 @@
 //
 //
-#include <Volcano/Version.h>
-
 #include <fmt/format.h>
+
+#include <Volcano/Version.h>
 
 VOLCANO_BEGIN
 
@@ -10,6 +10,7 @@ std::string VersionNumber::toString() const {
     if (extraInfo_.empty()) {
         return fmt::format("{}.{}.{}", major_, minor_, patch_);
     }
+
     return fmt::format("{}.{}.{}-{}", major_, minor_, patch_, extraInfo_);
 }
 

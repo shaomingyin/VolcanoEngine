@@ -4,7 +4,6 @@
 #define VOLCANO_GUI_WIDGET_H
 
 #include <layout.h>
-
 #include <SFML/System/String.hpp>
 #include <SFML/Graphics/Font.hpp>
 #include <SFML/Graphics/Text.hpp>

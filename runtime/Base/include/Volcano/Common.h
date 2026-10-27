@@ -11,6 +11,7 @@
 #include <stdexcept>
 #include <filesystem>
 
+#include <physfs.h>
 #include <spdlog/spdlog.h>
 
 #include <Volcano/Config.h>

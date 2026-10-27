@@ -11,7 +11,7 @@ VOLCANO_WORLD_BEGIN
 class DirectionalLight: public Light {
 public:
     DirectionalLight() noexcept;
-    DirectionalLight(const Volcano::Math::Vector3f& direction, const Volcano::Math::Vector3f& color, float strength = 1.0f) noexcept;
+    DirectionalLight(const Eigen::Vector3f& direction, const Eigen::Vector3f& color, float strength = 1.0f) noexcept;
     DirectionalLight(float dx, float dy, float dz, float r, float g, float b, float strength = 1.0f) noexcept;
     DirectionalLight(const DirectionalLight&) noexcept = default;
     DirectionalLight(DirectionalLight&&) noexcept = default;
@@ -20,16 +20,16 @@ public:
     DirectionalLight& operator=(const DirectionalLight&) noexcept = default;
     DirectionalLight& operator=(DirectionalLight&&) noexcept = default;
 
-    Volcano::Math::Vector3f& direction() noexcept {
+    Eigen::Vector3f& direction() noexcept {
         return direction_;
     }
 
-    const Volcano::Math::Vector3f& direction() const noexcept {
+    const Eigen::Vector3f& direction() const noexcept {
         return direction_;
     }
 
 private:
-    Volcano::Math::Vector3f direction_;
+    Eigen::Vector3f direction_;
 };
 
 VOLCANO_WORLD_END

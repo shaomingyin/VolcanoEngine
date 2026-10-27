@@ -3,15 +3,12 @@
 #ifndef VOLCANO_DEMO_GAME_H
 #define VOLCANO_DEMO_GAME_H
 
-#include <memory>
-
-#include <async++.h>
-
 #include <Volcano/World/Scene.h>
 #include <Volcano/Demo/Common.h>
 
 VOLCANO_DEMO_BEGIN
 
+// The game implements its rules and scene construction through World::Scene.
 class Game: public World::Scene {
 public:
     Game();
@@ -23,7 +20,6 @@ public:
 protected:
     void onUpdate(Clock::duration elapsed) noexcept override;
 
-private:
 };
 
 VOLCANO_DEMO_END

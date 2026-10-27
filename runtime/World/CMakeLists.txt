@@ -1,7 +1,6 @@
 
 add_library(World STATIC
     include/Volcano/World/Common.h
-    include/Volcano/World/Transform.h
     include/Volcano/World/Config.h.in
     include/Volcano/World/Context.h
     include/Volcano/World/BoundingBox.h
@@ -11,8 +10,6 @@ add_library(World STATIC
     include/Volcano/World/Camera.h
     include/Volcano/World/DirectionalLight.h
     include/Volcano/World/Light.h
-    include/Volcano/World/Material.h
-    include/Volcano/World/Mesh.h
     include/Volcano/World/Model.h
     include/Volcano/World/OrthographicCamera.h
     include/Volcano/World/PerspectiveCamera.h
@@ -21,9 +18,6 @@ add_library(World STATIC
     src/Volcano/World/Camera.cpp
     src/Volcano/World/DirectionalLight.cpp
     src/Volcano/World/Light.cpp
-    src/Volcano/World/Material.cpp
-    src/Volcano/World/Mesh.cpp
-    src/Volcano/World/Model.cpp
     src/Volcano/World/OrthographicCamera.cpp
     src/Volcano/World/PerspectiveCamera.cpp
     src/Volcano/World/PointLight.cpp
@@ -48,7 +42,7 @@ volcano_target_setup(World)
 
 set_target_properties(World PROPERTIES OUTPUT_NAME VolcanoWorld)
 
-target_link_libraries(World PUBLIC Base Math)
+target_link_libraries(World PUBLIC Base)
 
 find_package(EnTT REQUIRED)
 target_link_libraries(World PUBLIC EnTT::EnTT)

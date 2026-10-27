@@ -1,6 +1,7 @@
-#include <gtest/gtest.h>
 #include <type_traits>
 #include <utility>
+
+#include <gtest/gtest.h>
 
 #include <Volcano/Version.h>
 
@@ -38,6 +39,7 @@ TEST(BaseVersion, Checks) {
         const VersionNumber original(4, 5, 6, longInfo);
         copy = original;
     }
+
     EXPECT_TRUE((copy.extraInfo() == longInfo));
     EXPECT_TRUE((copy.toString() == "4.5.6-" + longInfo));
     const VersionNumber copied(copy);

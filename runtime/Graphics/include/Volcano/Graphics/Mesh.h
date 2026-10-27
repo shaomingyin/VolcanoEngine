@@ -4,6 +4,7 @@
 #include <array>
 #include <cstdint>
 #include <span>
+#include <string>
 
 #include <GL/gl.hpp>
 
@@ -36,13 +37,14 @@ public:
         return count_ == 0;
     }
 
-    const gl::VertexArray& vertexArray() const noexcept {
-        return vertex_array_;
-    }
+    void draw() const noexcept;
 
-    GLsizei count() const noexcept {
-        return count_;
-    }
+    static std::string shaderDefinitions();
+
+public:
+    static constexpr GLuint PositionAttribute = 0;
+    static constexpr GLuint NormalAttribute = 1;
+    static constexpr GLuint TexcoordAttribute = 2;
 
 private:
     gl::VertexArray vertex_array_;

@@ -12,6 +12,7 @@ std::string ErrorCategory::message(int ev) const {
     if (ev == 1) {
         return "unknown error";
     }
+
     return "error: " + std::to_string(ev);
 }
 

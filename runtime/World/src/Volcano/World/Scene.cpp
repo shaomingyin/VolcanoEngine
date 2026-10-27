@@ -1,13 +1,13 @@
 //
 //
-#include <Volcano/Math/Math.h>
 #include <Volcano/World/Inherent.h>
 #include <Volcano/World/Scene.h>
 
 VOLCANO_WORLD_BEGIN
 
 Scene::Scene()
-	: physics_(*this) {
+	: physics_runtime_((Physics::init(), &Physics::shutdown))
+    , physics_(*this) {
 }
 
 Scene::~Scene() {
@@ -16,7 +16,9 @@ Scene::~Scene() {
 
 void Scene::update(Clock::duration elapsed) noexcept {
 	onUpdate(elapsed);
-	physics_.update(elapsed);
+    if (elapsed > Clock::duration::zero()) {
+        physics_.update(elapsed);
+    }
 }
 
 VOLCANO_WORLD_END

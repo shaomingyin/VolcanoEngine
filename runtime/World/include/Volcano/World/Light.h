@@ -3,16 +3,17 @@
 #ifndef VOLCANO_WORLD_LIGHT_H
 #define VOLCANO_WORLD_LIGHT_H
 
-#include <Volcano/Math/Math.h>
+#include <Eigen/Core>
+
 #include <Volcano/World/Common.h>
-#include <Volcano/World/Transform.h>
+#include <Volcano/Transform.h>
 
 VOLCANO_WORLD_BEGIN
 
 class Light {
 public:
     Light() noexcept;
-    Light(const Volcano::Math::Vector3f& color, float strength = 1.0f) noexcept;
+    Light(const Eigen::Vector3f& color, float strength = 1.0f) noexcept;
     Light(float r, float g, float b, float strength = 1.0f) noexcept;
     Light(const Light&) noexcept = default;
     Light(Light&&) noexcept = default;
@@ -29,11 +30,11 @@ public:
         return offset_;
     }
 
-    Volcano::Math::Vector3f& color() noexcept {
+    Eigen::Vector3f& color() noexcept {
         return color_;
     }
 
-    const Volcano::Math::Vector3f& color() const noexcept {
+    const Eigen::Vector3f& color() const noexcept {
         return color_;
     }
 
@@ -47,7 +48,7 @@ public:
 
 private:
     Transform offset_;
-    Volcano::Math::Vector3f color_;
+    Eigen::Vector3f color_;
     float strength_;
 };
 

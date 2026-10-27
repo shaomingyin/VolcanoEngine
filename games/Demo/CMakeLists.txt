@@ -1,5 +1,6 @@
 
 add_library(Demo STATIC
+    include/Volcano/Game.h
     include/Volcano/Demo/Common.h
     include/Volcano/Demo/Config.h.in
     include/Volcano/Demo/Game.h

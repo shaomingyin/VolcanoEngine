@@ -6,7 +6,6 @@
 #include <memory>
 
 #include <entt/entt.hpp>
-
 #include <Jolt/Jolt.h>
 #include <Jolt/RegisterTypes.h>
 #include <Jolt/Core/Factory.h>
@@ -16,27 +15,27 @@
 #include <Jolt/Physics/Body/BodyInterface.h>
 #include <Jolt/Physics/Body/BodyID.h>
 #include <Jolt/Physics/Body/BodyCreationSettings.h>
+#include <Eigen/Core>
 
-#include <Volcano/Math/Math.h>
 #include <Volcano/World/Common.h>
-#include <Volcano/World/Transform.h>
+#include <Volcano/Transform.h>
 
 VOLCANO_WORLD_BEGIN
 
-inline Volcano::Math::Vector3f fromJPH(JPH::Vec3 v) noexcept {
-    return Volcano::Math::Vector3f(v.GetX(), v.GetY(), v.GetZ());
+inline Eigen::Vector3f fromJPH(JPH::Vec3 v) noexcept {
+    return Eigen::Vector3f(v.GetX(), v.GetY(), v.GetZ());
 }
 
-inline JPH::Vec3 toJPH(Volcano::Math::Vector3f v) noexcept {
-    return JPH::Vec3(v.x, v.y, v.z);
+inline JPH::Vec3 toJPH(Eigen::Vector3f v) noexcept {
+    return JPH::Vec3(v.x(), v.y(), v.z());
 }
 
-inline Volcano::Math::Quaternionf fromJPH(JPH::Quat v) noexcept {
-    return Volcano::Math::Quaternionf(v.GetW(), v.GetX(), v.GetY(), v.GetZ());
+inline Eigen::Quaternionf fromJPH(JPH::Quat v) noexcept {
+    return Eigen::Quaternionf(v.GetW(), v.GetX(), v.GetY(), v.GetZ());
 }
 
-inline JPH::Quat toJPH(Volcano::Math::Quaternionf v) noexcept {
-    return JPH::Quat(v.x, v.y, v.z, v.w);
+inline JPH::Quat toJPH(Eigen::Quaternionf v) noexcept {
+    return JPH::Quat(v.x(), v.y(), v.z(), v.w());
 }
 
 namespace PhysicsLayers {
@@ -117,11 +116,11 @@ public:
 	static void init();
 	static void shutdown();
 
-    const Volcano::Math::Vector3f& gravity() const noexcept {
+    const Eigen::Vector3f& gravity() const noexcept {
         return gravity_;
     }
 
-    void setGravity(const Volcano::Math::Vector3f& v) noexcept;
+    void setGravity(const Eigen::Vector3f& v) noexcept;
     void update(Clock::duration elapsed) noexcept;
 
 protected:
@@ -131,7 +130,7 @@ protected:
 
 private:
     entt::registry& registry_;
-    Volcano::Math::Vector3f gravity_;
+    Eigen::Vector3f gravity_;
     PhysicsBroadPhaseLayerInterface broad_phase_layer_interface_;
     PhysicsObjectVsBroadPhaseLayerFilter object_vs_broad_phase_layer_filter_;
     PhysicsObjectLayerPairFilter object_layer_pair_filter_;

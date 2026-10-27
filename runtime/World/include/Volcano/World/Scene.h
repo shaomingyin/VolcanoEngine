@@ -8,6 +8,7 @@
 #include <entt/entt.hpp>
 
 #include <Volcano/Version.h>
+#include <Volcano/ScopeGuard.h>
 #include <Volcano/World/Common.h>
 #include <Volcano/World/Physics.h>
 
@@ -65,11 +66,10 @@ private:
     std::string name_;
     std::string description_;
     VersionNumber version_;
+    ScopeGuard<void (*)()> physics_runtime_;
     Physics physics_;
 };
 
 VOLCANO_WORLD_END
-
-extern std::unique_ptr<Volcano::World::Scene> volcanoCreateGame();
 
 #endif // VOLCANO_WORLD_SCENE_H

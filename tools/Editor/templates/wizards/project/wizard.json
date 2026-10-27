@@ -1,0 +1,51 @@
+{
+    "trDisplayName": "Project",
+    "trDisplayCategory": "VolcanoEngine",
+    "trDescription": "asdf",
+
+    "version": 1,
+    "supportedProjectTypes": [ "CMakeProjectManager.CMakeProject" ],
+    "id": "V.VolcanoEngine",
+    "category": "O.C++",
+
+    "options":
+    [
+        { "key": "ProjectName", "value": "%{JS: Util.baseName(value('ProjectDirectory'))}" }
+    ],
+
+    "pages":
+    [
+        {
+            "trDisplayName": "Project",
+            "trShortTitle": "Location",
+            "typeId": "Project"
+        },
+        {
+            "trDisplayName": "Kit Selection",
+            "trShortTitle": "Kits",
+            "typeId": "Kits",
+            "data": { "projectFilePath": "%{ProFileName}" }
+        },
+        {
+            "trDisplayName": "Project Management",
+            "trShortTitle": "Summary",
+            "typeId": "Summary"
+        }
+    ],
+
+    "generators":
+    [
+        {
+            "typeId": "File",
+            "data":
+            [
+                { "source": "CMakeLists.txt", "target": "CMakeLists.txt", "openAsProject": true },
+                { "source": "Resources.qrc", "target": "Resources.qrc" },
+                { "source": "Assets/CMakeLists.txt", "target": "Assets/CMakeLists.txt" },
+                { "source": "Modules/CMakeLists.txt", "target": "Modules/CMakeLists.txt" },
+                { "source": "World/CMakeLists.txt", "target": "World/CMakeLists.txt" },
+                { "source": "World/Startup.volcano-scene", "target": "World/Startup.volcano-scene", "openInEditor": true }
+            ]
+        }
+    ]
+}

@@ -19,18 +19,18 @@ public:
     OrthographicCamera& operator=(const OrthographicCamera&) noexcept = default;
     OrthographicCamera& operator=(OrthographicCamera&&) noexcept = default;
 
-    Volcano::Math::Vector4f& rect() noexcept {
+    Eigen::Vector4f& rect() noexcept {
         return rect_;
     }
 
-    const Volcano::Math::Vector4f& rect() const noexcept {
+    const Eigen::Vector4f& rect() const noexcept {
         return rect_;
     }
 
-    Volcano::Math::Matrix4f toMatrix() const override;
+    Eigen::Matrix4f toMatrix() const override;
 
 private:
-    Volcano::Math::Vector4f rect_;
+    Eigen::Vector4f rect_;
 };
 
 VOLCANO_WORLD_END

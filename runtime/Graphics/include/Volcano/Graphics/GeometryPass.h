@@ -1,15 +1,19 @@
 #ifndef VOLCANO_GRAPHICS_GEOMETRYPASS_H
 #define VOLCANO_GRAPHICS_GEOMETRYPASS_H
 
-#include <Volcano/Graphics/Common.h>
+#include <Volcano/Graphics/View.h>
+#include <Volcano/Graphics/Pass.h>
 
 VOLCANO_GRAPHICS_BEGIN
 
-struct RenderContext;
-
-class GeometryPass final {
+class GeometryPass final : public Pass {
 public:
-    void render(const RenderContext& context);
+    GeometryPass();
+
+    void render(const View& view);
+
+private:
+    ObjectUniforms uniforms_;
 };
 
 VOLCANO_GRAPHICS_END

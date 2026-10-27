@@ -1,10 +1,13 @@
 //
 //
+#include <memory>
+#include <mutex>
 #include <thread>
 
 #include <Jolt/Jolt.h>
 #include <Jolt/Core/Factory.h>
 #include <Jolt/RegisterTypes.h>
+
 #include <Volcano/World/Physics.h>
 
 VOLCANO_WORLD_BEGIN
@@ -66,23 +69,36 @@ Physics::~Physics() {
 	registry_.on_update<JPH::BodyCreationSettings>().disconnect<&Physics::onBodyChanged>(this);
 }
 
+namespace {
+std::mutex runtime_mutex;
+std::size_t runtime_users = 0;
+}
+
 void Physics::init() {
-	spdlog::info("Initializing physics system...");
-	JPH::RegisterDefaultAllocator();
-	JPH::Factory::sInstance = new JPH::Factory();
-	JPH::RegisterTypes();
+    const std::lock_guard lock(runtime_mutex);
+    if (runtime_users == 0) {
+        JPH::RegisterDefaultAllocator();
+        auto factory = std::make_unique<JPH::Factory>();
+        JPH::Factory::sInstance = factory.get();
+        JPH::RegisterTypes();
+        factory.release();
+    }
+    ++runtime_users;
 }
 
 void Physics::shutdown() {
-	spdlog::info("Shutting down physics system...");
-	delete JPH::Factory::sInstance;
-    JPH::Factory::sInstance = nullptr;
+    const std::lock_guard lock(runtime_mutex);
+    if (runtime_users != 0 && --runtime_users == 0) {
+        JPH::UnregisterTypes();
+        delete JPH::Factory::sInstance;
+        JPH::Factory::sInstance = nullptr;
+    }
 }
 
-void Physics::setGravity(const Volcano::Math::Vector3f& v) noexcept {
+void Physics::setGravity(const Eigen::Vector3f& v) noexcept {
 	if (gravity_ != v) {
 		gravity_ = v;
-		physics_system_.SetGravity({ v.x, v.y, v.z });
+		physics_system_.SetGravity({ v.x(), v.y(), v.z() });
 	}
 }
 
@@ -99,7 +115,7 @@ void Physics::update(Clock::duration elapsed) noexcept {
 		}
 
 		const auto position = body_interface_->GetPosition(body_id);
-		transform.translation() = Volcano::Math::Vector3f(position.GetX(), position.GetY(), position.GetZ());
+		transform.translation() = Eigen::Vector3f(position.GetX(), position.GetY(), position.GetZ());
 		transform.rotation() = fromJPH(body_interface_->GetRotation(body_id));
 	}
 }

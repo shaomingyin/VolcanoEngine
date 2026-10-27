@@ -1,10 +1,10 @@
-#include <Volcano/Stream.h>
-
 #include <algorithm>
 #include <array>
 #include <limits>
 
 #include <gtest/gtest.h>
+
+#include <Volcano/Stream.h>
 
 namespace {
 
@@ -16,8 +16,13 @@ public:
     using Stream::read;
     using Stream::write;
 
-    bool isReadable() const override { return true; }
-    bool isWritable() const override { return true; }
+    bool isReadable() const override {
+        return true;
+    }
+
+    bool isWritable() const override {
+        return true;
+    }
 
     std::size_t read(std::span<std::uint8_t> buffer) override {
         const auto count = std::min({buffer.size(), input.size() - position, std::size_t(2)});
@@ -32,6 +37,7 @@ public:
         return count;
     }
 
+public:
     ByteArray input{1, 0, 2, 3, 4};
     ByteArray output;
     std::size_t position = 0;
@@ -97,8 +103,13 @@ TEST(BaseStream, PointerOverloadsValidateBuffersAndReturnCounts) {
 
 class UnsupportedStream final : public Stream {
 public:
-    bool isReadable() const override { return false; }
-    bool isWritable() const override { return false; }
+    bool isReadable() const override {
+        return false;
+    }
+
+    bool isWritable() const override {
+        return false;
+    }
 };
 
 TEST(BaseStream, UnsupportedOperationsThrowAndEmptyTransfersSucceed) {
@@ -118,9 +129,15 @@ TEST(BaseStream, UnsupportedOperationsThrowAndEmptyTransfersSucceed) {
 
 class InvalidCountStream final : public SequentialStream {
 public:
-    std::size_t read(std::span<std::uint8_t>) override { return count; }
-    std::size_t write(std::span<const std::uint8_t>) override { return count; }
+    std::size_t read(std::span<std::uint8_t>) override {
+        return count;
+    }
 
+    std::size_t write(std::span<const std::uint8_t>) override {
+        return count;
+    }
+
+public:
     std::size_t count = 0;
 };
 
@@ -142,6 +159,7 @@ public:
     std::size_t read(std::span<std::uint8_t>) override {
         throw std::overflow_error("Read failed");
     }
+
     std::size_t write(std::span<const std::uint8_t>) override {
         throw std::overflow_error("Write failed");
     }

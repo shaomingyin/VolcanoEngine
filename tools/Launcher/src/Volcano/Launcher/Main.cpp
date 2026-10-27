@@ -1,98 +1,93 @@
-//
-//
-#include <string>
+#define GLFW_INCLUDE_NONE
+#include <filesystem>
 #include <memory>
 #include <stdexcept>
-#include <filesystem>
+#include <string>
 
 #include <argh.h>
+#include <GLFW/glfw3.h>
+#include <physfs.h>
 
+#include <Volcano/Game.h>
+#include <Volcano/Framework/Client.h>
+#include <Volcano/Framework/Local.h>
 #include <Volcano/ScopeGuard.h>
-#include <Volcano/VirtualFileSystem.h>
-#include <Volcano/World/Scene.h>
-#include <Volcano/Launcher/Local.h>
-#include <Volcano/Launcher/Client.h>
-#include <Volcano/Launcher/Common.h>
+#include <Volcano/World/OrthographicCamera.h>
+#include <Volcano/World/PerspectiveCamera.h>
 
-VOLCANO_LAUNCHER_BEGIN
-
-class Application {
-public:
-    Application(int argc, char* argv[]) {
+int main(int argc, char* argv[]) {
+    using namespace Volcano;
+    try {
+        argh::parser cmdline({"-r", "--root"});
+        cmdline.parse(argc, argv);
+        if (cmdline[{"-r", "--root"}]) {
+            throw std::invalid_argument("Missing command-line parameter value");
+        }
         spdlog::set_pattern("%Y-%m-%d %H:%M:%S.%e %t [%L] %v");
-        spdlog::info("VolcanoLauncher: Engine version - " VOLCANO_VERSION_STR);
-        spdlog::info("Inializing...");
-
-        argh::parser cmdline(argv);
-
 #ifdef VOLCANO_DEBUG
         spdlog::set_level(spdlog::level::debug);
 #else
-        if (cmdline({ "-d", "--debug" })) {
-            spdlog::set_level(spdlog::level::debug);
-        } else {
-            spdlog::set_level(spdlog::level::warn);
-        }
+        spdlog::set_level(cmdline[{"-d", "--debug"}] ? spdlog::level::debug : spdlog::level::warn);
 #endif
-
-        std::string root;
-        std::string cwd = std::filesystem::current_path().generic_string();
-        cmdline({ "-r", "--root" }, cwd) >> root;
-        std::filesystem::path root_path(root);
-
-        spdlog::info("Mounting rootfs {}...", root);
-        filesystem_.mount("/", root_path);
-
-        World::Physics::init();
-        auto physics_guard = scopeGuard([] {
-            World::Physics::shutdown();
-        });
-
-        spdlog::info("Initializing game...");
-        auto game = volcanoCreateGame();
-
-        if (cmdline({ "-c", "--client" })) {
-            local_ = std::make_unique<Client>(*game);
-        } else {
-            local_ = std::make_unique<Local>(*game);
+        if (PHYSFS_init(argv[0]) == 0) {
+            throw std::runtime_error(PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode()));
         }
+        auto physfsGuard = scopeGuard([] { PHYSFS_deinit(); });
+        const auto root = cmdline({"-r", "--root"}, std::filesystem::current_path().string()).str();
+        const auto rootPath = std::filesystem::absolute(root).u8string();
+        const std::string rootUtf8(rootPath.begin(), rootPath.end());
+        if (PHYSFS_mount(rootUtf8.c_str(), nullptr, 1) == 0) {
+            throw std::runtime_error(PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode()));
+        }
+        std::unique_ptr<Framework::Local> framework;
+        if (cmdline[{"-c", "--client"}]) {
+            framework = std::make_unique<Framework::Client>(800, 600, "VolcanoLauncher");
+        } else {
+            framework = std::make_unique<Framework::Local>(800, 600, "VolcanoLauncher");
+        }
+        auto& window = framework->window();
+        framework->load(volcanoCreateGame);
+        framework->play();
+        glfwSwapInterval(1);
 
-        game_ = std::move(game);
+        auto last = Clock::now();
+        while (!glfwWindowShouldClose(window.handle())) {
+            glfwPollEvents();
+            if (glfwWindowShouldClose(window.handle())) {
+                break;
+            }
+            const auto now = Clock::now();
+            framework->update(now - last);
+            last = now;
+            if (window.width() == 0 || window.height() == 0) {
+                glfwWaitEventsTimeout(0.1);
+                last = Clock::now();
+                continue;
+            }
 
-        physics_guard.dismiss();
+            auto& scene = framework->scene();
+            entt::entity camera = entt::null;
+            for (const auto entity : scene.view<World::PerspectiveCamera>()) {
+                camera = entity;
+                scene.get<World::PerspectiveCamera>(entity).aspect() =
+                    static_cast<float>(window.width()) / static_cast<float>(window.height());
+                break;
+            }
+            if (camera == entt::null) {
+                for (const auto entity : scene.view<World::OrthographicCamera>()) {
+                    camera = entity;
+                    break;
+                }
+            }
+            if (camera == entt::null) {
+                throw std::runtime_error("Scene requires a camera for Launcher rendering");
+            }
+            framework->render(camera);
+            glfwSwapBuffers(window.handle());
+        }
+        return EXIT_SUCCESS;
+    } catch (const std::exception& error) {
+        spdlog::error("{}", error.what());
+        return EXIT_FAILURE;
     }
-
-    ~Application() {
-        World::Physics::shutdown();
-    }
-
-public:
-    void run() {
-        VOLCANO_ASSERT(local_);
-        spdlog::info("Running...");
-        local_->run();
-    }
-
-private:
-    VirtualFileSystem filesystem_;
-    std::unique_ptr<World::Scene> game_;
-    std::unique_ptr<Local> local_;
-};
-
-VOLCANO_LAUNCHER_END
-
-int main(int argc, char* argv[]) {
-    int exit_code;
-    try {
-        Volcano::Launcher::Application app(argc, argv);
-        app.run();
-        exit_code = EXIT_SUCCESS;
-    } catch (const std::exception& e) {
-        spdlog::error(e.what());
-        exit_code = EXIT_FAILURE;
-    } catch (...) {
-        spdlog::error("Unknown error.");
-        exit_code = EXIT_FAILURE;
-    }
-    return exit_code;
 }

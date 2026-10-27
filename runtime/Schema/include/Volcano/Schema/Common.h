@@ -1,0 +1,9 @@
+#ifndef VOLCANO_SCHEMA_COMMON_H
+#define VOLCANO_SCHEMA_COMMON_H
+
+#include <Volcano/Common.h>
+
+#define VOLCANO_SCHEMA_BEGIN VOLCANO_BEGIN namespace Schema {
+#define VOLCANO_SCHEMA_END } VOLCANO_END
+
+#endif // VOLCANO_SCHEMA_COMMON_H

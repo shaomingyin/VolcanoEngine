@@ -1,32 +1,53 @@
 #ifndef VOLCANO_GRAPHICS_TEXTURE_H
 #define VOLCANO_GRAPHICS_TEXTURE_H
 
-#include <GL/gl.hpp>
-#include <Volcano/Graphics/Target.h>
+#include <cstdint>
 #include <span>
+
+#include <GL/gl.hpp>
+
+#include <Volcano/Graphics/Common.h>
+#include <Volcano/Size.h>
 
 VOLCANO_GRAPHICS_BEGIN
 
 // Uploads straight RGBA8, bottom row first; stores premultiplied alpha internally.
 // Creation, use and destruction require the resource's OpenGL context to be current.
-class Texture final : public Target {
+class Texture final {
 public:
     Texture(int width, int height, std::span<const std::uint8_t> rgba = {});
-    ~Texture() override = default;
+    ~Texture() = default;
+    Texture(const Texture&) = delete;
+    Texture& operator=(const Texture&) = delete;
+    Texture(Texture&&) noexcept = default;
+    Texture& operator=(Texture&&) noexcept = default;
 
     void resize(int width, int height);
     void upload(std::span<const std::uint8_t> rgba);
+    // Uploads RGBA8 that already uses premultiplied alpha.
+    void uploadPremultiplied(std::span<const std::uint8_t> rgba);
 
-    int width() const noexcept override { return width_; }
-    int height() const noexcept override { return height_; }
+    const gl::Texture2D& texture() const noexcept {
+        return texture_;
+    }
+
+    int width() const noexcept {
+        return width_;
+    }
+
+    int height() const noexcept {
+        return height_;
+    }
+
+    Size size() const noexcept {
+        return {width_, height_};
+    }
 
 private:
-    friend class Renderer;
-    std::uint32_t framebuffer() const noexcept override { return framebuffer_.id(); }
     void allocate(int width, int height);
+
+private:
     gl::Texture2D texture_;
-    gl::Renderbuffer depth_;
-    gl::Framebuffer framebuffer_;
     int width_ = 0;
     int height_ = 0;
 };
