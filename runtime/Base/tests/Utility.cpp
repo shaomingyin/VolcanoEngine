@@ -3,65 +3,9 @@
 
 #include <gtest/gtest.h>
 
-#include <Volcano/Cache.h>
 #include <Volcano/ScopeGuard.h>
 
 namespace {
-
-class IntCache final : public Volcano::Cache<int> {
-public:
-    using Cache::Cache;
-
-public:
-    int loads = 0;
-
-private:
-    Pointer load(const std::string& key) override {
-        ++loads;
-        if (key == "missing") {
-            return nullptr;
-        }
-        if (key == "error") {
-            throw std::runtime_error("Load failed");
-        }
-
-        return std::make_shared<int>(loads);
-    }
-};
-
-TEST(BaseUtility, Cache) {
-    IntCache cache(2);
-    const auto a = cache.get("a");
-    const auto b = cache.get("b");
-    EXPECT_TRUE((cache.get("a") == a && cache.loads == 2));
-    cache.get("c");
-    EXPECT_TRUE((cache.get("a") == a && cache.loads == 3));
-    EXPECT_TRUE((cache.get("b") != b && cache.loads == 4));
-    cache.clear();
-    EXPECT_TRUE((cache.get("a") != a && cache.loads == 5));
-
-    IntCache failures(1);
-    const auto retained = failures.get("a");
-    EXPECT_TRUE((!failures.get("missing") && !failures.get("missing")));
-    EXPECT_TRUE((failures.loads == 3));
-    bool caught = false;
-    try {
-        failures.get("error");
-    } catch (const std::runtime_error&) {
-        caught = true;
-    }
-
-    EXPECT_TRUE((caught && failures.get("a") == retained));
-
-    IntCache disabled(0);
-    const auto first = disabled.get("a");
-    EXPECT_TRUE((disabled.get("a") != first && disabled.loads == 2));
-    IntCache moved(std::move(cache));
-    const auto value = moved.get("a");
-    IntCache assigned(0);
-    assigned = std::move(moved);
-    EXPECT_TRUE((assigned.get("a") == value));
-}
 
 struct CopyableCleanup {
 public:

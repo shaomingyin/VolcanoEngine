@@ -23,14 +23,35 @@ public:
 
     void open(OpenMode mode);
     void close() noexcept;
-    bool isOpen() const noexcept;
-    bool isReadable() const override;
-    bool isWritable() const override;
-    bool isSequential() const override;
 
-    ByteArray &buffer() noexcept;
-    const ByteArray &buffer() const noexcept;
-    const ByteArray &data() const noexcept;
+    bool isOpen() const noexcept {
+        return mode_ != NotOpen;
+    }
+
+    bool isReadable() const override {
+        return (mode_ & ReadOnly) != 0;
+    }
+
+    bool isWritable() const override {
+        return (mode_ & WriteOnly) != 0;
+    }
+
+    bool isSequential() const override {
+        return false;
+    }
+
+    ByteArray &buffer() noexcept {
+        return data_;
+    }
+
+    const ByteArray &buffer() const noexcept {
+        return data_;
+    }
+
+    const ByteArray &data() const noexcept {
+        return data_;
+    }
+
     void setData(ByteArray data);
 
     using Stream::read;
@@ -39,8 +60,14 @@ public:
     std::size_t read(std::span<std::uint8_t> data) override;
     std::size_t write(std::span<const std::uint8_t> data) override;
     void seek(std::size_t position) override;
-    std::size_t tell() const override;
-    std::size_t size() override;
+
+    std::size_t tell() const override {
+        return position_;
+    }
+
+    std::size_t size() override {
+        return data_.size();
+    }
 
 private:
     ByteArray data_;

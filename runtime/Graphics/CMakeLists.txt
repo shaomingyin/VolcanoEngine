@@ -1,5 +1,14 @@
 
+find_package(freetype CONFIG REQUIRED)
+find_package(harfbuzz CONFIG REQUIRED)
+
 add_library(Graphics STATIC
+    include/Volcano/Graphics/Font.h
+    include/Volcano/Graphics/Canvas.h
+    src/Volcano/Graphics/Font.cpp
+    src/Volcano/Graphics/Canvas.cpp
+    src/Volcano/Graphics/PaintPass.cpp
+    include/Volcano/Graphics/PaintPass.h
     include/GL/gl.hpp
     include/GL/gl3w.h
     include/GL/glcorearb.h
@@ -48,10 +57,10 @@ target_include_directories(Graphics PUBLIC
 volcano_target_setup(Graphics)
 set_target_properties(Graphics PROPERTIES OUTPUT_NAME VolcanoGraphics)
 
-target_link_libraries(Graphics PUBLIC Base)
+target_link_libraries(Graphics PUBLIC Base Freetype::Freetype harfbuzz::harfbuzz)
 
 if(BUILD_TESTING)
-    add_executable(GraphicsLoaderCheck tests/Loader.cpp tests/Resources.cpp)
+    add_executable(GraphicsLoaderCheck tests/Loader.cpp tests/Resources.cpp tests/Canvas.cpp)
     target_link_libraries(GraphicsLoaderCheck PRIVATE Graphics GTest::gtest_main)
     gtest_discover_tests(GraphicsLoaderCheck)
 

@@ -1,6 +1,8 @@
 #ifndef VOLCANO_GRAPHICS_FRAMEBUFFER_H
 #define VOLCANO_GRAPHICS_FRAMEBUFFER_H
 
+#include <GL/gl.hpp>
+
 #include <Volcano/Graphics/Target.h>
 #include <Volcano/Graphics/Texture.h>
 
@@ -12,11 +14,8 @@ public:
     FrameBuffer(int width, int height);
     ~FrameBuffer() override = default;
 
+    void bind() const noexcept override;
     void resize(int width, int height);
-
-    void bind() const noexcept override {
-        framebuffer_.bind();
-    }
 
     int width() const noexcept override {
         return texture_.width();

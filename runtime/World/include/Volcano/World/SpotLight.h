@@ -1,53 +1,54 @@
-//
-//
 #ifndef VOLCANO_WORLD_SPOTLIGHT_H
 #define VOLCANO_WORLD_SPOTLIGHT_H
 
-#include <Volcano/World/Common.h>
-#include <Volcano/World/DirectionalLight.h>
+#include <cmath>
+#include <stdexcept>
+
+#include <Volcano/World/Light.h>
 
 VOLCANO_WORLD_BEGIN
 
-class SpotLight: public DirectionalLight {
+class SpotLight: public Light {
 public:
     SpotLight() noexcept;
-    SpotLight(const Eigen::Vector3f& direction, const Eigen::Vector3f& color, float strength, float range, float inner_angle, float outer_angle) noexcept;
-    SpotLight(float dx, float dy, float dz, float r, float g, float b, float strength, float range, float inner_angle, float outer_angle) noexcept;
-    SpotLight(const SpotLight&) noexcept = default;
-    SpotLight(SpotLight&&) noexcept = default;
+    SpotLight(const Eigen::Vector3f& direction, const Eigen::Vector3f& color, float strength,
+        float range, float innerAngle, float outerAngle);
+    SpotLight(float dx, float dy, float dz, float r, float g, float b, float strength,
+        float range, float innerAngle, float outerAngle);
 
-public:
-    SpotLight& operator=(const SpotLight&) noexcept = default;
-    SpotLight& operator=(SpotLight&&) noexcept = default;
-
-    float& innerAngle() noexcept {
-        return inner_angle_;
+    constexpr const Eigen::Vector3f& direction() const noexcept {
+        return direction_;
     }
 
-    const float& innerAngle() const noexcept {
-        return inner_angle_;
-    }
+    void setDirection(const Eigen::Vector3f& value);
 
-    float& outerAngle() noexcept {
-        return outer_angle_;
-    }
-
-    const float& outerAngle() const noexcept {
-        return outer_angle_;
-    }
-
-    float& range() noexcept {
+    constexpr float range() const noexcept {
         return range_;
     }
 
-    const float& range() const noexcept {
-        return range_;
+    constexpr void setRange(float value) {
+        if (!std::isfinite(value) || value <= 0.0f) {
+            throw std::invalid_argument("Spot light range must be finite and positive");
+        }
+
+        range_ = value;
     }
+
+    constexpr float innerAngle() const noexcept {
+        return inner_angle_;
+    }
+
+    constexpr float outerAngle() const noexcept {
+        return outer_angle_;
+    }
+
+    void setAngles(float innerAngle, float outerAngle);
 
 private:
-    float range_;
-    float inner_angle_;
-	float outer_angle_;
+    Eigen::Vector3f direction_{0.0f, -1.0f, 0.0f};
+    float range_ = 10.0f;
+    float inner_angle_ = 15.0f;
+    float outer_angle_ = 30.0f;
 };
 
 VOLCANO_WORLD_END

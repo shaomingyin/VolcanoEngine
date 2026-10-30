@@ -42,7 +42,8 @@ std::size_t Stream::size() {
 void Stream::readExact(std::span<std::uint8_t> data) {
     while (!data.empty()) {
         const auto count = read(data);
-        if (count == 0 || count > data.size()) {
+        VOLCANO_ASSERT(count <= data.size());
+        if (count == 0) {
             throw std::runtime_error("Stream did not supply the requested bytes");
         }
 
@@ -53,7 +54,8 @@ void Stream::readExact(std::span<std::uint8_t> data) {
 void Stream::writeAll(std::span<const std::uint8_t> data) {
     while (!data.empty()) {
         const auto count = write(data);
-        if (count == 0 || count > data.size()) {
+        VOLCANO_ASSERT(count <= data.size());
+        if (count == 0) {
             throw std::runtime_error("Stream did not accept the requested bytes");
         }
 
@@ -66,9 +68,7 @@ ByteArray Stream::readAll() {
     std::array<std::uint8_t, 4096> buffer;
     for (;;) {
         const auto count = read(buffer);
-        if (count > buffer.size()) {
-            throw std::runtime_error("Stream returned an invalid read count");
-        }
+        VOLCANO_ASSERT(count <= buffer.size());
         if (count == 0) {
             return result;
         }
@@ -78,17 +78,13 @@ ByteArray Stream::readAll() {
 }
 
 std::size_t Stream::read(void *data, std::size_t size) {
-    if (data == nullptr && size != 0) {
-        throw std::invalid_argument("Read buffer is null");
-    }
+    VOLCANO_ASSERT(data != nullptr || size == 0);
 
     return read(std::span(static_cast<std::uint8_t *>(data), size));
 }
 
 std::size_t Stream::write(const void *data, std::size_t size) {
-    if (data == nullptr && size != 0) {
-        throw std::invalid_argument("Write buffer is null");
-    }
+    VOLCANO_ASSERT(data != nullptr || size == 0);
 
     return write(std::span(static_cast<const std::uint8_t *>(data), size));
 }

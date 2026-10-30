@@ -13,6 +13,7 @@ void Material::Uniforms::resolve(const gl::Program& program) {
 }
 
 void Material::apply(const gl::Program& program, const Uniforms& uniforms) const {
+    constexpr GLuint TextureUnit = 0;
     program.uniform(uniforms.lit, lit ? 1 : 0);
     program.uniform4f(uniforms.color, color.red(), color.green(), color.blue(), color.alpha());
     program.uniform(uniforms.textured, texture != nullptr ? 1 : 0);

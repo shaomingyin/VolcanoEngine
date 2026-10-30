@@ -8,10 +8,11 @@
 #include <GLFW/glfw3.h>
 #include <physfs.h>
 
+#include <Volcano/ScopeGuard.h>
 #include <Volcano/Game.h>
+#include <Volcano/Framework/Resources.h>
 #include <Volcano/Framework/Client.h>
 #include <Volcano/Framework/Local.h>
-#include <Volcano/ScopeGuard.h>
 #include <Volcano/World/OrthographicCamera.h>
 #include <Volcano/World/PerspectiveCamera.h>
 
@@ -32,7 +33,10 @@ int main(int argc, char* argv[]) {
         if (PHYSFS_init(argv[0]) == 0) {
             throw std::runtime_error(PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode()));
         }
-        auto physfsGuard = scopeGuard([] { PHYSFS_deinit(); });
+        auto physfsGuard = scopeGuard([] {
+            Framework::Resources::clear();
+            PHYSFS_deinit();
+        });
         const auto root = cmdline({"-r", "--root"}, std::filesystem::current_path().string()).str();
         const auto rootPath = std::filesystem::absolute(root).u8string();
         const std::string rootUtf8(rootPath.begin(), rootPath.end());
@@ -46,8 +50,7 @@ int main(int argc, char* argv[]) {
             framework = std::make_unique<Framework::Local>(800, 600, "VolcanoLauncher");
         }
         auto& window = framework->window();
-        framework->load(volcanoCreateGame);
-        framework->play();
+        auto loading = framework->loadAsync(volcanoCreateGame);
         glfwSwapInterval(1);
 
         auto last = Clock::now();
@@ -59,6 +62,19 @@ int main(int argc, char* argv[]) {
             const auto now = Clock::now();
             framework->update(now - last);
             last = now;
+            if (loading.valid()) {
+                if (!loading.ready()) {
+                    const auto& progress = framework->loadingProgress();
+                    const auto title = "VolcanoLauncher — Loading " +
+                        std::to_string(static_cast<int>(progress.percent)) + "% " + progress.content;
+                    glfwSetWindowTitle(window.handle(), title.c_str());
+                    glfwWaitEventsTimeout(0.01);
+                    continue;
+                }
+                loading.get();
+                framework->play();
+                glfwSetWindowTitle(window.handle(), "VolcanoLauncher");
+            }
             if (window.width() == 0 || window.height() == 0) {
                 glfwWaitEventsTimeout(0.1);
                 last = Clock::now();
@@ -69,8 +85,8 @@ int main(int argc, char* argv[]) {
             entt::entity camera = entt::null;
             for (const auto entity : scene.view<World::PerspectiveCamera>()) {
                 camera = entity;
-                scene.get<World::PerspectiveCamera>(entity).aspect() =
-                    static_cast<float>(window.width()) / static_cast<float>(window.height());
+                scene.get<World::PerspectiveCamera>(entity).setAspect(
+                    static_cast<float>(window.width()) / static_cast<float>(window.height()));
                 break;
             }
             if (camera == entt::null) {

@@ -218,7 +218,9 @@ TEST_F(BasePhysFile, ReadAllCrossesBufferBoundaries) {
 TEST_F(BasePhysFile, PointerReadsValidateBuffersAndReturnShortCounts) {
     PhysFile file("first/data.bin");
     std::array<char, 5> bytes{};
-    EXPECT_THROW(file.read(nullptr, 1), std::invalid_argument);
+#if defined(VOLCANO_DEBUG) && !defined(NDEBUG)
+    EXPECT_DEATH(file.read(nullptr, 1), "[Aa]ssert");
+#endif
     EXPECT_EQ(file.read(nullptr, 0), 0);
     EXPECT_EQ(file.read(bytes.data(), bytes.size()), 3);
     EXPECT_EQ(std::string(bytes.data(), 3), "abc");
@@ -233,31 +235,41 @@ TEST_F(BasePhysFile, ClosedAndMovedFromFilesRejectOperations) {
     EXPECT_EQ(closed.read(nullptr, 0), 0);
     EXPECT_EQ(closed.write(nullptr, 0), 0);
     EXPECT_NO_THROW(closed.writeAll({}));
-    EXPECT_THROW(closed.write(bytes), std::logic_error);
-    EXPECT_THROW(closed.writeAll(bytes), std::logic_error);
-    EXPECT_THROW(closed.flush(), std::logic_error);
-    EXPECT_THROW(closed.read(bytes), std::logic_error);
+#if defined(VOLCANO_DEBUG) && !defined(NDEBUG)
+    EXPECT_DEATH(closed.write(bytes), "[Aa]ssert");
+    EXPECT_DEATH(closed.writeAll(bytes), "[Aa]ssert");
+    EXPECT_DEATH(closed.flush(), "[Aa]ssert");
+    EXPECT_DEATH(closed.read(bytes), "[Aa]ssert");
+#endif
     EXPECT_NO_THROW(closed.readExact({}));
-    EXPECT_THROW(closed.readExact(bytes), std::logic_error);
-    EXPECT_THROW(closed.readAll(), std::logic_error);
-    EXPECT_THROW(closed.seek(0), std::logic_error);
-    EXPECT_THROW(closed.tell(), std::logic_error);
-    EXPECT_THROW(closed.size(), std::logic_error);
-    EXPECT_THROW(closed.eof(), std::logic_error);
+#if defined(VOLCANO_DEBUG) && !defined(NDEBUG)
+    EXPECT_DEATH(closed.readExact(bytes), "[Aa]ssert");
+    EXPECT_DEATH(closed.readAll(), "[Aa]ssert");
+    EXPECT_DEATH(closed.seek(0), "[Aa]ssert");
+    EXPECT_DEATH(closed.tell(), "[Aa]ssert");
+    EXPECT_DEATH(closed.size(), "[Aa]ssert");
+    EXPECT_DEATH(closed.eof(), "[Aa]ssert");
+#endif
 
     PhysFile source("first/data.bin");
     PhysFile destination(std::move(source));
     EXPECT_FALSE(source.isOpen());
-    EXPECT_THROW(source.read(bytes), std::logic_error);
+#if defined(VOLCANO_DEBUG) && !defined(NDEBUG)
+    EXPECT_DEATH(source.read(bytes), "[Aa]ssert");
+#endif
     destination.close();
-    EXPECT_THROW(destination.readAll(), std::logic_error);
+#if defined(VOLCANO_DEBUG) && !defined(NDEBUG)
+    EXPECT_DEATH(destination.readAll(), "[Aa]ssert");
+#endif
 }
 
 TEST_F(BasePhysFile, ReadingWriteOnlyHandleReportsError) {
     PhysFile file(PHYSFS_openWrite("write-only.bin"), PhysFile::OpenMode::WriteOnly);
     ASSERT_TRUE(file.isOpen());
     std::array<std::uint8_t, 1> bytes{};
-    EXPECT_THROW(file.read(bytes), std::runtime_error);
+#if defined(VOLCANO_DEBUG) && !defined(NDEBUG)
+    EXPECT_DEATH(file.read(bytes), "[Aa]ssert");
+#endif
 }
 
 TEST_F(BasePhysFile, PathConstructorSupportsUtf8AndRejectsEmbeddedNul) {
@@ -291,7 +303,9 @@ TEST_F(BasePhysFile, FileAndBufferUseTheSameStreamReadInterface) {
     EXPECT_EQ(file.tell(), buffer.tell());
     EXPECT_EQ(file.size(), buffer.size());
     EXPECT_NO_THROW(file.flush());
-    EXPECT_THROW(file.write(Volcano::ByteArray{1}), std::runtime_error);
+#if defined(VOLCANO_DEBUG) && !defined(NDEBUG)
+    EXPECT_DEATH(file.write(Volcano::ByteArray{1}), "[Aa]ssert");
+#endif
 }
 
 TEST_F(BasePhysFile, FileAndBufferUseTheSameStreamWriteInterface) {
@@ -306,7 +320,9 @@ TEST_F(BasePhysFile, FileAndBufferUseTheSameStreamWriteInterface) {
     PhysFile file("stream.bin", PhysFile::OpenMode::WriteOnly);
     EXPECT_FALSE(file.isReadable());
     EXPECT_TRUE(file.isWritable());
-    EXPECT_THROW(file.write(nullptr, 1), std::invalid_argument);
+#if defined(VOLCANO_DEBUG) && !defined(NDEBUG)
+    EXPECT_DEATH(file.write(nullptr, 1), "[Aa]ssert");
+#endif
     ASSERT_NE(PHYSFS_setBuffer(file.get(), 1024), 0);
     writePayload(file);
     writePayload(buffer);

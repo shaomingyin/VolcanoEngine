@@ -3,12 +3,29 @@
 #include <functional>
 #include <stdexcept>
 
-#include <Volcano/Graphics/View.h>
 #include <Volcano/Math.h>
+#include <Volcano/Graphics/View.h>
 
 VOLCANO_GRAPHICS_BEGIN
 
+const std::vector<View::PreparedItem>& View::opaqueItems() const {
+    VOLCANO_ASSERT(ready());
+    return opaque_;
+}
+
+const std::vector<View::PreparedItem>& View::transparentItems() const {
+    VOLCANO_ASSERT(ready());
+    return transparent_;
+}
+
+const std::vector<Light::Prepared>& View::preparedLights() const {
+    VOLCANO_ASSERT(ready());
+    return prepared_lights_;
+}
+
 void View::begin() noexcept {
+    vg_tasks_.clear();
+    overlays_.clear();
     state_ = State::Building;
     items_.clear();
     lights_.clear();
@@ -17,35 +34,23 @@ void View::begin() noexcept {
     prepared_lights_.clear();
 }
 
-void View::requireBuilding() const {
-    if (state_ != State::Building) {
-        throw std::logic_error("View submission requires begin() before adding data or calling end()");
-    }
+void View::add(const Mesh& mesh, const Material& material, const Transform& transform, bool transparent) {
+    VOLCANO_ASSERT(state_ == State::Building);
+    add(mesh, material, transform.affine(), transparent);
 }
 
-void View::requireReady() const {
-    if (!ready()) {
-        throw std::logic_error("View rendering requires a successful begin()/end() submission");
-    }
-}
-
-void View::addItem(const Mesh& mesh, const Material& material, const Transform& transform, bool transparent) {
-    requireBuilding();
-    addItem(mesh, material, transform.affine(), transparent);
-}
-
-void View::addItem(const Mesh& mesh, const Material& material, const Eigen::Affine3f& transform, bool transparent) {
-    requireBuilding();
+void View::add(const Mesh& mesh, const Material& material, const Eigen::Affine3f& transform, bool transparent) {
+    VOLCANO_ASSERT(state_ == State::Building);
     items_.push_back({mesh, material, transform, transparent});
 }
 
-void View::addLight(const Light& light) {
-    requireBuilding();
+void View::add(const Light& light) {
+    VOLCANO_ASSERT(state_ == State::Building);
     lights_.push_back(light);
 }
 
 void View::end() {
-    requireBuilding();
+    VOLCANO_ASSERT(state_ == State::Building);
     opaque_.clear();
     transparent_.clear();
     prepared_lights_.clear();
@@ -107,6 +112,16 @@ void View::end() {
         return left.depth < right.depth;
     });
     state_ = State::Ready;
+}
+
+void View::add(Target& target, const Canvas& commands) {
+    VOLCANO_ASSERT(state_ == State::Building && commands.ready());
+    vg_tasks_.push_back({target, commands});
+}
+
+void View::add(const Canvas& commands) {
+    VOLCANO_ASSERT(state_ == State::Building && commands.ready());
+    overlays_.push_back(commands);
 }
 
 VOLCANO_GRAPHICS_END

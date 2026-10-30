@@ -5,8 +5,8 @@
 
 #include <GL/gl.hpp>
 
-#include <Volcano/Graphics/Common.h>
 #include <Volcano/Size.h>
+#include <Volcano/Graphics/Common.h>
 
 VOLCANO_GRAPHICS_BEGIN
 

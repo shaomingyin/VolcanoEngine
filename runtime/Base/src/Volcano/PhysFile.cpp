@@ -58,40 +58,11 @@ PhysFile& PhysFile::operator=(PhysFile&& other) {
     return *this;
 }
 
-PHYSFS_File* PhysFile::get() const noexcept {
-    return file_;
-}
-
-bool PhysFile::isOpen() const noexcept {
-    return file_ != nullptr;
-}
-
-bool PhysFile::isReadable() const {
-    return isOpen() && mode_ == OpenMode::ReadOnly;
-}
-
-bool PhysFile::isWritable() const {
-    return isOpen() && (mode_ == OpenMode::WriteOnly || mode_ == OpenMode::Append);
-}
-
-bool PhysFile::isSequential() const {
-    return false;
-}
-
-void PhysFile::requireOpen() const {
-    if (!isOpen()) {
-        throw std::logic_error("PhysFS file is not open");
-    }
-}
-
 std::size_t PhysFile::read(std::span<std::uint8_t> data) {
     if (data.empty()) {
         return 0;
     }
-    requireOpen();
-    if (!isReadable()) {
-        throw std::runtime_error("PhysFS file is not readable");
-    }
+    VOLCANO_ASSERT(isReadable());
     if (!std::in_range<PHYSFS_sint64>(data.size())) {
         throw std::length_error("PhysFS read size exceeds its supported range");
     }
@@ -109,10 +80,7 @@ std::size_t PhysFile::write(std::span<const std::uint8_t> data) {
     if (data.empty()) {
         return 0;
     }
-    requireOpen();
-    if (!isWritable()) {
-        throw std::runtime_error("PhysFS file is not writable");
-    }
+    VOLCANO_ASSERT(isWritable());
     if (!std::in_range<PHYSFS_sint64>(data.size())) {
         throw std::length_error("PhysFS write size exceeds its supported range");
     }
@@ -127,7 +95,7 @@ std::size_t PhysFile::write(std::span<const std::uint8_t> data) {
 }
 
 void PhysFile::flush() {
-    requireOpen();
+    VOLCANO_ASSERT(isOpen());
     if (PHYSFS_flush(file_) == 0) {
         throw std::runtime_error(std::string("Cannot flush PhysFS file: ") +
             PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode()));
@@ -135,7 +103,7 @@ void PhysFile::flush() {
 }
 
 void PhysFile::seek(std::size_t position) {
-    requireOpen();
+    VOLCANO_ASSERT(isOpen());
     if (PHYSFS_seek(file_, position) == 0) {
         throw std::runtime_error(std::string("Cannot seek PhysFS file: ") +
             PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode()));
@@ -143,7 +111,7 @@ void PhysFile::seek(std::size_t position) {
 }
 
 std::size_t PhysFile::tell() const {
-    requireOpen();
+    VOLCANO_ASSERT(isOpen());
     const auto position = PHYSFS_tell(file_);
     if (position < 0) {
         throw std::runtime_error(std::string("Cannot query PhysFS file position: ") +
@@ -157,7 +125,7 @@ std::size_t PhysFile::tell() const {
 }
 
 std::size_t PhysFile::size() {
-    requireOpen();
+    VOLCANO_ASSERT(isOpen());
     const auto length = PHYSFS_fileLength(file_);
     if (length < 0) {
         throw std::runtime_error(std::string("Cannot query PhysFS file size: ") +
@@ -171,7 +139,7 @@ std::size_t PhysFile::size() {
 }
 
 bool PhysFile::eof() const {
-    requireOpen();
+    VOLCANO_ASSERT(isOpen());
     return PHYSFS_eof(file_) != 0;
 }
 

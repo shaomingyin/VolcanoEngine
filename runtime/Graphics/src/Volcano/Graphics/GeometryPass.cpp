@@ -1,8 +1,8 @@
+#include <Volcano/ScopeGuard.h>
 #include <Volcano/Graphics/GBuffer.h>
 #include <Volcano/Graphics/GeometryPass.h>
 #include <Volcano/Graphics/Mesh.h>
 #include <Volcano/Graphics/View.h>
-#include <Volcano/ScopeGuard.h>
 
 VOLCANO_GRAPHICS_BEGIN
 

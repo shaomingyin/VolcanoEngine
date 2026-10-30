@@ -6,10 +6,9 @@
 #include <utility>
 
 #include <nlohmann/json.hpp>
+#include "Format.h"
 
 #include <Volcano/Schema/Model.h>
-
-#include "Format.h"
 
 VOLCANO_SCHEMA_BEGIN
 

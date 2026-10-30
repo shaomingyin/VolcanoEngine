@@ -58,22 +58,18 @@ LightingPass::LightingPass(std::size_t maxLights) {
 
 void LightingPass::render(const View& view, const GBuffer& geometry) {
     const auto& lights = view.preparedLights();
-    if (geometry.size().empty()) {
-        throw std::invalid_argument("LightingPass requires an allocated GBuffer");
-    }
+    VOLCANO_ASSERT(!geometry.size().empty());
 
+#if defined(VOLCANO_DEBUG) && !defined(NDEBUG)
     GLint framebuffer = 0;
     glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &framebuffer);
-    if (static_cast<GLuint>(framebuffer) == geometry.framebuffer().id()) {
-        throw std::invalid_argument("LightingPass output must differ from its GBuffer input");
-    }
+    VOLCANO_ASSERT(static_cast<GLuint>(framebuffer) != geometry.framebuffer().id());
 
     GLint viewport[4]{};
     glGetIntegerv(GL_VIEWPORT, viewport);
-    if (viewport[0] != 0 || viewport[1] != 0 ||
-        viewport[2] != geometry.size().width || viewport[3] != geometry.size().height) {
-        throw std::invalid_argument("LightingPass viewport must match its GBuffer dimensions");
-    }
+    VOLCANO_ASSERT(viewport[0] == 0 && viewport[1] == 0 &&
+        viewport[2] == geometry.size().width && viewport[3] == geometry.size().height);
+#endif
 
     if (lights.size() > uniforms_.lights.size()) {
         throw std::invalid_argument("View exceeds LightingPass light capacity");

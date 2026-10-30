@@ -1,0 +1,28 @@
+{
+  "type": "model",
+  "version": 1,
+  "parts": [
+    {
+      "mesh": "screen.vemesh",
+      "material": "screen.vematerial",
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1
+      ]
+    }
+  ]
+}

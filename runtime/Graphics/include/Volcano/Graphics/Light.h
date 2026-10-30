@@ -5,21 +5,16 @@
 #include <string>
 
 #include <Eigen/Core>
-#include <GL/gl3w.h>
+#include <GL/gl.hpp>
 
 #include <Volcano/Graphics/Common.h>
-
-namespace gl {
-class Program;
-}
 
 VOLCANO_GRAPHICS_BEGIN
 
 // Positions and directions use world space. Direction points along emitted rays.
 struct Light final {
 public:
-    struct Uniforms final {
-    public:
+    struct Uniforms {
         void resolve(const gl::Program& program, std::size_t index);
 
     public:
@@ -31,7 +26,6 @@ public:
         GLint cone = -1;
     };
 
-public:
     enum class Type {
         Directional = 0,
         Point = 1,
@@ -46,8 +40,6 @@ public:
     class Prepared final {
     public:
         explicit Prepared(const Light& light);
-
-        // The caller must bind program; uniforms must have been resolved for it.
         void apply(const gl::Program& program, const Uniforms& uniforms) const;
 
     private:

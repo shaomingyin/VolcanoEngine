@@ -17,7 +17,7 @@ constexpr std::size_t LightCapacity = 16;
 void buildView(View& view, std::span<const Light> lights) {
     view.begin();
     for (const auto& light : lights) {
-        view.addLight(light);
+        view.add(light);
     }
     view.end();
 }
@@ -29,14 +29,14 @@ TEST(GraphicsLighting, ViewOwnsLightsAndEnvironment) {
     EXPECT_EQ(view.clearColor(), Volcano::Colorf::Black);
     Light light;
     view.begin();
-    view.addLight(light);
+    view.add(light);
     view.setAmbientLight(Eigen::Vector3f::Constant(0.1f));
     view.setClearColor(Volcano::Colorf::Blue);
     view.end();
     auto copy = view;
     light.strength = 2.0f;
     copy.begin();
-    copy.addLight(light);
+    copy.add(light);
     copy.setAmbientLight(Eigen::Vector3f::Zero());
     copy.setClearColor(Volcano::Colorf::Red);
     copy.end();

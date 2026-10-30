@@ -4,13 +4,15 @@
 #define VOLCANO_WORLD_SCENE_H
 
 #include <string>
+#include <map>
+#include <memory>
+#include <stdexcept>
 
 #include <entt/entt.hpp>
 
 #include <Volcano/Version.h>
-#include <Volcano/ScopeGuard.h>
 #include <Volcano/World/Common.h>
-#include <Volcano/World/Physics.h>
+#include <Volcano/World/Texture.h>
 
 VOLCANO_WORLD_BEGIN
 
@@ -20,23 +22,23 @@ public:
     virtual ~Scene();
 
 public:
-    const std::string& name() const noexcept {
+    constexpr const std::string& name() const noexcept {
         return name_;
     }
 
-    void setName(const std::string& v) noexcept {
+    void setName(const std::string& v) {
         name_ = v;
     }
 
-    const std::string& description() const noexcept {
+    constexpr const std::string& description() const noexcept {
         return description_;
     }
 
-    void setDescription(const std::string& v) noexcept {
+    void setDescription(const std::string& v) {
         description_ = v;
     }
 
-    const VersionNumber& version() const noexcept {
+    constexpr const VersionNumber& version() const noexcept {
         return version_;
     }
 
@@ -44,30 +46,34 @@ public:
         version_ = v;
     }
 
-    Physics& physics() noexcept {
-        return physics_;
+    void addTexture(std::string id, std::unique_ptr<Texture> texture) {
+        if (id.empty() || !texture || textures_.contains(id)) {
+            throw std::invalid_argument("Texture requires a unique nonempty ID and a description");
+        }
+        textures_.emplace(std::move(id), std::move(texture));
     }
 
-    const Physics& physics() const noexcept {
-        return physics_;
+    const std::map<std::string, std::unique_ptr<Texture>>& textures() const noexcept {
+        return textures_;
+    }
+    Texture& texture(const std::string& id) {
+        return *textures_.at(id);
+    }
+    const Texture& texture(const std::string& id) const {
+        return *textures_.at(id);
     }
 
-    virtual void update(Clock::duration elapsed) noexcept final;
+    void update(Clock::duration elapsed);
     virtual entt::entity player() const noexcept = 0;
 
 protected:
-    virtual void onUpdate(Clock::duration elapsed) noexcept = 0;
+    virtual void onUpdate(Clock::duration elapsed) = 0;
 
 private:
-    void handleEntityAdded(entt::entity ent) noexcept;
-    void handleEntityRemoved(entt::entity ent) noexcept;
-
-private:
+    std::map<std::string, std::unique_ptr<Texture>> textures_;
     std::string name_;
     std::string description_;
     VersionNumber version_;
-    ScopeGuard<void (*)()> physics_runtime_;
-    Physics physics_;
 };
 
 VOLCANO_WORLD_END

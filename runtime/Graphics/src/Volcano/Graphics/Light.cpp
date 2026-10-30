@@ -5,8 +5,8 @@
 
 #include <GL/gl.hpp>
 
-#include <Volcano/Graphics/Light.h>
 #include <Volcano/Math.h>
+#include <Volcano/Graphics/Light.h>
 
 VOLCANO_GRAPHICS_BEGIN
 
@@ -130,7 +130,7 @@ void Light::Prepared::apply(const gl::Program& program, const Uniforms& uniforms
     program.uniform3f(uniforms.position, position_.x(), position_.y(), position_.z());
     program.uniform3f(uniforms.direction, direction_.x(), direction_.y(), direction_.z());
     program.uniform(uniforms.range, range_);
-    if (type_ == Type::Spot) {
+    if (type_ == Light::Type::Spot) {
         program.uniform2f(uniforms.cone, cone_.x(), cone_.y());
     }
 }

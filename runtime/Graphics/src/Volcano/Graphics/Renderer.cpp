@@ -2,52 +2,42 @@
 #include <stdexcept>
 #include <utility>
 
+#include <Volcano/ScopeGuard.h>
+#include <Volcano/Graphics/GeometryPass.h>
+#include <Volcano/Graphics/LightingPass.h>
+#include <Volcano/Graphics/TransparentPass.h>
 #include <Volcano/Graphics/Renderer.h>
 #include <Volcano/Graphics/Texture.h>
-#include <Volcano/ScopeGuard.h>
 
 VOLCANO_GRAPHICS_BEGIN
 
-Renderer::Renderer(GL3WGetProcAddressProc resolver) {
-    auto* previous = gl3wProcs;
-    auto rollback = scopeGuard([this, previous]() noexcept {
-        release();
-        gl3wProcs = previous;
-    });
-
-    if (resolver == nullptr) {
-        throw std::invalid_argument("OpenGL function resolver must not be null");
-    }
-    if (gl3wInit(&procs_, resolver) != GL3W_OK) {
-        throw std::runtime_error("Cannot load OpenGL functions from the current context");
-    }
-
-    GLint major = 0, minor = 0;
-    procs_.gl.GetIntegerv(GL_MAJOR_VERSION, &major);
-    procs_.gl.GetIntegerv(GL_MINOR_VERSION, &minor);
-    if (major < 3 || (major == 3 && minor < 3)) {
-        throw std::runtime_error("Graphics requires OpenGL 3.3 or newer");
-    }
-
-    gl3wProcs = &procs_;
-    geometry_buffer_ = std::make_unique<GBuffer>();
-    geometry_pass_ = std::make_unique<GeometryPass>();
-    setMaxLights(16);
-    rollback.dismiss();
+const GBuffer& Renderer::geometryBuffer() const noexcept {
+    return geometry_buffer_;
 }
 
-Renderer::~Renderer() {
-    auto* previous = gl3wProcs == &procs_ ? nullptr : gl3wProcs;
-    release();
-    gl3wProcs = previous;
+std::size_t Renderer::maxLights() const noexcept {
+    return max_lights_;
 }
 
-void Renderer::release() noexcept {
-    gl3wProcs = &procs_;
-    transparent_pass_.reset();
-    lighting_pass_.reset();
-    geometry_pass_.reset();
-    geometry_buffer_.reset();
+void Renderer::setFontAtlasBudget(std::size_t bytes) {
+    paint_pass_.setAtlasBudget(bytes);
+}
+
+std::size_t Renderer::fontAtlasBytes() const noexcept {
+    return paint_pass_.atlasBytes();
+}
+
+Renderer::FontCacheStats Renderer::fontCacheStats() const noexcept {
+    return paint_pass_.fontCacheStats();
+}
+
+void Renderer::prewarm(const Font& font, std::string_view text, unsigned int pixels) {
+    paint_pass_.prewarm(font, text, pixels);
+}
+
+void Renderer::renderVG(const Canvas& commands, Target& target, bool clear) {
+    auto restore = scopeGuard([this, &target] { bind(target); });
+    paint_pass_.render(commands, target, clear);
 }
 
 void Renderer::setMaxLights(std::size_t maxLights) {
@@ -58,31 +48,24 @@ void Renderer::setMaxLights(std::size_t maxLights) {
         return;
     }
 
-    auto* previous = gl3wProcs;
-    auto restore = scopeGuard([previous]() noexcept {
-        gl3wProcs = previous;
-    });
-    gl3wProcs = &procs_;
 
-    auto lighting = std::make_unique<LightingPass>(maxLights);
-    auto transparent = std::make_unique<TransparentPass>(maxLights);
+    LightingPass lighting(maxLights);
+    TransparentPass transparent(maxLights);
     lighting_pass_ = std::move(lighting);
     transparent_pass_ = std::move(transparent);
     max_lights_ = maxLights;
 }
 
 void Renderer::render(const View& view, Target& target) {
-    if (!view.ready()) {
-        throw std::logic_error("View rendering requires a successful begin()/end() submission");
-    }
+    VOLCANO_ASSERT(view.ready());
     if (view.lights().size() > max_lights_) {
         throw std::invalid_argument("View exceeds the renderer's light limit");
     }
+#if defined(VOLCANO_DEBUG) && !defined(NDEBUG)
     for (const auto& item : view.items()) {
-        if (item.material.texture != nullptr && target.contains(*item.material.texture)) {
-            throw std::invalid_argument("Cannot sample a Texture while rendering to its FrameBuffer");
-        }
+        VOLCANO_ASSERT(item.material.texture == nullptr || !target.contains(*item.material.texture));
     }
+#endif
     if (target.width() <= 0 || target.height() <= 0) {
         return;
     }
@@ -91,12 +74,14 @@ void Renderer::render(const View& view, Target& target) {
         bind(target);
     });
 
-    gl3wProcs = &procs_;
-    geometry_buffer_->resize(target.size());
+    for (const auto& task : view.vgTasks()) {
+        paint_pass_.render(task.commands.get(), task.target.get(), true);
+    }
+    geometry_buffer_.resize(target.size());
     bind(target);
     clear(view.clearColor());
 
-    geometry_buffer_->framebuffer().bind();
+    geometry_buffer_.framebuffer().bind();
     constexpr GLfloat empty[] = {0, 0, 0, 0};
     constexpr GLfloat far_depth = 1;
     for (GLuint attachment : {GBuffer::AlbedoAttachment, GBuffer::NormalAttachment,
@@ -106,15 +91,17 @@ void Renderer::render(const View& view, Target& target) {
 
     glClearBufferfv(GL_DEPTH, 0, &far_depth);
 
-    geometry_pass_->render(view);
+    geometry_pass_.render(view);
 
     bind(target);
-    lighting_pass_->render(view, *geometry_buffer_);
-    transparent_pass_->render(view);
+    lighting_pass_.render(view, geometry_buffer_);
+    transparent_pass_.render(view);
+    for (const auto& overlay : view.overlays()) {
+        paint_pass_.render(overlay.get(), target, false);
+    }
 }
 
 void Renderer::bind(Target& target) noexcept {
-    gl3wProcs = &procs_;
     target.bind();
     glViewport(0, 0, target.width(), target.height());
 

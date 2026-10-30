@@ -11,9 +11,7 @@ Buffer::Buffer(ByteArray data) : data_(std::move(data)) {
 }
 
 void Buffer::open(OpenMode mode) {
-    if (isOpen()) {
-        throw std::logic_error("Buffer is already open");
-    }
+    VOLCANO_ASSERT(!isOpen());
     if (mode == NotOpen || (mode & ~(ReadWrite | Append | Truncate)) != 0) {
         throw std::invalid_argument("Invalid Buffer open mode");
     }
@@ -33,38 +31,8 @@ void Buffer::close() noexcept {
     position_ = 0;
 }
 
-bool Buffer::isOpen() const noexcept {
-    return mode_ != NotOpen;
-}
-
-bool Buffer::isReadable() const {
-    return (mode_ & ReadOnly) != 0;
-}
-
-bool Buffer::isWritable() const {
-    return (mode_ & WriteOnly) != 0;
-}
-
-bool Buffer::isSequential() const {
-    return false;
-}
-
-ByteArray &Buffer::buffer() noexcept {
-    return data_;
-}
-
-const ByteArray &Buffer::buffer() const noexcept {
-    return data_;
-}
-
-const ByteArray &Buffer::data() const noexcept {
-    return data_;
-}
-
 void Buffer::setData(ByteArray data) {
-    if (isOpen()) {
-        throw std::logic_error("Cannot replace data while Buffer is open");
-    }
+    VOLCANO_ASSERT(!isOpen());
 
     data_ = std::move(data);
 }
@@ -73,9 +41,7 @@ std::size_t Buffer::read(std::span<std::uint8_t> data) {
     if (data.empty()) {
         return 0;
     }
-    if (!isReadable()) {
-        throw std::runtime_error("Buffer is not readable");
-    }
+    VOLCANO_ASSERT(isReadable());
     if (position_ >= data_.size()) {
         return 0;
     }
@@ -90,9 +56,7 @@ std::size_t Buffer::write(std::span<const std::uint8_t> data) {
     if (data.empty()) {
         return 0;
     }
-    if (!isWritable()) {
-        throw std::runtime_error("Buffer is not writable");
-    }
+    VOLCANO_ASSERT(isWritable());
 
     const auto position = (mode_ & Append) != 0 ? data_.size() : position_;
     if (position > data_.max_size() || data.size() > data_.max_size() - position) {
@@ -115,9 +79,7 @@ std::size_t Buffer::write(std::span<const std::uint8_t> data) {
 }
 
 void Buffer::seek(std::size_t position) {
-    if (!isOpen()) {
-        throw std::runtime_error("Buffer is not open");
-    }
+    VOLCANO_ASSERT(isOpen());
     if (position > data_.size()) {
         if (!isWritable()) {
             throw std::out_of_range("Seek position is past end of read-only Buffer");
@@ -127,14 +89,6 @@ void Buffer::seek(std::size_t position) {
     }
 
     position_ = position;
-}
-
-std::size_t Buffer::tell() const {
-    return position_;
-}
-
-std::size_t Buffer::size() {
-    return data_.size();
 }
 
 VOLCANO_END

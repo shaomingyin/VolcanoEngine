@@ -1,6 +1,6 @@
 # 颜色
 
-`Volcano/Color.h` 提供 `BasicColor<T>`，支持 `std::uint8_t` 和 `float`，不依赖 Qt 或 SFML。
+`Volcano/Color.h` 提供 `BasicColor<T>`，支持 `std::uint8_t` 和 `float`，独立于具体窗口和 GUI 库。
 
 ```cpp
 using Color = BasicColor<std::uint8_t>;
@@ -37,7 +37,7 @@ const auto restored = Volcano::Color::fromRgba(packed);
 
 `toRgba()`/`fromRgba()` 的整数布局固定为 `0xRRGGBBAA`，不受主机字节序影响。
 浮点颜色打包时先调用 `toByte()`；解包得到的浮点颜色位于 `[0, 1]`。
-这与 SFML 的整数布局一致；Qt `QColor::rgba()` 使用的 `0xAARRGGBB` 需要先转换。
+Qt `QColor::rgba()` 使用的 `0xAARRGGBB` 需要先转换。
 
 `fromHsvF(h, s, v, a)` 的 hue 和 saturation 在 `[0, 1]`，hue 的 1 等同于 0。
 8 位版本的 value 和 alpha 也在 `[0, 1]`；浮点版本的 value 可以是任意有限非负值，

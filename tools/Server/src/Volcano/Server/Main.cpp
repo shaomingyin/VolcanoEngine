@@ -8,9 +8,10 @@
 #include <argh.h>
 #include <physfs.h>
 
-#include <Volcano/Game.h>
-#include <Volcano/Framework/Server.h>
 #include <Volcano/ScopeGuard.h>
+#include <Volcano/Game.h>
+#include <Volcano/Framework/Resources.h>
+#include <Volcano/Framework/Server.h>
 
 namespace {
 volatile std::sig_atomic_t running = 1;
@@ -39,7 +40,10 @@ int main(int argc, char* argv[]) {
         if (PHYSFS_init(argv[0]) == 0) {
             throw std::runtime_error(PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode()));
         }
-        auto physfsGuard = scopeGuard([] { PHYSFS_deinit(); });
+        auto physfsGuard = scopeGuard([] {
+            Framework::Resources::clear();
+            PHYSFS_deinit();
+        });
         const auto rootPath = std::filesystem::absolute(root).u8string();
         const std::string rootUtf8(rootPath.begin(), rootPath.end());
         if (PHYSFS_mount(rootUtf8.c_str(), nullptr, 1) == 0) {

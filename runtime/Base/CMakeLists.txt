@@ -15,7 +15,6 @@ add_library(Base STATIC
     include/Volcano/Stream.h
     include/Volcano/ScopeGuard.h
     include/Volcano/Version.h
-    src/Volcano/Cache.cpp
     src/Volcano/Common.cpp
     src/Volcano/Error.cpp
     src/Volcano/PhysFile.cpp
@@ -40,6 +39,12 @@ target_compile_definitions(Base PUBLIC
     NOMINMAX
 )
 
+if(MSVC)
+    target_compile_options(Base PUBLIC "$<$<COMPILE_LANGUAGE:CXX>:/GR->")
+elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(Base PUBLIC "$<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>")
+endif()
+
 volcano_target_setup(Base)
 set_target_properties(Base PROPERTIES OUTPUT_NAME VolcanoBase)
 
@@ -56,7 +61,7 @@ find_package(Async++ REQUIRED)
 target_link_libraries(Base PUBLIC Async++)
 
 if(BUILD_TESTING)
-    foreach(test IN ITEMS PhysFile Stream Buffer Version Utility Color Math Transform)
+    foreach(test IN ITEMS Cache PhysFile Stream Buffer Version Utility Color Math Transform)
         add_executable(Base${test}Check tests/${test}.cpp)
         target_link_libraries(Base${test}Check PRIVATE Base GTest::gtest_main)
         gtest_discover_tests(Base${test}Check)

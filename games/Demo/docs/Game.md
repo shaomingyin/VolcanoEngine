@@ -44,3 +44,7 @@ framework.play();
 
 Base 保存工厂以支持 stop 时重建 Scene，暂停则保留当前实例。
 工厂承担创建职责，Scene 派生类承担游戏逻辑；生命周期约定见 [Framework](../../../runtime/Framework/docs/Framework.md)。
+
+## GUI 动态纹理演示
+
+使用 `Launcher --root games/Demo/assets` 运行。相同的 GUI 输出纹理同时用于 HUD 和场景模型；点击 HUD 绿色区域会改变两处颜色。场景中的点击拾取不在本演示内。示例不绑定系统字体；使用文字控件时应把字体随游戏资源分发，并通过控件的 setFont 指定虚拟路径。

@@ -6,14 +6,16 @@
 #include <stdexcept>
 #include <type_traits>
 #include <utility>
+#include <vector>
 
+#include <GL/gl.hpp>
 #include <gtest/gtest.h>
 
+#include <Volcano/Math.h>
 #include <Volcano/Graphics/FrameBuffer.h>
 #include <Volcano/Graphics/GBuffer.h>
 #include <Volcano/Graphics/Mesh.h>
 #include <Volcano/Graphics/View.h>
-#include <Volcano/Math.h>
 
 namespace {
 
@@ -127,6 +129,34 @@ TEST_F(GraphicsResources, SampledTextureNeedsNeitherFramebufferNorRenderbufferCa
     EXPECT_EQ(texture.size(), (Volcano::Size{128, 128}));
 }
 
+TEST_F(GraphicsResources, TextureMovesTransferOwnershipAndReleaseEachResourceOnce) {
+    static std::vector<GLuint> deleted;
+    deleted.clear();
+    procs_.gl.DeleteTextures = [](GLsizei count, const GLuint* ids) {
+        deleted.insert(deleted.end(), ids, ids + count);
+    };
+
+    GLuint transferred = 0;
+    GLuint replaced = 0;
+    {
+        Texture source(4, 8);
+        transferred = source.texture().id();
+        Texture moved(std::move(source));
+        EXPECT_EQ(source.texture().id(), 0u);
+        EXPECT_EQ(moved.texture().id(), transferred);
+        EXPECT_EQ(moved.size(), (Volcano::Size{4, 8}));
+
+        Texture destination(2, 2);
+        replaced = destination.texture().id();
+        destination = std::move(moved);
+        EXPECT_EQ(moved.texture().id(), 0u);
+        EXPECT_EQ(destination.texture().id(), transferred);
+        EXPECT_EQ(destination.size(), (Volcano::Size{4, 8}));
+        EXPECT_EQ(deleted, (std::vector<GLuint>{replaced}));
+    }
+    EXPECT_EQ(deleted, (std::vector<GLuint>{replaced, transferred}));
+}
+
 TEST_F(GraphicsResources, UploadPremultipliedPreservesBytesAndStraightUploadConvertsOnce) {
     static std::array<std::uint8_t, 4> uploaded;
     procs_.gl.PixelStorei = [](GLenum, GLint) {};
@@ -148,14 +178,14 @@ TEST_F(GraphicsResources, ViewPreservesAffineShearAndRejectsInvalidMatrices) {
     Eigen::Affine3f transform = Eigen::Affine3f::Identity();
     transform.linear()(0, 1) = 0.5f;
     view.begin();
-    view.addItem(mesh, {Volcano::Colorf::White, nullptr, true}, transform);
+    view.add(mesh, {Volcano::Colorf::White, nullptr, true}, transform);
     view.end();
     EXPECT_EQ(view.opaqueItems()[0].model.matrix(), transform.matrix());
     EXPECT_EQ(view.opaqueItems()[0].normal, transform.linear().inverse().transpose());
     for (const auto value : {2.0f, std::numeric_limits<float>::quiet_NaN()}) {
         view.begin();
         transform.matrix()(3, 0) = value;
-        view.addItem(mesh, {}, transform);
+        view.add(mesh, {}, transform);
         EXPECT_THROW(view.end(), std::invalid_argument);
         EXPECT_FALSE(view.ready());
     }
@@ -247,20 +277,22 @@ TEST_F(GraphicsResources, ViewBuildsMatricesAndSortsTransparentItemsStably) {
     Mesh mesh({}, {});
     View view;
     EXPECT_FALSE(view.ready());
-    EXPECT_THROW(view.opaqueItems(), std::logic_error);
-    EXPECT_THROW(view.transparentItems(), std::logic_error);
-    EXPECT_THROW(view.preparedLights(), std::logic_error);
+#if defined(VOLCANO_DEBUG) && !defined(NDEBUG)
+    EXPECT_DEATH(view.opaqueItems(), "[Aa]ssert");
+    EXPECT_DEATH(view.transparentItems(), "[Aa]ssert");
+    EXPECT_DEATH(view.preparedLights(), "[Aa]ssert");
+#endif
     static_assert(std::is_const_v<std::remove_reference_t<decltype(view.items())>>);
     static_assert(std::is_const_v<std::remove_reference_t<decltype(view.lights())>>);
 
     Volcano::Transform transform;
-    transform.scale() = {2, 1, 1};
+    transform.setScale({2, 1, 1});
     view.begin();
-    view.addItem(mesh, {Volcano::Colorf::White, nullptr, true}, transform);
+    view.add(mesh, {Volcano::Colorf::White, nullptr, true}, transform);
     for (int index = 0; index < 3; ++index) {
         Volcano::Transform transparent;
-        transparent.translation().z() = index == 1 ? 0.5f : -0.5f;
-        view.addItem(mesh, {}, transparent, true);
+        transparent.setTranslation(Eigen::Vector3f(0, 0, index == 1 ? 0.5f : -0.5f));
+        view.add(mesh, {}, transparent, true);
     }
     view.end();
     EXPECT_TRUE(view.ready());
@@ -276,11 +308,11 @@ TEST_F(GraphicsResources, ViewBuildsMatricesAndSortsTransparentItemsStably) {
 
     const auto* storage = view.opaqueItems().data();
     auto copy = view;
-    transform.scale().setConstant(3);
+    transform.setScale(Eigen::Vector3f::Constant(3));
     EXPECT_FLOAT_EQ(copy.items()[0].transform.linear()(0, 0), 2);
     view.begin();
     EXPECT_FALSE(view.ready());
-    view.addItem(mesh, {Volcano::Colorf::White, nullptr, true}, transform);
+    view.add(mesh, {Volcano::Colorf::White, nullptr, true}, transform);
     view.end();
     EXPECT_EQ(view.opaqueItems().data(), storage);
     EXPECT_TRUE(view.transparentItems().empty());
@@ -288,23 +320,25 @@ TEST_F(GraphicsResources, ViewBuildsMatricesAndSortsTransparentItemsStably) {
     EXPECT_NEAR(view.opaqueItems()[0].normal(0, 0), 1.0f / 3.0f, 1e-6f);
     EXPECT_FLOAT_EQ(copy.opaqueItems()[0].model.linear()(0, 0), 2);
 
-    transform.scale().setZero();
+    transform.setScale(Eigen::Vector3f::Zero());
     view.begin();
-    view.addItem(mesh, {Volcano::Colorf::White, nullptr, true}, transform);
+    view.add(mesh, {Volcano::Colorf::White, nullptr, true}, transform);
     EXPECT_THROW(view.end(), std::invalid_argument);
     EXPECT_FALSE(view.ready());
-    EXPECT_THROW(view.opaqueItems(), std::logic_error);
+#if defined(VOLCANO_DEBUG) && !defined(NDEBUG)
+    EXPECT_DEATH(view.opaqueItems(), "[Aa]ssert");
+#endif
     view.begin();
-    view.addItem(mesh, {}, transform);
+    view.add(mesh, {}, transform);
     EXPECT_NO_THROW(view.end());
 
     Eigen::Matrix4f camera = Eigen::Matrix4f::Identity();
     camera(2, 2) = std::numeric_limits<float>::max();
     transform.reset();
-    transform.translation().z() = std::numeric_limits<float>::max();
+    transform.setTranslation(Eigen::Vector3f(0, 0, std::numeric_limits<float>::max()));
     view.begin();
     view.setViewMatrix(camera);
-    view.addItem(mesh, {}, transform, true);
+    view.add(mesh, {}, transform, true);
     EXPECT_THROW(view.end(), std::invalid_argument);
     EXPECT_FALSE(view.ready());
 }
@@ -327,18 +361,18 @@ TEST_F(GraphicsResources, ViewGroupsOpaqueStatesWithoutChangingSubmissionOrTrans
 
     View view;
     view.begin();
-    view.addItem(*higher_mesh, {Volcano::Colorf::Red, higher_texture});
-    view.addItem(*higher_mesh, {Volcano::Colorf::White, lower_texture});
-    view.addItem(*lower_mesh, {Volcano::Colorf::White, higher_texture});
-    view.addItem(*lower_mesh, {Volcano::Colorf::Red, lower_texture});
-    view.addItem(*lower_mesh, {Volcano::Colorf::Blue, lower_texture});
-    view.addItem(*lower_mesh, {Volcano::Colorf::White, lower_texture, true});
+    view.add(*higher_mesh, {Volcano::Colorf::Red, higher_texture});
+    view.add(*higher_mesh, {Volcano::Colorf::White, lower_texture});
+    view.add(*lower_mesh, {Volcano::Colorf::White, higher_texture});
+    view.add(*lower_mesh, {Volcano::Colorf::Red, lower_texture});
+    view.add(*lower_mesh, {Volcano::Colorf::Blue, lower_texture});
+    view.add(*lower_mesh, {Volcano::Colorf::White, lower_texture, true});
     Volcano::Transform far;
-    far.translation().z() = -1;
+    far.setTranslation(Eigen::Vector3f(0, 0, -1));
     Volcano::Transform near;
-    near.translation().z() = 1;
-    view.addItem(*lower_mesh, {Volcano::Colorf::White, higher_texture}, far, true);
-    view.addItem(*lower_mesh, {Volcano::Colorf::White, lower_texture}, near, true);
+    near.setTranslation(Eigen::Vector3f(0, 0, 1));
+    view.add(*lower_mesh, {Volcano::Colorf::White, higher_texture}, far, true);
+    view.add(*lower_mesh, {Volcano::Colorf::White, lower_texture}, near, true);
     view.end();
 
     constexpr std::array<std::size_t, 6> expected{3, 4, 1, 5, 2, 0};
@@ -359,22 +393,26 @@ TEST_F(GraphicsResources, ViewGroupsOpaqueStatesWithoutChangingSubmissionOrTrans
 TEST_F(GraphicsResources, ViewEnforcesSubmissionOrderAndRetainsSettingsAcrossBegin) {
     Mesh mesh({}, {});
     View view;
-    EXPECT_THROW(view.addItem(mesh), std::logic_error);
-    EXPECT_THROW(view.addLight({}), std::logic_error);
-    EXPECT_THROW(view.end(), std::logic_error);
+#if defined(VOLCANO_DEBUG) && !defined(NDEBUG)
+    EXPECT_DEATH(view.add(mesh), "[Aa]ssert");
+    EXPECT_DEATH(view.add(Light{}), "[Aa]ssert");
+    EXPECT_DEATH(view.end(), "[Aa]ssert");
+#endif
     view.setAmbientLight(Eigen::Vector3f::Constant(0.2f));
     view.setClearColor(Volcano::Colorf::Blue);
     Eigen::Matrix4f projection = Eigen::Matrix4f::Identity();
     projection(0, 0) = 2;
     view.setProjection(projection);
     view.begin();
-    view.addItem(mesh);
-    view.addLight({});
+    view.add(mesh);
+    view.add(Light{});
     view.end();
     EXPECT_TRUE(view.ready());
-    EXPECT_THROW(view.addItem(mesh), std::logic_error);
-    EXPECT_THROW(view.addLight({}), std::logic_error);
-    EXPECT_THROW(view.end(), std::logic_error);
+#if defined(VOLCANO_DEBUG) && !defined(NDEBUG)
+    EXPECT_DEATH(view.add(mesh), "[Aa]ssert");
+    EXPECT_DEATH(view.add(Light{}), "[Aa]ssert");
+    EXPECT_DEATH(view.end(), "[Aa]ssert");
+#endif
     EXPECT_TRUE(view.ready());
     projection.setZero();
     EXPECT_FLOAT_EQ(view.projection()(0, 0), 2);
@@ -382,7 +420,9 @@ TEST_F(GraphicsResources, ViewEnforcesSubmissionOrderAndRetainsSettingsAcrossBeg
     view.begin();
     EXPECT_TRUE(view.items().empty());
     EXPECT_TRUE(view.lights().empty());
-    EXPECT_THROW(view.preparedLights(), std::logic_error);
+#if defined(VOLCANO_DEBUG) && !defined(NDEBUG)
+    EXPECT_DEATH(view.preparedLights(), "[Aa]ssert");
+#endif
     view.end();
     EXPECT_TRUE(view.ready());
     EXPECT_TRUE(view.opaqueItems().empty());
@@ -393,9 +433,11 @@ TEST_F(GraphicsResources, ViewEnforcesSubmissionOrderAndRetainsSettingsAcrossBeg
 
     view.setViewMatrix(Eigen::Matrix4f::Identity());
     EXPECT_FALSE(view.ready());
-    EXPECT_THROW(view.end(), std::logic_error);
+#if defined(VOLCANO_DEBUG) && !defined(NDEBUG)
+    EXPECT_DEATH(view.end(), "[Aa]ssert");
+#endif
     view.begin();
-    view.addItem(mesh);
+    view.add(mesh);
     view.begin();
     view.end();
     EXPECT_TRUE(view.items().empty());
@@ -411,23 +453,25 @@ TEST_F(GraphicsResources, ViewEnforcesSubmissionOrderAndRetainsSettingsAcrossBeg
 TEST_F(GraphicsResources, ViewRebuildsLightsAndRecoversAfterFailedEnd) {
     View view;
     view.begin();
-    view.addLight({});
-    view.addLight({});
+    view.add(Light{});
+    view.add(Light{});
     view.end();
     ASSERT_EQ(view.preparedLights().size(), 2);
     const auto* storage = view.preparedLights().data();
     view.begin();
-    view.addLight({});
+    view.add(Light{});
     view.end();
     EXPECT_EQ(view.preparedLights().data(), storage);
     EXPECT_EQ(view.preparedLights().size(), 1);
     Light invalid;
     invalid.strength = -1;
     view.begin();
-    view.addLight(invalid);
+    view.add(invalid);
     EXPECT_THROW(view.end(), std::invalid_argument);
     EXPECT_FALSE(view.ready());
-    EXPECT_THROW(view.preparedLights(), std::logic_error);
+#if defined(VOLCANO_DEBUG) && !defined(NDEBUG)
+    EXPECT_DEATH(view.preparedLights(), "[Aa]ssert");
+#endif
     view.begin();
     view.end();
     EXPECT_TRUE(view.preparedLights().empty());

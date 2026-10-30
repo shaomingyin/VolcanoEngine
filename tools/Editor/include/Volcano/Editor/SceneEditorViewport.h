@@ -5,10 +5,10 @@
 
 #include <memory>
 
+#include <GL/gl3w.h>
 #include <QtOpenGLWidgets/QOpenGLWidget>
 
 #include <Volcano/Graphics/Renderer.h>
-
 #include <Volcano/Editor/Common.h>
 
 VOLCANO_EDITOR_BEGIN
@@ -28,6 +28,7 @@ private:
     void releaseGraphics();
 
 private:
+    GL3WProcs graphics_procs_{};
     std::unique_ptr<Graphics::Renderer> graphics_renderer_;
 };
 

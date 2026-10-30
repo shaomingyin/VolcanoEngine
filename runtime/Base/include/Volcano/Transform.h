@@ -1,8 +1,6 @@
 #ifndef VOLCANO_TRANSFORM_H
 #define VOLCANO_TRANSFORM_H
 
-#include <stdexcept>
-
 #include <Eigen/Geometry>
 
 #include <Volcano/Common.h>
@@ -18,42 +16,31 @@ public:
         : translation_(translation), scale_(scale), rotation_(rotation) {
     }
 
-    Eigen::Vector3f &translation() noexcept {
+    void setTranslation(const Eigen::Vector3f& value) noexcept {
+        translation_ = value;
+    }
+
+    constexpr const Eigen::Vector3f &translation() const noexcept {
         return translation_;
     }
 
-    const Eigen::Vector3f &translation() const noexcept {
-        return translation_;
+    void setScale(const Eigen::Vector3f& value) noexcept {
+        scale_ = value;
     }
 
-    Eigen::Vector3f &scale() noexcept {
+    constexpr const Eigen::Vector3f &scale() const noexcept {
         return scale_;
     }
 
-    const Eigen::Vector3f &scale() const noexcept {
-        return scale_;
+    void setRotation(const Eigen::Quaternionf& value) noexcept {
+        rotation_ = value;
     }
 
-    Eigen::Quaternionf &rotation() noexcept {
+    constexpr const Eigen::Quaternionf &rotation() const noexcept {
         return rotation_;
     }
 
-    const Eigen::Quaternionf &rotation() const noexcept {
-        return rotation_;
-    }
-
-    Eigen::Affine3f affine() const {
-        // S * R * T applies translation, then rotation, then scaling to column vectors.
-        Eigen::Affine3f result = Eigen::Affine3f::Identity();
-        result.scale(scale_);
-        result.rotate(rotation_);
-        result.translate(translation_);
-        if (!result.matrix().allFinite()) {
-            throw std::invalid_argument("Transform must be finite");
-        }
-
-        return result;
-    }
+    Eigen::Affine3f affine() const;
 
     Eigen::Matrix3f normalMatrix() const;
 

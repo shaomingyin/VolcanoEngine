@@ -41,12 +41,12 @@ TEST(BaseTransform, ConstructsComponentsAndAppliesTranslationThenRotationThenSca
 
 TEST(BaseTransform, EditingAndResetDoNotChangePreviouslyGeneratedAffine) {
     Transform transform;
-    transform.translation() = {1, 2, 3};
+    transform.setTranslation({1, 2, 3});
     const auto previous = transform.affine();
 
-    transform.translation().x() = 4;
-    transform.scale() = {2, 3, 4};
-    transform.rotation() = Eigen::AngleAxisf(std::numbers::pi_v<float> / 2, Eigen::Vector3f::UnitZ());
+    transform.setTranslation(Eigen::Vector3f(4, 2, 3));
+    transform.setScale({2, 3, 4});
+    transform.setRotation(Eigen::Quaternionf(Eigen::AngleAxisf(std::numbers::pi_v<float> / 2, Eigen::Vector3f::UnitZ())));
     const Transform copy = transform;
     EXPECT_TRUE((previous * Eigen::Vector3f::Zero()).isApprox(Eigen::Vector3f(1, 2, 3)));
     EXPECT_TRUE((transform.affine() * Eigen::Vector3f::Zero()).isApprox(Eigen::Vector3f(-4, 12, 12)));
@@ -77,37 +77,37 @@ TEST(BaseTransform, NormalMatrixPreservesPerpendicularityUnderNonuniformScaleAnd
     EXPECT_NEAR(normal.dot(affine.linear() * Eigen::Vector3f(0, 1, 0)), 0.0f, 1e-5f);
 
     const auto before = transform.normalMatrix();
-    transform.translation() = {-4, 5, -6};
+    transform.setTranslation({-4, 5, -6});
     EXPECT_TRUE(transform.normalMatrix().isApprox(before));
 }
 
 TEST(BaseTransform, RejectsSingularAndNonfiniteNormalMatrices) {
     Transform transform;
-    transform.scale().z() = 0;
+    transform.setScale(Eigen::Vector3f(1, 1, 0));
     EXPECT_NO_THROW(transform.affine());
     EXPECT_THROW(transform.normalMatrix(), std::invalid_argument);
 
-    transform.scale().setConstant(std::numeric_limits<float>::denorm_min());
+    transform.setScale(Eigen::Vector3f::Constant(std::numeric_limits<float>::denorm_min()));
     EXPECT_THROW(transform.normalMatrix(), std::invalid_argument);
 }
 
 TEST(BaseTransform, RejectsNonfiniteAffineResults) {
     Transform transform;
-    transform.translation().x() = std::numeric_limits<float>::quiet_NaN();
+    transform.setTranslation(Eigen::Vector3f(std::numeric_limits<float>::quiet_NaN(), 0, 0));
     EXPECT_THROW(transform.affine(), std::invalid_argument);
     EXPECT_THROW(transform.normalMatrix(), std::invalid_argument);
 
     transform.reset();
-    transform.rotation().w() = std::numeric_limits<float>::infinity();
+    transform.setRotation(Eigen::Quaternionf(std::numeric_limits<float>::infinity(), 0, 0, 0));
     EXPECT_THROW(transform.affine(), std::invalid_argument);
 
     transform.reset();
-    transform.scale().x() = std::numeric_limits<float>::infinity();
+    transform.setScale(Eigen::Vector3f(std::numeric_limits<float>::infinity(), 1, 1));
     EXPECT_THROW(transform.affine(), std::invalid_argument);
 
     transform.reset();
-    transform.translation().x() = std::numeric_limits<float>::max();
-    transform.scale().x() = 2;
+    transform.setTranslation(Eigen::Vector3f(std::numeric_limits<float>::max(), 0, 0));
+    transform.setScale(Eigen::Vector3f(2, 1, 1));
     EXPECT_THROW(transform.affine(), std::invalid_argument);
 
     transform.reset();

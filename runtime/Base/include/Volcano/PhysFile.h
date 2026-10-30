@@ -31,11 +31,25 @@ public:
     PhysFile(PhysFile&& other) noexcept;
     PhysFile& operator=(PhysFile&& other);
 
-    bool isOpen() const noexcept;
-    bool isReadable() const override;
-    bool isWritable() const override;
-    bool isSequential() const override;
-    PHYSFS_File* get() const noexcept;
+    bool isOpen() const noexcept {
+        return file_ != nullptr;
+    }
+
+    bool isReadable() const override {
+        return isOpen() && mode_ == OpenMode::ReadOnly;
+    }
+
+    bool isWritable() const override {
+        return isOpen() && (mode_ == OpenMode::WriteOnly || mode_ == OpenMode::Append);
+    }
+
+    bool isSequential() const override {
+        return false;
+    }
+
+    PHYSFS_File* get() const noexcept {
+        return file_;
+    }
 
     using Stream::read;
     using Stream::write;
@@ -50,9 +64,6 @@ public:
 
     // Reports close/flush errors; on failure the handle remains owned and open.
     void close();
-
-private:
-    void requireOpen() const;
 
 private:
     PHYSFS_File* file_ = nullptr;

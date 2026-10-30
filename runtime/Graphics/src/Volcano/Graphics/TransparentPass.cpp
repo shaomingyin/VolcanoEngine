@@ -1,10 +1,10 @@
 #include <stdexcept>
 #include <string>
 
+#include <Volcano/ScopeGuard.h>
 #include <Volcano/Graphics/TransparentPass.h>
 #include <Volcano/Graphics/Mesh.h>
 #include <Volcano/Graphics/View.h>
-#include <Volcano/ScopeGuard.h>
 
 VOLCANO_GRAPHICS_BEGIN
 

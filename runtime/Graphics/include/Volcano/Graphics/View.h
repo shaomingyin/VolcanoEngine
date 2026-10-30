@@ -7,10 +7,12 @@
 
 #include <Eigen/Geometry>
 
+#include <Volcano/Transform.h>
 #include <Volcano/Graphics/Material.h>
 #include <Volcano/Graphics/Mesh.h>
 #include <Volcano/Graphics/Light.h>
-#include <Volcano/Transform.h>
+#include <Volcano/Graphics/Target.h>
+#include <Volcano/Graphics/Canvas.h>
 
 VOLCANO_GRAPHICS_BEGIN
 
@@ -24,6 +26,11 @@ struct DrawItem final {
 // Owns drawing state and items; Mesh and Texture resources remain externally owned.
 class View final {
 public:
+    struct VGTask final {
+        std::reference_wrapper<Target> target;
+        std::reference_wrapper<const Canvas> commands;
+    };
+
     struct PreparedItem final {
         std::size_t index;
         Eigen::Affine3f model;
@@ -34,31 +41,30 @@ public:
 public:
     // Starts a new submission, retaining camera and environment settings.
     void begin() noexcept;
-    void addItem(const Mesh& mesh, const Material& material = {},
+    void add(const Mesh& mesh, const Material& material = {},
         const Transform& transform = {}, bool transparent = false);
-    void addItem(const Mesh& mesh, const Material& material,
+    void add(const Mesh& mesh, const Material& material,
         const Eigen::Affine3f& transform, bool transparent = false);
-    void addLight(const Light& light);
+    void add(const Light& light);
     void end();
+    void add(Target& target, const Canvas& commands);
+    void add(const Canvas& commands);
+    const std::vector<VGTask>& vgTasks() const noexcept {
+        return vg_tasks_;
+    }
+    const std::vector<std::reference_wrapper<const Canvas>>& overlays() const noexcept {
+        return overlays_;
+    }
 
     bool ready() const noexcept {
         return state_ == State::Ready;
     }
 
-    const std::vector<PreparedItem>& opaqueItems() const {
-        requireReady();
-        return opaque_;
-    }
+    const std::vector<PreparedItem>& opaqueItems() const;
 
-    const std::vector<PreparedItem>& transparentItems() const {
-        requireReady();
-        return transparent_;
-    }
+    const std::vector<PreparedItem>& transparentItems() const;
 
-    const std::vector<Light::Prepared>& preparedLights() const {
-        requireReady();
-        return prepared_lights_;
-    }
+    const std::vector<Light::Prepared>& preparedLights() const;
 
     const std::vector<DrawItem>& items() const noexcept {
         return items_;
@@ -111,8 +117,6 @@ private:
         Ready
     };
 
-    void requireBuilding() const;
-    void requireReady() const;
     void invalidate() noexcept {
         if (state_ == State::Ready) {
             state_ = State::Idle;
@@ -120,6 +124,8 @@ private:
     }
 
 private:
+    std::vector<VGTask> vg_tasks_;
+    std::vector<std::reference_wrapper<const Canvas>> overlays_;
     std::vector<DrawItem> items_;
     std::vector<Light> lights_;
     Eigen::Vector3f ambient_light_ = Eigen::Vector3f::Zero();

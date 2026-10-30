@@ -5,10 +5,9 @@
 #include <string>
 
 #include <nlohmann/json.hpp>
+#include "Format.h"
 
 #include <Volcano/Schema/Material.h>
-
-#include "Format.h"
 
 VOLCANO_SCHEMA_BEGIN
 

@@ -21,7 +21,7 @@ target_include_directories(Launcher PRIVATE
 
 volcano_target_setup(Launcher)
 target_link_libraries(Launcher PRIVATE Gameplay)
-target_link_libraries(Launcher PRIVATE Gui FrameworkLocal)
+target_link_libraries(Launcher PRIVATE FrameworkLocal)
 
 find_package(argh REQUIRED)
 target_link_libraries(Launcher PUBLIC argh)

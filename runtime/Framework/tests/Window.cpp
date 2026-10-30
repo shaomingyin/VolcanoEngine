@@ -1,5 +1,6 @@
 #define GLFW_INCLUDE_NONE
 #include <array>
+#include <memory>
 #include <stdexcept>
 #include <cstring>
 #include <type_traits>
@@ -21,7 +22,7 @@ TEST(FrameworkWindow, ViewOwnsSubmittedDrawingState) {
     });
     glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
     Volcano::Framework::Window window(32, 32, "View ownership");
-    Volcano::Graphics::Renderer renderer(glfwGetProcAddress);
+    Volcano::Graphics::Renderer renderer;
     Volcano::Graphics::Mesh first({}, {});
     Volcano::Graphics::Mesh second({}, {});
     Volcano::Graphics::View view;
@@ -30,22 +31,22 @@ TEST(FrameworkWindow, ViewOwnsSubmittedDrawingState) {
     EXPECT_TRUE(view.projection().isIdentity());
     EXPECT_TRUE(view.viewMatrix().isIdentity());
     Volcano::Transform transform;
-    transform.translation() = {1, 2, 3};
+    transform.setTranslation({1, 2, 3});
     view.begin();
-    view.addItem(first, {Volcano::Colorf::Red}, transform, true);
-    view.addItem(second);
+    view.add(first, {Volcano::Colorf::Red}, transform, true);
+    view.add(second);
     Eigen::Matrix4f projection = Eigen::Matrix4f::Identity();
     projection(0, 0) = 2;
     view.setProjection(projection);
     view.end();
-    transform.translation().setZero();
+    transform.setTranslation(Eigen::Vector3f::Zero());
     EXPECT_TRUE(view.items()[0].transform.translation().isApprox(Eigen::Vector3f(1, 2, 3)));
     EXPECT_EQ(view.transparentItems()[0].index, 0);
     EXPECT_EQ(view.opaqueItems()[0].index, 1);
 
     auto copy = view;
     copy.begin();
-    copy.addItem(first, {Volcano::Colorf::Green});
+    copy.add(first, {Volcano::Colorf::Green});
     projection(0, 0) = 4;
     copy.setProjection(projection);
     copy.end();
@@ -77,7 +78,7 @@ TEST(FrameworkWindow, RendersToDefaultFramebufferAndFrameBuffer) {
     ASSERT_GT(width, 0);
     ASSERT_GT(height, 0);
 
-    Volcano::Graphics::Renderer renderer(glfwGetProcAddress);
+    Volcano::Graphics::Renderer renderer;
     Volcano::Graphics::FrameBuffer texture(8, 8);
     Volcano::Graphics::View view;
     view.setClearColor(Volcano::Colorf::Red);
@@ -92,7 +93,7 @@ TEST(FrameworkWindow, RendersToDefaultFramebufferAndFrameBuffer) {
     Volcano::Graphics::Mesh quad(vertices, indices);
     view.setClearColor(Volcano::Colorf::Black);
     view.begin();
-    view.addItem(quad, {Volcano::Colorf::White, &texture.texture()});
+    view.add(quad, {Volcano::Colorf::White, &texture.texture()});
     view.end();
     renderer.render(view, window);
     GLint framebuffer = -1;
@@ -173,100 +174,69 @@ void APIENTRY rejectSelectedShader(GLuint shader, GLenum parameter, GLint* value
 }
 }
 
-TEST(FrameworkWindow, RendererOwnsDispatchAndRestoresItAfterConstructionFailure) {
+TEST(FrameworkWindow, RendererUsesHostDispatchAndCleansUpConstructionFailure) {
     ASSERT_TRUE(glfwInit());
     auto glfw_guard = Volcano::scopeGuard([] {
         glfwTerminate();
     });
     glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
-    Volcano::Framework::Window window(32, 32, "Renderer dispatch lifetime");
+    Volcano::Framework::Window window(32, 32, "Host dispatch lifetime");
+    auto* dispatch = gl3wProcs;
+    ASSERT_NE(dispatch, nullptr);
+    const auto original = *dispatch;
+    auto restore = Volcano::scopeGuard([dispatch, original] {
+        *dispatch = original;
+    });
+    shader_status = original.gl.GetShaderiv;
+    uniform_location = original.gl.GetUniformLocation;
+    delete_program = original.gl.DeleteProgram;
+    delete_textures = original.gl.DeleteTextures;
+    delete_framebuffers = original.gl.DeleteFramebuffers;
+    deletion_dispatch = dispatch;
+    dispatch->gl.DeleteProgram = checkProgramDeletion;
+    dispatch->gl.DeleteTextures = checkTextureDeletion;
+    dispatch->gl.DeleteFramebuffers = checkFramebufferDeletion;
+
+    // Fail every geometry, lighting, transparent and paint shader in turn.
+    dispatch->gl.GetShaderiv = rejectSelectedShader;
+    for (int check = 1; check <= 8; ++check) {
+        deleted_programs = deleted_textures = deleted_framebuffers = 0;
+        shader_checks = 0;
+        rejected_shader_check = check;
+        EXPECT_THROW((Volcano::Graphics::Renderer{}), std::runtime_error);
+        EXPECT_EQ(shader_checks, check);
+        EXPECT_EQ(deleted_programs, (check + 1) / 2);
+        EXPECT_EQ(deleted_textures, 4);
+        EXPECT_EQ(deleted_framebuffers, 1);
+        EXPECT_EQ(gl3wProcs, dispatch);
+    }
+    dispatch->gl.GetShaderiv = original.gl.GetShaderiv;
+
+    struct MissingUniform {
+        const char* name;
+        int occurrence;
+        int programs;
+    };
+    dispatch->gl.GetUniformLocation = rejectSelectedUniform;
+    for (const auto& failure : {MissingUniform{"uProjection", 1, 1},
+                               MissingUniform{"uAmbient", 1, 2},
+                               MissingUniform{"uColor", 2, 3}}) {
+        deleted_programs = deleted_textures = deleted_framebuffers = 0;
+        rejected_uniform = failure.name;
+        rejected_uniform_match = failure.occurrence;
+        uniform_matches = 0;
+        EXPECT_THROW((Volcano::Graphics::Renderer{}), std::runtime_error);
+        EXPECT_EQ(deleted_programs, failure.programs);
+        EXPECT_EQ(deleted_textures, 4);
+        EXPECT_EQ(deleted_framebuffers, 1);
+        EXPECT_EQ(gl3wProcs, dispatch);
+    }
+    dispatch->gl.GetUniformLocation = original.gl.GetUniformLocation;
+
+    deleted_programs = 0;
     {
-        Volcano::Graphics::Renderer renderer(glfwGetProcAddress);
-        auto first = gl3wProcs;
-        ASSERT_NE(first, nullptr);
-        shader_status = reinterpret_cast<PFNGLGETSHADERIVPROC>(glfwGetProcAddress("glGetShaderiv"));
-        delete_program = reinterpret_cast<PFNGLDELETEPROGRAMPROC>(glfwGetProcAddress("glDeleteProgram"));
-        delete_textures = reinterpret_cast<PFNGLDELETETEXTURESPROC>(glfwGetProcAddress("glDeleteTextures"));
-        delete_framebuffers = reinterpret_cast<PFNGLDELETEFRAMEBUFFERSPROC>(glfwGetProcAddress("glDeleteFramebuffers"));
-        // Fail every geometry, lighting and transparent shader compilation in turn.
-        for (int check : {1, 2, 3, 4, 5, 6}) {
-            deleted_programs = deleted_textures = deleted_framebuffers = 0;
-            shader_checks = 0;
-            rejected_shader_check = check;
-            EXPECT_THROW((Volcano::Graphics::Renderer([](const char* name) -> GL3WglProc {
-                if (std::strcmp(name, "glGetShaderiv") == 0) {
-                    return reinterpret_cast<GL3WglProc>(rejectSelectedShader);
-                }
-                if (std::strcmp(name, "glDeleteProgram") == 0) {
-                    return reinterpret_cast<GL3WglProc>(checkProgramDeletion);
-                }
-                if (std::strcmp(name, "glDeleteTextures") == 0) {
-                    return reinterpret_cast<GL3WglProc>(checkTextureDeletion);
-                }
-                if (std::strcmp(name, "glDeleteFramebuffers") == 0) {
-                    return reinterpret_cast<GL3WglProc>(checkFramebufferDeletion);
-                }
-                return glfwGetProcAddress(name);
-            })), std::runtime_error);
-            EXPECT_EQ(shader_checks, check);
-            EXPECT_EQ(deleted_programs, check <= 2 ? 1 : check <= 4 ? 2 : 3);
-            EXPECT_EQ(deleted_textures, 4);
-            EXPECT_EQ(deleted_framebuffers, 1);
-            EXPECT_EQ(gl3wProcs, first);
-        }
-
-        uniform_location = reinterpret_cast<PFNGLGETUNIFORMLOCATIONPROC>(glfwGetProcAddress("glGetUniformLocation"));
-        struct MissingUniform {
-            const char* name;
-            int occurrence;
-            int programs;
-        };
-        for (const auto& failure : {MissingUniform{"uProjection", 1, 1},
-                                   MissingUniform{"uAmbient", 1, 2},
-                                   MissingUniform{"uColor", 2, 3}}) {
-            deleted_programs = deleted_textures = deleted_framebuffers = 0;
-            rejected_uniform = failure.name;
-            rejected_uniform_match = failure.occurrence;
-            uniform_matches = 0;
-            EXPECT_THROW((Volcano::Graphics::Renderer([](const char* name) -> GL3WglProc {
-                if (std::strcmp(name, "glGetUniformLocation") == 0) {
-                    return reinterpret_cast<GL3WglProc>(rejectSelectedUniform);
-                }
-                if (std::strcmp(name, "glDeleteProgram") == 0) {
-                    return reinterpret_cast<GL3WglProc>(checkProgramDeletion);
-                }
-                if (std::strcmp(name, "glDeleteTextures") == 0) {
-                    return reinterpret_cast<GL3WglProc>(checkTextureDeletion);
-                }
-                if (std::strcmp(name, "glDeleteFramebuffers") == 0) {
-                    return reinterpret_cast<GL3WglProc>(checkFramebufferDeletion);
-                }
-
-                return glfwGetProcAddress(name);
-            })), std::runtime_error);
-            EXPECT_EQ(deleted_programs, failure.programs);
-            EXPECT_EQ(deleted_textures, 4);
-            EXPECT_EQ(deleted_framebuffers, 1);
-            EXPECT_EQ(gl3wProcs, first);
-        }
-
-        {
-            delete_program = reinterpret_cast<PFNGLDELETEPROGRAMPROC>(glfwGetProcAddress("glDeleteProgram"));
-            deleted_programs = 0;
-            Volcano::Graphics::Renderer other([](const char* name) -> GL3WglProc {
-                return std::strcmp(name, "glDeleteProgram") == 0 ?
-                    reinterpret_cast<GL3WglProc>(checkProgramDeletion) : glfwGetProcAddress(name);
-            });
-            deletion_dispatch = gl3wProcs;
-            EXPECT_NE(gl3wProcs, first);
-            Volcano::Graphics::View view;
-            view.begin();
-            view.end();
-            renderer.render(view, window);
-            EXPECT_EQ(gl3wProcs, first);
-        }
-        EXPECT_EQ(deleted_programs, 3);
-        EXPECT_EQ(gl3wProcs, first);
+        Volcano::Graphics::Renderer renderer;
+        EXPECT_EQ(gl3wProcs, dispatch);
         Volcano::Graphics::View view;
         view.setClearColor(Volcano::Colorf::Red);
         view.begin();
@@ -274,5 +244,63 @@ TEST(FrameworkWindow, RendererOwnsDispatchAndRestoresItAfterConstructionFailure)
         renderer.render(view, window);
         EXPECT_EQ(glGetError(), GL_NO_ERROR);
     }
+    EXPECT_EQ(deleted_programs, 4);
+    EXPECT_EQ(gl3wProcs, dispatch);
+}
+
+TEST(FrameworkWindow, OwnsDispatchAndSwitchesItWithTheWindowContext) {
+    ASSERT_TRUE(glfwInit());
+    auto glfw_guard = Volcano::scopeGuard([] {
+        glfwTerminate();
+    });
+    glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
+    {
+        Volcano::Framework::Window first(16, 16, "First context");
+        auto* first_dispatch = gl3wProcs;
+        ASSERT_NE(first_dispatch, nullptr);
+        {
+            Volcano::Framework::Window second(16, 16, "Second context");
+            auto* second_dispatch = gl3wProcs;
+            EXPECT_NE(first_dispatch, second_dispatch);
+            EXPECT_EQ(glfwGetCurrentContext(), second.handle());
+            first.makeCurrent();
+            EXPECT_EQ(gl3wProcs, first_dispatch);
+            EXPECT_EQ(glfwGetCurrentContext(), first.handle());
+            second.makeCurrent();
+            EXPECT_EQ(gl3wProcs, second_dispatch);
+            first.makeCurrent();
+        }
+        EXPECT_EQ(gl3wProcs, first_dispatch);
+        EXPECT_EQ(glGetError(), GL_NO_ERROR);
+    }
     EXPECT_EQ(gl3wProcs, nullptr);
+}
+
+TEST(FrameworkWindow, InitializesGlfwAndKeepsItAliveUntilTheLastWindowCloses) {
+    glfwTerminate();
+    for (int iteration = 0; iteration < 2; ++iteration) {
+        auto first = std::make_unique<Volcano::Framework::Window>(16, 16, "First owner");
+        auto* first_dispatch = gl3wProcs;
+        EXPECT_EQ(glfwGetCurrentContext(), first->handle());
+
+        glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+        EXPECT_THROW((Volcano::Framework::Window(16, 16, "No GL context")), std::runtime_error);
+        glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
+        EXPECT_EQ(glfwGetCurrentContext(), first->handle());
+        EXPECT_EQ(gl3wProcs, first_dispatch);
+
+        auto second = std::make_unique<Volcano::Framework::Window>(16, 16, "Last owner");
+        auto* second_dispatch = gl3wProcs;
+        first.reset();
+        EXPECT_EQ(glfwGetCurrentContext(), second->handle());
+        EXPECT_EQ(gl3wProcs, second_dispatch);
+        second->makeCurrent();
+        EXPECT_EQ(glGetError(), GL_NO_ERROR);
+        second.reset();
+        EXPECT_EQ(gl3wProcs, nullptr);
+
+        glfwGetError(nullptr);
+        EXPECT_EQ(glfwGetCurrentContext(), nullptr);
+        EXPECT_EQ(glfwGetError(nullptr), GLFW_NOT_INITIALIZED);
+    }
 }

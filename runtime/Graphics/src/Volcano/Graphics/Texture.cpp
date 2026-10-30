@@ -2,18 +2,29 @@
 #include <utility>
 #include <vector>
 
+#include <GL/gl.hpp>
+
 #include <Volcano/Graphics/Texture.h>
 
 VOLCANO_GRAPHICS_BEGIN
 
-Texture::Texture(int width, int height, std::span<const std::uint8_t> rgba) {
-    allocate(width, height);
+Texture::Texture(Texture&&) noexcept = default;
+Texture& Texture::operator=(Texture&&) noexcept = default;
+
+const gl::Texture2D& Texture::texture() const noexcept {
+    return texture_;
+}
+
+Texture::Texture(int width, int height, std::span<const std::uint8_t> rgba)
+    : texture_(allocate(width, height))
+    , width_(width)
+    , height_(height) {
     if (!rgba.empty()) {
         upload(rgba);
     }
 }
 
-void Texture::allocate(int width, int height) {
+gl::Texture2D Texture::allocate(int width, int height) {
     GLint maximum = 0;
     glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maximum);
     if (width <= 0 || height <= 0 || width > maximum || height > maximum) {
@@ -27,14 +38,14 @@ void Texture::allocate(int width, int height) {
     texture.parameter(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     texture.parameter(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     texture.image2D(0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
-    texture_ = std::move(texture);
-    width_ = width;
-    height_ = height;
+    return texture;
 }
 
 void Texture::resize(int width, int height) {
     if (width != width_ || height != height_) {
-        allocate(width, height);
+        texture_ = allocate(width, height);
+        width_ = width;
+        height_ = height;
     }
 }
 

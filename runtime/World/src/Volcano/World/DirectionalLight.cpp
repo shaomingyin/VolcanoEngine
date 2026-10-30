@@ -1,31 +1,28 @@
-//
-//
+#include <cmath>
+#include <stdexcept>
+
 #include <Volcano/World/DirectionalLight.h>
 
 VOLCANO_WORLD_BEGIN
 
-namespace {
+DirectionalLight::DirectionalLight() noexcept = default;
 
-Eigen::Vector3f normalizedDirection(const Eigen::Vector3f& direction) noexcept {
-    const float magnitude = direction.stableNorm();
-    return magnitude > 0.0f && std::isfinite(magnitude)
-        ? direction / magnitude : Eigen::Vector3f(0.0f, -1.0f, 0.0f);
+DirectionalLight::DirectionalLight(const Eigen::Vector3f& direction, const Eigen::Vector3f& color, float strength)
+    : Light(color, strength) {
+    setDirection(direction);
 }
 
+DirectionalLight::DirectionalLight(float dx, float dy, float dz, float r, float g, float b, float strength)
+    : DirectionalLight(Eigen::Vector3f(dx, dy, dz), Eigen::Vector3f(r, g, b), strength) {
 }
 
-DirectionalLight::DirectionalLight() noexcept
-    : direction_(0.0f, -1.0f, 0.0f) {
-}
+void DirectionalLight::setDirection(const Eigen::Vector3f& value) {
+    const float length = value.stableNorm();
+    if (!value.allFinite() || !std::isfinite(length) || length == 0.0f) {
+        throw std::invalid_argument("Light direction must be finite and nonzero");
+    }
 
-DirectionalLight::DirectionalLight(const Eigen::Vector3f& direction, const Eigen::Vector3f& color, float strength) noexcept
-    : Light(color, strength)
-    , direction_(normalizedDirection(direction)) {
-}
-
-DirectionalLight::DirectionalLight(float dx, float dy, float dz, float r, float g, float b, float strength) noexcept
-    : Light(r, g, b, strength)
-    , direction_(normalizedDirection(Eigen::Vector3f(dx, dy, dz))) {
+    direction_ = value / length;
 }
 
 VOLCANO_WORLD_END

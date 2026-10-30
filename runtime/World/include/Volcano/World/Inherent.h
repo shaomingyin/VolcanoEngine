@@ -4,6 +4,7 @@
 #define VOLCANO_WORLD_INHERENT_H
 
 #include <string>
+#include <string_view>
 
 #include <Volcano/World/Common.h>
 
@@ -11,55 +12,62 @@ VOLCANO_WORLD_BEGIN
 
 class Inherent {
 public:
-	Inherent() noexcept;
-	Inherent(std::string&& name, bool enabled = true, bool visible = true) noexcept;
-	Inherent(const Inherent&) = default;
-	Inherent(Inherent&&) = default;
+    constexpr Inherent() noexcept
+        : flags_(FlagEnabled | FlagVisible) {
+    }
+
+    constexpr explicit Inherent(std::string_view name, bool enabled = true, bool visible = true)
+        : name_(name)
+        , flags_((enabled ? FlagEnabled : 0) | (visible ? FlagVisible : 0)) {
+    }
+
+    constexpr Inherent(const Inherent&) = default;
+    constexpr Inherent(Inherent&&) = default;
 
 public:
-	Inherent& operator=(const Inherent&) = default;
-	Inherent& operator=(Inherent&&) = default;
+    constexpr Inherent& operator=(const Inherent&) = default;
+    constexpr Inherent& operator=(Inherent&&) = default;
 
-	std::string& name() noexcept {
-		return name_;
-	}
+    constexpr const std::string& name() const noexcept {
+        return name_;
+    }
 
-	const std::string& name() const noexcept {
-		return name_;
-	}
+    constexpr void setName(std::string_view value) {
+        name_.assign(value);
+    }
 
-	bool isEnabled() const {
-		return (flags_ & FlagEnabled) != 0;
-	}
+    constexpr bool isEnabled() const noexcept {
+        return (flags_ & FlagEnabled) != 0;
+    }
 
-	void enable() {
-		flags_ |= FlagEnabled;
-	}
+    constexpr void enable() noexcept {
+        flags_ |= FlagEnabled;
+    }
 
-	void disable() {
-		flags_ &= ~FlagEnabled;
-	}
+    constexpr void disable() noexcept {
+        flags_ &= ~FlagEnabled;
+    }
 
-	bool isVisible() const {
-		return (flags_ & FlagVisible) != 0;
-	}
+    constexpr bool isVisible() const noexcept {
+        return (flags_ & FlagVisible) != 0;
+    }
 
-	void show() {
-		flags_ |= FlagVisible;
-	}
+    constexpr void show() noexcept {
+        flags_ |= FlagVisible;
+    }
 
-	void hide() {
-		flags_ &= ~FlagVisible;
-	}
+    constexpr void hide() noexcept {
+        flags_ &= ~FlagVisible;
+    }
 
 private:
-	enum {
-		FlagEnabled = 0x1,
-		FlagVisible = 0x2
-	};
+    enum {
+        FlagEnabled = 0x1,
+        FlagVisible = 0x2
+    };
 
-	std::string name_;
-	int flags_;
+    std::string name_;
+    int flags_;
 };
 
 VOLCANO_WORLD_END

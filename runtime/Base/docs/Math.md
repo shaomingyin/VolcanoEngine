@@ -50,7 +50,7 @@ rect.setSize(dimensions); // left、top 仍为 10、20
 - Eigen 矩阵以 `(row, column)` 访问元素，默认按列存储；向 OpenGL 上传时使用 `data()`。
 - 轴角旋转使用 `Eigen::AngleAxisf`，旋转角度以弧度表示。
 - 投影矩阵变换点使用齐次坐标，并通过 `hnormalized()` 完成透视除法。
-- `World::BoundingBox` 现在是 `Eigen::AlignedBox3f`：使用 `min()`、`max()`、`sizes()`、`isEmpty()` 和 `setEmpty()`。
+- 包围盒直接使用 `Eigen::AlignedBox3f`：使用 `min()`、`max()`、`sizes()`、`isEmpty()` 和 `setEmpty()`。
   `sizes()` 返回完整边长；空盒的中心和尺寸没有有效几何含义，不应查询。Eigen 不校验坐标有限性，调用方须校验输入。
 
 ```cpp
@@ -69,7 +69,8 @@ const Eigen::Vector3f position = model * Eigen::Vector3f::Zero();
 `Volcano::Transform` 位于 Base，只按值保存 `Eigen::Vector3f` 平移、`Eigen::Vector3f` 缩放和
 `Eigen::Quaternionf` 旋转，不保存或缓存矩阵。默认值分别为零、全一和单位四元数；
 构造函数参数顺序为 translation、scale、rotation。
-`translation()`、`scale()` 和 `rotation()` 分别提供可编辑引用和只读引用，`reset()` 恢复单位变换。
+`translation()`、`scale()` 和 `rotation()` 提供只读引用；
+通过 `setTranslation()`、`setScale()` 和 `setRotation()` 修改值，`reset()` 恢复单位变换。
 
 `affine()` 按需生成独立的 `Eigen::Affine3f`，修改分量不会影响此前生成的结果。
 保留从 World 迁移过来的 `S * R * T` 顺序：对于列向量，点先平移、再旋转、最后缩放，
@@ -84,8 +85,8 @@ const Eigen::Vector3f position = model * Eigen::Vector3f::Zero();
 #include <Volcano/Transform.h>
 
 Volcano::Transform transform;
-transform.translation() = {1, 2, 3};
-transform.scale() = {2, 2, 2};
+transform.setTranslation({1, 2, 3});
+transform.setScale({2, 2, 2});
 const Eigen::Affine3f affine = transform.affine();
 ```
 
@@ -103,4 +104,4 @@ ctest --test-dir build/Debug --output-on-failure -R 'BaseMath|MathColor|BaseTran
 
 BaseMathCheck 验证尺寸值、零及负尺寸、矩形尺寸读写、常量求值、矩形操作与角度转换；BaseColorCheck 验证颜色转换、算术及错误处理。
 BaseTransformCheck 验证默认值、分量读写、变换顺序、独立生成的仿射结果、复制与重置以及零和负缩放、法线矩阵与无效结果处理。
-WorldMathCheck 验证 Eigen 与 Jolt 的转换、Base Transform 的使用、网格包围盒与相机投影。
+PhysicsCheck 验证物理模拟中的 Eigen 位置、旋转转换；WorldMathCheck 验证 Base Transform 的使用、网格包围盒与相机投影。

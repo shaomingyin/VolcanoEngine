@@ -3,9 +3,9 @@
 #include <span>
 #include <stdexcept>
 
-#include <Volcano/Schema/Texture.h>
-
 #include "Format.h"
+
+#include <Volcano/Schema/Texture.h>
 
 VOLCANO_SCHEMA_BEGIN
 

@@ -9,7 +9,6 @@
 #include <coreplugin/idocumentfactory.h>
 
 #include <Volcano/World/Scene.h>
-
 #include <Volcano/Editor/Common.h>
 
 VOLCANO_EDITOR_BEGIN

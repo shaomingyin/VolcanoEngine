@@ -1,12 +1,11 @@
 #ifndef VOLCANO_GRAPHICS_TARGET_H
 #define VOLCANO_GRAPHICS_TARGET_H
 
-#include <Volcano/Graphics/Common.h>
 #include <Volcano/Size.h>
+#include <Volcano/Graphics/Common.h>
+#include <Volcano/Graphics/Texture.h>
 
 VOLCANO_GRAPHICS_BEGIN
-
-class Texture;
 
 // Implementations provide a color output and depth storage for the built-in renderer.
 class Target {
@@ -15,7 +14,7 @@ public:
     Target(const Target&) = delete;
     Target& operator=(const Target&) = delete;
 
-    // Selects this output in the caller's current graphics context.
+    // Selects this output in the caller's current OpenGL context.
     virtual void bind() const noexcept = 0;
 
     virtual int width() const noexcept = 0;

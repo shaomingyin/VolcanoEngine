@@ -4,9 +4,9 @@
 #include <span>
 #include <stdexcept>
 
-#include <Volcano/Schema/Mesh.h>
-
 #include "Format.h"
+
+#include <Volcano/Schema/Mesh.h>
 
 VOLCANO_SCHEMA_BEGIN
 

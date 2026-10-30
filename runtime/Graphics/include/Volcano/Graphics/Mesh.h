@@ -38,19 +38,18 @@ public:
     }
 
     void draw() const noexcept;
-
     static std::string shaderDefinitions();
 
 public:
-    static constexpr GLuint PositionAttribute = 0;
-    static constexpr GLuint NormalAttribute = 1;
-    static constexpr GLuint TexcoordAttribute = 2;
+    static constexpr unsigned int PositionAttribute = 0;
+    static constexpr unsigned int NormalAttribute = 1;
+    static constexpr unsigned int TexcoordAttribute = 2;
 
 private:
     gl::VertexArray vertex_array_;
     gl::VertexBuffer vertex_buffer_;
     gl::IndexBuffer index_buffer_;
-    GLsizei count_ = 0;
+    std::size_t count_ = 0;
 };
 
 VOLCANO_GRAPHICS_END

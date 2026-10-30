@@ -4,12 +4,17 @@ asyncplusplus/1.2
 eigen/5.0.1
 entt/3.16.0
 glfw/3.4
+freetype/2.13.2
+harfbuzz/10.4.0
 joltphysics/5.2.0
 nlohmann_json/3.12.0
 physfs/3.2.0
 sigslot/1.2.3
 spdlog/1.15.3
 tracy/0.12.2
+
+[options]
+harfbuzz/*:with_glib=False
 
 [test_requires]
 gtest/1.17.0

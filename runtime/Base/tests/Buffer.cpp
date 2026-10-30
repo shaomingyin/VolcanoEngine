@@ -28,13 +28,17 @@ TEST(BaseBuffer, OwnsDataAndStartsClosed) {
     EXPECT_EQ(&std::as_const(buffer).buffer(), &buffer.data());
 
     std::array<std::uint8_t, 1> byte{};
-    EXPECT_THROW(buffer.read(byte), std::runtime_error);
-    EXPECT_THROW(buffer.write(byte), std::runtime_error);
-    EXPECT_THROW(buffer.seek(0), std::runtime_error);
+#if defined(VOLCANO_DEBUG) && !defined(NDEBUG)
+    EXPECT_DEATH(buffer.read(byte), "[Aa]ssert");
+    EXPECT_DEATH(buffer.write(byte), "[Aa]ssert");
+    EXPECT_DEATH(buffer.seek(0), "[Aa]ssert");
+#endif
     EXPECT_EQ(buffer.read(nullptr, 0), 0);
     EXPECT_EQ(buffer.write(nullptr, 0), 0);
-    EXPECT_THROW(buffer.read(nullptr, 1), std::invalid_argument);
-    EXPECT_THROW(buffer.write(nullptr, 1), std::invalid_argument);
+#if defined(VOLCANO_DEBUG) && !defined(NDEBUG)
+    EXPECT_DEATH(buffer.read(nullptr, 1), "[Aa]ssert");
+    EXPECT_DEATH(buffer.write(nullptr, 1), "[Aa]ssert");
+#endif
     EXPECT_NO_THROW(buffer.flush());
 }
 
@@ -53,7 +57,9 @@ TEST(BaseBuffer, ReadsShortTransfersAndCurrentPositionToEof) {
     EXPECT_EQ(buffer.tell(), buffer.size());
     EXPECT_TRUE(buffer.readAll().empty());
     EXPECT_THROW(buffer.readExact(bytes), std::runtime_error);
-    EXPECT_THROW(buffer.write(bytes), std::runtime_error);
+#if defined(VOLCANO_DEBUG) && !defined(NDEBUG)
+    EXPECT_DEATH(buffer.write(bytes), "[Aa]ssert");
+#endif
 
     buffer.seek(1);
     Volcano::Stream &stream = buffer;
@@ -70,7 +76,9 @@ TEST(BaseBuffer, WriteOnlyPreservesDataWithoutTruncate) {
     EXPECT_TRUE(buffer.isWritable());
     EXPECT_EQ(buffer.write(ByteArray{9}), 1);
     EXPECT_EQ(buffer.data(), ByteArray({9, 2, 3}));
-    EXPECT_THROW(buffer.readAll(), std::runtime_error);
+#if defined(VOLCANO_DEBUG) && !defined(NDEBUG)
+    EXPECT_DEATH(buffer.readAll(), "[Aa]ssert");
+#endif
     buffer.close();
     EXPECT_EQ(buffer.tell(), 0);
     EXPECT_FALSE(buffer.isOpen());
@@ -157,8 +165,10 @@ TEST(BaseBuffer, RejectsInvalidModesAndReplacingOpenData) {
     buffer.setData({3, 4, 5});
     buffer.open(Buffer::ReadWrite);
     buffer.seek(1);
-    EXPECT_THROW(buffer.open(Buffer::Truncate), std::logic_error);
-    EXPECT_THROW(buffer.setData({9}), std::logic_error);
+#if defined(VOLCANO_DEBUG) && !defined(NDEBUG)
+    EXPECT_DEATH(buffer.open(Buffer::Truncate), "[Aa]ssert");
+    EXPECT_DEATH(buffer.setData({9}), "[Aa]ssert");
+#endif
     EXPECT_EQ(buffer.tell(), 1);
     EXPECT_EQ(buffer.data(), ByteArray({3, 4, 5}));
     buffer.close();

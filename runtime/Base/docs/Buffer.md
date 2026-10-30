@@ -31,8 +31,8 @@ Buffer 默认关闭，先调用 `open(mode)`，用 `isOpen()` 查询状态。
 | `Truncate` | 自动启用写入，打开时清空原数据 |
 
 例如 `ReadWrite | Append` 可读写并追加，`WriteOnly | Truncate` 清空后写入。
-`NotOpen` 和未知模式值不能用于打开。重复打开或在打开期间调用 `setData` 抛异常，
-保留原有数据、游标和模式。`close()` 可以重复调用，不清空数据。
+`NotOpen` 和未知模式值不能用于打开，仍通过异常报告。重复打开或在打开期间调用 `setData` 属于调用时序错误，
+通过 `VOLCANO_ASSERT` 检查；Release 不执行这些检查。`close()` 可以重复调用，不清空数据。
 
 ## 数据与定位
 
@@ -46,7 +46,7 @@ Buffer 默认关闭，先调用 `open(mode)`，用 `isOpen()` 查询状态。
   包括扩容时追加 Buffer 自身的数据。
 - 继承 Stream 的指针重载、`readExact`、`writeAll` 和 `readAll`。
   `readAll` 从当前位置开始；`flush` 不做操作。空读写始终返回零，
-  关闭或权限不足时的非空读写抛异常。
+  非空读写要求已打开并具有对应读写能力，通过 `VOLCANO_ASSERT` 检查。
 
 通过可变 `buffer()` 可以直接修改存储，游标不会自动改变。若数据被缩短到游标之前，
 随后读取返回 EOF，普通写入补零到原游标再写入；Append 仍从实际末尾写入。
@@ -62,4 +62,4 @@ ctest --test-dir build/Debug --output-on-failure -R 'BaseBuffer|BaseStream'
 ```
 
 测试覆盖模式与权限、覆盖和追加、截断、短读与 EOF、定位补零、游标共享、
-关闭与重新打开、非法操作保留状态、直接修改存储，以及重叠读写和自身追加扩容。
+关闭与重新打开、Debug 状态断言、参数失败保留状态、直接修改存储，以及重叠读写和自身追加扩容。

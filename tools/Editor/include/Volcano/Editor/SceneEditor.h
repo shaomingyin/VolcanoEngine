@@ -10,7 +10,6 @@
 #include <coreplugin/editormanager/ieditorfactory.h>
 
 #include <Volcano/Graphics/Renderer.h>
-
 #include <Volcano/Editor/Common.h>
 #include <Volcano/Editor/Context.h>
 #include <Volcano/Editor/SceneDocument.h>

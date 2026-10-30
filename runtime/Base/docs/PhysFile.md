@@ -58,7 +58,9 @@ const auto length = file.size();
 | eof() | 查询 PhysFS 的 EOF 状态 |
 
 沿用 Stream 约定，空读写返回零，空 readExact/writeAll 无操作；非空操作按打开状态和读写能力检查。
-空句柄上的定位、长度、EOF、flush 和非空读写抛出 std::logic_error。
+打开状态和读写能力是调用前置条件，通过 `VOLCANO_ASSERT` 检查；Release 不执行这些检查。
+调用关闭或移动后源对象的非空操作属于编程错误。指针读写接口同样断言非空传输的指针有效。
+实际 PhysFS 读写、定位、flush 和关闭失败仍抛异常。
 不保存额外的文件游标或长度缓存，直接调用 PhysFS 查询。
 readExact、readAll、writeAll 和指针重载直接继承 Stream，不在 PhysFile 中重复实现。
 Schema 的读写接口借用 Stream&，可接受 Buffer 或 PhysFile；不负责打开、关闭或挂载。

@@ -1,5 +1,8 @@
 #include <cstddef>
 #include <limits>
+#include <stdexcept>
+
+#include <GL/gl.hpp>
 
 #include <Volcano/Graphics/Mesh.h>
 
@@ -41,7 +44,7 @@ void Mesh::draw() const noexcept {
     }
 
     vertex_array_.bind();
-    glDrawElements(GL_TRIANGLES, count_, GL_UNSIGNED_INT, nullptr);
+    glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(count_), GL_UNSIGNED_INT, nullptr);
     gl::VertexArray::unbind();
 }
 

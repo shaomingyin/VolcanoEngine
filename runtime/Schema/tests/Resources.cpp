@@ -15,12 +15,12 @@
 
 #include <Volcano/Buffer.h>
 #include <Volcano/PhysFile.h>
+#include <Volcano/ScopeGuard.h>
+#include <Volcano/Stream.h>
 #include <Volcano/Schema/Material.h>
 #include <Volcano/Schema/Mesh.h>
 #include <Volcano/Schema/Model.h>
 #include <Volcano/Schema/Texture.h>
-#include <Volcano/ScopeGuard.h>
-#include <Volcano/Stream.h>
 
 namespace {
 

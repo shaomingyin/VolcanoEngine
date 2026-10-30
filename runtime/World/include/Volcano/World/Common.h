@@ -3,7 +3,6 @@
 #ifndef VOLCANO_WORLD_COMMON_H
 #define VOLCANO_WORLD_COMMON_H
 
-#include <Jolt/Jolt.h>
 #include <Eigen/Core>
 
 #include <Volcano/Common.h>

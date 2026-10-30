@@ -9,16 +9,20 @@
 #include <string_view>
 #include <vector>
 
+#include <GL/gl.hpp>
 #include <GLFW/glfw3.h>
 #include <gtest/gtest.h>
 
+#include <Volcano/ScopeGuard.h>
 #include <Volcano/Graphics/FrameBuffer.h>
 #include <Volcano/Graphics/Mesh.h>
 #include <Volcano/Graphics/Pass.h>
+#include <Volcano/Graphics/GeometryPass.h>
+#include <Volcano/Graphics/LightingPass.h>
+#include <Volcano/Graphics/TransparentPass.h>
 #include <Volcano/Graphics/Renderer.h>
 #include <Volcano/Graphics/Texture.h>
 #include <Volcano/Framework/Window.h>
-#include <Volcano/ScopeGuard.h>
 
 namespace {
 
@@ -27,10 +31,10 @@ using namespace Volcano::Graphics;
 void buildView(View& view, std::span<const DrawItem> items = {}, std::span<const Light> lights = {}) {
     view.begin();
     for (const auto& item : items) {
-        view.addItem(item.mesh.get(), item.material, item.transform, item.transparent);
+        view.add(item.mesh.get(), item.material, item.transform, item.transparent);
     }
     for (const auto& light : lights) {
-        view.addLight(light);
+        view.add(light);
     }
     view.end();
 }
@@ -96,10 +100,11 @@ private:
 class RendererLighting : public ::testing::Test {
 protected:
     void SetUp() override {
+        ::testing::FLAGS_gtest_death_test_style = "threadsafe";
         ASSERT_TRUE(glfwInit());
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
         window_ = std::make_unique<Volcano::Framework::Window>(32, 32, "Lighting check");
-        renderer_ = std::make_unique<Renderer>(glfwGetProcAddress);
+        renderer_ = std::make_unique<Renderer>();
         constexpr Mesh::Vertex vertices[] = {
             {{-1, -1, 0}}, {{1, -1, 0}}, {{1, 1, 0}}, {{-1, 1, 0}}
         };
@@ -317,12 +322,8 @@ TEST_F(RendererLighting, GBufferResizePreservesStorageOnFailureAndReusesMatching
 
 TEST_F(RendererLighting, ChangesLightCapacityInBothPasses) {
     auto* dispatch = gl3wProcs;
-    auto restore = Volcano::scopeGuard([dispatch]() noexcept {
-        gl3wProcs = dispatch;
-    });
-    Renderer configured(glfwGetProcAddress);
+    Renderer configured;
     EXPECT_EQ(configured.maxLights(), 16);
-    gl3wProcs = dispatch;
     configured.setMaxLights(2);
     EXPECT_EQ(configured.maxLights(), 2);
     EXPECT_EQ(gl3wProcs, dispatch);
@@ -411,11 +412,7 @@ TEST_F(RendererLighting, KeepsBothPassesWhenChangingCapacityFails) {
 }
 
 TEST_F(RendererLighting, AcceptsAConfiguredCapacityAboveTheDefault) {
-    auto* dispatch = gl3wProcs;
-    auto restore = Volcano::scopeGuard([dispatch]() noexcept {
-        gl3wProcs = dispatch;
-    });
-    Renderer configured(glfwGetProcAddress);
+    Renderer configured;
     configured.setMaxLights(24);
     EXPECT_EQ(configured.maxLights(), 24);
     View view;
@@ -465,13 +462,17 @@ TEST_F(RendererLighting, RequiresCompletedViewAndReusesItAcrossTargets) {
     renderEmpty(Volcano::Colorf::Blue);
     View view;
     std::vector<DrawItem> items;
-    EXPECT_THROW(renderer_->render(view, *target_), std::logic_error);
+#if defined(VOLCANO_DEBUG) && !defined(NDEBUG)
+    EXPECT_DEATH(renderer_->render(view, *target_), "[Aa]ssert");
+#endif
     GeometryPass geometry;
     LightingPass lighting;
     TransparentPass transparent;
-    EXPECT_THROW(geometry.render(view), std::logic_error);
-    EXPECT_THROW(lighting.render(view, renderer_->geometryBuffer()), std::logic_error);
-    EXPECT_THROW(transparent.render(view), std::logic_error);
+#if defined(VOLCANO_DEBUG) && !defined(NDEBUG)
+    EXPECT_DEATH(geometry.render(view), "[Aa]ssert");
+    EXPECT_DEATH(lighting.render(view, renderer_->geometryBuffer()), "[Aa]ssert");
+    EXPECT_DEATH(transparent.render(view), "[Aa]ssert");
+#endif
     expectColor(0, 0, 1);
 
     items.push_back({*mesh_, {Volcano::Colorf::Red}});
@@ -488,7 +489,9 @@ TEST_F(RendererLighting, RequiresCompletedViewAndReusesItAcrossTargets) {
 
     items[0].material.color = Volcano::Colorf::Green;
     view.begin();
-    EXPECT_THROW(renderer_->render(input, other), std::logic_error);
+#if defined(VOLCANO_DEBUG) && !defined(NDEBUG)
+    EXPECT_DEATH(renderer_->render(input, other), "[Aa]ssert");
+#endif
     expectColor(1, 0, 0);
     buildView(view, items);
     renderer_->render(input, other);
@@ -585,12 +588,18 @@ TEST_F(RendererLighting, LightingPassRejectsUnavailableResourcesFeedbackAndMisma
     buildView(view);
     renderEmpty(Volcano::Colorf::Blue);
     GBuffer geometry;
-    EXPECT_THROW(pass.render(view, geometry), std::invalid_argument);
+#if defined(VOLCANO_DEBUG) && !defined(NDEBUG)
+    EXPECT_DEATH(pass.render(view, geometry), "[Aa]ssert");
+#endif
     geometry.resize(target_->size());
-    EXPECT_THROW(pass.render(view, geometry), std::invalid_argument);
+#if defined(VOLCANO_DEBUG) && !defined(NDEBUG)
+    EXPECT_DEATH(pass.render(view, geometry), "[Aa]ssert");
+#endif
     renderEmpty(Volcano::Colorf::Blue);
     glViewport(1, 0, target_->width(), target_->height());
-    EXPECT_THROW(pass.render(view, geometry), std::invalid_argument);
+#if defined(VOLCANO_DEBUG) && !defined(NDEBUG)
+    EXPECT_DEATH(pass.render(view, geometry), "[Aa]ssert");
+#endif
     glViewport(0, 0, target_->width(), target_->height());
     expectColor(0, 0, 1);
 }
@@ -694,10 +703,12 @@ TEST_F(RendererLighting, ReusesViewAcrossTargetsAndChecksFeedbackAgainstOutput) 
     expectColor(1, 0, 0);
 
     items[0].material = {Volcano::Colorf::White, &target_->texture()};
-    EXPECT_THROW({
+#if defined(VOLCANO_DEBUG) && !defined(NDEBUG)
+    EXPECT_DEATH({
         buildView(view, items);
         renderer_->render(view, *target_);
-    }, std::invalid_argument);
+    }, "[Aa]ssert");
+#endif
     expectColor(1, 0, 0);
     buildView(view, items);
     renderer_->render(view, other);
@@ -736,10 +747,10 @@ TEST_F(RendererLighting, OpaqueAndTransparentProgramsUpdateTheirOwnLighting) {
     std::vector<Light> lights;
     items.push_back({*mesh_, {Volcano::Colorf::Red, nullptr, true}});
     items.push_back({*mesh_, {Volcano::Colorf(0, 0, 1, 0.5f), nullptr, true}, Eigen::Affine3f::Identity(), true});
-    // S * R * T scales translation too; keep the model origins at X = +/-0.5.
-    items[0].transform.translation() = Eigen::Vector3f(-1.25f, 0, 0);
+    // Affine translations are already model origins, independent of scale.
+    items[0].transform.translation() = Eigen::Vector3f(-0.5f, 0, 0);
     items[0].transform.linear().diagonal().setConstant(0.4f);
-    items[1].transform.translation() = Eigen::Vector3f(1.25f, 0, 0);
+    items[1].transform.translation() = Eigen::Vector3f(0.5f, 0, 0);
     items[1].transform.linear().diagonal().setConstant(0.4f);
     view.setAmbientLight(Eigen::Vector3f::Constant(0.5f));
     buildView(view, items, lights);
@@ -917,12 +928,12 @@ TEST_F(RendererLighting, SortsTransparentItemsUsingGeneratedAffineOrigin) {
         item.transform.linear()(2, 2) = -1;
     }
 
-    // Negative Z scale reverses the order of the stored translation components.
+    // Negative Z scale does not change an affine matrix's translation.
     projection(2, 2) = -1;
     view.setProjection(projection);
     buildView(view, items);
     renderer_->render(view, *target_);
-    expectColor(0.5f, 0, 0.25f);
+    expectColor(0.25f, 0, 0.5f);
 }
 
 TEST_F(RendererLighting, RejectsInvalidInputBeforeClearingAndCanRecover) {
@@ -969,11 +980,13 @@ TEST_F(RendererLighting, RejectsInvalidInputBeforeClearingAndCanRecover) {
     items[0].transform.setIdentity();
 
     items[0].material.texture = &target_->texture();
-    EXPECT_THROW({
+#if defined(VOLCANO_DEBUG) && !defined(NDEBUG)
+    EXPECT_DEATH({
         view.setProjection(projection);
         buildView(view, items, lights);
         renderer_->render(view, *target_);
-    }, std::invalid_argument);
+    }, "[Aa]ssert");
+#endif
     expectColor(0, 0, 1);
     items[0].material.texture = nullptr;
     projection(0, 0) = std::numeric_limits<float>::quiet_NaN();

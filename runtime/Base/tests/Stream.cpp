@@ -92,8 +92,10 @@ TEST(BaseStream, WriteAllHandlesShortWrites) {
 TEST(BaseStream, PointerOverloadsValidateBuffersAndReturnCounts) {
     SequentialStream stream;
     std::array<std::uint8_t, 3> buffer{};
-    EXPECT_THROW(stream.read(nullptr, 1), std::invalid_argument);
-    EXPECT_THROW(stream.write(nullptr, 1), std::invalid_argument);
+#if defined(VOLCANO_DEBUG) && !defined(NDEBUG)
+    EXPECT_DEATH(stream.read(nullptr, 1), "[Aa]ssert");
+    EXPECT_DEATH(stream.write(nullptr, 1), "[Aa]ssert");
+#endif
     EXPECT_EQ(stream.read(nullptr, 0), 0);
     EXPECT_EQ(stream.write(nullptr, 0), 0);
     EXPECT_EQ(stream.read(buffer.data(), buffer.size()), 2);
@@ -149,9 +151,11 @@ TEST(BaseStream, HelpersRejectInvalidCountsAndStalledWrites) {
     EXPECT_TRUE(stream.readAll().empty());
 
     stream.count = std::numeric_limits<std::size_t>::max();
-    EXPECT_THROW(stream.readExact(buffer), std::runtime_error);
-    EXPECT_THROW(stream.writeAll(buffer), std::runtime_error);
-    EXPECT_THROW(stream.readAll(), std::runtime_error);
+#if defined(VOLCANO_DEBUG) && !defined(NDEBUG)
+    EXPECT_DEATH(stream.readExact(buffer), "[Aa]ssert");
+    EXPECT_DEATH(stream.writeAll(buffer), "[Aa]ssert");
+    EXPECT_DEATH(stream.readAll(), "[Aa]ssert");
+#endif
 }
 
 class ThrowingStream final : public SequentialStream {

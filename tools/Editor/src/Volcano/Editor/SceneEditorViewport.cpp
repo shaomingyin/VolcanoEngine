@@ -1,4 +1,5 @@
 #include <exception>
+#include <stdexcept>
 
 #include <QOpenGLContext>
 #include <QString>
@@ -28,11 +29,15 @@ SceneEditorViewport::~SceneEditorViewport() {
 
 void SceneEditorViewport::initializeGL() {
     try {
-        graphics_renderer_ = std::make_unique<Graphics::Renderer>([](const char* name) -> GL3WglProc {
+        if (gl3wInit(&graphics_procs_, [](const char* name) -> GL3WglProc {
             return QOpenGLContext::currentContext()->getProcAddress(name);
-        });
+        }) != GL3W_OK) {
+            throw std::runtime_error("Cannot load OpenGL functions from the Qt context");
+        }
+        gl3wProcs = &graphics_procs_;
         connect(context(), &QOpenGLContext::aboutToBeDestroyed,
             this, &SceneEditorViewport::releaseGraphics, Qt::DirectConnection);
+        graphics_renderer_ = std::make_unique<Graphics::Renderer>();
     } catch (const std::exception& error) {
         qWarning("Cannot initialize Volcano renderer: %s", error.what());
         setToolTip(QString::fromUtf8(error.what()));
@@ -42,12 +47,17 @@ void SceneEditorViewport::initializeGL() {
 void SceneEditorViewport::releaseGraphics() {
     if (graphics_renderer_) {
         makeCurrent();
+        gl3wProcs = &graphics_procs_;
         graphics_renderer_.reset();
         doneCurrent();
+    }
+    if (gl3wProcs == &graphics_procs_) {
+        gl3wProcs = nullptr;
     }
 }
 
 void SceneEditorViewport::paintGL() {
+    gl3wProcs = &graphics_procs_;
     // shortcut: scene submission remains unimplemented; connect World data when adding editing support.
 }
 

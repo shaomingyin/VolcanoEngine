@@ -1,9 +1,15 @@
 #include <stdexcept>
 #include <utility>
 
+#include <GL/gl.hpp>
+
 #include <Volcano/Graphics/FrameBuffer.h>
 
 VOLCANO_GRAPHICS_BEGIN
+
+void FrameBuffer::bind() const noexcept {
+    framebuffer_.bind();
+}
 
 FrameBuffer::FrameBuffer(int width, int height)
     : texture_(width, height) {

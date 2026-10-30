@@ -39,6 +39,8 @@ protected:
 
 protected:
     Pass() = default;
+    Pass(Pass&&) noexcept = default;
+    Pass& operator=(Pass&&) noexcept = default;
     ~Pass() = default;
 
     // Source and definitions omit #version; the derived pass selects each stage and GLSL version.

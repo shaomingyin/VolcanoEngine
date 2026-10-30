@@ -5,8 +5,8 @@
 
 #include <Eigen/Core>
 
-#include <Volcano/Schema/Common.h>
 #include <Volcano/Stream.h>
+#include <Volcano/Schema/Common.h>
 
 VOLCANO_SCHEMA_BEGIN
 

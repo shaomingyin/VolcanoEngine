@@ -6,8 +6,8 @@
 
 #include <GL/gl.hpp>
 
-#include <Volcano/Graphics/Common.h>
 #include <Volcano/Size.h>
+#include <Volcano/Graphics/Common.h>
 
 VOLCANO_GRAPHICS_BEGIN
 
@@ -19,17 +19,14 @@ public:
     ~Texture() = default;
     Texture(const Texture&) = delete;
     Texture& operator=(const Texture&) = delete;
-    Texture(Texture&&) noexcept = default;
-    Texture& operator=(Texture&&) noexcept = default;
+    Texture(Texture&&) noexcept;
+    Texture& operator=(Texture&&) noexcept;
 
+    const gl::Texture2D& texture() const noexcept;
     void resize(int width, int height);
     void upload(std::span<const std::uint8_t> rgba);
     // Uploads RGBA8 that already uses premultiplied alpha.
     void uploadPremultiplied(std::span<const std::uint8_t> rgba);
-
-    const gl::Texture2D& texture() const noexcept {
-        return texture_;
-    }
 
     int width() const noexcept {
         return width_;
@@ -44,7 +41,7 @@ public:
     }
 
 private:
-    void allocate(int width, int height);
+    static gl::Texture2D allocate(int width, int height);
 
 private:
     gl::Texture2D texture_;

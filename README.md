@@ -30,7 +30,7 @@ Color, Size and Rect use the `Volcano` namespace and have separate headers: `Vol
 
 See [Graphics](runtime/Graphics/docs/Graphics.md) for the unified 2D/3D renderer.
 Graphics uses the caller's current OpenGL context and does not depend on a window library.
-View owns drawing items, lights and rendering data. Build it with `view.begin()`, `addItem()` / `addLight()` and `view.end()`,
+View owns drawing items, lights and rendering data. Build it with `view.begin()`, `add(...)` and `view.end()`,
 then pass the output separately with `renderer.render(view, target)`. A completed View can be rendered repeatedly.
 Renderer uses deferred Lambert lighting for opaque items and forward lighting for sorted transparent items,
 with ambient, directional, point and spot lights. Texture manages sampled images; FrameBuffer provides offscreen output.
@@ -40,6 +40,19 @@ Passes validate their linked shader interfaces once and cache uniform locations 
 Framework::Local uses Conan GLFW to own its window and OpenGL context. Framework::Window implements Graphics::Target; Graphics does not link GLFW.
 Construct Local/Client with window dimensions and a title; use `local.window()` to access the window. Launcher supplies the event loop and buffer swaps.
 FrameworkWindowCheck requires a display and OpenGL 3.3; use `ctest --test-dir build/Debug -LE display` to skip display tests.
+
+## World
+
+See [World design](runtime/World/docs/Design.md) for component ownership, encapsulated value semantics,
+Camera/Light inheritance, validation and update notification rules.
+World also defines AudioSource/AudioListener descriptions; audio loading and playback are not implemented yet.
+
+## Physics
+
+[Physics](runtime/Physics/docs/Physics.md) converts [World::RigidBody](runtime/World/docs/RigidBody.md) components into an EnTT registry-bound Jolt simulation.
+Framework::Base owns the scene and its Physics::System, runs physics after game logic while Playing,
+and releases the simulation before the scene. Use `framework.physics()` to configure gravity.
+World does not include or link Jolt.
 
 ## Framework and resource schema
 
