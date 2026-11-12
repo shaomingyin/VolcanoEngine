@@ -18,12 +18,10 @@ Framework::Resources::clear();
 
 | 加载接口 | 返回对象 | 内容 |
 | --- | --- | --- |
-| `loadModel` | `Schema::Model` | 模型描述，解析 Mesh、Material 相对路径 |
-| `loadMaterial` | `Schema::Material` | 材质描述，解析纹理相对路径 |
-| `loadMeshData` | `Schema::Mesh` | 顶点与索引数据 |
-| `loadTextureData` | `Schema::Texture` | 尺寸与预乘 alpha 的像素数据 |
-| `loadMesh` | `Graphics::Mesh` | 读取数据并创建、上传可绘制对象 |
-| `loadTexture` | `Graphics::Texture` | 读取数据并创建、上传纹理 |
+| `loadModel` | `Asset::Model` | 模型描述（Protobuf），解析 Mesh、Material 相对路径 |
+| `loadMaterial` | `Asset::Material` | 材质描述（Protobuf），解析纹理相对路径 |
+| `loadMesh` | `Graphics::Mesh` | 通过 `Asset::Mesh` 零拷贝流式读取顶点/索引并直接上传 GPU 可绘制对象 |
+| `loadTexture` | `Graphics::Texture` | 通过 `Asset::Texture` 零拷贝流式读取像素并直接上传 GPU 纹理对象 |
 | `loadFont` | `Graphics::Font` | 读取字体字节并创建字体对象 |
 
 资源统一以 PhysFS 虚拟根目录中的绝对路径标识，例如 `/textures/albedo.vetexture`，与宿主文件系统路径无关。PhysFS 没有工作目录，不带开头 `/` 的路径也从虚拟根定位；所有输入在缓存中规范化为带 `/` 的绝对虚拟路径。重复分隔符和 `.` 会被规范化，禁止 `..`、NUL、反斜杠、冒号以及未指向文件的路径。所有加载接口使用相同的路径规则。模型和材质文件中的相对引用先按其文件目录解析，再交给 PhysFS 定位；描述对象中的引用使用从虚拟根定位的文件名。

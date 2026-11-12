@@ -8,11 +8,12 @@
 #include <Eigen/Geometry>
 
 #include <Volcano/Transform.h>
+#include <Volcano/World/Canvas.h>
+#include <Volcano/Graphics/Common.h>
 #include <Volcano/Graphics/Material.h>
 #include <Volcano/Graphics/Mesh.h>
 #include <Volcano/Graphics/Light.h>
 #include <Volcano/Graphics/Target.h>
-#include <Volcano/Graphics/Canvas.h>
 
 VOLCANO_GRAPHICS_BEGIN
 
@@ -28,7 +29,7 @@ class View final {
 public:
     struct VGTask final {
         std::reference_wrapper<Target> target;
-        std::reference_wrapper<const Canvas> commands;
+        std::reference_wrapper<const World::Canvas> commands;
     };
 
     struct PreparedItem final {
@@ -47,12 +48,12 @@ public:
         const Eigen::Affine3f& transform, bool transparent = false);
     void add(const Light& light);
     void end();
-    void add(Target& target, const Canvas& commands);
-    void add(const Canvas& commands);
+    void add(Target& target, const World::Canvas& commands);
+    void add(const World::Canvas& commands);
     const std::vector<VGTask>& vgTasks() const noexcept {
         return vg_tasks_;
     }
-    const std::vector<std::reference_wrapper<const Canvas>>& overlays() const noexcept {
+    const std::vector<std::reference_wrapper<const World::Canvas>>& overlays() const noexcept {
         return overlays_;
     }
 
@@ -125,7 +126,7 @@ private:
 
 private:
     std::vector<VGTask> vg_tasks_;
-    std::vector<std::reference_wrapper<const Canvas>> overlays_;
+    std::vector<std::reference_wrapper<const World::Canvas>> overlays_;
     std::vector<DrawItem> items_;
     std::vector<Light> lights_;
     Eigen::Vector3f ambient_light_ = Eigen::Vector3f::Zero();

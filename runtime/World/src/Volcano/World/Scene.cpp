@@ -1,10 +1,19 @@
 //
 //
+#include <Volcano/World/Common.h>
+#include <Volcano/World/Context.h>
 #include <Volcano/World/Scene.h>
 
 VOLCANO_WORLD_BEGIN
 
-Scene::Scene() = default;
+Context& Scene::defaultContext() noexcept {
+    static NullContext nullContext;
+    return nullContext;
+}
+
+Scene::Scene() : Scene(defaultContext()) {}
+
+Scene::Scene(Context& context) : context_(context) {}
 
 Scene::~Scene() {
     clear();

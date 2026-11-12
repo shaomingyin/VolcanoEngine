@@ -10,8 +10,10 @@
 
 #include <Volcano/World/AudioListener.h>
 #include <Volcano/World/AudioSource.h>
+#include <Volcano/World/Canvas.h>
 #include <Volcano/World/DirectionalLight.h>
 #include <Volcano/World/Inherent.h>
+#include <Volcano/World/Material.h>
 #include <Volcano/World/Model.h>
 #include <Volcano/World/OrthographicCamera.h>
 #include <Volcano/World/PerspectiveCamera.h>
@@ -19,6 +21,7 @@
 #include <Volcano/World/RigidBody.h>
 #include <Volcano/World/Scene.h>
 #include <Volcano/World/SpotLight.h>
+#include <Volcano/World/Texture.h>
 
 namespace {
 using namespace Volcano;
@@ -280,22 +283,56 @@ TEST(WorldComponents, SceneUpdateReportsErrorsToTheHost) {
     EXPECT_EQ(scene.description(), "description");
     EXPECT_THROW(scene.update({}), std::runtime_error);
 }
-TEST(WorldComponents, SceneOwnsSharedTextureDescriptionsAndComponentsKeepLogicalReferences) {
-    ThrowingScene scene;
-    scene.addTexture("shared",std::make_unique<FileTexture>("textures/panel.vetexture"));
-    EXPECT_EQ(scene.texture("shared").source(),Texture::Source::File);
-    EXPECT_THROW(scene.addTexture("shared",std::make_unique<FileTexture>("other")),std::invalid_argument);
-    EXPECT_THROW(scene.addTexture("empty",nullptr),std::invalid_argument);
-    EXPECT_THROW(scene.texture("missing"),std::out_of_range);
+TEST(WorldComponents, MaterialBindsTexturesAndModelHoldsMaterials) {
+    Material material;
+    const auto source1 = static_cast<entt::entity>(1);
+    const auto source2 = static_cast<entt::entity>(2);
+    material.setTexture(Material::Slot::Albedo, source1);
+    material.setTexture(Material::Slot::Emissive, source2);
+
+    EXPECT_EQ(material.texture(Material::Slot::Albedo), source1);
+    EXPECT_EQ(material.texture(Material::Slot::Emissive), source2);
+    EXPECT_EQ(material.texture(Material::Slot::Normal), static_cast<entt::entity>(entt::null));
+
     Model model("panel.vemodel");
-    model.setTextureOverride("panel.vematerial","shared");
-    auto copy=model;
-    model.setTextureOverride("panel.vematerial","other");
-    EXPECT_EQ(copy.textureOverrides().at("panel.vematerial"),"shared");
-    DrawingTexture drawing({64,32},"provider");
-    drawing.setDependencies({"shared"});
-    EXPECT_EQ(drawing.dependencies().front(),"shared");
-    EXPECT_THROW(drawing.setSize({0,32}),std::invalid_argument);
+    model.setMaterial("panel.vematerial", material);
+    auto copy = model;
+
+    ASSERT_NE(copy.findMaterial("panel.vematerial"), nullptr);
+    EXPECT_EQ(copy.findMaterial("panel.vematerial")->texture(Material::Slot::Albedo), source1);
+    EXPECT_EQ(copy.findMaterial("panel.vematerial")->texture(Material::Slot::Emissive), source2);
+
+    model.material("panel.vematerial").removeTexture(Material::Slot::Albedo);
+    EXPECT_FALSE(model.findMaterial("panel.vematerial")->hasTexture(Material::Slot::Albedo));
+    EXPECT_TRUE(model.findMaterial("panel.vematerial")->hasTexture(Material::Slot::Emissive));
+}
+
+class TestScene final : public Scene {
+public:
+    entt::entity player() const noexcept override {
+        return player_;
+    }
+    void setPlayer(entt::entity entity) {
+        player_ = entity;
+    }
+protected:
+    void onUpdate(Clock::duration) override {}
+private:
+    entt::entity player_ = entt::null;
+};
+
+TEST(WorldComponents, SceneEncapsulatesRegistry) {
+    TestScene scene;
+    const auto entity = scene.create();
+    EXPECT_TRUE(scene.valid(entity));
+    scene.emplace<Model>(entity, "models/test.vemodel");
+    EXPECT_EQ(scene.get<Model>(entity).source(), "models/test.vemodel");
+
+    std::size_t count = 0;
+    for (const auto e : scene.view<Model>()) {
+        ++count;
+    }
+    EXPECT_EQ(count, 1);
 }
 
 }

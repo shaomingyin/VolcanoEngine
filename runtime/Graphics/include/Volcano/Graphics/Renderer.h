@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <string_view>
 
+#include <Volcano/World/Canvas.h>
 #include <Volcano/Graphics/GBuffer.h>
 #include <Volcano/Graphics/GeometryPass.h>
 #include <Volcano/Graphics/LightingPass.h>
@@ -30,8 +31,14 @@ public:
     std::size_t fontAtlasBytes() const noexcept;
     FontCacheStats fontCacheStats() const noexcept;
     void prewarm(const Font& font, std::string_view text, unsigned int pixels);
+    void setFontResolver(PaintPass::FontResolver resolver) {
+        paint_pass_.setFontResolver(std::move(resolver));
+    }
+    void setTextureResolver(PaintPass::TextureResolver resolver) {
+        paint_pass_.setTextureResolver(std::move(resolver));
+    }
     void render(const View& view, Target& target);
-    void renderVG(const Canvas& commands, Target& target, bool clear = true);
+    void renderVG(const World::Canvas& commands, Target& target, bool clear = true);
 
 private:
     void bind(Target& target) noexcept;

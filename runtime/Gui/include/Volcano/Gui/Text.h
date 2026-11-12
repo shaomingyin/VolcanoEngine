@@ -32,7 +32,7 @@ public:
                           std::vector<std::string>& images) const override;
 
 protected:
-    void paint(Platform& platform) const override;
+    void paint(World::Canvas& canvas, Platform& platform) const override;
 
 private:
     std::vector<std::string> lines(Platform& platform, float width) const;

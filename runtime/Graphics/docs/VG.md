@@ -1,10 +1,10 @@
 # VG 与世界动态纹理设计
 
-World 描述资源来源，Framework 管理加载、生命周期、Scene 到 View 转换和依赖顺序，Graphics 执行渲染；Gui 定义控件树、事件与绘图接口，不依赖 Graphics。
+World 描述资源来源，拥有统一的 World::Canvas（继承自 World::Texture），Framework 管理加载、生命周期、Scene 到 View 转换和依赖顺序，Graphics 执行渲染；Gui 定义控件树、事件与绘图接口，Gui::Document 直接派生自 World::Canvas，不依赖 Graphics。
 
 纹理来源包括文件、GUI、自定义绘图提供者和相机输出。Scene 持有共享描述，Model 以材质路径指定纹理覆盖，HUD 描述引用相同纹理。Framework 将逻辑引用解析为运行时资源。拒绝循环依赖和输出反馈。
 
-Graphics 的 Canvas 拥有路径、文本和绘图状态，引用字体及图片；View 记录输出任务和覆盖绘制。Renderer 先执行纹理生成，再执行现有 3D Pass，最后绘制覆盖内容。输出仍为普通 FrameBuffer/Texture。Canvas 是命令记录对象，不增加 Screen 或画布派生类，也不引入 NanoVG。
+World 的 Canvas 拥有路径、文本和绘图状态，引用字体及图片；Graphics::View 记录输出任务和覆盖绘制。Renderer 先执行纹理生成，再执行现有 3D Pass，最后绘制覆盖内容。输出仍为普通 FrameBuffer/Texture。Canvas 是命令记录对象，不增加 Screen 或画布派生类，也不引入 NanoVG。
 
 路径支持曲线细分、填充、描边、渐变、图片和矩形裁剪。填充使用 stencil-and-cover，支持非零及奇偶规则。绘图采用左上原点，预乘 Alpha；纹理存储保持现有底行优先约定。
 
@@ -18,7 +18,7 @@ Graphics 管理字体运行时对象、FreeType/HarfBuzz、文字测量、字形
 
 ```cpp
 Graphics::FrameBuffer output(512,256);
-Graphics::Canvas canvas;
+World::Canvas canvas;
 canvas.begin();
 canvas.setColor(Colorf::Green);
 canvas.beginPath();

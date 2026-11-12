@@ -3,10 +3,10 @@
 
 #include <filesystem>
 #include <map>
-#include <string>
 #include <utility>
 
 #include <Volcano/World/Common.h>
+#include <Volcano/World/Material.h>
 
 VOLCANO_WORLD_BEGIN
 
@@ -26,16 +26,34 @@ public:
         source_ = std::move(value);
     }
 
-    const std::map<std::filesystem::path, std::string>& textureOverrides() const noexcept {
-        return overrides_;
+    const std::map<std::filesystem::path, Material>& materials() const noexcept {
+        return materials_;
     }
-    void setTextureOverride(std::filesystem::path material, std::string texture) {
-        overrides_.insert_or_assign(std::move(material), std::move(texture));
+
+    Material& material(const std::filesystem::path& path) {
+        return materials_[path];
+    }
+
+    const Material* findMaterial(const std::filesystem::path& path) const noexcept {
+        const auto it = materials_.find(path);
+        return it != materials_.end() ? &it->second : nullptr;
+    }
+
+    void setMaterial(std::filesystem::path path, Material material) {
+        materials_.insert_or_assign(std::move(path), std::move(material));
+    }
+
+    void removeMaterial(const std::filesystem::path& path) {
+        materials_.erase(path);
+    }
+
+    void clearMaterials() noexcept {
+        materials_.clear();
     }
 
 private:
     std::filesystem::path source_;
-    std::map<std::filesystem::path, std::string> overrides_;
+    std::map<std::filesystem::path, Material> materials_;
 };
 
 VOLCANO_WORLD_END

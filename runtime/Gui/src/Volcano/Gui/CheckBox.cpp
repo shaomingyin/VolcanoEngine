@@ -78,8 +78,8 @@ Sizef CheckBox::measure(Platform& platform, Sizef available) const {
     return size;
 }
 
-void CheckBox::paint(Platform& platform) const {
-    Widget::paint(platform);
+void CheckBox::paint(World::Canvas& canvas, Platform& platform) const {
+    Widget::paint(canvas, platform);
     const float side = std::min(bounds().width, bounds().height);
     if (side == 0) {
         return;
@@ -88,16 +88,16 @@ void CheckBox::paint(Platform& platform) const {
     const Rectf box{bounds().left + (bounds().width - side) * 0.5f,
                     bounds().top + (bounds().height - side) * 0.5f, side, side};
     const auto& style = platform.style();
-    platform.setColor(root().acceptsInput(*this) ? style.textColor() : style.disabledTextColor());
-    platform.beginPath();
-    platform.rect({box.left + width * 0.5f, box.top + width * 0.5f, side - width, side - width});
-    platform.stroke(width);
+    canvas.setColor(root().acceptsInput(*this) ? style.textColor() : style.disabledTextColor());
+    canvas.beginPath();
+    canvas.rect({box.left + width * 0.5f, box.top + width * 0.5f, side - width, side - width});
+    canvas.stroke(width);
     if (checked_) {
-        platform.beginPath();
-        platform.moveTo(box.left + side * 0.2f, box.top + side * 0.5f);
-        platform.lineTo(box.left + side * 0.4f, box.top + side * 0.7f);
-        platform.lineTo(box.left + side * 0.8f, box.top + side * 0.3f);
-        platform.stroke(width);
+        canvas.beginPath();
+        canvas.moveTo(box.left + side * 0.2f, box.top + side * 0.5f);
+        canvas.lineTo(box.left + side * 0.4f, box.top + side * 0.7f);
+        canvas.lineTo(box.left + side * 0.8f, box.top + side * 0.3f);
+        canvas.stroke(width);
     }
 }
 

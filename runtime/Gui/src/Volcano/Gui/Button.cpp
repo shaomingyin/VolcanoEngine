@@ -77,13 +77,13 @@ bool Button::event(const FocusEvent& event, Platform&) {
     return false;
 }
 
-void Button::paint(Platform& platform) const {
-    Text::paint(platform);
+void Button::paint(World::Canvas& canvas, Platform& platform) const {
+    Text::paint(canvas, platform);
     if (pressed_) {
-        platform.setColor(platform.style().buttonPressedColor());
-        platform.beginPath();
-        platform.rect(bounds());
-        platform.fill();
+        canvas.setColor(platform.style().buttonPressedColor());
+        canvas.beginPath();
+        canvas.rect(bounds());
+        canvas.fill();
     }
 }
 

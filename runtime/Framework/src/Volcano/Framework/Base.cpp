@@ -3,6 +3,10 @@
 #include <thread>
 #include <utility>
 
+#include <stdexec/execution.hpp>
+#include <exec/start_detached.hpp>
+
+#include <Volcano/FifoScheduler.h>
 #include <Volcano/ScopeGuard.h>
 #include <Volcano/World/Inherent.h>
 #include <Volcano/World/Model.h>
@@ -12,18 +16,26 @@
 VOLCANO_FRAMEWORK_BEGIN
 
 Base::Base() = default;
+
 Base::~Base() {
     cancelLoad();
-    drainLoad();
+    try {
+        waitForLoad();
+    } catch (...) {
+    }
     unload();
 }
 
 void Base::cancelLoad() noexcept {
-    cancellation_.cancel();
+    if (cancellation_) {
+        cancellation_->request_stop();
+    }
 }
 
 void Base::checkLoadCancelled() const {
-    async::interruption_point(cancellation_);
+    if (loadCancelled()) {
+        throw LoadCanceled{};
+    }
 }
 
 void Base::setLoadingContent(std::string content) {
@@ -38,19 +50,18 @@ void Base::processTasks() {
 }
 
 void Base::drainLoad() {
-    while (loading_.valid() && !loading_.ready()) {
+    VOLCANO_ASSERT(std::this_thread::get_id() == owner_thread_);
+    while (state_ == State::Loading) {
         processTasks();
-        if (!loading_.ready()) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(1));
-        }
+        std::this_thread::yield();
     }
 }
 
 void Base::waitForLoad() {
     VOLCANO_ASSERT(std::this_thread::get_id() == owner_thread_);
     drainLoad();
-    if (loading_.valid()) {
-        loading_.get();
+    if (last_error_) {
+        std::rethrow_exception(std::exchange(last_error_, {}));
     }
 }
 
@@ -74,30 +85,52 @@ const Physics::System& Base::physics() const {
     return *physics_;
 }
 
-async::task<void> Base::beginLoad(SceneFactory factory) {
+void Base::requestExit() {
+    should_close_ = true;
+}
+
+bool Base::shouldClose() const noexcept {
+    return should_close_;
+}
+
+void Base::beginLoad(SceneFactory factory) {
     VOLCANO_ASSERT(std::this_thread::get_id() == owner_thread_);
     const auto previous = state_;
     state_ = State::Loading;
     progress_ = {};
     loading_entities_.clear();
-    entity_tasks_.clear();
-    cancellation_.reset();
-    auto restore = scopeGuard([this, previous] {
-        state_ = previous;
-    });
+    cancellation_.emplace();
+    last_error_ = {};
+
     const bool replace = static_cast<bool>(factory);
     pending_factory_ = std::move(factory);
-    auto prepare = async::spawn(scheduler_, [this, replace] {
+
+    exec::start_detached(
+        stdexec::schedule(scheduler())
+        | stdexec::let_value([this, replace, previous] {
+            return loadCoroutine(replace, previous);
+        })
+        | stdexec::upon_error([this](std::exception_ptr error) noexcept {
+            last_error_ = std::move(error);
+        })
+        | stdexec::upon_stopped([]() noexcept {})
+    );
+}
+
+exec::task<void> Base::loadCoroutine(bool replace, State previous) {
+    try {
         checkLoadCancelled();
+
         if (replace) {
-            pending_scene_ = pending_factory_();
+            pending_scene_ = pending_factory_(*this);
             if (!pending_scene_) {
                 throw std::runtime_error("Scene factory returned null");
             }
             checkLoadCancelled();
-            pending_physics_ = std::make_unique<Physics::System>(*pending_scene_);
+            pending_physics_ = std::make_unique<Physics::System>(pending_scene_->registry());
         }
         checkLoadCancelled();
+
         const auto& candidate = replace ? *pending_scene_ : *scene_;
         for (const auto [entity] : candidate.storage<entt::entity>()->each()) {
             const auto* inherent = candidate.try_get<World::Inherent>(entity);
@@ -114,90 +147,68 @@ async::task<void> Base::beginLoad(SceneFactory factory) {
         }
         progress_.total = loading_entities_.size() + 1;
         progress_.content = loading_entities_.empty() ? "Scene resources" : loading_entities_.begin()->second;
-        return onLoadScene(candidate);
-    });
-    auto settled = prepare.then(scheduler_, [this](async::task<void> result) {
-        // A derived scene hook can throw after starting its parent entity tasks.
-        return async::when_all(entity_tasks_.begin(), entity_tasks_.end())
-            .then(scheduler_,
-                  [result = std::move(result)](std::vector<async::shared_task<void>> children) mutable {
-                      result.get();
-                      for (const auto& child : children) {
-                          child.get();
-                      }
-                  });
-    });
-    auto complete = settled.then(scheduler_, [this, previous, replace](async::task<void> result) {
-        try {
-            result.get();
-            checkLoadCancelled();
-            progress_.percent = 99;
-            progress_.content = "Committing resources";
-            onCommitResources();
-            models_.swap(pending_models_);
-            pending_models_.clear();
-            if (replace) {
-                physics_.reset();
-                scene_ = std::move(pending_scene_);
-                physics_ = std::move(pending_physics_);
-                scene_factory_ = std::move(pending_factory_);
-            }
-        } catch (...) {
-            onDiscardResources();
-            pending_models_.clear();
-            pending_physics_.reset();
-            pending_scene_.reset();
-            loading_entities_.clear();
-            entity_tasks_.clear();
-            pending_factory_ = {};
-            state_ = previous;
-            throw;
+
+        co_await onLoadScene(candidate);
+
+        checkLoadCancelled();
+        progress_.percent = 99;
+        progress_.content = "Committing resources";
+        onCommitResources();
+        models_.swap(pending_models_);
+        pending_models_.clear();
+        if (replace) {
+            physics_.reset();
+            scene_ = std::move(pending_scene_);
+            physics_ = std::move(pending_physics_);
+            scene_factory_ = std::move(pending_factory_);
         }
+
         loading_entities_.clear();
-        entity_tasks_.clear();
         state_ = replace ? State::Ready : previous;
         progress_.percent = 100;
         progress_.completed = progress_.total;
         progress_.content.clear();
-    });
-    loading_ = complete.share();
-    restore.dismiss();
-    return loading_.then(async::inline_scheduler(), [] {
-    });
+    } catch (...) {
+        onDiscardResources();
+        pending_models_.clear();
+        pending_physics_.reset();
+        pending_scene_.reset();
+        loading_entities_.clear();
+        pending_factory_ = {};
+        last_error_ = std::current_exception();
+        state_ = previous;
+    }
 }
 
-async::task<void> Base::loadAsync(SceneFactory factory) {
+void Base::loadAsync(SceneFactory factory) {
     VOLCANO_ASSERT(state_ == State::Idle);
     VOLCANO_ASSERT(factory);
-    return beginLoad(std::move(factory));
+    beginLoad(std::move(factory));
 }
 
-async::task<void> Base::stopAsync() {
+void Base::stopAsync() {
     VOLCANO_ASSERT(state_ != State::Idle && state_ != State::Loading);
-    return beginLoad(scene_factory_);
+    beginLoad(scene_factory_);
 }
 
-async::task<void> Base::synchronizeResourcesAsync() {
+void Base::synchronizeResourcesAsync() {
     VOLCANO_ASSERT(state_ != State::Idle && state_ != State::Loading);
-    return beginLoad({});
+    beginLoad({});
 }
 
 void Base::load(SceneFactory factory) {
-    auto task = loadAsync(std::move(factory));
-    drainLoad();
-    task.get();
+    loadAsync(std::move(factory));
+    waitForLoad();
 }
 
 void Base::stop() {
-    auto task = stopAsync();
-    drainLoad();
-    task.get();
+    stopAsync();
+    waitForLoad();
 }
 
 void Base::synchronizeResources() {
-    auto task = synchronizeResourcesAsync();
-    drainLoad();
-    task.get();
+    synchronizeResourcesAsync();
+    waitForLoad();
 }
 
 void Base::play() {
@@ -228,6 +239,9 @@ void Base::unload() {
 void Base::update(Clock::duration elapsed) {
     VOLCANO_ASSERT(elapsed >= Clock::duration::zero());
     processTasks();
+    if (last_error_) {
+        std::rethrow_exception(std::exchange(last_error_, {}));
+    }
     if (state_ == State::Idle || state_ == State::Loading) {
         return;
     }
@@ -239,51 +253,39 @@ void Base::update(Clock::duration elapsed) {
     onAfterUpdate(elapsed);
 }
 
-async::task<void> Base::onLoadScene(const World::Scene& candidate) {
-    entity_tasks_.reserve(loading_entities_.size());
-    for (const auto& [entity, content] : loading_entities_) {
-        // Invoke virtual hooks inside tasks so a synchronous hook failure cannot orphan earlier work.
-        auto task = async::spawn(scheduler_, [this, &candidate, entity] {
-            checkLoadCancelled();
-            return onLoadEntity(candidate, entity);
-        });
-        auto completed = task.then(scheduler_, [this, entity] {
-            checkLoadCancelled();
-            loading_entities_.erase(entity);
-            ++progress_.completed;
-            progress_.percent =
-                95.0f * static_cast<float>(progress_.completed) / static_cast<float>(progress_.total);
-            progress_.content =
-                loading_entities_.empty() ? "Scene resources" : loading_entities_.begin()->second;
-        });
-        entity_tasks_.push_back(completed.share());
+exec::task<void> Base::onLoadScene(const World::Scene& candidate) {
+    while (!loading_entities_.empty()) {
+        auto it = loading_entities_.begin();
+        const auto entity = it->first;
+        checkLoadCancelled();
+        co_await onLoadEntity(candidate, entity);
+        checkLoadCancelled();
+        loading_entities_.erase(entity);
+        ++progress_.completed;
+        progress_.percent =
+            95.0f * static_cast<float>(progress_.completed) / static_cast<float>(progress_.total);
+        progress_.content =
+            loading_entities_.empty() ? "Scene resources" : loading_entities_.begin()->second;
     }
-    return async::when_all(entity_tasks_.begin(), entity_tasks_.end())
-        .then(scheduler_, [](std::vector<async::shared_task<void>> children) {
-            for (auto& child : children) {
-                child.get();
-            }
-        });
 }
 
-async::task<void> Base::onLoadEntity(const World::Scene& candidate, entt::entity entity) {
+exec::task<void> Base::onLoadEntity(const World::Scene& candidate, entt::entity entity) {
     const auto* model = candidate.try_get<World::Model>(entity);
     if (model == nullptr) {
-        return async::make_task();
+        co_return;
     }
     const auto path = model->source();
-    return async::spawn([this, path] {
-        checkLoadCancelled();
-        auto resource = Resources::loadModel(path.generic_string());
-        checkLoadCancelled();
-        return resource;
-    }).then(scheduler_, [this, path](std::shared_ptr<Schema::Model> resource) {
-        checkLoadCancelled();
-        pending_models_.insert_or_assign(path.lexically_normal(), std::move(resource));
-    });
+    checkLoadCancelled();
+    co_await exec::reschedule_coroutine_on(stdexec::get_parallel_scheduler());
+    checkLoadCancelled();
+    auto resource = Resources::loadModel(path.generic_string());
+    checkLoadCancelled();
+    co_await exec::reschedule_coroutine_on(scheduler());
+    checkLoadCancelled();
+    pending_models_.insert_or_assign(path.lexically_normal(), std::move(resource));
 }
 
-const Schema::Model& Base::model(const std::filesystem::path& path) const {
+const Asset::Model& Base::model(const std::filesystem::path& path) const {
     const auto key = path.lexically_normal();
     if (const auto found = pending_models_.find(key); found != pending_models_.end()) {
         return *found->second;

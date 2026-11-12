@@ -31,7 +31,7 @@ std::unique_ptr<Gui::Button> owner(button);
 
 任何 Widget 都可以拥有子控件，包括 Text、Image 和 Button。普通 Widget 按子控件 frame 和 margin 进行基本相对定位，支持固定尺寸、内容尺寸和 Fill；不根据子控件自动计算自身内容尺寸。需要行列、换行、内边距或对齐规则时使用 Layout。
 
-`draw()` 统一先绘制自身，再按添加顺序绘制子控件，并将子树裁剪到父控件 bounds。自定义外观覆盖受保护的 `paint(Platform&) const`；需要保留基类外观时调用基类 paint。命中按相反顺序优先检查子控件，资源收集也遍历子树；覆盖 collectResources 时须调用基类版本。
+`draw(canvas, platform)` 统一先绘制自身，再按添加顺序绘制子控件，并将子树裁剪到父控件 bounds。自定义外观覆盖受保护的 `paint(World::Canvas&, const Platform&) const`；需要保留基类外观时调用基类 paint。命中按相反顺序优先检查子控件，资源收集也遍历子树；覆盖 collectResources 时须调用基类版本。
 
 事件仍直接发给命中控件，不向父控件冒泡。因此 Button 中添加的 Text 子控件命中后不会自动触发 Button 点击；这一版不扩展该交互规则。
 

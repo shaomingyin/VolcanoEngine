@@ -48,21 +48,6 @@ public:
     // The host must deliver a pointer cancellation event if capture is lost.
     virtual void setPointerCapture(bool enabled) = 0;
 
-    virtual void save() = 0;
-    virtual void restore() = 0;
-    virtual void setClip(const Rectf& rect) = 0;
-    virtual void setColor(const Colorf& color) = 0;
-    virtual void beginPath() = 0;
-    virtual void moveTo(float x, float y) = 0;
-    virtual void lineTo(float x, float y) = 0;
-    virtual void bezierTo(float c1x, float c1y, float c2x, float c2y, float x, float y) = 0;
-    virtual void closePath() = 0;
-    virtual void rect(const Rectf& rect) = 0;
-    virtual void fill() = 0;
-    virtual void stroke(float width) = 0;
-    virtual void image(std::string_view resource, const Rectf& destination) = 0;
-    virtual void text(const std::filesystem::path& font, float pixels, float x, float baseline,
-                      std::string_view text) = 0;
     virtual Sizef measure(const std::filesystem::path& font, float pixels, std::string_view text) = 0;
 };
 

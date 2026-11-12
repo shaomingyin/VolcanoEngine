@@ -134,25 +134,25 @@ Sizef Slider::measure(Platform& platform, Sizef available) const {
     return size;
 }
 
-void Slider::paint(Platform& platform) const {
-    Widget::paint(platform);
+void Slider::paint(World::Canvas& canvas, Platform& platform) const {
+    Widget::paint(canvas, platform);
     if (bounds().empty()) {
         return;
     }
     const auto& style = platform.style();
     const float side = std::min(bounds().width, bounds().height);
     const float trackHeight = std::min(4.0f, bounds().height);
-    platform.setColor(style.disabledTextColor());
-    platform.beginPath();
-    platform.rect(
+    canvas.setColor(style.disabledTextColor());
+    canvas.beginPath();
+    canvas.rect(
         {bounds().left, bounds().top + (bounds().height - trackHeight) * 0.5f, bounds().width, trackHeight});
-    platform.fill();
+    canvas.fill();
     const double fraction = (double(value_) - minimum_) / (double(maximum_) - minimum_);
     const float x = bounds().left + static_cast<float>(fraction * (bounds().width - side));
-    platform.setColor(root().acceptsInput(*this) ? style.textColor() : style.disabledTextColor());
-    platform.beginPath();
-    platform.rect({x, bounds().top + (bounds().height - side) * 0.5f, side, side});
-    platform.fill();
+    canvas.setColor(root().acceptsInput(*this) ? style.textColor() : style.disabledTextColor());
+    canvas.beginPath();
+    canvas.rect({x, bounds().top + (bounds().height - side) * 0.5f, side, side});
+    canvas.fill();
 }
 
 VOLCANO_GUI_END

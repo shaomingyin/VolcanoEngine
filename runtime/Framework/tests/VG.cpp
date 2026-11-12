@@ -19,10 +19,13 @@
 #include <Volcano/PhysFile.h>
 #include <Volcano/Graphics/FrameBuffer.h>
 #include <Volcano/Gui/Button.h>
-#include <Volcano/Gui/Layout.h>
+#include <Volcano/Gui/Document.h>
 #include <Volcano/Gui/Image.h>
-#include <Volcano/World/Hud.h>
+#include <Volcano/Gui/Layout.h>
+#include <Volcano/World/Canvas.h>
+#include <Volcano/World/Inherent.h>
 #include <Volcano/World/OrthographicCamera.h>
+#include <Volcano/Framework/Drawing.h>
 #include <Volcano/Framework/Local.h>
 
 namespace {
@@ -62,7 +65,7 @@ protected:
         glReadPixels(x,target.height()-1-top,1,1,GL_RGBA,GL_UNSIGNED_BYTE,result.data());
         return result;
     }
-    void rectangle(Graphics::Canvas& canvas,const Colorf& color) {
+    void rectangle(World::Canvas& canvas,const Colorf& color) {
         canvas.setColor(color);
         canvas.beginPath();
         canvas.rect(0,0,64,64);
@@ -75,13 +78,13 @@ protected:
 };
 
 TEST_F(VGRender, FillsHolesAndPreservesCommandOrderAndAlpha) {
-    Graphics::Canvas canvas;
+    World::Canvas canvas;
     canvas.begin();
     canvas.setColor(Colorf::Red);
     canvas.beginPath();
     canvas.rect(4,4,56,56);
     canvas.rect(20,20,24,24);
-    canvas.fill(Graphics::Canvas::FillRule::EvenOdd);
+    canvas.fill(World::Canvas::FillRule::EvenOdd);
     canvas.end();
     local_->renderer().renderVG(canvas,*target_);
     EXPECT_EQ(pixel(*target_,10,10),(std::array<std::uint8_t,4>{255,0,0,255}));
@@ -99,7 +102,7 @@ TEST_F(VGRender, FillsHolesAndPreservesCommandOrderAndAlpha) {
 }
 
 TEST_F(VGRender, ClipsGradientsTransformsStrokesAndTextureOrientation) {
-    Graphics::Canvas canvas;
+    World::Canvas canvas;
     canvas.begin();
     canvas.setClip({8,8,48,48});
     canvas.setLinearGradient({8,8},{56,8},Colorf::Red,Colorf::Blue);
@@ -125,7 +128,7 @@ TEST_F(VGRender, ClipsGradientsTransformsStrokesAndTextureOrientation) {
     canvas.setTransform(transform);
     canvas.setColor(Colorf::Green);
     canvas.setStrokeWidth(6);
-    canvas.setLineCap(Graphics::Canvas::LineCap::Round);
+    canvas.setLineCap(World::Canvas::LineCap::Round);
     canvas.beginPath();
     canvas.moveTo(8,20);
     canvas.bezierTo(16,20,32,20,40,20);
@@ -139,7 +142,7 @@ TEST_F(VGRender, ClipsGradientsTransformsStrokesAndTextureOrientation) {
 
 TEST_F(VGRender, RunsViewGenerationBeforeSceneAndOverlayAfterScene) {
     Graphics::FrameBuffer generated(64,64);
-    Graphics::Canvas producer,overlay;
+    World::Canvas producer,overlay;
     producer.begin();
     rectangle(producer,Colorf::Green);
     producer.end();
@@ -153,7 +156,7 @@ TEST_F(VGRender, RunsViewGenerationBeforeSceneAndOverlayAfterScene) {
     view.end();
     local_->renderer().render(view,*target_);
     EXPECT_EQ(pixel(*target_,32,32),(std::array<std::uint8_t,4>{0,255,0,255}));
-    Graphics::Canvas feedback;
+    World::Canvas feedback;
     feedback.begin();
     feedback.image(target_->texture(),{0,0,64,64});
     feedback.end();
@@ -162,34 +165,42 @@ TEST_F(VGRender, RunsViewGenerationBeforeSceneAndOverlayAfterScene) {
 
 TEST_F(VGRender, ResolvesSharedSourcesTracksGUIChangesAndRejectsCycles) {
     int generated=0;
-    local_->setDrawingProvider("paint",[&](Graphics::Canvas& canvas) {
+    local_->setDrawingProvider("paint",[&](World::Canvas& canvas) {
         ++generated;
         rectangle(canvas,Colorf::Red);
     });
     local_->load([] {
         auto scene=std::make_unique<EmptyScene>();
-        scene->addTexture("drawing",std::make_unique<World::DrawingTexture>(Size{64,64},"paint"));
+        scene->emplace<Framework::Drawing>(scene->create(), "drawing", Size{64,64}, "paint");
         auto root=std::make_unique<Gui::Layout>();
         auto* image = new Gui::Image(root.get());
         image->setSource("drawing");
         image->setFrame({0,0,64,64});
     
-        scene->addTexture("gui",std::make_unique<World::GuiTexture>(Size{64,64},
-            std::make_unique<Gui::Document>(std::move(root))));
-        auto& hud=scene->emplace<World::Hud>(scene->create());
-        hud.setTexture("gui");
-        hud.setRect({0,0,64,64});
+        const auto gui = scene->create();
+        scene->emplace<World::Inherent>(gui, "gui");
+        scene->emplace<Gui::Document>(gui, std::move(root), Size{64, 64});
         return scene;
     });
     local_->render(*target_,local_->scene().player());
     EXPECT_EQ(generated,1);
+    World::Canvas canvas;
+    canvas.begin();
+    canvas.image(local_->texture("gui"), {0, 0, 64, 64});
+    canvas.end();
+    local_->renderer().renderVG(canvas, *target_);
     EXPECT_EQ(pixel(*target_,32,32)[0],255);
     local_->render(*target_,local_->scene().player());
     EXPECT_EQ(generated,2);
-    auto& drawing=static_cast<World::DrawingTexture&>(local_->scene().texture("drawing"));
-    drawing.setDependencies({"gui"});
+    Framework::Drawing* drawing = nullptr;
+    for (const auto entity : local_->scene().view<Framework::Drawing>()) {
+        drawing = &local_->scene().get<Framework::Drawing>(entity);
+        break;
+    }
+    ASSERT_NE(drawing, nullptr);
+    drawing->setDependencies({"gui"});
     EXPECT_THROW(local_->render(*target_,local_->scene().player()),std::invalid_argument);
-    drawing.setDependencies({});
+    drawing->setDependencies({});
     local_->render(*target_,local_->scene().player());
     EXPECT_EQ(generated,3);
     EXPECT_EQ(glGetError(),GL_NO_ERROR);
@@ -214,9 +225,10 @@ TEST_F(VGRender, CachesChineseGlyphsWithinBudgetAcrossEviction) {
     EXPECT_EQ(renderer.fontCacheStats().rasterizations,coldStats.rasterizations);
     EXPECT_EQ(renderer.fontCacheStats().uploadedBytes,coldStats.uploadedBytes);
     EXPECT_GT(renderer.fontCacheStats().hits,coldStats.hits);
-    Graphics::Canvas canvas;
+    renderer.setFontResolver([&](std::string_view) { return &font; });
+    World::Canvas canvas;
     canvas.begin();
-    canvas.setFont(font,24);
+    canvas.setFont("cjk",24);
     canvas.setColor(Colorf::White);
     canvas.text(0,28,"中文");
     canvas.end();
@@ -268,11 +280,9 @@ TEST_F(VGRender, LoadsGUIFontsRollsBackFailedSyncAndCachesUnchangedOutput) {
         label->setFontSize(24);
         label->setOnClick([&] { ++clicked; });
     
-        scene->addTexture("gui",std::make_unique<World::GuiTexture>(Size{64,64},
-            std::make_unique<Gui::Document>(std::move(root))));
-        auto& hud=scene->emplace<World::Hud>(scene->create());
-        hud.setTexture("gui");
-        hud.setRect({0,0,64,64});
+        const auto gui = scene->create();
+        scene->emplace<World::Inherent>(gui, "gui");
+        scene->emplace<Gui::Document>(gui, std::move(root), Size{64, 64});
         return scene;
     });
     local_->render(*target_,local_->scene().player());
@@ -295,34 +305,27 @@ TEST_F(VGRender, LoadsGUIFontsRollsBackFailedSyncAndCachesUnchangedOutput) {
     EXPECT_EQ(glGetError(),GL_NO_ERROR);
 }
 
-TEST_F(VGRender, RendersCameraOutputAndRejectsMissingProvidersOnLoad) {
+TEST_F(VGRender, RejectsMissingProvidersOnLoadAndRetainsTextures) {
     EXPECT_THROW(local_->load([] {
         auto scene=std::make_unique<EmptyScene>();
-        scene->addTexture("missing",std::make_unique<World::DrawingTexture>(Size{64,64},"unregistered"));
+        scene->emplace<Framework::Drawing>(scene->create(), "missing", Size{64,64}, "unregistered");
         return scene;
     }),std::invalid_argument);
     EXPECT_EQ(local_->state(),Framework::Base::State::Idle);
+
+    local_->setDrawingProvider("paint", [](World::Canvas&) {});
     local_->load([] {
         auto scene=std::make_unique<EmptyScene>();
-        scene->addTexture("camera",std::make_unique<World::CameraTexture>(Size{32,32},scene->player()));
-        auto& hud=scene->emplace<World::Hud>(scene->create());
-        hud.setTexture("camera");
-        hud.setRect({0,0,64,64});
+        scene->emplace<Framework::Drawing>(scene->create(), "drawing", Size{32,32}, "paint");
         return scene;
     });
     local_->render(*target_,local_->scene().player());
-    EXPECT_EQ(local_->texture("camera").size(),(Size{32,32}));
-    EXPECT_EQ(pixel(*target_,32,32),(std::array<std::uint8_t,4>{0,0,0,255}));
-    const auto* committed = &local_->texture("camera");
-    local_->scene().addTexture("missing",
-        std::make_unique<World::DrawingTexture>(Size{8, 8}, "unregistered"));
+    EXPECT_EQ(local_->texture("drawing").size(),(Size{32,32}));
+    const auto* committed = &local_->texture("drawing");
+    local_->scene().emplace<Framework::Drawing>(local_->scene().create(), "missing", Size{8, 8}, "unregistered");
     EXPECT_THROW(local_->synchronizeResources(), std::invalid_argument);
-    EXPECT_EQ(&local_->texture("camera"), committed);
-    EXPECT_EQ(local_->texture("camera").size(), (Size{32, 32}));
-    auto& camera=static_cast<World::CameraTexture&>(local_->scene().texture("camera"));
-    camera.setSize({16,24});
-    local_->render(*target_,local_->scene().player());
-    EXPECT_EQ(local_->texture("camera").size(),(Size{16,24}));
+    EXPECT_EQ(&local_->texture("drawing"), committed);
+    EXPECT_EQ(local_->texture("drawing").size(), (Size{32, 32}));
     EXPECT_EQ(glGetError(),GL_NO_ERROR);
 }
 
@@ -335,7 +338,7 @@ TEST(VGResources, ReleasesDrawingProviderCapturesBeforeDestroyingTheContext) {
         Framework::Local local(16, 16, "Drawing provider lifetime");
         auto image = std::make_shared<Graphics::Texture>(1, 1);
         captured = image;
-        local.setDrawingProvider("owned-image", [image](Graphics::Canvas& canvas) {
+        local.setDrawingProvider("owned-image", [image](World::Canvas& canvas) {
             canvas.image(*image, {0, 0, 1, 1});
         });
         image.reset();

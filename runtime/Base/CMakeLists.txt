@@ -10,16 +10,13 @@ add_library(Base STATIC
     include/Volcano/Config.h.in
     include/Volcano/Error.h
     include/Volcano/ByteArray.h
-    include/Volcano/Buffer.h
     include/Volcano/PhysFile.h
-    include/Volcano/Stream.h
     include/Volcano/ScopeGuard.h
+    include/Volcano/FifoScheduler.h
     include/Volcano/Version.h
     src/Volcano/Common.cpp
     src/Volcano/Error.cpp
     src/Volcano/PhysFile.cpp
-    src/Volcano/Stream.cpp
-    src/Volcano/Buffer.cpp
     src/Volcano/Transform.cpp
     src/Volcano/Version.cpp
 )
@@ -35,8 +32,8 @@ target_include_directories(Base PUBLIC
 )
 
 target_compile_definitions(Base PUBLIC
-    RTTR_STATIC
     NOMINMAX
+    STDEXEC_PARALLEL_SCHEDULER_HEADER_ONLY
 )
 
 if(MSVC)
@@ -48,8 +45,14 @@ endif()
 volcano_target_setup(Base)
 set_target_properties(Base PROPERTIES OUTPUT_NAME VolcanoBase)
 
+find_package(Threads REQUIRED)
+target_link_libraries(Base PUBLIC Threads::Threads)
+
 find_package(PhysFS CONFIG REQUIRED)
 target_link_libraries(Base PUBLIC physfs-static)
+
+find_package(protobuf CONFIG REQUIRED)
+target_link_libraries(Base PUBLIC protobuf::protobuf)
 
 find_package(Eigen3 CONFIG REQUIRED)
 target_link_libraries(Base PUBLIC Eigen3::Eigen)
@@ -57,11 +60,8 @@ target_link_libraries(Base PUBLIC Eigen3::Eigen)
 find_package(spdlog REQUIRED)
 target_link_libraries(Base PUBLIC spdlog::spdlog)
 
-find_package(Async++ REQUIRED)
-target_link_libraries(Base PUBLIC Async++)
-
 if(BUILD_TESTING)
-    foreach(test IN ITEMS Cache PhysFile Stream Buffer Version Utility Color Math Transform)
+    foreach(test IN ITEMS Cache PhysFile Version Utility Color Math Transform FifoScheduler)
         add_executable(Base${test}Check tests/${test}.cpp)
         target_link_libraries(Base${test}Check PRIVATE Base GTest::gtest_main)
         gtest_discover_tests(Base${test}Check)

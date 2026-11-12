@@ -1,8 +1,10 @@
 #define GLFW_INCLUDE_NONE
 #include <array>
+#include <atomic>
 #include <chrono>
 #include <filesystem>
 #include <memory>
+#include <span>
 #include <stdexcept>
 #include <string>
 #include <thread>
@@ -11,19 +13,20 @@
 #include <GL/gl.hpp>
 #include <GLFW/glfw3.h>
 #include <gtest/gtest.h>
+#include <stdexec/execution.hpp>
+#include <exec/task.hpp>
 
 #include <Volcano/PhysFile.h>
+#include <Volcano/Asset/Common.h>
+#include <Volcano/Asset/Mesh.h>
+#include <Volcano/Asset/Texture.h>
 #include <Volcano/Graphics/FrameBuffer.h>
-#include <Volcano/Schema/Material.h>
-#include <Volcano/Schema/Mesh.h>
-#include <Volcano/Schema/Model.h>
-#include <Volcano/Schema/Texture.h>
 #include <Volcano/World/Inherent.h>
 #include <Volcano/World/Model.h>
 #include <Volcano/World/OrthographicCamera.h>
 #include <Volcano/World/PointLight.h>
-#include <Volcano/Framework/Resources.h>
 #include <Volcano/Framework/Client.h>
+#include <Volcano/Framework/Resources.h>
 
 namespace {
 using namespace Volcano;
@@ -63,18 +66,16 @@ public:
     Client() : Framework::Client(32, 32, "FrameworkLocalCheck") {
     }
 
-
 public:
     bool failLoad = false;
     std::vector<int> order;
 
 protected:
-    async::task<void> onLoadScene(const World::Scene& scene) override {
-        return Local::onLoadScene(scene).then(scheduler(), [this] {
-            if (failLoad) {
-                throw std::runtime_error("GPU load failure");
-            }
-        });
+    exec::task<void> onLoadScene(const World::Scene& scene) override {
+        co_await Local::onLoadScene(scene);
+        if (failLoad) {
+            throw std::runtime_error("GPU load failure");
+        }
     }
 
     void onInputUpdate(Clock::duration) override {
@@ -119,20 +120,35 @@ protected:
         ASSERT_NE(PHYSFS_init("FrameworkLocalCheck"), 0);
         ASSERT_NE(PHYSFS_mount(root_.string().c_str(), nullptr, 1), 0);
         ASSERT_NE(PHYSFS_setWriteDir(root_.string().c_str()), 0);
-        Schema::Mesh mesh;
-        mesh.vertices = {{{-0.8f, -0.8f, -2}}, {{0.8f, -0.8f, -2}}, {{0, 0.8f, -2}}};
-        mesh.indices = {0, 1, 2};
-        write("assets/mesh.vemesh", mesh);
-        Schema::Material material;
-        material.lit = false;
-        material.albedoTexture = "texture.vetexture";
-        write("assets/material.vematerial", material);
-        write("assets/texture.vetexture", Schema::Texture{1, 1, {128, 0, 0, 128}});
-        Schema::Model model;
+
+        const std::array<Asset::Mesh::Vertex, 3> vertices = {
+            Asset::Mesh::Vertex{{-0.8f, -0.8f, -2.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}},
+            Asset::Mesh::Vertex{{0.8f, -0.8f, -2.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 0.0f}},
+            Asset::Mesh::Vertex{{0.0f, 0.8f, -2.0f}, {0.0f, 0.0f, 1.0f}, {0.5f, 1.0f}}
+        };
+        const std::array<uint32_t, 3> indices = {0, 1, 2};
+        writeMesh("assets/mesh.vemesh", vertices, indices);
+
+        Asset::Material material;
+        material.set_lit(false);
+        material.set_albedo_texture("texture.vetexture");
+        writeMaterial("assets/material.vematerial", material);
+
+        const std::array<uint8_t, 4> pixels = {128, 0, 0, 128};
+        writeTexture("assets/texture.vetexture", 1, 1, pixels);
+
+        Asset::Model model;
+        auto* part = model.add_parts();
+        part->set_mesh("mesh.vemesh");
+        part->set_material("material.vematerial");
         Eigen::Affine3f shear = Eigen::Affine3f::Identity();
         shear.linear()(0, 1) = 0.25f;
-        model.parts.push_back({"mesh.vemesh", "material.vematerial", shear});
-        write("assets/model.vemodel", model);
+        for (int r = 0; r < 4; ++r) {
+            for (int c = 0; c < 4; ++c) {
+                part->add_transform(shear.matrix()(r, c));
+            }
+        }
+        writeModel("assets/model.vemodel", model);
     }
 
     void TearDown() override {
@@ -142,10 +158,72 @@ protected:
         std::filesystem::remove_all(root_, error);
     }
 
-    template<typename Resource>
-    void write(const char* path, const Resource& resource) {
-        PhysFile file(path, PhysFile::OpenMode::WriteOnly);
-        resource.write(file);
+    static void writeHelper(google::protobuf::io::ZeroCopyOutputStream& output, const void* data, std::size_t count) {
+        const auto* ptr = static_cast<const uint8_t*>(data);
+        int remaining = static_cast<int>(count);
+        while (remaining > 0) {
+            void* chunk = nullptr;
+            int size = 0;
+            if (!output.Next(&chunk, &size)) {
+                throw std::runtime_error("Write failed");
+            }
+            const int toCopy = std::min(remaining, size);
+            std::memcpy(chunk, ptr, toCopy);
+            ptr += toCopy;
+            remaining -= toCopy;
+            if (toCopy < size) {
+                output.BackUp(size - toCopy);
+            }
+        }
+    }
+
+    static void writeMesh(const char* path, std::span<const Asset::Mesh::Vertex> vertices, std::span<const uint32_t> indices) {
+        PhysOutputStream file(path);
+        Asset::MeshHeader proto;
+        proto.set_vertex_count(static_cast<uint32_t>(vertices.size()));
+        proto.set_index_count(static_cast<uint32_t>(indices.size()));
+        std::string headerBytes;
+        proto.SerializeToString(&headerBytes);
+
+        const uint32_t magic = 0x484D4556;
+        const uint32_t headerSize = static_cast<uint32_t>(headerBytes.size());
+
+        writeHelper(file, &magic, sizeof(magic));
+        writeHelper(file, &headerSize, sizeof(headerSize));
+        writeHelper(file, headerBytes.data(), headerSize);
+        if (!vertices.empty()) {
+            writeHelper(file, vertices.data(), vertices.size_bytes());
+        }
+        if (!indices.empty()) {
+            writeHelper(file, indices.data(), indices.size_bytes());
+        }
+    }
+
+    static void writeTexture(const char* path, uint32_t width, uint32_t height, std::span<const uint8_t> pixels) {
+        PhysOutputStream file(path);
+        Asset::TextureHeader proto;
+        proto.set_width(width);
+        proto.set_height(height);
+        std::string headerBytes;
+        proto.SerializeToString(&headerBytes);
+
+        const uint32_t magic = 0x58544556;
+        const uint32_t headerSize = static_cast<uint32_t>(headerBytes.size());
+
+        writeHelper(file, &magic, sizeof(magic));
+        writeHelper(file, &headerSize, sizeof(headerSize));
+        writeHelper(file, headerBytes.data(), headerSize);
+        writeHelper(file, pixels.data(), pixels.size_bytes());
+    }
+
+    static void writeMaterial(const char* path, const Asset::Material& material) {
+        PhysOutputStream file(path);
+        material.SerializeToZeroCopyStream(&file);
+    }
+
+    static void writeModel(const char* path, const Asset::Model& model) {
+        PhysOutputStream file(path);
+        model.SerializeToZeroCopyStream(&file);
     }
 
 protected:
@@ -235,24 +313,41 @@ TEST_F(FrameworkLocal, RollsBackGpuLoadAndRequiresExplicitSynchronization) {
     client.failLoad = false;
     std::filesystem::remove(root_ / "assets/texture.vetexture");
     EXPECT_THROW(client.load([] { return std::make_unique<Scene>(); }), std::runtime_error);
-    write("assets/texture.vetexture", Schema::Texture{1, 1, {128, 0, 0, 128}});
-    Schema::Material replacement;
-    replacement.lit = false;
-    replacement.albedo = {0.5f, 1, 1, 1};
-    replacement.albedoTexture = "texture.vetexture";
-    write("assets/material.vematerial", replacement);
+
+    const std::array<uint8_t, 4> pixels = {128, 0, 0, 128};
+    writeTexture("assets/texture.vetexture", 1, 1, pixels);
+
+    Asset::Material replacement;
+    replacement.set_lit(false);
+    auto* albedo = replacement.mutable_albedo();
+    albedo->set_x(0.5f);
+    albedo->set_y(1.0f);
+    albedo->set_z(1.0f);
+    albedo->set_w(1.0f);
+    replacement.set_albedo_texture("texture.vetexture");
+    writeMaterial("assets/material.vematerial", replacement);
+
     EXPECT_NO_THROW(client.load([] { return std::make_unique<Scene>(); }));
     Graphics::FrameBuffer target(16, 16);
     client.render(target, client.scene().player());
     ASSERT_EQ(client.view().items().size(), 1);
-    EXPECT_EQ(client.view().items()[0].material.color, Colorf(0.5f, 1, 1, 1));
+    EXPECT_EQ(client.view().items()[0].material.color, Colorf(0.5f, 1.0f, 1.0f, 1.0f));
     client.scene().get<World::Model>(static_cast<Scene&>(client.scene()).model).setSource("assets/other.vemodel");
 #if defined(VOLCANO_DEBUG) && !defined(NDEBUG)
     EXPECT_DEATH(client.render(target, client.scene().player()), "[Aa]ssert");
 #endif
-    Schema::Model model;
-    model.parts.push_back({"mesh.vemesh", "material.vematerial", Eigen::Affine3f::Identity()});
-    write("assets/other.vemodel", model);
+
+    Asset::Model otherModel;
+    auto* otherPart = otherModel.add_parts();
+    otherPart->set_mesh("mesh.vemesh");
+    otherPart->set_material("material.vematerial");
+    for (int r = 0; r < 4; ++r) {
+        for (int c = 0; c < 4; ++c) {
+            otherPart->add_transform(r == c ? 1.0f : 0.0f);
+        }
+    }
+    writeModel("assets/other.vemodel", otherModel);
+
     EXPECT_NO_THROW(client.synchronizeResources());
     EXPECT_NO_THROW(client.render(target, client.scene().player()));
     EXPECT_EQ(glGetError(), GL_NO_ERROR);
@@ -263,20 +358,20 @@ namespace {
 TEST_F(FrameworkLocal, ConcurrentAsyncLoadsUseTheirOwningWindowQueues) {
     Framework::Local first(32, 32, "First async window");
     Framework::Local second(32, 32, "Second async window");
-    auto firstTask = first.loadAsync([] { return std::make_unique<Scene>(); });
-    auto secondTask = second.loadAsync([] { return std::make_unique<Scene>(); });
+    first.loadAsync([] { return std::make_unique<Scene>(); });
+    second.loadAsync([] { return std::make_unique<Scene>(); });
     const auto deadline = Clock::now() + std::chrono::seconds(5);
-    while ((!firstTask.ready() || !secondTask.ready()) && Clock::now() < deadline) {
+    while ((first.state() == Framework::Base::State::Loading ||
+            second.state() == Framework::Base::State::Loading) &&
+           Clock::now() < deadline) {
         first.update({});
         EXPECT_EQ(glfwGetCurrentContext(), first.window().handle());
         second.update({});
         EXPECT_EQ(glfwGetCurrentContext(), second.window().handle());
         std::this_thread::yield();
     }
-    ASSERT_TRUE(firstTask.ready());
-    ASSERT_TRUE(secondTask.ready());
-    EXPECT_NO_THROW(firstTask.get());
-    EXPECT_NO_THROW(secondTask.get());
+    ASSERT_EQ(first.state(), Framework::Base::State::Ready);
+    ASSERT_EQ(second.state(), Framework::Base::State::Ready);
     first.window().makeCurrent();
     first.render(first.scene().player());
     const auto* mesh = &first.view().items()[0].mesh.get();
@@ -293,33 +388,34 @@ public:
 
     ~DeferredLocal() override {
         cancelLoad();
-        if (!gateTask.ready()) {
-            gate.set();
-        }
+        gate.store(true);
         try {
             waitForLoad();
-        } catch (const async::task_canceled&) {
+        } catch (const Framework::Base::LoadCanceled&) {
         }
     }
 
 public:
-    async::event_task<void> gate;
-    async::shared_task<void> gateTask = gate.get_task().share();
+    std::atomic<bool> gate{false};
     bool waiting = false;
     bool defer = true;
 
 protected:
-    async::task<void> onLoadScene(const World::Scene& scene) override {
-        return Local::onLoadScene(scene).then(scheduler(), [this] {
+    exec::task<void> onLoadScene(const World::Scene& scene) override {
+        co_await Local::onLoadScene(scene);
+        if (defer) {
             waiting = true;
-            return defer ? gateTask.then(async::inline_scheduler(), [] {}) : async::make_task();
-        });
+            while (!gate.load()) {
+                checkLoadCancelled();
+                co_await stdexec::schedule(scheduler());
+            }
+        }
     }
 };
 
 TEST_F(FrameworkLocal, CancelsPreparedGpuResourcesBeforePublishingAndAllowsRetry) {
     DeferredLocal local;
-    auto task = local.loadAsync([] { return std::make_unique<Scene>(); });
+    local.loadAsync([] { return std::make_unique<Scene>(); });
     const auto deadline = Clock::now() + std::chrono::seconds(5);
     while (!local.waiting && Clock::now() < deadline) {
         local.update({});
@@ -327,25 +423,25 @@ TEST_F(FrameworkLocal, CancelsPreparedGpuResourcesBeforePublishingAndAllowsRetry
     }
     ASSERT_TRUE(local.waiting);
     local.cancelLoad();
-    EXPECT_FALSE(task.ready());
-    local.gate.set();
-    EXPECT_THROW(local.waitForLoad(), async::task_canceled);
-    EXPECT_THROW(task.get(), async::task_canceled);
+    EXPECT_EQ(local.state(), Framework::Base::State::Loading);
+    local.gate.store(true);
+    EXPECT_THROW(local.waitForLoad(), Framework::Base::LoadCanceled);
     EXPECT_EQ(local.state(), Framework::Base::State::Idle);
     std::filesystem::remove(root_ / "assets/texture.vetexture");
     // A committed GPU cache would hide this missing file on retry.
     local.defer = false;
     EXPECT_THROW(local.load([] { return std::make_unique<Scene>(); }), std::runtime_error);
-    write("assets/texture.vetexture", Schema::Texture{1, 1, {128, 0, 0, 128}});
+
+    const std::array<uint8_t, 4> pixels = {128, 0, 0, 128};
+    writeTexture("assets/texture.vetexture", 1, 1, pixels);
     EXPECT_NO_THROW(local.load([] { return std::make_unique<Scene>(); }));
     EXPECT_FALSE(local.loadCancelled());
 }
 
 TEST_F(FrameworkLocal, CancelsOutstandingTasksBeforeDestroyingGlContext) {
-    async::task<void> task;
     {
         auto local = std::make_unique<DeferredLocal>();
-        task = local->loadAsync([] { return std::make_unique<Scene>(); });
+        local->loadAsync([] { return std::make_unique<Scene>(); });
         const auto deadline = Clock::now() + std::chrono::seconds(5);
         while (!local->waiting && Clock::now() < deadline) {
             local->update({});
@@ -353,8 +449,6 @@ TEST_F(FrameworkLocal, CancelsOutstandingTasksBeforeDestroyingGlContext) {
         }
         ASSERT_TRUE(local->waiting);
     }
-    ASSERT_TRUE(task.ready());
-    EXPECT_THROW(task.get(), async::task_canceled);
     EXPECT_EQ(gl3wProcs, nullptr);
 }
 }
@@ -367,7 +461,7 @@ TEST_F(FrameworkLocal, LoadsGraphicsResourcesDirectlyWithoutSceneOrFactory) {
     auto texture = Framework::Resources::loadTexture("/assets/texture.vetexture");
     EXPECT_EQ(first.state(), Framework::Base::State::Idle);
     EXPECT_FALSE(mesh->empty());
-    EXPECT_EQ(material->albedoTexture, "assets/texture.vetexture");
+    EXPECT_EQ(material->albedo_texture(), "assets/texture.vetexture");
     EXPECT_EQ(texture->size(), (Size{1, 1}));
     EXPECT_EQ(Framework::Resources::loadMesh("/assets/./mesh.vemesh"), mesh);
     EXPECT_EQ(Framework::Resources::loadTexture("./assets/texture.vetexture"), texture);

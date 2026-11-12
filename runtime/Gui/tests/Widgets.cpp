@@ -173,7 +173,7 @@ TEST(GuiWidgets, SliderRangeClampsAndHandlesExtremeFiniteValues) {
         slider.event(Gui::KeyEvent{Gui::KeyEvent::Action::Down, Gui::KeyEvent::Key::Right}, platform));
     EXPECT_FLOAT_EQ(slider.value(), std::numeric_limits<float>::max());
     platform.rectangles.clear();
-    slider.draw(platform);
+    platform.draw(slider);
     EXPECT_EQ(platform.rectangles.back(), (Rectf{80, 0, 20, 20}));
 }
 
@@ -181,7 +181,7 @@ TEST(GuiWidgets, ProgressClampsAndDrawsFractionWithoutInputHandling) {
     TestPlatform platform;
     Gui::ProgressBar progress;
     progress.layout({0, 0, 100, 20}, platform);
-    progress.draw(platform);
+    platform.draw(progress);
     EXPECT_EQ(platform.fills, 0);
     EXPECT_EQ(platform.strokes.size(), 1);
     const auto revision = progress.revision();
@@ -190,7 +190,7 @@ TEST(GuiWidgets, ProgressClampsAndDrawsFractionWithoutInputHandling) {
     progress.setValue(0.5f);
     EXPECT_GT(progress.revision(), revision);
     platform.rectangles.clear();
-    progress.draw(platform);
+    platform.draw(progress);
     EXPECT_EQ(platform.rectangles.back(), (Rectf{1, 1, 49, 18}));
     progress.setValue(-1);
     EXPECT_FLOAT_EQ(progress.value(), 0);
@@ -219,9 +219,9 @@ TEST(GuiWidgets, MeasurementsFollowStyleAndDrawingHandlesZeroSize) {
     box.layout({0, 0, 0, 0}, platform);
     slider.layout({0, 0, 0, 0}, platform);
     progress.layout({0, 0, 0, 0}, platform);
-    box.draw(platform);
-    slider.draw(platform);
-    progress.draw(platform);
+    platform.draw(box);
+    platform.draw(slider);
+    platform.draw(progress);
     EXPECT_TRUE(platform.rectangles.empty());
     EXPECT_FALSE(slider.event(Gui::PointerEvent{Gui::PointerEvent::Action::Down}, platform));
     slider.layout({0, 0, 10, 20}, platform);
@@ -232,13 +232,13 @@ TEST(GuiWidgets, CheckBoxDrawsCheckAndDisabledState) {
     TestPlatform platform;
     Gui::CheckBox box;
     box.layout({0, 0, 20, 20}, platform);
-    box.draw(platform);
+    platform.draw(box);
     EXPECT_EQ(platform.strokes.size(), 1);
     EXPECT_EQ(platform.colors.back(), platform.style().textColor());
     platform.strokes.clear();
     box.setChecked(true);
     box.setEnabled(false);
-    box.draw(platform);
+    platform.draw(box);
     EXPECT_EQ(platform.strokes.size(), 2);
     EXPECT_EQ(platform.colors.back(), platform.style().disabledTextColor());
 }

@@ -9,6 +9,7 @@
 
 #include <Volcano/Color.h>
 #include <Volcano/Rect.h>
+#include <Volcano/World/Canvas.h>
 #include <Volcano/Gui/Event.h>
 #include <Volcano/Gui/Platform.h>
 
@@ -109,7 +110,7 @@ public:
     // available is a finite, nonnegative size; measure does not change the arranged bounds.
     virtual Sizef measure(Platform& platform, Sizef available) const;
     virtual void layout(const Rectf& bounds, Platform& platform);
-    void draw(Platform& platform) const;
+    void draw(World::Canvas& canvas, Platform& platform) const;
     virtual Widget* hit(float x, float y);
     bool acceptsInput(const Widget& target) const noexcept;
     virtual bool focusable() const noexcept {
@@ -127,7 +128,7 @@ public:
 protected:
     void changed() noexcept;
     void setBounds(const Rectf& bounds);
-    virtual void paint(Platform& platform) const;
+    virtual void paint(World::Canvas& canvas, Platform& platform) const;
 
 private:
     void checkTreeChange() const;

@@ -88,7 +88,7 @@ TEST(GuiDocument, DocumentsBorrowOnePlatformAndDrawThroughIt) {
     Gui::Document first(platform, std::move(root));
     EXPECT_EQ(&first.platform(), &platform);
     first.layout({20, 20});
-    first.draw();
+    platform.draw(first);
     EXPECT_EQ(platform.fills, 1);
     {
         auto other = std::make_unique<Gui::Layout>();
@@ -96,10 +96,10 @@ TEST(GuiDocument, DocumentsBorrowOnePlatformAndDrawThroughIt) {
         Gui::Document second(platform, std::move(other));
         EXPECT_EQ(&second.platform(), &first.platform());
         second.layout({30, 30});
-        second.draw();
+        platform.draw(second);
         EXPECT_EQ(platform.fills, 2);
     }
-    first.draw();
+    platform.draw(first);
     EXPECT_EQ(platform.fills, 3);
 }
 } // namespace
@@ -382,18 +382,18 @@ TEST(GuiStyle, PlatformStyleIsUsedAtDrawTimeAndExplicitTextColorTakesPriority) {
     text->setText("text");
     Gui::Document document(platform, std::move(root));
     document.layout({100, 100});
-    document.draw();
+    platform.draw(document);
     EXPECT_EQ(platform.colors, (std::vector<Colorf>{Colorf::White}));
 
     platform.currentStyle.setTextColor(Colorf::Red);
     platform.colors.clear();
-    document.draw();
+    platform.draw(document);
     EXPECT_EQ(platform.colors, (std::vector<Colorf>{Colorf::Red}));
 
     text->setColor(Colorf::Blue);
     platform.currentStyle.setTextColor(Colorf::Green);
     platform.colors.clear();
-    document.draw();
+    platform.draw(document);
     EXPECT_EQ(platform.colors, (std::vector<Colorf>{Colorf::Blue}));
 }
 
@@ -409,16 +409,16 @@ TEST(GuiStyle, ButtonUsesCurrentPressedOverlayAndDocumentsShareStyle) {
     Gui::Document second(platform, std::move(otherRoot));
     first.layout({100, 100});
     second.layout({100, 100});
-    first.draw();
+    platform.draw(first);
     EXPECT_TRUE(platform.colors.empty());
     button->setPressed(true);
-    first.draw();
+    platform.draw(first);
     EXPECT_EQ(platform.colors, (std::vector<Colorf>{Colorf{0, 0, 0, 0.2f}}));
     platform.currentStyle.setButtonPressedColor(Colorf::Red);
     other->setPressed(true);
     platform.colors.clear();
-    first.draw();
-    second.draw();
+    platform.draw(first);
+    platform.draw(second);
     EXPECT_EQ(platform.colors, (std::vector<Colorf>{Colorf::Red, Colorf::Red}));
 }
 } // namespace
@@ -437,7 +437,7 @@ TEST(GuiStyle, FontSizeAndLineHeightDriveMeasurementWrappingAndDrawing) {
     document.layout({100, 200});
     EXPECT_FLOAT_EQ(text->fontSize(platform), 10);
     EXPECT_FLOAT_EQ(text->bounds().height, 40);
-    document.draw();
+    platform.draw(document);
     EXPECT_EQ(platform.drawnText, (std::vector<std::string>{"abcd", "ef"}));
     EXPECT_EQ(platform.textSizes, (std::vector<float>{10, 10}));
     EXPECT_EQ(platform.textBaselines, (std::vector<float>{10, 30}));
@@ -453,7 +453,7 @@ TEST(GuiStyle, FontSizeAndLineHeightDriveMeasurementWrappingAndDrawing) {
     platform.drawnText.clear();
     platform.textSizes.clear();
     platform.textBaselines.clear();
-    document.draw();
+    platform.draw(document);
     EXPECT_EQ(platform.drawnText, (std::vector<std::string>{"ab", "cd", "ef"}));
     EXPECT_EQ(platform.textSizes, (std::vector<float>{20, 20, 20}));
     EXPECT_EQ(platform.textBaselines, (std::vector<float>{20, 60, 100}));
@@ -468,11 +468,11 @@ TEST(GuiStyle, DisabledTextUsesAncestorStateAndExplicitColorStillWins) {
     text.setText("text");
     parent.layout({0, 0, 100, 100}, platform);
     parent.setEnabled(false);
-    parent.draw(platform);
+    platform.draw(parent);
     EXPECT_EQ(platform.colors, (std::vector<Colorf>{Colorf::Green}));
     text.setColor(Colorf::Blue);
     platform.colors.clear();
-    parent.draw(platform);
+    platform.draw(parent);
     EXPECT_EQ(platform.colors, (std::vector<Colorf>{Colorf::Blue}));
 }
 
@@ -484,30 +484,30 @@ TEST(GuiStyle, BackgroundAndInsetBorderUseStyleAndExplicitTransparentBackgroundW
     Gui::Widget widget;
     widget.layout({10, 20, 40, 30}, platform);
     EXPECT_EQ(widget.background(platform), Colorf::Red);
-    widget.draw(platform);
+    platform.draw(widget);
     EXPECT_EQ(platform.colors, (std::vector<Colorf>{Colorf::Red, Colorf::Blue}));
     EXPECT_EQ(platform.rectangles, (std::vector<Rectf>{{10, 20, 40, 30}, {12, 22, 36, 26}}));
     EXPECT_EQ(platform.strokes, (std::vector<float>{4}));
     widget.setBackground(Colorf::Transparent);
     EXPECT_EQ(widget.background(platform), Colorf::Transparent);
     platform.colors.clear();
-    widget.draw(platform);
+    platform.draw(widget);
     EXPECT_EQ(platform.colors, (std::vector<Colorf>{Colorf::Blue}));
     platform.currentStyle.setBorderWidth(0);
     platform.colors.clear();
-    widget.draw(platform);
+    platform.draw(widget);
     EXPECT_TRUE(platform.colors.empty());
 
     platform.currentStyle.setBorderWidth(20);
     widget.layout({0, 0, 2, 1}, platform);
     platform.rectangles.clear();
     platform.strokes.clear();
-    widget.draw(platform);
+    platform.draw(widget);
     EXPECT_EQ(platform.strokes, (std::vector<float>{1}));
     EXPECT_EQ(platform.rectangles, (std::vector<Rectf>{{0.5f, 0.5f, 1, 0}}));
     widget.layout({0, 0, 0, 0}, platform);
     platform.strokes.clear();
-    widget.draw(platform);
+    platform.draw(widget);
     EXPECT_TRUE(platform.strokes.empty());
 }
 
@@ -516,11 +516,11 @@ TEST(GuiStyle, ImageUsesCurrentTint) {
     Gui::Image image;
     image.setSource("image");
     image.layout({0, 0, 40, 20}, platform);
-    image.draw(platform);
+    platform.draw(image);
     EXPECT_EQ(platform.colors, (std::vector<Colorf>{Colorf::White}));
     platform.currentStyle.setImageColor(Colorf::Red);
     platform.colors.clear();
-    image.draw(platform);
+    platform.draw(image);
     EXPECT_EQ(platform.colors, (std::vector<Colorf>{Colorf::Red}));
 }
 
@@ -546,5 +546,32 @@ TEST(GuiStyle, RejectsInvalidMetricsWithoutChangingConfiguration) {
     EXPECT_NO_THROW(style.setFontSize(4096));
     EXPECT_NO_THROW(style.setLineHeight(0.5f));
     EXPECT_NO_THROW(style.setBorderWidth(0));
+}
+
+TEST(GuiDocument, ImplementsTextureInterfaceAndValidatesSize) {
+    Gui::Document doc(std::make_unique<Gui::Layout>(), Size{128, 64});
+    EXPECT_EQ(doc.size(), (Size{128, 64}));
+
+    doc.setSize({256, 128});
+    EXPECT_EQ(doc.size(), (Size{256, 128}));
+
+    const World::Texture& asTexture = doc;
+    EXPECT_EQ(asTexture.size(), (Size{256, 128}));
+
+    const World::Canvas& asCanvas = doc;
+    EXPECT_EQ(asCanvas.size(), (Size{256, 128}));
+
+    EXPECT_THROW(doc.setSize({-1, 64}), std::invalid_argument);
+    EXPECT_THROW(doc.setSize({128, -1}), std::invalid_argument);
+}
+
+TEST(GuiDocument, RecordsCommandsDirectlyIntoCanvas) {
+    auto root = std::make_unique<Gui::Layout>();
+    root->setBackground(Colorf::Red);
+    Gui::Document doc(std::move(root), Size{100, 100});
+    doc.layout({100, 100});
+    doc.draw();
+
+    EXPECT_EQ(doc.commands().size(), 1);
 }
 } // namespace

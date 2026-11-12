@@ -39,7 +39,7 @@ target_include_directories(Gui PUBLIC
 volcano_target_setup(Gui)
 set_target_properties(Gui PROPERTIES OUTPUT_NAME VolcanoGui)
 
-target_link_libraries(Gui PUBLIC Base)
+target_link_libraries(Gui PUBLIC Base World)
 target_compile_definitions(Gui PUBLIC LAY_FLOAT=1)
 
 if(BUILD_TESTING)

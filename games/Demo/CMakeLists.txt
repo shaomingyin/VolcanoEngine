@@ -18,5 +18,5 @@ target_include_directories(Demo PUBLIC
 )
 
 volcano_game_setup(Demo)
-target_link_libraries(Demo PUBLIC World)
+target_link_libraries(Demo PUBLIC World Gui)
 set_target_properties(Demo PROPERTIES OUTPUT_NAME VolcanoDemo)

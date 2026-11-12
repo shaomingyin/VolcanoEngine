@@ -28,23 +28,23 @@ Sizef ProgressBar::measure(Platform& platform, Sizef available) const {
     return size;
 }
 
-void ProgressBar::paint(Platform& platform) const {
-    Widget::paint(platform);
+void ProgressBar::paint(World::Canvas& canvas, Platform& platform) const {
+    Widget::paint(canvas, platform);
     if (bounds().empty()) {
         return;
     }
     const float width = std::min({1.0f, bounds().width, bounds().height});
     const auto& style = platform.style();
-    platform.setColor(root().acceptsInput(*this) ? style.textColor() : style.disabledTextColor());
-    platform.beginPath();
-    platform.rect({bounds().left + width * 0.5f, bounds().top + width * 0.5f, bounds().width - width,
+    canvas.setColor(root().acceptsInput(*this) ? style.textColor() : style.disabledTextColor());
+    canvas.beginPath();
+    canvas.rect({bounds().left + width * 0.5f, bounds().top + width * 0.5f, bounds().width - width,
                    bounds().height - width});
-    platform.stroke(width);
+    canvas.stroke(width);
     if (value_ > 0 && bounds().width > width * 2 && bounds().height > width * 2) {
-        platform.beginPath();
-        platform.rect({bounds().left + width, bounds().top + width, (bounds().width - width * 2) * value_,
+        canvas.beginPath();
+        canvas.rect({bounds().left + width, bounds().top + width, (bounds().width - width * 2) * value_,
                        bounds().height - width * 2});
-        platform.fill();
+        canvas.fill();
     }
 }
 

@@ -241,40 +241,40 @@ void Widget::layout(const Rectf& bounds, Platform& platform) {
     }
 }
 
-void Widget::paint(Platform& platform) const {
+void Widget::paint(World::Canvas& canvas, Platform& platform) const {
     const auto& color = background(platform);
     if (color.alpha() != 0) {
-        platform.setColor(color);
-        platform.beginPath();
-        platform.rect(bounds_);
-        platform.fill();
+        canvas.setColor(color);
+        canvas.beginPath();
+        canvas.rect(bounds_);
+        canvas.fill();
     }
 }
 
-void Widget::draw(Platform& platform) const {
+void Widget::draw(World::Canvas& canvas, Platform& platform) const {
     if (!visible_) {
         return;
     }
-    paint(platform);
+    paint(canvas, platform);
     if (!children_.empty()) {
-        platform.save();
-        auto restore = scopeGuard([&platform] {
-            platform.restore();
+        canvas.save();
+        auto restore = scopeGuard([&canvas] {
+            canvas.restore();
         });
-        platform.setClip(bounds_);
+        canvas.setClip(bounds_);
         for (const auto& child : children_) {
-            child->draw(platform);
+            child->draw(canvas, platform);
         }
     }
     const auto& style = platform.style();
     if (style.borderWidth() > 0 && style.borderColor().alpha() != 0 && !bounds_.empty()) {
         const float width = std::min({style.borderWidth(), bounds_.width, bounds_.height});
         const float inset = width * 0.5f;
-        platform.setColor(style.borderColor());
-        platform.beginPath();
-        platform.rect(
+        canvas.setColor(style.borderColor());
+        canvas.beginPath();
+        canvas.rect(
             {bounds_.left + inset, bounds_.top + inset, bounds_.width - width, bounds_.height - width});
-        platform.stroke(width);
+        canvas.stroke(width);
     }
 }
 

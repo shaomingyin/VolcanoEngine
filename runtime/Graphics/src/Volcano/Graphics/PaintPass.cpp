@@ -200,7 +200,7 @@ void PaintPass::curve(std::vector<Eigen::Vector2f>& points, const Eigen::Vector2
     curve(points,mid,bcd,cd,d,depth+1);
 }
 
-std::vector<PaintPass::Contour> PaintPass::flatten(const Canvas::Command& command) const {
+std::vector<PaintPass::Contour> PaintPass::flatten(const World::Canvas::Command& command) const {
     std::vector<Contour> contours;
     const auto& transform = command.state.transform;
     Eigen::Vector2f previous = Eigen::Vector2f::Zero();
@@ -209,31 +209,31 @@ std::vector<PaintPass::Contour> PaintPass::flatten(const Canvas::Command& comman
         if (!point.allFinite() || !(transform*segment.control1).allFinite() || !(transform*segment.control2).allFinite()) {
             throw std::invalid_argument("VG path transform overflow");
         }
-        if (segment.verb != Canvas::Verb::Move && segment.verb != Canvas::Verb::Close &&
+        if (segment.verb != World::Canvas::Verb::Move && segment.verb != World::Canvas::Verb::Close &&
             !contours.empty() && contours.back().closed) {
             contours.push_back({{previous},false});
         }
         switch (segment.verb) {
-        case Canvas::Verb::Move:
+        case World::Canvas::Verb::Move:
             contours.push_back({{point}, false});
             previous = point;
             break;
-        case Canvas::Verb::Line:
+        case World::Canvas::Verb::Line:
             contours.back().points.push_back(point);
             previous = point;
             break;
-        case Canvas::Verb::Quad: {
+        case World::Canvas::Verb::Quad: {
             const Eigen::Vector2f control = transform * segment.control1;
             curve(contours.back().points, previous, previous+(control-previous)*(2.0f/3),
                 point+(control-point)*(2.0f/3), point, 0);
             previous = point;
             break;
         }
-        case Canvas::Verb::Cubic:
+        case World::Canvas::Verb::Cubic:
             curve(contours.back().points,previous,transform*segment.control1,transform*segment.control2,point,0);
             previous = point;
             break;
-        case Canvas::Verb::Close:
+        case World::Canvas::Verb::Close:
             contours.back().closed = true;
             previous = contours.back().points.front();
             break;
@@ -289,7 +289,7 @@ void PaintPass::flushGlyphs() {
     }
 }
 
-void PaintPass::paint(const Canvas::State& state, int textureMode) {
+void PaintPass::paint(const World::Canvas::State& state, int textureMode) {
     program_.uniform4f(inner_,state.inner.red(),state.inner.green(),state.inner.blue(),state.inner.alpha());
     program_.uniform4f(outer_,state.outer.red(),state.outer.green(),state.outer.blue(),state.outer.alpha());
     program_.uniform(gradient_,state.gradient);
@@ -315,7 +315,7 @@ void PaintPass::paint(const Canvas::State& state, int textureMode) {
     }
 }
 
-void PaintPass::shape(const Canvas::Command& command, bool stroke) {
+void PaintPass::shape(const World::Canvas::Command& command, bool stroke) {
     auto contours = flatten(command);
     if (stroke) {
         const Eigen::Affine2f inverse = command.state.transform.inverse();
@@ -388,7 +388,7 @@ void PaintPass::shape(const Canvas::Command& command, bool stroke) {
             Eigen::Vector2f a=points[i], b=points[(i+1)%points.size()];
             const Eigen::Vector2f direction=(b-a).normalized();
             const Eigen::Vector2f n(-direction.y()*half,direction.x()*half);
-            if (!contour.closed && command.state.cap==Canvas::LineCap::Square) {
+            if (!contour.closed && command.state.cap==World::Canvas::LineCap::Square) {
                 if (i==0) {
                     a-=direction*half;
                 }
@@ -410,12 +410,12 @@ void PaintPass::shape(const Canvas::Command& command, bool stroke) {
         for (std::size_t i=0;i<points.size();++i) {
             const bool endpoint = !contour.closed && (i==0 || i+1==points.size());
             if (endpoint) {
-                if (command.state.cap==Canvas::LineCap::Round) {
+                if (command.state.cap==World::Canvas::LineCap::Round) {
                     disc(points[i],half);
                 }
                 continue;
             }
-            if (command.state.join==Canvas::LineJoin::Round) {
+            if (command.state.join==World::Canvas::LineJoin::Round) {
                 disc(points[i],half);
                 continue;
             }
@@ -427,16 +427,16 @@ void PaintPass::shape(const Canvas::Command& command, bool stroke) {
                 const Eigen::Vector2f a=points[i]+n1*half,b=points[i]+n2*half;
                 const Eigen::Vector2f sum=n1+n2;
                 const float denominator=sum.dot(n1);
-                if (command.state.join==Canvas::LineJoin::Miter && denominator>1e-6f &&
-                    (sum/denominator).norm()<=command.state.miterLimit) {
-                    const Eigen::Vector2f tip=points[i]+sum*(half/denominator);
-                    triangle(a,tip,b);
-                    triangle(a,b,points[i]);
-                    edge(a,tip);
-                    edge(tip,b);
+                if (command.state.join == World::Canvas::LineJoin::Miter && denominator > 1e-6f &&
+                    (sum / denominator).norm() <= command.state.miterLimit) {
+                    const Eigen::Vector2f tip = points[i] + sum * (half / denominator);
+                    triangle(a, tip, b);
+                    triangle(a, b, points[i]);
+                    edge(a, tip);
+                    edge(tip, b);
                 } else {
-                    triangle(a,b,points[i]);
-                    edge(a,b);
+                    triangle(a, b, points[i]);
+                    edge(a, b);
                 }
             }
         }
@@ -444,19 +444,19 @@ void PaintPass::shape(const Canvas::Command& command, bool stroke) {
     if (triangles.empty()) {
         return;
     }
-    const float expansion=stroke ? half*command.state.miterLimit*scale+2 : 2;
-    low.array()-=expansion;
-    high.array()+=expansion;
+    const float expansion = stroke ? half * command.state.miterLimit * scale + 2 : 2;
+    low.array() -= expansion;
+    high.array() += expansion;
     glEnable(GL_STENCIL_TEST);
     glStencilMask(0xff);
     glClearStencil(0);
     glClear(GL_STENCIL_BUFFER_BIT);
-    glColorMask(GL_FALSE,GL_FALSE,GL_FALSE,GL_FALSE);
-    glStencilFunc(GL_ALWAYS,0,0xff);
+    glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+    glStencilFunc(GL_ALWAYS, 0, 0xff);
     if (stroke) {
-        glStencilOp(GL_KEEP,GL_KEEP,GL_REPLACE);
-        glStencilFunc(GL_ALWAYS,1,0xff);
-    } else if (command.rule==Canvas::FillRule::EvenOdd) {
+        glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+        glStencilFunc(GL_ALWAYS, 1, 0xff);
+    } else if (command.rule == World::Canvas::FillRule::EvenOdd) {
         glStencilOp(GL_KEEP,GL_KEEP,GL_INVERT);
     } else {
         glStencilOpSeparate(GL_FRONT,GL_KEEP,GL_KEEP,GL_INCR_WRAP);
@@ -474,87 +474,114 @@ void PaintPass::shape(const Canvas::Command& command, bool stroke) {
     glDisable(GL_STENCIL_TEST);
 }
 
-void PaintPass::render(const Canvas& commands, Target& target, bool clear) {
+const Font* PaintPass::resolveFont(const World::Canvas::Command& command) const {
+    if (font_resolver_) {
+        return font_resolver_(command.font);
+    }
+    return nullptr;
+}
+
+const Texture* PaintPass::resolveTexture(const World::Canvas::Command& command) const {
+    if (command.textureRef) {
+        return static_cast<const Texture*>(command.textureRef.get());
+    }
+    if (texture_resolver_) {
+        return texture_resolver_(command);
+    }
+    return nullptr;
+}
+
+void PaintPass::render(const World::Canvas& commands, Target& target, bool clear) {
     VOLCANO_ASSERT(commands.ready());
-    for (const auto* texture : commands.sampledTextures()) {
-        if (target.contains(*texture)) {
-            throw std::invalid_argument("VG cannot sample its output texture");
+    for (const auto& command : commands.commands()) {
+        if (command.type == World::Canvas::Command::Type::Image) {
+            const auto* texture = resolveTexture(command);
+            if (texture != nullptr && target.contains(*texture)) {
+                throw std::invalid_argument("VG cannot sample its output texture");
+            }
         }
     }
     glyph_vertices_.clear();
     glyph_texture_ = 0;
-    width_=target.width();
-    height_=target.height();
-    if (width_<=0 || height_<=0) {
+    width_ = target.width();
+    height_ = target.height();
+    if (width_ <= 0 || height_ <= 0) {
         return;
     }
     target.bind();
-    glViewport(0,0,width_,height_);
+    glViewport(0, 0, width_, height_);
     glDisable(GL_DEPTH_TEST);
     glDepthMask(GL_FALSE);
     glDisable(GL_CULL_FACE);
     glDisable(GL_SCISSOR_TEST);
     glDisable(GL_STENCIL_TEST);
     glDisable(GL_FRAMEBUFFER_SRGB);
-    glColorMask(GL_TRUE,GL_TRUE,GL_TRUE,GL_TRUE);
+    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
     glEnable(GL_BLEND);
     glBlendEquation(GL_FUNC_ADD);
-    glBlendFunc(GL_ONE,GL_ONE_MINUS_SRC_ALPHA);
+    glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
     glActiveTexture(GL_TEXTURE0);
-    glBindSampler(0,0);
+    glBindSampler(0, 0);
     if (clear) {
-        glClearColor(0,0,0,0);
+        glClearColor(0, 0, 0, 0);
         glClear(GL_COLOR_BUFFER_BIT);
     }
     program_.use();
-    program_.uniform2f(viewport_,static_cast<float>(width_),static_cast<float>(height_));
-    program_.uniform("uImage",0);
-    for (const auto& command : commands.commands_) {
-        paint(command.state,0);
+    program_.uniform2f(viewport_, static_cast<float>(width_), static_cast<float>(height_));
+    program_.uniform("uImage", 0);
+    for (const auto& command : commands.commands()) {
+        paint(command.state, 0);
         switch (command.type) {
-        case Canvas::Command::Type::Fill:
-            shape(command,false);
+        case World::Canvas::Command::Type::Fill:
+            shape(command, false);
             break;
-        case Canvas::Command::Type::Stroke:
-            shape(command,true);
+        case World::Canvas::Command::Type::Stroke:
+            shape(command, true);
             break;
-        case Canvas::Command::Type::Image:
-            program_.uniform(mode_,1);
-            command.texture->texture().bind(0);
-            quad(command.rect,{0,1,1,-1},command.state.transform);
+        case World::Canvas::Command::Type::Image: {
+            const auto* texture = resolveTexture(command);
+            if (texture != nullptr) {
+                program_.uniform(mode_, 1);
+                texture->texture().bind(0);
+                quad(command.destination, {0, 1, 1, -1}, command.state.transform);
+            }
             break;
-        case Canvas::Command::Type::Text: {
-            program_.uniform(mode_,2);
-            const auto* font=command.state.font;
-            const auto& text=command.text;
-            float offset=0;
-            if (command.state.align!=Canvas::TextAlign::Left) {
-                offset=font->measure(text,command.state.pixels).width;
-                if (command.state.align==Canvas::TextAlign::Center) {
-                    offset*=0.5f;
+        }
+        case World::Canvas::Command::Type::Text: {
+            const auto* font = resolveFont(command);
+            if (font == nullptr) {
+                break;
+            }
+            program_.uniform(mode_, 2);
+            const auto& text = command.text;
+            float offset = 0;
+            if (command.state.align != World::Canvas::TextAlign::Left) {
+                offset = font->measure(text, command.pixels).width;
+                if (command.state.align == World::Canvas::TextAlign::Center) {
+                    offset *= 0.5f;
                 }
             }
-            const float displayScale=std::max(command.state.transform.linear().col(0).norm(),
+            const float displayScale = std::max(command.state.transform.linear().col(0).norm(),
                 command.state.transform.linear().col(1).norm());
-            const float rasterSize=std::ceil(command.state.pixels*displayScale);
-            if (!(rasterSize>=1 && rasterSize<=4096)) {
+            const float rasterSize = std::ceil(command.pixels * displayScale);
+            if (!(rasterSize >= 1 && rasterSize <= 4096)) {
                 throw std::invalid_argument("Transformed font size exceeds rasterizer limits");
             }
-            const auto pixels=static_cast<unsigned int>(rasterSize);
-            const float ratio=command.state.pixels/pixels;
-            for (const auto& shaped : font->shape(text,command.state.pixels)) {
-                if (shaped.font==nullptr) {
+            const auto pixels = static_cast<unsigned int>(rasterSize);
+            const float ratio = command.pixels / pixels;
+            for (const auto& shaped : font->shape(text, command.pixels)) {
+                if (shaped.font == nullptr) {
                     continue;
                 }
-                const auto image=glyph(*shaped.font,shaped.index,pixels);
+                const auto image = glyph(*shaped.font, shaped.index, pixels);
                 if (glyph_texture_ != image.texture->id()) {
                     flushGlyphs();
                     glyph_texture_ = image.texture->id();
                 }
-                const auto& entry=image.entry;
-                quad({command.rect.left+shaped.x+entry.left*ratio-offset,
-                    command.rect.top+shaped.y-entry.top*ratio,entry.width*ratio,entry.height*ratio},
-                    entry.uv,command.state.transform);
+                const auto& entry = image.entry;
+                quad({command.destination.left + shaped.x + entry.left * ratio - offset,
+                    command.destination.top + shaped.y - entry.top * ratio, entry.width * ratio, entry.height * ratio},
+                    entry.uv, command.state.transform);
             }
             flushGlyphs();
             glyph_texture_ = 0;

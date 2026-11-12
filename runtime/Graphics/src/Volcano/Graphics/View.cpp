@@ -114,12 +114,12 @@ void View::end() {
     state_ = State::Ready;
 }
 
-void View::add(Target& target, const Canvas& commands) {
+void View::add(Target& target, const World::Canvas& commands) {
     VOLCANO_ASSERT(state_ == State::Building && commands.ready());
     vg_tasks_.push_back({target, commands});
 }
 
-void View::add(const Canvas& commands) {
+void View::add(const World::Canvas& commands) {
     VOLCANO_ASSERT(state_ == State::Building && commands.ready());
     overlays_.push_back(commands);
 }

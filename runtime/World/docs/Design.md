@@ -12,6 +12,9 @@ World 不创建 GPU、Jolt、音频后端对象，不调用文件加载、渲染
 
 ## 类与值语义
 
+`World::Scene` 按值持有 `entt::registry` 作为成员，不再直接继承 `entt::registry`。
+`Scene` 对外封装常规的实体与组件生命周期操作（`create`、`destroy`、`valid`、`clear`、`emplace`、`get`、`try_get`、`view`、`patch` 等），并提供 `registry()` 与 `const registry()` 访问器，以支持底层扩展和外部系统（如物理系统、视图构建器）按需直接访问注册表。
+
 World 的工程自有组件使用 class，成员数据私有，提供构造、const 查询和显式修改方法。
 不返回可修改的成员引用、指针或容器迭代器；修改嵌套数据时先复制、修改，再通过方法写回。
 默认构造产生可使用的默认值；资源路径为空表示尚未指定资源，加载时由 Framework 报告缺失。
@@ -108,9 +111,9 @@ EnTT 按具体类型存储，view<Camera>() 不会查询到派生组件。Framew
 | --- | --- | --- |
 | Inherent | 名称、enabled/visible 标记 | 游戏逻辑、Framework |
 | Base::Transform | 平移、缩放、旋转，按需生成仿射矩阵 | 游戏逻辑、Physics 写回、Framework 提取 |
-| Model | 模型资源路径 | Framework 加载 Schema 资源并准备 GPU 对象 |
-| PerspectiveCamera / OrthographicCamera | 相机参数及局部变换 | Framework 提取并交给 Graphics |
-| DirectionalLight / PointLight / SpotLight | 灯光参数及局部变换 | Framework 提取并交给 Graphics |
+| Model | 模型资源路径及其实例化材质定制（Material 映射） | Framework 加载 Asset 资源并准备 GPU 对象，关联材质与网格 |
+| PerspectiveCamera / OrthographicCamera | 相机参数及局部变换 | Framework 提取设置视图/投影矩阵 |
+| DirectionalLight / PointLight / SpotLight | 灯光参数及局部变换 | Framework 提取并加入 View |
 | RigidBody | 形状、形状局部 offset、运动类型、质量、表面属性、阻尼、重力倍率 | Physics 转换为后端对象并模拟 |
 | AudioSource | 声音路径、局部变换、增益、音高、循环、空间化、期望播放状态 | 声音子系统；目前尚无播放后端 |
 | AudioListener | 监听局部变换和增益 | 声音子系统；目前尚无播放后端 |
@@ -157,10 +160,9 @@ World 的公共头文件应能够独立包含。窗口和真实渲染验证需�
 
 物理组件细节见 [RigidBody](RigidBody.md)；运行策略见 [Framework](../../Framework/docs/Framework.md)。
 
-## 场景共享资源
+## 视图提取与渲染解耦
 
-World 的描述能力不局限于 EnTT 表。Scene 在实体之外独占持有共享 Texture 描述，以字符串标识引用；World 依赖仅含逻辑及接口的 Gui，不依赖 Graphics。FileTexture 保存 PhysFS 路径；GuiTexture 持有 Document；DrawingTexture 保存提供者标识及显式依赖；CameraTexture 保存相机引用。GeneratedTexture 的尺寸配置由对象自己管理。
-
-Model 的 textureOverrides 以规范化的完整材质虚拟路径为键，以场景纹理 ID 为值。Hud 组件描述相同纹理在窗口中的目标矩形及层次顺序。描述中不保存 GL 对象或 Graphics 指针。
-
-组件保持值语义；Scene 独占资源树和 GUI 描述不要求可复制。具体加载、字体、运行时绘图回调、生成任务及资源卸载由 Framework 与子系统完成；首版不新增持久化格式。
+- **纯粹的状态数据库**：`World::Scene` 保持为纯净的 ECS 状态容器，不内建任何图形概念或 Draw List 生成逻辑，服务端与客户端 100% 共享相同的场景与组件。
+- **第三方视角提取**：`Framework`（如 `Local`）以特定相机（`entt::entity camera`）的视角从 `Scene` 提取可见实体、材质与光照，直接组装填充 `Graphics::View`。
+- **Graphics::View 即绘制列表**：消除中间的 `DrawList3D` 或 `World::View` 冗余抽象，`Graphics::View` 本身即为包含 3D 渲染项、光源、相机矩阵及 2D Canvas 的完整 Draw List，直接送入 `Renderer::render(view, target)` 执行渲染。
+- **材质与纹理归位**：`World::Model` 仅管理网格部件与材质（`Material`）的映射；`World::Material` 负责纹理槽位（`Material::Slot`，如 Albedo、Emissive）与画面源实体（`entt::entity`）的绑定，画面源可以是车载 GUI（挂载 `Gui::Document`）、监控相机或动态画板。通过 EnTT 的 Entity 版本代数保证生命周期安全，实体销毁时自动回退。

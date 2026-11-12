@@ -1,7 +1,6 @@
-#include <limits>
 #include <algorithm>
 #include <filesystem>
-#include <filesystem>
+#include <limits>
 #include <set>
 #include <stdexcept>
 #include <string>
@@ -12,34 +11,52 @@
 #include <Eigen/LU>
 
 #include <Volcano/Transform.h>
+#include <Volcano/Gui/Document.h>
+#include <Volcano/World/Canvas.h>
 #include <Volcano/World/DirectionalLight.h>
 #include <Volcano/World/Inherent.h>
 #include <Volcano/World/Model.h>
-#include <Volcano/World/Hud.h>
 #include <Volcano/World/OrthographicCamera.h>
 #include <Volcano/World/PerspectiveCamera.h>
 #include <Volcano/World/PointLight.h>
 #include <Volcano/World/SpotLight.h>
-#include <Volcano/Framework/GuiContext.h>
+#include <Volcano/Framework/Drawing.h>
 #include <Volcano/Framework/Local.h>
 #include <Volcano/Framework/Resources.h>
 
 VOLCANO_FRAMEWORK_BEGIN
 
-namespace {
-Eigen::Affine3f entityTransform(const World::Scene& scene, entt::entity entity) {
+Eigen::Affine3f Local::entityTransform(const World::Scene& scene, entt::entity entity) {
     const auto* transform = scene.try_get<Transform>(entity);
     return transform != nullptr ? transform->affine() : Eigen::Affine3f::Identity();
 }
 
-bool visible(const World::Scene& scene, entt::entity entity) {
+bool Local::visible(const World::Scene& scene, entt::entity entity) {
     const auto* inherent = scene.try_get<World::Inherent>(entity);
     return inherent == nullptr || (inherent->isEnabled() && inherent->isVisible());
 }
+
+bool Local::hasOutput(const World::Scene& scene, std::string_view name) {
+    return findNamed<Gui::Document>(scene, name) != nullptr ||
+           findNamed<Framework::Drawing>(scene, name) != nullptr;
 }
 
 Local::Local(int width, int height, const char* title)
     : window_(width, height, title) {
+    renderer_.setFontResolver([this](std::string_view name) -> const Graphics::Font* {
+        if (name.empty()) {
+            return nullptr;
+        }
+        const auto normal = std::filesystem::path(name).lexically_normal();
+        const auto it = fonts_.find(normal);
+        return it != fonts_.end() ? it->second.get() : nullptr;
+    });
+    renderer_.setTextureResolver([this](const World::Canvas::Command& cmd) -> const Graphics::Texture* {
+        if (!cmd.texture.empty()) {
+            return &texture(cmd.texture);
+        }
+        return nullptr;
+    });
 }
 
 Local::~Local() {
@@ -48,7 +65,7 @@ Local::~Local() {
     cancelLoad();
     try {
         waitForLoad();
-    } catch (const async::task_canceled&) {
+    } catch (const LoadCanceled&) {
     } catch (const std::exception& error) {
         spdlog::error("Resource loading failed during shutdown: {}", error.what());
     }
@@ -56,17 +73,24 @@ Local::~Local() {
     drawing_providers_.clear();
 }
 
+bool Local::shouldClose() const noexcept {
+    return Base::shouldClose() || glfwWindowShouldClose(window_.handle());
+}
+
 const Graphics::Texture& Local::texture(std::string_view id) const {
     window_.makeCurrent();
     const std::string key(id);
-    const auto& description = scene().texture(key);
-    if (description.source() == World::Texture::Source::File) {
-        return *textures_.at(static_cast<const World::FileTexture&>(description).path().lexically_normal());
+    if (const auto found = outputs_.find(key); found != outputs_.end()) {
+        return found->second->target.texture();
     }
-    return outputs_.at(key)->target.texture();
+    const auto normal = std::filesystem::path(id).lexically_normal();
+    if (const auto found = textures_.find(normal); found != textures_.end()) {
+        return *found->second;
+    }
+    throw std::out_of_range("Texture not found: " + key);
 }
 
-void Local::setDrawingProvider(std::string id, std::function<void(Graphics::Canvas&)> provider) {
+void Local::setDrawingProvider(std::string id, std::function<void(World::Canvas&)> provider) {
     window_.makeCurrent();
     if (id.empty() || !provider) {
         throw std::invalid_argument("Drawing provider requires an ID and callback");
@@ -82,106 +106,106 @@ void Local::onBeforeTasks() {
     window_.makeCurrent();
 }
 
-async::task<void> Local::onLoadScene(const World::Scene& candidate) {
+exec::task<void> Local::onLoadScene(const World::Scene& candidate) {
     checkLoadCancelled();
     pending_output_scene_ = &candidate;
-    return Base::onLoadScene(candidate).then(scheduler(), [this, &candidate] {
-        std::vector<std::string> ids;
-        for (const auto& [id, description] : candidate.textures()) {
-            checkLoadCancelled();
-            setLoadingContent(id);
-            ids.push_back(id);
-            if (description->source() == World::Texture::Source::File) {
-                const auto& file = static_cast<const World::FileTexture&>(*description);
-                pending_textures_.insert_or_assign(file.path().lexically_normal(),
-                    Resources::loadTexture(file.path().generic_string()));
-            } else {
-                const auto& generated = static_cast<const World::GeneratedTexture&>(*description);
-                loadOutput(id, generated.size());
-                if (description->source() == World::Texture::Source::Gui) {
-                    const auto& gui = static_cast<const World::GuiTexture&>(*description);
-                    std::vector<std::filesystem::path> fonts;
-                    std::vector<std::string> images;
-                    gui.document().root().collectResources(fonts, images);
-                    for (const auto& path : fonts) {
-                        checkLoadCancelled();
-                        setLoadingContent(path.generic_string());
-                        pending_fonts_.insert_or_assign(path.lexically_normal(),
-                            Resources::loadFont(path.generic_string()));
-                    }
-                }
-                if (description->source() == World::Texture::Source::Drawing) {
-                    const auto& drawing = static_cast<const World::DrawingTexture&>(*description);
-                    for (const auto& path : drawing.fonts()) {
-                        checkLoadCancelled();
-                        setLoadingContent(path.generic_string());
-                        pending_fonts_.insert_or_assign(path.lexically_normal(),
-                            Resources::loadFont(path.generic_string()));
-                    }
-                    // Querying the provider also validates its existence before committing.
-                    try {
-                        drawing_providers_.at(drawing.provider());
-                    } catch (const std::out_of_range&) {
-                        throw std::invalid_argument("Missing drawing provider: " + drawing.provider());
-                    }
-                }
-            }
-        }
+    co_await Base::onLoadScene(candidate);
+    std::vector<std::string> ids;
+
+    for (const auto entity : candidate.view<World::Inherent, Gui::Document>()) {
         checkLoadCancelled();
-        textureOrder(candidate, ids);
-        for (const auto entity : candidate.view<World::Hud>()) {
-            if (!candidate.textures().contains(candidate.get<World::Hud>(entity).texture())) {
-                throw std::invalid_argument("HUD references an unknown texture");
-            }
+        const auto& inherent = candidate.get<World::Inherent>(entity);
+        const auto& doc = candidate.get<Gui::Document>(entity);
+        setLoadingContent(inherent.name());
+        ids.push_back(inherent.name());
+        loadOutput(inherent.name(), doc.size());
+
+        std::vector<std::filesystem::path> fonts;
+        std::vector<std::string> images;
+        doc.root().collectResources(fonts, images);
+        for (const auto& path : fonts) {
+            checkLoadCancelled();
+            setLoadingContent(path.generic_string());
+            pending_fonts_.insert_or_assign(path.lexically_normal(),
+                Resources::loadFont(path.generic_string()));
         }
-    });
+    }
+
+    for (const auto entity : candidate.view<Framework::Drawing>()) {
+        checkLoadCancelled();
+        const auto& drawing = candidate.get<Framework::Drawing>(entity);
+        setLoadingContent(drawing.name());
+        ids.push_back(drawing.name());
+        loadOutput(drawing.name(), drawing.size());
+
+        for (const auto& path : drawing.fonts()) {
+            checkLoadCancelled();
+            setLoadingContent(path.generic_string());
+            pending_fonts_.insert_or_assign(path.lexically_normal(),
+                Resources::loadFont(path.generic_string()));
+        }
+        try {
+            drawing_providers_.at(drawing.provider());
+        } catch (const std::out_of_range&) {
+            throw std::invalid_argument("Missing drawing provider: " + drawing.provider());
+        }
+    }
+
+    checkLoadCancelled();
+    textureOrder(candidate, ids);
 }
 
-async::task<void> Local::onLoadEntity(const World::Scene& candidate, entt::entity entity) {
-    return Base::onLoadEntity(candidate, entity).then(scheduler(), [this, &candidate, entity] {
-        checkLoadCancelled();
-        const auto* model = candidate.try_get<World::Model>(entity);
-        if (model == nullptr) {
-            return;
-        }
-        const auto& parts = this->model(model->source()).parts;
-        for (const auto& [material, id] : model->textureOverrides()) {
-            if (!candidate.textures().contains(id) ||
+exec::task<void> Local::onLoadEntity(const World::Scene& candidate, entt::entity entity) {
+    co_await Base::onLoadEntity(candidate, entity);
+    checkLoadCancelled();
+    const auto* model = candidate.try_get<World::Model>(entity);
+    if (model == nullptr) {
+        co_return;
+    }
+    const auto& parts = this->model(model->source()).parts();
+    for (const auto& [materialPath, material] : model->materials()) {
+        for (const auto& [slot, sourceEntity] : material.textures()) {
+            const bool isOutput = candidate.valid(sourceEntity) &&
+                                  (candidate.try_get<Gui::Document>(sourceEntity) != nullptr ||
+                                   candidate.try_get<Framework::Drawing>(sourceEntity) != nullptr ||
+                                   (candidate.try_get<World::Inherent>(sourceEntity) != nullptr &&
+                                    hasOutput(candidate, candidate.get<World::Inherent>(sourceEntity).name())));
+            if (!isOutput ||
                 std::none_of(parts.begin(), parts.end(), [&](const auto& part) {
-                    return part.material == material;
+                    return part.material() == materialPath;
                 })) {
                 throw std::invalid_argument(
-                    "Model texture override must reference an existing material and texture");
+                    "Model material texture override must reference an existing material and entity");
             }
         }
-        for (const auto& part : parts) {
+    }
+    for (const auto& part : parts) {
+        checkLoadCancelled();
+        setLoadingContent(part.mesh());
+        const auto meshPath = std::filesystem::path(part.mesh()).lexically_normal();
+        pending_meshes_.insert_or_assign(meshPath,
+            Resources::loadMesh(part.mesh()));
+        checkLoadCancelled();
+        setLoadingContent(part.material());
+        auto resource = Resources::loadMaterial(part.material());
+        const auto& material = *resource;
+        const auto materialPath = std::filesystem::path(part.material()).lexically_normal();
+        pending_materials_.insert_or_assign(materialPath, std::move(resource));
+        for (const auto& path :
+             {material.albedo_texture(), material.normal_texture(), material.metallic_roughness_texture()}) {
             checkLoadCancelled();
-            setLoadingContent(part.mesh.generic_string());
-            pending_meshes_.insert_or_assign(part.mesh.lexically_normal(),
-                Resources::loadMesh(part.mesh.generic_string()));
-            checkLoadCancelled();
-            setLoadingContent(part.material.generic_string());
-            auto resource = Resources::loadMaterial(part.material.generic_string());
-            const auto& material = *resource;
-            pending_materials_.insert_or_assign(part.material.lexically_normal(), std::move(resource));
-            for (const auto& path :
-                 {material.albedoTexture, material.normalTexture, material.metallicRoughnessTexture}) {
-                checkLoadCancelled();
-                if (!path.empty()) {
-                    setLoadingContent(path.generic_string());
-                    pending_textures_.insert_or_assign(path.lexically_normal(),
-                        Resources::loadTexture(path.generic_string()));
-                }
+            if (!path.empty()) {
+                setLoadingContent(path);
+                pending_textures_.insert_or_assign(std::filesystem::path(path).lexically_normal(),
+                    Resources::loadTexture(path));
             }
         }
-    });
+    }
 }
 
 void Local::onCommitResources() noexcept {
     view_.begin();
     if (output_scene_ != pending_output_scene_) {
-        pointer_gui_.clear();
-        focused_gui_.clear();
         outputs_.swap(pending_outputs_);
         pending_outputs_.clear();
     } else {
@@ -214,9 +238,6 @@ void Local::onDiscardResources() noexcept {
 void Local::onUnloadResources() noexcept {
     window_.makeCurrent();
     view_.begin();
-    pointer_gui_.clear();
-    focused_gui_.clear();
-    hud_.begin();
     outputs_.clear();
     pending_outputs_.clear();
     output_scene_ = nullptr;
@@ -233,7 +254,6 @@ void Local::onUnloadResources() noexcept {
 
 void Local::onBeforeUpdate(Clock::duration elapsed) {
     Base::onBeforeUpdate(elapsed);
-    updateGuiInput();
     onInputUpdate(elapsed);
 }
 
@@ -271,21 +291,52 @@ void Local::buildView(Graphics::View& view, entt::entity cameraEntity) {
             continue;
         }
         const auto transform = entityTransform(current, entity);
-        for (const auto& part : this->model(current.get<World::Model>(entity).source()).parts) {
-            const auto& source = *materials_.at(part.material.lexically_normal());
+        for (const auto& part : this->model(current.get<World::Model>(entity).source()).parts()) {
+            const auto partMaterialPath = std::filesystem::path(part.material()).lexically_normal();
+            const auto partMeshPath = std::filesystem::path(part.mesh()).lexically_normal();
+            const auto& source = *materials_.at(partMaterialPath);
             Graphics::Material material;
-            material.color = Colorf(source.albedo.x(), source.albedo.y(), source.albedo.z(), source.albedo.w());
-            material.lit = source.lit;
-            if (!source.albedoTexture.empty()) {
-                material.texture = textures_.at(source.albedoTexture.lexically_normal()).get();
+            if (source.has_albedo()) {
+                material.color = Colorf(source.albedo().x(), source.albedo().y(), source.albedo().z(), source.albedo().w());
+            } else {
+                material.color = Colorf::White;
             }
-            const auto& overrides = current.get<World::Model>(entity).textureOverrides();
-            if (const auto it = overrides.find(part.material); it != overrides.end()) {
-                material.texture = &texture(it->second);
+            material.lit = source.has_lit() ? source.lit() : true;
+            if (!source.albedo_texture().empty()) {
+                material.texture = textures_.at(std::filesystem::path(source.albedo_texture()).lexically_normal()).get();
             }
-            const Eigen::Affine3f model = transform * part.transform;
+            if (const auto* customMaterial = current.get<World::Model>(entity).findMaterial(part.material());
+                customMaterial != nullptr) {
+                auto resolveSource = [&](World::Material::Slot slot) -> const Graphics::Texture* {
+                    const auto sourceEntity = customMaterial->texture(slot);
+                    if (sourceEntity != entt::null && current.valid(sourceEntity)) {
+                        if (const auto* inherent = current.try_get<World::Inherent>(sourceEntity)) {
+                            return &texture(inherent->name());
+                        }
+                        if (const auto* drawing = current.try_get<Framework::Drawing>(sourceEntity)) {
+                            return &texture(drawing->name());
+                        }
+                    }
+                    return nullptr;
+                };
+
+                if (const auto* tex = resolveSource(World::Material::Slot::Albedo); tex != nullptr) {
+                    material.texture = tex;
+                } else if (const auto* tex = resolveSource(World::Material::Slot::Emissive); tex != nullptr) {
+                    material.texture = tex;
+                }
+            }
+            Eigen::Affine3f partTransform = Eigen::Affine3f::Identity();
+            if (part.transform_size() == 16) {
+                for (int r = 0; r < 4; ++r) {
+                    for (int c = 0; c < 4; ++c) {
+                        partTransform.matrix()(r, c) = part.transform(r * 4 + c);
+                    }
+                }
+            }
+            const Eigen::Affine3f model = transform * partTransform;
             // shortcut: Graphics currently uses albedo and lit; add PBR maps when its passes support them.
-            view.add(*meshes_.at(part.mesh.lexically_normal()), material, model, source.alphaMode == Schema::Material::AlphaMode::Blend);
+            view.add(*meshes_.at(partMeshPath), material, model, source.alpha_mode() == Asset::ALPHA_MODE_BLEND);
         }
     }
 
@@ -323,59 +374,47 @@ void Local::buildView(Graphics::View& view, entt::entity cameraEntity) {
 
 void Local::updateTextures(const std::vector<std::string>& roots) {
     std::set<std::string> updated;
-    for (const auto& id : textureOrder(scene(),roots)) {
-        auto& description = scene().texture(id);
-        if (description.source() == World::Texture::Source::File) {
+    for (const auto& id : textureOrder(scene(), roots)) {
+        if (!outputs_.contains(id)) {
             continue;
         }
         auto& output = *outputs_.at(id);
-        const auto size = static_cast<World::GeneratedTexture&>(description).size();
-        if (output.target.size() != size) {
-            output.target.resize(size.width,size.height);
-            output.dirty = true;
-        }
         bool dependencyChanged = false;
-        for (const auto& dependency : dependencies(scene(),id)) {
+        for (const auto& dependency : dependencies(scene(), id)) {
             dependencyChanged = dependencyChanged || updated.contains(dependency);
         }
-        if (description.source() == World::Texture::Source::Camera) {
-            const auto& camera = static_cast<const World::CameraTexture&>(description);
-            Graphics::View view;
-            buildView(view,camera.camera());
-            view.end();
-            renderer_.render(view,output.target);
-        } else {
-            if (description.source() == World::Texture::Source::Gui) {
-                auto& gui = static_cast<World::GuiTexture&>(description);
-                auto& document = gui.document();
-                auto revision = document.revision();
-                std::vector<std::filesystem::path> fontPaths;
-                std::vector<std::string> imagePaths;
-                document.root().collectResources(fontPaths,imagePaths);
-                for (const auto& path : fontPaths) {
-                    revision += fonts_.at(path.lexically_normal())->revision();
-                }
-                if (!output.dirty && !dependencyChanged && output.revision == revision) {
-                    continue;
-                }
+        if (auto* doc = findNamed<Gui::Document>(scene(), id)) {
+            const auto size = doc->size();
+            if (output.target.size() != size) {
+                output.target.resize(size.width, size.height);
                 output.dirty = true;
-                document.layout({static_cast<float>(size.width),static_cast<float>(size.height)});
-                output.canvas.begin();
-                GuiContext context(output.canvas,[this](const auto& path) -> const Graphics::Font& { return *fonts_.at(path.lexically_normal()); },
-                    [this](auto name) -> const Graphics::Texture& { return texture(name); });
-                document.draw(context);
-                output.canvas.end();
-                output.revision = revision;
-            } else {
-                VOLCANO_ASSERT(description.source() == World::Texture::Source::Drawing);
-                const auto& drawing = static_cast<const World::DrawingTexture&>(description);
-                output.canvas.begin();
-                drawing_providers_.at(drawing.provider())(output.canvas);
-                output.canvas.end();
-                validateSamples(output.canvas, drawing.dependencies());
             }
-            // A VG-only submission does not need a 3D clear or G-buffer allocation.
-            renderer_.renderVG(output.canvas,output.target);
+            auto revision = doc->revision();
+            std::vector<std::filesystem::path> fontPaths;
+            std::vector<std::string> imagePaths;
+            doc->root().collectResources(fontPaths, imagePaths);
+            for (const auto& path : fontPaths) {
+                revision += fonts_.at(path.lexically_normal())->revision();
+            }
+            if (!output.dirty && !dependencyChanged && output.revision == revision) {
+                continue;
+            }
+            output.dirty = true;
+            doc->layout({static_cast<float>(size.width), static_cast<float>(size.height)});
+            doc->draw();
+            output.revision = revision;
+            renderer_.renderVG(*doc, output.target);
+        } else if (const auto* drawing = findNamed<Framework::Drawing>(scene(), id)) {
+            const auto size = drawing->size();
+            if (output.target.size() != size) {
+                output.target.resize(size.width, size.height);
+                output.dirty = true;
+            }
+            output.canvas.begin();
+            drawing_providers_.at(drawing->provider())(output.canvas);
+            output.canvas.end();
+            validateSamples(output.canvas, drawing->dependencies());
+            renderer_.renderVG(output.canvas, output.target);
         }
         output.dirty = false;
         updated.insert(id);
@@ -386,114 +425,52 @@ void Local::render(Graphics::Target& target, entt::entity camera) {
     window_.makeCurrent();
     std::vector<std::string> roots;
     for (const auto entity : scene().view<World::Model>()) {
-        if (visible(scene(),entity)) {
-            for (const auto& [material,id] : scene().get<World::Model>(entity).textureOverrides()) {
-                roots.push_back(id);
+        if (visible(scene(), entity)) {
+            for (const auto& [materialPath, material] : scene().get<World::Model>(entity).materials()) {
+                for (const auto& [slot, sourceEntity] : material.textures()) {
+                    if (scene().valid(sourceEntity)) {
+                        if (const auto* inherent = scene().try_get<World::Inherent>(sourceEntity)) {
+                            roots.push_back(inherent->name());
+                        } else if (const auto* drawing = scene().try_get<Framework::Drawing>(sourceEntity)) {
+                            roots.push_back(drawing->name());
+                        }
+                    }
+                }
             }
         }
     }
-    std::vector<entt::entity> huds;
-    for (const auto entity : scene().view<World::Hud>()) {
-        if (visible(scene(),entity)) {
-            huds.push_back(entity);
-            roots.push_back(scene().get<World::Hud>(entity).texture());
+    for (const auto entity : scene().view<World::Inherent, Gui::Document>()) {
+        if (visible(scene(), entity)) {
+            roots.push_back(scene().get<World::Inherent>(entity).name());
+        }
+    }
+    for (const auto entity : scene().view<Framework::Drawing>()) {
+        if (visible(scene(), entity)) {
+            roots.push_back(scene().get<Framework::Drawing>(entity).name());
         }
     }
     updateTextures(roots);
-    buildView(view_,camera);
-    std::stable_sort(huds.begin(),huds.end(),[this](auto a,auto b) {
-        return scene().get<World::Hud>(a).order() < scene().get<World::Hud>(b).order();
-    });
-    hud_.begin();
-    for (const auto entity : huds) {
-        const auto& hud = scene().get<World::Hud>(entity);
-        hud_.image(texture(hud.texture()),hud.rect());
-    }
-    hud_.end();
-    view_.add(hud_);
+    buildView(view_, camera);
     view_.end();
-    renderer_.render(view_,target);
+    renderer_.render(view_, target);
 }
 
 bool Local::pointer(std::string_view id, const Gui::PointerEvent& event) {
-    auto& texture = scene().texture(std::string(id));
-    if (texture.source() != World::Texture::Source::Gui) {
+    auto* doc = findNamed<Gui::Document>(scene(), id);
+    if (doc == nullptr) {
         throw std::invalid_argument("Texture is not a GUI texture: " + std::string(id));
     }
-    auto& description = static_cast<World::GuiTexture&>(texture);
-    const auto size = description.size();
-    description.document().layout({static_cast<float>(size.width),static_cast<float>(size.height)});
-    return description.document().event(event);
+    const auto size = doc->size();
+    doc->layout({static_cast<float>(size.width), static_cast<float>(size.height)});
+    return doc->event(event);
 }
 
 bool Local::key(std::string_view id, const Gui::KeyEvent& event) {
-    auto& texture = scene().texture(std::string(id));
-    if (texture.source() != World::Texture::Source::Gui) {
+    auto* doc = findNamed<Gui::Document>(scene(), id);
+    if (doc == nullptr) {
         throw std::invalid_argument("Texture is not a GUI texture: " + std::string(id));
     }
-    auto& description = static_cast<World::GuiTexture&>(texture);
-    return description.document().event(event);
-}
-
-void Local::updateGuiInput() {
-    int windowWidth = 0, windowHeight = 0;
-    glfwGetWindowSize(window_.handle(),&windowWidth,&windowHeight);
-    if (windowWidth <= 0 || windowHeight <= 0) {
-        return;
-    }
-    double cursorX = 0, cursorY = 0;
-    glfwGetCursorPos(window_.handle(),&cursorX,&cursorY);
-    const float x = static_cast<float>(cursorX)*window_.width()/windowWidth;
-    const float y = static_cast<float>(cursorY)*window_.height()/windowHeight;
-    const bool down = glfwGetMouseButton(window_.handle(),GLFW_MOUSE_BUTTON_LEFT)==GLFW_PRESS;
-    std::string hovered;
-    Rectf rect;
-    int highest = std::numeric_limits<int>::lowest();
-    for (const auto entity : scene().view<World::Hud>()) {
-        const auto& hud = scene().get<World::Hud>(entity);
-        if (visible(scene(),entity) && hud.rect().contains(x,y) && hud.order() >= highest &&
-            scene().textures().contains(hud.texture()) &&
-            scene().texture(hud.texture()).source()==World::Texture::Source::Gui) {
-            highest = hud.order();
-            hovered = hud.texture();
-            rect = hud.rect();
-        }
-    }
-    if (down && !mouse_down_) {
-        pointer_gui_ = hovered;
-        pointer_rect_ = rect;
-        focused_gui_ = hovered;
-    }
-    const auto& id = pointer_gui_.empty() ? hovered : pointer_gui_;
-    const auto& destination = pointer_gui_.empty() ? rect : pointer_rect_;
-    if (!id.empty() && destination.width > 0 && destination.height > 0) {
-        const auto& texture = scene().texture(id);
-        if (texture.source() != World::Texture::Source::Gui) {
-            throw std::invalid_argument("Texture is not a GUI texture: " + id);
-        }
-        const auto size = static_cast<const World::GuiTexture&>(texture).size();
-        const float gx = (x-destination.left)*size.width/destination.width;
-        const float gy = (y-destination.top)*size.height/destination.height;
-        const auto event = down != mouse_down_ ? (down ? Gui::PointerEvent::Action::Down : Gui::PointerEvent::Action::Up)
-            : Gui::PointerEvent::Action::Move;
-        pointer(id,Gui::PointerEvent{event,gx,gy});
-    }
-    if (!down) {
-        pointer_gui_.clear();
-    }
-    mouse_down_ = down;
-    const bool enter = glfwGetKey(window_.handle(),GLFW_KEY_ENTER)==GLFW_PRESS;
-    const bool space = glfwGetKey(window_.handle(),GLFW_KEY_SPACE)==GLFW_PRESS;
-    if (!focused_gui_.empty()) {
-        if (enter && !enter_down_) {
-            key(focused_gui_,Gui::KeyEvent{Gui::KeyEvent::Action::Down,Gui::KeyEvent::Key::Enter});
-        }
-        if (space && !space_down_) {
-            key(focused_gui_,Gui::KeyEvent{Gui::KeyEvent::Action::Down,Gui::KeyEvent::Key::Space});
-        }
-    }
-    enter_down_ = enter;
-    space_down_ = space;
+    return doc->event(event);
 }
 
 Local::TextureOutput::TextureOutput(Size size) : target(size.width, size.height) {}
@@ -506,41 +483,25 @@ void Local::loadOutput(std::string id, Size size) {
     }
 }
 
-void Local::validateSamples(const Graphics::Canvas& canvas, const std::vector<std::string>& dependencies) const {
-    for (const auto* sampled : canvas.sampledTextures()) {
-        for (const auto& [id, resource] : outputs_) {
-            if (sampled == &resource->target.texture() &&
-                std::find(dependencies.begin(), dependencies.end(), id) == dependencies.end()) {
-                throw std::invalid_argument("Drawing texture sampled an undeclared dependency: " + id);
+void Local::validateSamples(const World::Canvas& canvas, const std::vector<std::string>& dependencies) const {
+    for (const auto& cmd : canvas.commands()) {
+        if (cmd.type == World::Canvas::Command::Type::Image && !cmd.texture.empty()) {
+            if (outputs_.contains(cmd.texture) &&
+                std::find(dependencies.begin(), dependencies.end(), cmd.texture) == dependencies.end()) {
+                throw std::invalid_argument("Drawing texture sampled an undeclared dependency: " + cmd.texture);
             }
         }
     }
 }
 
 std::vector<std::string> Local::dependencies(const World::Scene& current, const std::string& id) {
-    const auto& description = current.texture(id);
-    if (description.source() == World::Texture::Source::Drawing) {
-        return static_cast<const World::DrawingTexture&>(description).dependencies();
+    if (const auto* drawing = findNamed<Framework::Drawing>(current, id)) {
+        return drawing->dependencies();
     }
     std::vector<std::string> result;
-    if (description.source() == World::Texture::Source::Gui) {
-        const auto& gui = static_cast<const World::GuiTexture&>(description);
+    if (const auto* doc = findNamed<Gui::Document>(current, id)) {
         std::vector<std::filesystem::path> fonts;
-        gui.document().root().collectResources(fonts, result);
-    } else if (description.source() == World::Texture::Source::Camera) {
-        const auto& camera = static_cast<const World::CameraTexture&>(description);
-        if (!current.valid(camera.camera()) ||
-            (current.all_of<World::PerspectiveCamera>(camera.camera()) ==
-             current.all_of<World::OrthographicCamera>(camera.camera()))) {
-            throw std::invalid_argument("Texture camera requires exactly one camera component");
-        }
-        for (const auto entity : current.view<World::Model>()) {
-            if (visible(current, entity)) {
-                for (const auto& [material, texture] : current.get<World::Model>(entity).textureOverrides()) {
-                    result.push_back(texture);
-                }
-            }
-        }
+        doc->root().collectResources(fonts, result);
     }
     return result;
 }
@@ -555,8 +516,8 @@ std::vector<std::string> Local::textureOrder(const World::Scene& current, const 
         if (states[id] == 2) {
             return;
         }
-        if (!current.textures().contains(id)) {
-            throw std::invalid_argument("Unknown texture resource: " + id);
+        if (!hasOutput(current, id)) {
+            return;
         }
         states[id] = 1;
         for (const auto& dependency : dependencies(current, id)) {

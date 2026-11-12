@@ -55,7 +55,7 @@ int main(int argc, char* argv[]) {
         framework.load(volcanoCreateGame);
         framework.play();
         auto last = Clock::now();
-        for (long long tick = 0; running && (ticks == 0 || tick < ticks); ++tick) {
+        for (long long tick = 0; !framework.shouldClose() && running && (ticks == 0 || tick < ticks); ++tick) {
             const auto now = Clock::now();
             framework.update(now - last);
             last = now;

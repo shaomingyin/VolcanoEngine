@@ -201,7 +201,7 @@ TEST(GuiLayout, TextIntrinsicSizeWrapReflowAndDrawingUseTheSameLines) {
     document.layout({25, 100});
     EXPECT_FLOAT_EQ(label->bounds().width, 15);
     EXPECT_FLOAT_EQ(label->bounds().height, 24);
-    document.draw();
+    platform.draw(document);
     ASSERT_EQ(platform.drawnText.size(), 2);
     EXPECT_EQ(platform.drawnText[0], "中文A");
     EXPECT_EQ(platform.drawnText[1], "BCD");

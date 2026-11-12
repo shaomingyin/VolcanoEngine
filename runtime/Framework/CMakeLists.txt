@@ -8,13 +8,12 @@ add_library(Framework STATIC
     src/Volcano/Framework/Server.cpp
 )
 target_include_directories(Framework PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
-target_link_libraries(Framework PUBLIC World Schema Physics Graphics)
+target_link_libraries(Framework PUBLIC World Asset Physics Graphics)
 volcano_target_setup(Framework)
 set_target_properties(Framework PROPERTIES OUTPUT_NAME VolcanoFramework)
 
 add_library(FrameworkLocal STATIC
-    include/Volcano/Framework/GuiContext.h
-    src/Volcano/Framework/GuiContext.cpp
+    include/Volcano/Framework/Drawing.h
     include/Volcano/Framework/Local.h
     include/Volcano/Framework/Client.h
     include/Volcano/Framework/Window.h

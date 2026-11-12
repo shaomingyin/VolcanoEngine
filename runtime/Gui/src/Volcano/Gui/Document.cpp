@@ -7,17 +7,63 @@
 
 VOLCANO_GUI_BEGIN
 
-Document::Document(Platform& platform, std::unique_ptr<Layout> root)
-    : platform_(platform), root_(std::move(root)) {
+namespace {
+class DefaultPlatform final : public Platform {
+public:
+    const Style& style() const noexcept override {
+        return style_;
+    }
+    void setCursor(Cursor) override {}
+    std::string clipboardText() override {
+        return {};
+    }
+    void setClipboardText(std::string_view) override {}
+    void startTextInput() override {}
+    void stopTextInput() override {}
+    void setTextInputRect(const Rectf&) override {}
+    void setPointerCapture(bool) override {}
+    Sizef measure(const std::filesystem::path&, float, std::string_view text) override {
+        return {static_cast<float>(text.size()) * 8.0f, 16.0f};
+    }
+
+private:
+    Style style_;
+};
+
+Platform& defaultPlatform() {
+    static DefaultPlatform platform;
+    return platform;
+}
+}
+
+Document::Document(Platform& platform, std::unique_ptr<Layout> root, Size size)
+    : Canvas(size), platform_(platform), root_(std::move(root)) {
     if (!root_) {
         throw std::invalid_argument("GUI document requires a root container");
     }
     VOLCANO_ASSERT(root_->parent() == nullptr);
     root_->observe(*this);
+    if (this->size().width > 0 && this->size().height > 0) {
+        layout({static_cast<float>(this->size().width), static_cast<float>(this->size().height)});
+    }
+}
+
+Document::Document(std::unique_ptr<Layout> root, Size size)
+    : Document(defaultPlatform(), std::move(root), size) {
 }
 
 Document::~Document() {
     root_->unobserve(*this);
+}
+
+void Document::setSize(Size size) {
+    if (size.width < 0 || size.height < 0) {
+        throw std::invalid_argument("Document size must be non-negative");
+    }
+    Canvas::setSize(size);
+    if (size.width > 0 && size.height > 0) {
+        layout({static_cast<float>(size.width), static_cast<float>(size.height)});
+    }
 }
 
 void Document::remove(Widget& subtree) {
@@ -71,13 +117,15 @@ void Document::layout(Sizef size) {
     root_->layout({0, 0, size.width, size.height}, platform_);
 }
 
-void Document::draw() const {
+void Document::draw() {
     VOLCANO_ASSERT(!dispatching_);
     dispatching_ = true;
     auto restore = scopeGuard([this] {
         dispatching_ = false;
     });
-    root_->draw(platform_);
+    begin();
+    root_->draw(*this, platform_);
+    end();
 }
 
 void Document::setFocus(Widget* widget) {

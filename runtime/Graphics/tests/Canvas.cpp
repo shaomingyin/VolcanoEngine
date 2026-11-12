@@ -10,12 +10,14 @@
 
 #include <gtest/gtest.h>
 
-#include <Volcano/Graphics/Canvas.h>
+#include <Volcano/World/Canvas.h>
+#include <Volcano/Graphics/Font.h>
 #include <Volcano/Graphics/View.h>
 
 namespace {
 using namespace Volcano;
 using namespace Volcano::Graphics;
+using Volcano::World::Canvas;
 
 TEST(Canvas, OwnsTextAndStateAndCanBeReused) {
     Canvas canvas;

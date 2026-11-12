@@ -11,6 +11,7 @@ VOLCANO_DEMO_BEGIN
 // The game implements its rules and scene construction through World::Scene.
 class Game: public World::Scene {
 public:
+    explicit Game(World::Context& context);
     Game();
     ~Game() override;
 

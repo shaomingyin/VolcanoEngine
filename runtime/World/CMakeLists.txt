@@ -1,14 +1,16 @@
 
 add_library(World STATIC
-    include/Volcano/World/Texture.h
-    include/Volcano/World/Hud.h
     include/Volcano/World/Common.h
+    include/Volcano/World/Context.h
     include/Volcano/World/Config.h.in
+    include/Volcano/World/Canvas.h
     include/Volcano/World/Inherent.h
     include/Volcano/World/Scene.h
+    include/Volcano/World/Texture.h
     include/Volcano/World/Camera.h
     include/Volcano/World/DirectionalLight.h
     include/Volcano/World/Light.h
+    include/Volcano/World/Material.h
     include/Volcano/World/Model.h
     include/Volcano/World/RigidBody.h
     include/Volcano/World/AudioSource.h
@@ -26,6 +28,7 @@ add_library(World STATIC
     src/Volcano/World/PointLight.cpp
     src/Volcano/World/SpotLight.cpp
     src/Volcano/World/Common.cpp
+    src/Volcano/World/Canvas.cpp
     src/Volcano/World/Scene.cpp
 )
 
@@ -43,7 +46,7 @@ volcano_target_setup(World)
 
 set_target_properties(World PROPERTIES OUTPUT_NAME VolcanoWorld)
 
-target_link_libraries(World PUBLIC Base Gui)
+target_link_libraries(World PUBLIC Base)
 
 find_package(EnTT REQUIRED)
 target_link_libraries(World PUBLIC EnTT::EnTT)

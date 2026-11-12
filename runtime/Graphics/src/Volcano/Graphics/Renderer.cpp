@@ -35,7 +35,7 @@ void Renderer::prewarm(const Font& font, std::string_view text, unsigned int pix
     paint_pass_.prewarm(font, text, pixels);
 }
 
-void Renderer::renderVG(const Canvas& commands, Target& target, bool clear) {
+void Renderer::renderVG(const World::Canvas& commands, Target& target, bool clear) {
     auto restore = scopeGuard([this, &target] { bind(target); });
     paint_pass_.render(commands, target, clear);
 }

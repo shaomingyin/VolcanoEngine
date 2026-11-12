@@ -1,19 +1,27 @@
 #ifndef VOLCANO_GRAPHICS_PAINTPASS_H
 #define VOLCANO_GRAPHICS_PAINTPASS_H
 
+#include <functional>
 #include <map>
+#include <string_view>
 #include <tuple>
 #include <vector>
 
 #include <GL/gl.hpp>
 
-#include <Volcano/Graphics/Canvas.h>
+#include <Volcano/World/Canvas.h>
+#include <Volcano/Graphics/Common.h>
+#include <Volcano/Graphics/Font.h>
 #include <Volcano/Graphics/Target.h>
+#include <Volcano/Graphics/Texture.h>
 
 VOLCANO_GRAPHICS_BEGIN
 
 class PaintPass final {
 public:
+    using FontResolver = std::function<const Font*(std::string_view name)>;
+    using TextureResolver = std::function<const Texture*(const World::Canvas::Command& command)>;
+
     struct FontCacheStats {
         std::size_t atlasBytes = 0;
         std::size_t glyphs = 0;
@@ -23,11 +31,19 @@ public:
     };
 
     PaintPass();
-    void render(const Canvas& commands, Target& target, bool clear);
+    void render(const World::Canvas& commands, Target& target, bool clear);
     void setAtlasBudget(std::size_t bytes);
     std::size_t atlasBytes() const noexcept;
     FontCacheStats fontCacheStats() const noexcept;
     void prewarm(const Font& font, std::string_view text, unsigned int pixels);
+
+    void setFontResolver(FontResolver resolver) {
+        font_resolver_ = std::move(resolver);
+    }
+
+    void setTextureResolver(TextureResolver resolver) {
+        texture_resolver_ = std::move(resolver);
+    }
 
 private:
     struct Vertex {
@@ -54,15 +70,18 @@ private:
         Entry entry;
     };
 
-    std::vector<Contour> flatten(const Canvas::Command& command) const;
+    std::vector<Contour> flatten(const World::Canvas::Command& command) const;
     void curve(std::vector<Eigen::Vector2f>& points, const Eigen::Vector2f& a,
         const Eigen::Vector2f& b, const Eigen::Vector2f& c, const Eigen::Vector2f& d, int depth) const;
     void flushGlyphs();
     void draw(std::span<const Vertex> vertices, GLenum mode = GL_TRIANGLES);
-    void paint(const Canvas::State& state, int textureMode);
-    void shape(const Canvas::Command& command, bool stroke);
+    void paint(const World::Canvas::State& state, int textureMode);
+    void shape(const World::Canvas::Command& command, bool stroke);
     void quad(const Rectf& rect, const Rectf& uv, const Eigen::Affine2f& transform);
     GlyphImage glyph(const Font& font, std::uint32_t index, unsigned int pixels);
+
+    const Font* resolveFont(const World::Canvas::Command& command) const;
+    const Texture* resolveTexture(const World::Canvas::Command& command) const;
 
 private:
     gl::Program program_;
@@ -77,6 +96,8 @@ private:
     std::size_t budget_ = 4 * 1024 * 1024;
     std::uint64_t serial_ = 0;
     FontCacheStats stats_;
+    FontResolver font_resolver_;
+    TextureResolver texture_resolver_;
     static constexpr int PageSize = 1024;
 };
 

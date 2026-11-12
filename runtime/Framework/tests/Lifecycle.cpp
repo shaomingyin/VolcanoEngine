@@ -1,3 +1,4 @@
+#include <atomic>
 #include <chrono>
 #include <filesystem>
 #include <memory>
@@ -8,14 +9,16 @@
 
 #include <GL/gl3w.h>
 #include <gtest/gtest.h>
+#include <stdexec/execution.hpp>
+#include <exec/task.hpp>
 
 #include <Volcano/PhysFile.h>
-#include <Volcano/Schema/Material.h>
-#include <Volcano/Schema/Mesh.h>
-#include <Volcano/Schema/Model.h>
-#include <Volcano/Schema/Texture.h>
+#include <Volcano/Asset/Common.h>
+#include <Volcano/Asset/Mesh.h>
+#include <Volcano/Asset/Texture.h>
 #include <Volcano/World/Model.h>
 #include <Volcano/World/RigidBody.h>
+#include <Volcano/Framework/Drawing.h>
 #include <Volcano/Framework/Resources.h>
 #include <Volcano/Framework/Server.h>
 
@@ -26,6 +29,8 @@ using State = Base::State;
 
 class Scene final : public World::Scene {
 public:
+    using World::Scene::Scene;
+
     entt::entity player() const noexcept override {
         return entt::null;
     }
@@ -112,12 +117,11 @@ public:
     std::vector<int> order;
 
 protected:
-    async::task<void> onLoadScene(const World::Scene& scene) override {
-        return Base::onLoadScene(scene).then(scheduler(), [this] {
-            if (failLoad) {
-                throw std::runtime_error("Load failure");
-            }
-        });
+    exec::task<void> onLoadScene(const World::Scene& scene) override {
+        co_await Base::onLoadScene(scene);
+        if (failLoad) {
+            throw std::runtime_error("Load failure");
+        }
     }
 
     void onNetworkUpdate(Clock::duration) override {
@@ -176,6 +180,21 @@ TEST(FrameworkLifecycle, StateGuardsAndUpdateOrder) {
     server.unload();
     EXPECT_EQ(server.state(), State::Idle);
     EXPECT_NO_THROW(server.unload());
+}
+
+TEST(FrameworkLifecycle, ContextInjectedToSceneAndSignalsExit) {
+    Base framework;
+    EXPECT_FALSE(framework.shouldClose());
+    World::Context* capturedContext = nullptr;
+    framework.load([&](World::Context& ctx) {
+        capturedContext = &ctx;
+        return std::make_unique<Scene>(ctx);
+    });
+    EXPECT_EQ(capturedContext, static_cast<World::Context*>(&framework));
+    EXPECT_FALSE(framework.shouldClose());
+
+    framework.scene().context().requestExit();
+    EXPECT_TRUE(framework.shouldClose());
 }
 
 TEST(FrameworkLifecycle, FactoryAndResourceFailuresPreservePreviousScene) {
@@ -238,10 +257,18 @@ protected:
     }
 
     void writeModel(const std::string& path) {
-        Schema::Model model;
-        model.parts.push_back({"mesh.vemesh", "material.vematerial", Eigen::Affine3f::Identity()});
-        PhysFile file(path, PhysFile::OpenMode::WriteOnly);
-        model.write(file);
+        Asset::Model model;
+        auto* part = model.add_parts();
+        part->set_mesh("mesh.vemesh");
+        part->set_material("material.vematerial");
+        for (float val : {1.0f, 0.0f, 0.0f, 0.0f,
+                          0.0f, 1.0f, 0.0f, 0.0f,
+                          0.0f, 0.0f, 1.0f, 0.0f,
+                          0.0f, 0.0f, 0.0f, 1.0f}) {
+            part->add_transform(val);
+        }
+        PhysOutputStream file(path);
+        EXPECT_TRUE(model.SerializeToZeroCopyStream(&file));
     }
 
     static auto factory(std::filesystem::path source) {
@@ -261,9 +288,9 @@ TEST_F(FrameworkResources, ServerReadsDescriptorsResolvesPathsAndReusesCacheOnRe
     Server server;
     server.load(factory("./models/test.vemodel"));
     const auto& model = *Framework::Resources::loadModel("models/test.vemodel");
-    ASSERT_EQ(model.parts.size(), 1);
-    EXPECT_EQ(model.parts[0].mesh, "models/mesh.vemesh");
-    EXPECT_EQ(model.parts[0].material, "models/material.vematerial");
+    ASSERT_EQ(model.parts_size(), 1);
+    EXPECT_EQ(model.parts(0).mesh(), "models/mesh.vemesh");
+    EXPECT_EQ(model.parts(0).material(), "models/material.vematerial");
     EXPECT_FALSE(std::filesystem::exists(root_ / "models/mesh.vemesh"));
     std::filesystem::remove(root_ / "models/test.vemodel");
     server.play();
@@ -393,18 +420,15 @@ class DeferredLoad final : public Base {
 public:
     ~DeferredLoad() override {
         cancelLoad();
-        if (!gateTask.ready()) {
-            gate.set();
-        }
+        gate.store(true);
         try {
             waitForLoad();
-        } catch (const async::task_canceled&) {
+        } catch (const Base::LoadCanceled&) {
         }
     }
 
 public:
-    async::event_task<void> gate;
-    async::shared_task<void> gateTask = gate.get_task().share();
+    std::atomic<bool> gate{false};
     int entities = 0;
     int commits = 0;
     int discards = 0;
@@ -413,22 +437,22 @@ public:
     std::thread::id entityThread;
 
 protected:
-    async::task<void> onLoadScene(const World::Scene& scene) override {
-        return Base::onLoadScene(scene).then(scheduler(), [this] {
-            waiting = true;
-            return gateTask.then(async::inline_scheduler(), [] {});
-        }).then(scheduler(), [this] {
+    exec::task<void> onLoadScene(const World::Scene& scene) override {
+        co_await Base::onLoadScene(scene);
+        waiting = true;
+        while (!gate.load()) {
             checkLoadCancelled();
-            sceneFinished = true;
-        });
+            co_await stdexec::schedule(scheduler());
+        }
+        checkLoadCancelled();
+        sceneFinished = true;
     }
 
-    async::task<void> onLoadEntity(const World::Scene& scene, entt::entity entity) override {
-        return Base::onLoadEntity(scene, entity).then(scheduler(), [this] {
-            checkLoadCancelled();
-            entityThread = std::this_thread::get_id();
-            ++entities;
-        });
+    exec::task<void> onLoadEntity(const World::Scene& scene, entt::entity entity) override {
+        co_await Base::onLoadEntity(scene, entity);
+        checkLoadCancelled();
+        entityThread = std::this_thread::get_id();
+        ++entities;
     }
 
     void onCommitResources() noexcept override {
@@ -452,7 +476,7 @@ void pumpUntilWaiting(DeferredLoad& framework) {
 TEST(FrameworkAsyncLoad, ComposesSceneAndEntityTasksAndReportsProgressOnOwnerThread) {
     DeferredLoad framework;
     bool created = false;
-    auto task = framework.loadAsync([&] {
+    framework.loadAsync([&] {
         created = true;
         auto scene = std::make_unique<Scene>();
         (void)scene->create();
@@ -460,7 +484,6 @@ TEST(FrameworkAsyncLoad, ComposesSceneAndEntityTasksAndReportsProgressOnOwnerThr
         return scene;
     });
     EXPECT_FALSE(created);
-    EXPECT_FALSE(task.ready());
     EXPECT_EQ(framework.state(), State::Loading);
     pumpUntilWaiting(framework);
     ASSERT_EQ(framework.entities, 2);
@@ -471,10 +494,9 @@ TEST(FrameworkAsyncLoad, ComposesSceneAndEntityTasksAndReportsProgressOnOwnerThr
     EXPECT_LT(framework.loadingProgress().percent, 100);
     EXPECT_FALSE(framework.loadingProgress().content.empty());
     EXPECT_FALSE(framework.sceneFinished);
-    EXPECT_FALSE(task.ready());
-    framework.gate.set();
+    EXPECT_EQ(framework.state(), State::Loading);
+    framework.gate.store(true);
     framework.waitForLoad();
-    EXPECT_NO_THROW(task.get());
     EXPECT_TRUE(framework.sceneFinished);
     EXPECT_EQ(framework.commits, 1);
     EXPECT_EQ(framework.discards, 0);
@@ -484,7 +506,7 @@ TEST(FrameworkAsyncLoad, ComposesSceneAndEntityTasksAndReportsProgressOnOwnerThr
 
 TEST(FrameworkAsyncLoad, CancellationWaitsForChildrenThenRollsBack) {
     DeferredLoad framework;
-    auto task = framework.loadAsync([] {
+    framework.loadAsync([] {
         auto scene = std::make_unique<Scene>();
         (void)scene->create();
         return scene;
@@ -495,10 +517,8 @@ TEST(FrameworkAsyncLoad, CancellationWaitsForChildrenThenRollsBack) {
     EXPECT_TRUE(framework.loadCancelled());
     framework.update({});
     EXPECT_EQ(framework.state(), State::Loading);
-    EXPECT_FALSE(task.ready());
-    framework.gate.set();
-    EXPECT_THROW(framework.waitForLoad(), async::task_canceled);
-    EXPECT_THROW(task.get(), async::task_canceled);
+    framework.gate.store(true);
+    EXPECT_THROW(framework.waitForLoad(), Base::LoadCanceled);
     EXPECT_EQ(framework.state(), State::Idle);
     EXPECT_EQ(framework.commits, 0);
     EXPECT_EQ(framework.discards, 1);
@@ -508,13 +528,12 @@ TEST(FrameworkAsyncLoad, CancellationWaitsForChildrenThenRollsBack) {
 TEST(FrameworkAsyncLoad, CancelBeforeStartSkipsFactoryAndAllowsRetry) {
     Base framework;
     bool created = false;
-    auto task = framework.loadAsync([&] {
+    framework.loadAsync([&] {
         created = true;
         return std::make_unique<Scene>();
     });
     framework.cancelLoad();
-    EXPECT_THROW(framework.waitForLoad(), async::task_canceled);
-    EXPECT_THROW(task.get(), async::task_canceled);
+    EXPECT_THROW(framework.waitForLoad(), Base::LoadCanceled);
     EXPECT_FALSE(created);
     EXPECT_EQ(framework.state(), State::Idle);
     EXPECT_NO_THROW(framework.load([] { return std::make_unique<Scene>(); }));
@@ -527,10 +546,9 @@ TEST(FrameworkAsyncLoad, CancelledResetKeepsPlayingSceneAndPhysics) {
     framework.play();
     const auto* scene = &framework.scene();
     const auto* physics = &framework.physics();
-    auto task = framework.stopAsync();
+    framework.stopAsync();
     framework.cancelLoad();
-    EXPECT_THROW(framework.waitForLoad(), async::task_canceled);
-    EXPECT_THROW(task.get(), async::task_canceled);
+    EXPECT_THROW(framework.waitForLoad(), Base::LoadCanceled);
     EXPECT_EQ(framework.state(), State::Playing);
     EXPECT_EQ(&framework.scene(), scene);
     EXPECT_EQ(&framework.physics(), physics);
@@ -538,29 +556,25 @@ TEST(FrameworkAsyncLoad, CancelledResetKeepsPlayingSceneAndPhysics) {
 }
 
 TEST(FrameworkAsyncLoad, DestructionSettlesOutstandingTopLevelTask) {
-    async::task<void> task;
     bool created = false;
     {
         Base framework;
-        task = framework.loadAsync([&] {
+        framework.loadAsync([&] {
             created = true;
             return std::make_unique<Scene>();
         });
     }
-    EXPECT_TRUE(task.ready());
-    EXPECT_THROW(task.get(), async::task_canceled);
     EXPECT_FALSE(created);
 }
 
 TEST_F(FrameworkResources, CancelsAfterPreparationWithoutPublishingModels) {
     writeModel("models/cancelled.vemodel");
     DeferredLoad framework;
-    auto task = framework.loadAsync(factory("models/cancelled.vemodel"));
+    framework.loadAsync(factory("models/cancelled.vemodel"));
     pumpUntilWaiting(framework);
     framework.cancelLoad();
-    framework.gate.set();
-    EXPECT_THROW(framework.waitForLoad(), async::task_canceled);
-    EXPECT_THROW(task.get(), async::task_canceled);
+    framework.gate.store(true);
+    EXPECT_THROW(framework.waitForLoad(), Base::LoadCanceled);
     std::filesystem::remove(root_ / "models/cancelled.vemodel");
     Base retry;
     EXPECT_THROW(retry.load(factory("models/cancelled.vemodel")), std::runtime_error);
@@ -574,32 +588,31 @@ class ThrowingSceneLoad final : public Base {
 public:
     ~ThrowingSceneLoad() override {
         cancelLoad();
-        if (!gateTask.ready()) {
-            gate.set();
-        }
+        gate.store(true);
         try {
             waitForLoad();
         } catch (const std::runtime_error&) {
-        } catch (const async::task_canceled&) {
         }
     }
 
 public:
-    async::event_task<void> gate;
-    async::shared_task<void> gateTask = gate.get_task().share();
+    std::atomic<bool> gate{false};
     bool entityStarted = false;
     bool entityFinished = false;
     bool discarded = false;
 
 protected:
-    async::task<void> onLoadScene(const World::Scene& scene) override {
-        auto parent = Base::onLoadScene(scene);
+    exec::task<void> onLoadScene(const World::Scene& scene) override {
+        co_await Base::onLoadScene(scene);
         throw std::runtime_error("Scene hook failed after starting parent tasks");
     }
 
-    async::task<void> onLoadEntity(const World::Scene&, entt::entity) override {
+    exec::task<void> onLoadEntity(const World::Scene&, entt::entity) override {
         entityStarted = true;
-        return gateTask.then(scheduler(), [this] { entityFinished = true; });
+        while (!gate.load()) {
+            co_await stdexec::schedule(scheduler());
+        }
+        entityFinished = true;
     }
 
     void onDiscardResources() noexcept override {
@@ -610,7 +623,7 @@ protected:
 
 TEST(FrameworkAsyncLoad, ThrowingSceneHookStillWaitsForStartedEntityTasks) {
     ThrowingSceneLoad framework;
-    auto task = framework.loadAsync([] {
+    framework.loadAsync([] {
         auto scene = std::make_unique<Scene>();
         (void)scene->create();
         return scene;
@@ -618,10 +631,9 @@ TEST(FrameworkAsyncLoad, ThrowingSceneHookStillWaitsForStartedEntityTasks) {
     framework.processTasks();
     EXPECT_TRUE(framework.entityStarted);
     EXPECT_FALSE(framework.discarded);
-    EXPECT_FALSE(task.ready());
-    framework.gate.set();
+    EXPECT_EQ(framework.state(), State::Loading);
+    framework.gate.store(true);
     EXPECT_THROW(framework.waitForLoad(), std::runtime_error);
-    EXPECT_THROW(task.get(), std::runtime_error);
     EXPECT_TRUE(framework.entityFinished);
     EXPECT_TRUE(framework.discarded);
     EXPECT_EQ(framework.state(), State::Idle);
@@ -631,7 +643,7 @@ TEST(FrameworkAsyncLoad, ThrowingSceneHookStillWaitsForStartedEntityTasks) {
 namespace {
 TEST_F(FrameworkResources, ReleasesModelsAfterTheLastSceneOwnerUnloads) {
     writeModel("models/owned.vemodel");
-    std::weak_ptr<Schema::Model> weak;
+    std::weak_ptr<Asset::Model> weak;
     {
         Base first;
         Base second;
@@ -649,38 +661,21 @@ namespace {
 TEST_F(FrameworkResources, LoadsBuiltInResourcesDirectlyWithoutFactories) {
     writeModel("models/direct.vemodel");
     {
-        Schema::Material source;
-        source.albedoTexture = "albedo.vetexture";
-        PhysFile file("models/material.vematerial", PhysFile::OpenMode::WriteOnly);
-        source.write(file);
-    }
-    {
-        Schema::Mesh source;
-        source.vertices = {{{0, 0, 0}}, {{1, 0, 0}}, {{0, 1, 0}}};
-        source.indices = {0, 1, 2};
-        PhysFile file("models/mesh.vemesh", PhysFile::OpenMode::WriteOnly);
-        source.write(file);
-    }
-    {
-        const Schema::Texture source{1, 1, {128, 0, 0, 128}};
-        PhysFile file("models/albedo.vetexture", PhysFile::OpenMode::WriteOnly);
-        source.write(file);
+        Asset::Material source;
+        source.set_albedo_texture("albedo.vetexture");
+        PhysOutputStream file("models/material.vematerial");
+        EXPECT_TRUE(source.SerializeToZeroCopyStream(&file));
     }
     auto model = Framework::Resources::loadModel("models/direct.vemodel");
     auto material = Framework::Resources::loadMaterial("models/material.vematerial");
-    auto mesh = Framework::Resources::loadMeshData("models/mesh.vemesh");
-    auto texture = Framework::Resources::loadTextureData("models/albedo.vetexture");
-    ASSERT_EQ(model->parts.size(), 1);
-    EXPECT_EQ(model->parts[0].mesh, "models/mesh.vemesh");
-    EXPECT_EQ(model->parts[0].material, "models/material.vematerial");
-    EXPECT_EQ(material->albedoTexture, "models/albedo.vetexture");
-    EXPECT_EQ(mesh->vertices.size(), 3);
-    EXPECT_EQ(mesh->indices, (std::vector<std::uint32_t>{0, 1, 2}));
-    EXPECT_EQ(texture->pixels, (ByteArray{128, 0, 0, 128}));
+    ASSERT_EQ(model->parts_size(), 1);
+    EXPECT_EQ(model->parts(0).mesh(), "models/mesh.vemesh");
+    EXPECT_EQ(model->parts(0).material(), "models/material.vematerial");
+    EXPECT_EQ(material->albedo_texture(), "models/albedo.vetexture");
     EXPECT_EQ(Framework::Resources::loadModel("./models/direct.vemodel"), model);
     std::filesystem::remove(root_ / "models/direct.vemodel");
     EXPECT_EQ(Framework::Resources::loadModel("./models/direct.vemodel"), model);
-    std::weak_ptr<Schema::Model> weak = model;
+    std::weak_ptr<Asset::Model> weak = model;
     model.reset();
     EXPECT_TRUE(weak.expired());
 }
@@ -696,8 +691,9 @@ TEST_F(FrameworkResources, DefaultLoaderValidatesPathsAndReportsFileFailures) {
         EXPECT_NE(std::string(error.what()).find("models/missing.vemodel"), std::string::npos);
     }
     {
-        PhysFile file("models/broken.vemodel", PhysFile::OpenMode::WriteOnly);
-        file.writeAll(ByteArray{0, 1, 2, 3});
+        PhysOutputStream file("models/broken.vemodel");
+        const ByteArray broken = {0, 1, 2, 3};
+        file.writeAll(broken);
     }
     EXPECT_THROW(Framework::Resources::loadModel("models/broken.vemodel"), std::runtime_error);
     writeModel("models/broken.vemodel");
@@ -710,12 +706,41 @@ TEST_F(FrameworkResources, SynchronizationReleasesModelHandlesNoLongerUsedByScen
     writeModel("models/removed.vemodel");
     Server server;
     server.load(factory("models/removed.vemodel"));
-    std::weak_ptr<Schema::Model> model = Framework::Resources::loadModel("models/removed.vemodel");
+    std::weak_ptr<Asset::Model> model = Framework::Resources::loadModel("models/removed.vemodel");
     ASSERT_FALSE(model.expired());
 
     server.scene().clear<World::Model>();
     server.synchronizeResources();
 
     EXPECT_TRUE(model.expired());
+}
+
+TEST(FrameworkDrawing, ValidatesParametersAndAccessors) {
+    Framework::Drawing drawing("canvas", Size{64, 64}, "painter");
+    EXPECT_EQ(drawing.name(), "canvas");
+    EXPECT_EQ(drawing.size(), (Size{64, 64}));
+    EXPECT_EQ(drawing.provider(), "painter");
+
+    drawing.setName("renamed");
+    EXPECT_EQ(drawing.name(), "renamed");
+    drawing.setSize({128, 64});
+    EXPECT_EQ(drawing.size(), (Size{128, 64}));
+    drawing.setProvider("other");
+    EXPECT_EQ(drawing.provider(), "other");
+
+    drawing.setDependencies({"dep1", "dep2"});
+    EXPECT_EQ(drawing.dependencies().size(), 2);
+    EXPECT_EQ(drawing.dependencies()[0], "dep1");
+
+    drawing.setFonts({"fonts/test.ttf"});
+    EXPECT_EQ(drawing.fonts().size(), 1);
+    EXPECT_EQ(drawing.fonts()[0], "fonts/test.ttf");
+
+    EXPECT_THROW(Framework::Drawing("", Size{64, 64}, "p"), std::invalid_argument);
+    EXPECT_THROW(Framework::Drawing("d", Size{0, 64}, "p"), std::invalid_argument);
+    EXPECT_THROW(Framework::Drawing("d", Size{64, 0}, "p"), std::invalid_argument);
+    EXPECT_THROW(drawing.setName(""), std::invalid_argument);
+    EXPECT_THROW(drawing.setSize({0, 64}), std::invalid_argument);
+    EXPECT_THROW(drawing.setSize({64, -1}), std::invalid_argument);
 }
 } // namespace

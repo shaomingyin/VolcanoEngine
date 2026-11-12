@@ -25,7 +25,7 @@ public:
     bool event(const FocusEvent& event, Platform& platform) override;
 
 protected:
-    void paint(Platform& platform) const override;
+    void paint(World::Canvas& canvas, Platform& platform) const override;
 
 private:
     std::function<void()> on_click_;

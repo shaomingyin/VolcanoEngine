@@ -50,28 +50,27 @@ int main(int argc, char* argv[]) {
             framework = std::make_unique<Framework::Local>(800, 600, "VolcanoLauncher");
         }
         auto& window = framework->window();
-        auto loading = framework->loadAsync(volcanoCreateGame);
+        framework->loadAsync(volcanoCreateGame);
         glfwSwapInterval(1);
 
         auto last = Clock::now();
-        while (!glfwWindowShouldClose(window.handle())) {
+        while (!framework->shouldClose()) {
             glfwPollEvents();
-            if (glfwWindowShouldClose(window.handle())) {
+            if (framework->shouldClose()) {
                 break;
             }
             const auto now = Clock::now();
             framework->update(now - last);
             last = now;
-            if (loading.valid()) {
-                if (!loading.ready()) {
-                    const auto& progress = framework->loadingProgress();
-                    const auto title = "VolcanoLauncher — Loading " +
-                        std::to_string(static_cast<int>(progress.percent)) + "% " + progress.content;
-                    glfwSetWindowTitle(window.handle(), title.c_str());
-                    glfwWaitEventsTimeout(0.01);
-                    continue;
-                }
-                loading.get();
+            if (framework->state() == Framework::Base::State::Loading) {
+                const auto& progress = framework->loadingProgress();
+                const auto title = "VolcanoLauncher — Loading " +
+                    std::to_string(static_cast<int>(progress.percent)) + "% " + progress.content;
+                glfwSetWindowTitle(window.handle(), title.c_str());
+                glfwWaitEventsTimeout(0.01);
+                continue;
+            }
+            if (framework->state() == Framework::Base::State::Ready) {
                 framework->play();
                 glfwSetWindowTitle(window.handle(), "VolcanoLauncher");
             }

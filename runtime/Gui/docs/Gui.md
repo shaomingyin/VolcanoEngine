@@ -8,7 +8,8 @@ Widget、Layout、Text、Image、Button、CheckBox、Slider、ProgressBar 各自
 
 ## Platform
 
-GUI 需要的宿主接口集中在 `Gui::Platform`：路径、填充、描边、图片、文字、裁剪、文字测量，以及光标、UTF-8 剪贴板、文本输入会话、输入法区域和宿主指针捕获。输入事件通过 Document 投递，不通过 Platform 注册事件回调。Gui 不维护字体或字形缓存。
+GUI 需要的宿主服务集中在 `Gui::Platform`：样式（Style）、文字测量（measure）、光标、UTF-8 剪贴板、文本输入会话、输入法区域和宿主指针捕获。
+绘制指令不再通过 Platform 进行二次虚函数分发，Document 派生自 `World::Canvas`，由 Document 和 Widget 直接录制矢量绘制指令到 Canvas，消除了 VG 虚接口套壳与中间转录。输入事件通过 Document 投递，不通过 Platform 注册事件回调。Gui 不维护后端字形缓存或 GPU 资源。
 
 ```cpp
 // platform 由宿主实现，生命周期必须长于 document。

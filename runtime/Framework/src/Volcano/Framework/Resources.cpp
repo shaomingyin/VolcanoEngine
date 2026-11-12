@@ -1,3 +1,5 @@
+#include <algorithm>
+#include <cstring>
 #include <filesystem>
 #include <limits>
 #include <map>
@@ -10,169 +12,195 @@
 #include <vector>
 
 #include <GL/gl3w.h>
+#include <google/protobuf/io/zero_copy_stream.h>
 
+#include <Volcano/ByteArray.h>
 #include <Volcano/Cache.h>
 #include <Volcano/PhysFile.h>
+#include <Volcano/Asset/Common.h>
+#include <Volcano/Asset/Mesh.h>
+#include <Volcano/Asset/Texture.h>
 #include <Volcano/Graphics/Font.h>
 #include <Volcano/Graphics/Mesh.h>
 #include <Volcano/Graphics/Texture.h>
-#include <Volcano/Schema/Material.h>
-#include <Volcano/Schema/Mesh.h>
-#include <Volcano/Schema/Model.h>
-#include <Volcano/Schema/Texture.h>
 #include <Volcano/Framework/Common.h>
 #include <Volcano/Framework/Resources.h>
 
 VOLCANO_FRAMEWORK_BEGIN
 namespace Resources {
 namespace {
-std::filesystem::path resourcePath(const std::filesystem::path& path) {
-    const auto text = path.generic_string();
-    if (text.empty() || text.find('\0') != std::string::npos || text.find('\\') != std::string::npos ||
-        text.find(':') != std::string::npos) {
-        throw std::invalid_argument("Invalid PhysFS resource path: " + text);
-    }
-    for (const auto& part : path) {
-        if (part == "..") {
-            throw std::invalid_argument("PhysFS resource path cannot contain '..': " + text);
-        }
-    }
-    const auto result = (std::filesystem::path("/") / path.relative_path()).lexically_normal();
-    if (result == "/" || result.filename().empty()) {
-        throw std::invalid_argument("PhysFS resource path must name a file: " + text);
-    }
-    return result;
-}
-
-template <typename Resource> Resource readResource(const std::filesystem::path& path) {
-    try {
-        PhysFile file(path.relative_path());
-        return Resource::read(file);
-    } catch (const std::exception& error) {
-        throw std::runtime_error("Cannot load resource '" + path.generic_string() + "': " + error.what());
-    }
-}
 
 template <typename T> using ResourceCache = Cache<T, std::filesystem::path>;
 
-template <typename T> auto weakPolicy() {
-    return std::make_unique<WeakCachePolicy<T, std::filesystem::path>>();
-}
+struct ResourceHelper final {
+    ResourceHelper() = delete;
 
-ResourceCache<Schema::Model> modelCache(weakPolicy<Schema::Model>());
-ResourceCache<Schema::Material> materialCache(weakPolicy<Schema::Material>());
-ResourceCache<Schema::Mesh> meshDataCache(weakPolicy<Schema::Mesh>());
-ResourceCache<Schema::Texture> textureDataCache(weakPolicy<Schema::Texture>());
-ResourceCache<Graphics::Font> fontCache(weakPolicy<Graphics::Font>());
-
-std::mutex contextMutex;
-std::map<GL3WProcs*, std::shared_ptr<ResourceCache<Graphics::Mesh>>> meshCache;
-std::map<GL3WProcs*, std::shared_ptr<ResourceCache<Graphics::Texture>>> textureCache;
-
-template <typename T, typename Loader>
-std::shared_ptr<T> loadGraphics(std::map<GL3WProcs*, std::shared_ptr<ResourceCache<T>>>& contexts,
-                                const std::filesystem::path& path, Loader&& loader) {
-    VOLCANO_ASSERT(gl3wProcs != nullptr);
-    std::shared_ptr<ResourceCache<T>> cache;
-    {
-        const std::lock_guard lock(contextMutex);
-        auto& current = contexts[gl3wProcs];
-        if (!current) {
-            current = std::make_shared<ResourceCache<T>>(weakPolicy<T>());
-        }
-        // Keep the partition alive if clear() concurrently removes it from the index.
-        cache = current;
+    template <typename T> static std::unique_ptr<WeakCachePolicy<T, std::filesystem::path>> weakPolicy() {
+        return std::make_unique<WeakCachePolicy<T, std::filesystem::path>>();
     }
-    return cache->load(path, std::forward<Loader>(loader));
-}
-} // namespace
 
-std::shared_ptr<Schema::Model> loadModel(std::string_view filename) {
-    const auto path = resourcePath(std::filesystem::path(filename));
-    return modelCache.load(path, [&path] {
-        auto source = readResource<Schema::Model>(path);
-        for (auto& part : source.parts) {
-            part.mesh = resourcePath(path.parent_path() / part.mesh).relative_path();
-            part.material = resourcePath(path.parent_path() / part.material).relative_path();
+    static std::filesystem::path normalizePath(const std::filesystem::path& path) {
+        const auto text = path.generic_string();
+        if (text.empty() || text.find('\0') != std::string::npos || text.find('\\') != std::string::npos ||
+            text.find(':') != std::string::npos) {
+            throw std::invalid_argument("Invalid PhysFS resource path: " + text);
         }
-        return std::make_shared<Schema::Model>(std::move(source));
-    });
-}
-
-std::shared_ptr<Schema::Material> loadMaterial(std::string_view filename) {
-    const auto path = resourcePath(std::filesystem::path(filename));
-    return materialCache.load(path, [&path] {
-        auto source = readResource<Schema::Material>(path);
-        for (auto* texture :
-             {&source.albedoTexture, &source.normalTexture, &source.metallicRoughnessTexture}) {
-            if (!texture->empty()) {
-                *texture = resourcePath(path.parent_path() / *texture).relative_path();
+        for (const auto& part : path) {
+            if (part == "..") {
+                throw std::invalid_argument("PhysFS resource path cannot contain '..': " + text);
             }
         }
-        return std::make_shared<Schema::Material>(std::move(source));
+        const auto result = (std::filesystem::path("/") / path.relative_path()).lexically_normal();
+        if (result == "/" || result.filename().empty()) {
+            throw std::invalid_argument("PhysFS resource path must name a file: " + text);
+        }
+        return result;
+    }
+
+    static void readExactBytes(google::protobuf::io::ZeroCopyInputStream& stream, void* dest, int count) {
+        auto* out = static_cast<uint8_t*>(dest);
+        while (count > 0) {
+            const void* chunk = nullptr;
+            int chunkSize = 0;
+            if (!stream.Next(&chunk, &chunkSize)) {
+                throw std::runtime_error("Unexpected end of stream");
+            }
+            const int toCopy = std::min(count, chunkSize);
+            std::memcpy(out, chunk, toCopy);
+            out += toCopy;
+            count -= toCopy;
+            if (toCopy < chunkSize) {
+                stream.BackUp(chunkSize - toCopy);
+            }
+        }
+    }
+
+    template <typename T, typename Loader>
+    static std::shared_ptr<T> loadGraphics(std::map<GL3WProcs*, std::shared_ptr<ResourceCache<T>>>& contexts,
+                                           const std::filesystem::path& path, Loader&& loader) {
+        VOLCANO_ASSERT(gl3wProcs != nullptr);
+        std::shared_ptr<ResourceCache<T>> cache;
+        {
+            const std::lock_guard lock(contextMutex);
+            auto& current = contexts[gl3wProcs];
+            if (!current) {
+                current = std::make_shared<ResourceCache<T>>(weakPolicy<T>());
+            }
+            // Keep the partition alive if clear() concurrently removes it from the index.
+            cache = current;
+        }
+        return cache->load(path, std::forward<Loader>(loader));
+    }
+
+public:
+    static inline ResourceCache<Asset::Model> modelCache{weakPolicy<Asset::Model>()};
+    static inline ResourceCache<Asset::Material> materialCache{weakPolicy<Asset::Material>()};
+    static inline ResourceCache<Graphics::Font> fontCache{weakPolicy<Graphics::Font>()};
+
+    static inline std::mutex contextMutex;
+    static inline std::map<GL3WProcs*, std::shared_ptr<ResourceCache<Graphics::Mesh>>> meshCache;
+    static inline std::map<GL3WProcs*, std::shared_ptr<ResourceCache<Graphics::Texture>>> textureCache;
+};
+
+} // namespace
+
+std::shared_ptr<Asset::Model> loadModel(std::string_view filename) {
+    const auto path = ResourceHelper::normalizePath(std::filesystem::path(filename));
+    return ResourceHelper::modelCache.load(path, [&path] {
+        PhysInputStream stream(path.relative_path());
+        auto model = std::make_shared<Asset::Model>();
+        if (!model->ParseFromZeroCopyStream(&stream)) {
+            throw std::runtime_error("Cannot load model '" + path.generic_string() + "'");
+        }
+        for (auto& part : *model->mutable_parts()) {
+            part.set_mesh(ResourceHelper::normalizePath(path.parent_path() / part.mesh()).relative_path().generic_string());
+            part.set_material(ResourceHelper::normalizePath(path.parent_path() / part.material()).relative_path().generic_string());
+        }
+        return model;
     });
 }
 
-std::shared_ptr<Schema::Mesh> loadMeshData(std::string_view filename) {
-    const auto path = resourcePath(std::filesystem::path(filename));
-    return meshDataCache.load(path, [&path] {
-        return std::make_shared<Schema::Mesh>(readResource<Schema::Mesh>(path));
-    });
-}
-
-std::shared_ptr<Schema::Texture> loadTextureData(std::string_view filename) {
-    const auto path = resourcePath(std::filesystem::path(filename));
-    return textureDataCache.load(path, [&path] {
-        return std::make_shared<Schema::Texture>(readResource<Schema::Texture>(path));
+std::shared_ptr<Asset::Material> loadMaterial(std::string_view filename) {
+    const auto path = ResourceHelper::normalizePath(std::filesystem::path(filename));
+    return ResourceHelper::materialCache.load(path, [&path] {
+        PhysInputStream stream(path.relative_path());
+        auto material = std::make_shared<Asset::Material>();
+        if (!material->ParseFromZeroCopyStream(&stream)) {
+            throw std::runtime_error("Cannot load material '" + path.generic_string() + "'");
+        }
+        if (!material->albedo_texture().empty()) {
+            material->set_albedo_texture(
+                ResourceHelper::normalizePath(path.parent_path() / material->albedo_texture()).relative_path().generic_string());
+        }
+        if (!material->normal_texture().empty()) {
+            material->set_normal_texture(
+                ResourceHelper::normalizePath(path.parent_path() / material->normal_texture()).relative_path().generic_string());
+        }
+        if (!material->metallic_roughness_texture().empty()) {
+            material->set_metallic_roughness_texture(
+                ResourceHelper::normalizePath(path.parent_path() / material->metallic_roughness_texture()).relative_path().generic_string());
+        }
+        return material;
     });
 }
 
 std::shared_ptr<Graphics::Mesh> loadMesh(std::string_view filename) {
-    const auto path = resourcePath(std::filesystem::path(filename));
-    return loadGraphics(meshCache, path, [&path] {
-        const auto source = readResource<Schema::Mesh>(path);
-        std::vector<Graphics::Mesh::Vertex> vertices;
-        vertices.reserve(source.vertices.size());
-        for (const auto& vertex : source.vertices) {
-            vertices.push_back({vertex.position, vertex.normal, vertex.texcoord});
+    const auto path = ResourceHelper::normalizePath(std::filesystem::path(filename));
+    return ResourceHelper::loadGraphics(ResourceHelper::meshCache, path, [&path] {
+        PhysInputStream stream(path.relative_path());
+        Asset::Mesh source(stream);
+        static_assert(sizeof(Asset::Mesh::Vertex) == sizeof(Graphics::Mesh::Vertex));
+        static_assert(sizeof(Graphics::Mesh::Vertex) == 32);
+        std::vector<Graphics::Mesh::Vertex> vertices(source.vertexCount());
+        std::vector<std::uint32_t> indices(source.indexCount());
+        if (!vertices.empty()) {
+            ResourceHelper::readExactBytes(source, vertices.data(),
+                                           static_cast<int>(vertices.size() * sizeof(Graphics::Mesh::Vertex)));
         }
-        return std::make_shared<Graphics::Mesh>(vertices, source.indices);
+        if (!indices.empty()) {
+            ResourceHelper::readExactBytes(source, indices.data(),
+                                           static_cast<int>(indices.size() * sizeof(std::uint32_t)));
+        }
+        return std::make_shared<Graphics::Mesh>(vertices, indices);
     });
 }
 
 std::shared_ptr<Graphics::Texture> loadTexture(std::string_view filename) {
-    const auto path = resourcePath(std::filesystem::path(filename));
-    return loadGraphics(textureCache, path, [&path] {
-        const auto source = readResource<Schema::Texture>(path);
-        if (source.width > std::numeric_limits<int>::max() ||
-            source.height > std::numeric_limits<int>::max()) {
+    const auto path = ResourceHelper::normalizePath(std::filesystem::path(filename));
+    return ResourceHelper::loadGraphics(ResourceHelper::textureCache, path, [&path] {
+        PhysInputStream stream(path.relative_path());
+        Asset::Texture source(stream);
+        if (source.width() > std::numeric_limits<int>::max() ||
+            source.height() > std::numeric_limits<int>::max()) {
             throw std::invalid_argument("Texture dimensions exceed integer range: " + path.generic_string());
         }
-        auto texture = std::make_shared<Graphics::Texture>(static_cast<int>(source.width),
-                                                           static_cast<int>(source.height));
-        texture->uploadPremultiplied(source.pixels);
+        const auto payloadSize = static_cast<std::size_t>(source.width()) * source.height() * 4;
+        ByteArray pixels(payloadSize);
+        ResourceHelper::readExactBytes(source, pixels.data(), static_cast<int>(payloadSize));
+
+        auto texture = std::make_shared<Graphics::Texture>(static_cast<int>(source.width()),
+                                                           static_cast<int>(source.height()));
+        texture->uploadPremultiplied(pixels);
         return texture;
     });
 }
 
 std::shared_ptr<Graphics::Font> loadFont(std::string_view filename) {
-    const auto path = resourcePath(std::filesystem::path(filename));
-    return fontCache.load(path, [&path] {
-        PhysFile file(path.relative_path());
+    const auto path = ResourceHelper::normalizePath(std::filesystem::path(filename));
+    return ResourceHelper::fontCache.load(path, [&path] {
+        PhysInputStream file(path.relative_path());
         const auto bytes = file.readAll();
         return std::make_shared<Graphics::Font>(bytes);
     });
 }
 
 void clear() {
-    modelCache.clear();
-    materialCache.clear();
-    meshDataCache.clear();
-    textureDataCache.clear();
-    fontCache.clear();
-    const std::lock_guard lock(contextMutex);
-    meshCache.clear();
-    textureCache.clear();
+    ResourceHelper::modelCache.clear();
+    ResourceHelper::materialCache.clear();
+    ResourceHelper::fontCache.clear();
+    const std::lock_guard lock(ResourceHelper::contextMutex);
+    ResourceHelper::meshCache.clear();
+    ResourceHelper::textureCache.clear();
 }
 
 } // namespace Resources

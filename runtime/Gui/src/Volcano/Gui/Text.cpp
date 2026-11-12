@@ -96,18 +96,18 @@ Sizef Text::measure(Platform& platform, Sizef available) const {
     return result;
 }
 
-void Text::paint(Platform& platform) const {
-    Widget::paint(platform);
+void Text::paint(World::Canvas& canvas, Platform& platform) const {
+    Widget::paint(canvas, platform);
     if (text_.empty()) {
         return;
     }
-    platform.save();
-    auto restore = scopeGuard([&platform] {
-        platform.restore();
+    canvas.save();
+    auto restore = scopeGuard([&canvas] {
+        canvas.restore();
     });
-    platform.setClip(bounds());
+    canvas.setClip(bounds());
     const auto& style = platform.style();
-    platform.setColor(
+    canvas.setColor(
         color_.value_or(root().acceptsInput(*this) ? style.textColor() : style.disabledTextColor()));
     const float pixels = fontSize(platform);
     float baseline = bounds().top + pixels;
@@ -115,7 +115,7 @@ void Text::paint(Platform& platform) const {
         if (!std::isfinite(baseline)) {
             throw std::overflow_error("GUI text position overflow");
         }
-        platform.text(font_, pixels, bounds().left, baseline, line);
+        canvas.text(font_.string(), pixels, bounds().left, baseline, line);
         baseline += pixels * style.lineHeight();
     }
 }

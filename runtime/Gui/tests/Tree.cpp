@@ -307,7 +307,7 @@ TEST(GuiTree, CompositeWidgetsArrangeDrawHitAndCollectResources) {
     EXPECT_EQ(child->bounds(), (Rectf{13, 24, 20, 10}));
     EXPECT_EQ(document.root().hit(15, 25), child);
     EXPECT_EQ(document.root().hit(50, 50), parent);
-    document.draw();
+    platform.draw(document);
     EXPECT_EQ(platform.fills, 2);
     EXPECT_EQ(platform.drawnText, (std::vector<std::string>{"parent", "child"}));
     auto* overlay = new Gui::Widget(parent);

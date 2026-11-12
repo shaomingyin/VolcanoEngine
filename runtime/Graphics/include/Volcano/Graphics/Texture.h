@@ -7,16 +7,17 @@
 #include <GL/gl.hpp>
 
 #include <Volcano/Size.h>
+#include <Volcano/World/Texture.h>
 #include <Volcano/Graphics/Common.h>
 
 VOLCANO_GRAPHICS_BEGIN
 
 // Uploads straight RGBA8, bottom row first; stores premultiplied alpha internally.
 // Creation, use and destruction require the resource's OpenGL context to be current.
-class Texture final {
+class Texture final : public World::Texture {
 public:
     Texture(int width, int height, std::span<const std::uint8_t> rgba = {});
-    ~Texture() = default;
+    ~Texture() override = default;
     Texture(const Texture&) = delete;
     Texture& operator=(const Texture&) = delete;
     Texture(Texture&&) noexcept;
@@ -36,7 +37,7 @@ public:
         return height_;
     }
 
-    Size size() const noexcept {
+    Size size() const noexcept override {
         return {width_, height_};
     }
 

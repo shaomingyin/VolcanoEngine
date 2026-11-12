@@ -9,11 +9,21 @@ void Image::setSource(std::string value) {
     changed();
 }
 
-void Image::paint(Platform& platform) const {
-    Widget::paint(platform);
-    if (!source_.empty()) {
-        platform.setColor(platform.style().imageColor());
-        platform.image(source_, bounds());
+void Image::setTexture(std::shared_ptr<World::Texture> texture) {
+    texture_ = std::move(texture);
+    changed();
+}
+
+void Image::paint(World::Canvas& canvas, Platform& platform) const {
+    Widget::paint(canvas, platform);
+    if (bounds().width > 0 && bounds().height > 0) {
+        if (texture_) {
+            canvas.setColor(platform.style().imageColor());
+            canvas.image(texture_, bounds());
+        } else if (!source_.empty()) {
+            canvas.setColor(platform.style().imageColor());
+            canvas.image(source_, bounds());
+        }
     }
 }
 

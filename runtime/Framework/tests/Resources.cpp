@@ -14,15 +14,13 @@
 #include <physfs.h>
 
 #include <Volcano/PhysFile.h>
-#include <Volcano/Schema/Material.h>
-#include <Volcano/Schema/Texture.h>
+#include <Volcano/Asset/Common.h>
 #include <Volcano/Framework/Resources.h>
 
 namespace {
 namespace Resources = Volcano::Framework::Resources;
-using Volcano::PhysFile;
-using Volcano::Schema::Material;
-using Volcano::Schema::Texture;
+using Volcano::Asset::Material;
+using Volcano::Asset::Model;
 
 class ResourceCache : public ::testing::Test {
 protected:
@@ -30,11 +28,12 @@ protected:
         root_ = std::filesystem::temp_directory_path() /
                 ("ve_resource_paths_" +
                  std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()));
-        std::filesystem::create_directories(root_ / "textures");
+        std::filesystem::create_directories(root_ / "materials");
+        std::filesystem::create_directories(root_ / "models");
         ASSERT_NE(PHYSFS_init("ResourceCache"), 0);
         ASSERT_NE(PHYSFS_mount(root_.string().c_str(), nullptr, 1), 0);
         ASSERT_NE(PHYSFS_setWriteDir(root_.string().c_str()), 0);
-        writeTexture();
+        writeMaterial();
     }
 
     void TearDown() override {
@@ -44,9 +43,21 @@ protected:
         std::filesystem::remove_all(root_, error);
     }
 
-    static void writeTexture(std::uint8_t red = 1) {
-        PhysFile file("textures/image.vetexture", PhysFile::OpenMode::WriteOnly);
-        Texture{1, 1, {red, 0, 0, 255}}.write(file);
+    static void writeMaterial(const std::string& path = "materials/sample.vematerial", float roughness = 1.0f) {
+        Volcano::PhysOutputStream file(path);
+        Material mat;
+        mat.set_roughness(roughness);
+        mat.set_albedo_texture("textures/albedo.vetexture");
+        ASSERT_TRUE(mat.SerializeToZeroCopyStream(&file));
+    }
+
+    static void writeModel(const std::string& path = "sample.vemodel") {
+        Volcano::PhysOutputStream file(path);
+        Model model;
+        auto* part = model.add_parts();
+        part->set_mesh("mesh.vemesh");
+        part->set_material("materials/sample.vematerial");
+        ASSERT_TRUE(model.SerializeToZeroCopyStream(&file));
     }
 
 protected:
@@ -54,85 +65,88 @@ protected:
 };
 
 TEST_F(ResourceCache, ResolvesAllPathsFromThePhysfsRootAndReusesLiveObjects) {
-    auto resource = Resources::loadTextureData("/textures/image.vetexture");
-    EXPECT_EQ(Resources::loadTextureData("textures/image.vetexture"), resource);
-    EXPECT_EQ(Resources::loadTextureData("/textures/./image.vetexture"), resource);
-    EXPECT_EQ(Resources::loadTextureData("./textures/image.vetexture"), resource);
-    EXPECT_THROW(Resources::loadMaterial("/textures/image.vetexture"), std::runtime_error);
-    std::filesystem::remove(root_ / "textures/image.vetexture");
-    EXPECT_EQ(Resources::loadTextureData("/textures/image.vetexture"), resource);
-    EXPECT_THROW(Resources::loadTextureData("/textures/missing.vetexture"), std::runtime_error);
+    auto resource = Resources::loadMaterial("/materials/sample.vematerial");
+    EXPECT_EQ(Resources::loadMaterial("materials/sample.vematerial"), resource);
+    EXPECT_EQ(Resources::loadMaterial("/materials/./sample.vematerial"), resource);
+    EXPECT_EQ(Resources::loadMaterial("./materials/sample.vematerial"), resource);
+    EXPECT_FLOAT_EQ(resource->roughness(), 1.0f);
+    EXPECT_EQ(resource->albedo_texture(), "materials/textures/albedo.vetexture");
+
+    std::filesystem::remove(root_ / "materials/sample.vematerial");
+    EXPECT_EQ(Resources::loadMaterial("/materials/sample.vematerial"), resource);
+    EXPECT_THROW(Resources::loadMaterial("/materials/missing.vematerial"), std::runtime_error);
 }
 
 TEST_F(ResourceCache, NeverTreatsVirtualPathsAsHostFilesystemPaths) {
-    const auto hostPath = (root_ / "textures/image.vetexture").generic_string();
+    const auto hostPath = (root_ / "materials/sample.vematerial").generic_string();
     ASSERT_TRUE(std::filesystem::is_regular_file(hostPath));
-    EXPECT_THROW(Resources::loadTextureData(hostPath), std::runtime_error);
+    EXPECT_THROW(Resources::loadMaterial(hostPath), std::runtime_error);
 }
 
 TEST_F(ResourceCache, ReloadsTheFileAfterLastOwnerReleases) {
-    auto first = Resources::loadTextureData("/textures/image.vetexture");
-    std::weak_ptr<Texture> weak = first;
+    auto first = Resources::loadMaterial("/materials/sample.vematerial");
+    std::weak_ptr<Material> weak = first;
     first.reset();
     EXPECT_TRUE(weak.expired());
-    writeTexture(2);
-    auto reloaded = Resources::loadTextureData("/textures/image.vetexture");
-    EXPECT_EQ(reloaded->pixels[0], 2);
+
+    writeMaterial("materials/sample.vematerial", 0.5f);
+    auto reloaded = Resources::loadMaterial("/materials/sample.vematerial");
+    EXPECT_FLOAT_EQ(reloaded->roughness(), 0.5f);
 }
 
 TEST_F(ResourceCache, ClearsLookupsWithoutInvalidatingHandles) {
-    auto texture = Resources::loadTextureData("/textures/image.vetexture");
-    {
-        PhysFile file("material.vematerial", PhysFile::OpenMode::WriteOnly);
-        Material{}.write(file);
-    }
-    auto material = Resources::loadMaterial("/material.vematerial");
+    auto material = Resources::loadMaterial("/materials/sample.vematerial");
+    writeModel("sample.vemodel");
+    auto model = Resources::loadModel("/sample.vemodel");
+
     Resources::clear();
-    EXPECT_NE(Resources::loadTextureData("/textures/image.vetexture"), texture);
-    EXPECT_NE(Resources::loadMaterial("/material.vematerial"), material);
-    EXPECT_EQ(texture->pixels[0], 1);
-    EXPECT_EQ(material->roughness, 1.0f);
+
+    EXPECT_NE(Resources::loadMaterial("/materials/sample.vematerial"), material);
+    EXPECT_NE(Resources::loadModel("/sample.vemodel"), model);
+    EXPECT_FLOAT_EQ(material->roughness(), 1.0f);
+    ASSERT_EQ(model->parts_size(), 1);
+    EXPECT_EQ(model->parts(0).mesh(), "mesh.vemesh");
+    EXPECT_EQ(model->parts(0).material(), "materials/sample.vematerial");
 }
 
 TEST_F(ResourceCache, RejectsInvalidPaths) {
     for (const auto* path :
-         {"", "/", ".", "../image", "/textures/../image", "C:/image", "a\\b", "generated:screen"}) {
-        EXPECT_THROW(Resources::loadTextureData(path), std::invalid_argument);
+         {"", "/", ".", "../sample", "/materials/../sample", "C:/sample", "a\\b", "generated:screen"}) {
+        EXPECT_THROW(Resources::loadMaterial(path), std::invalid_argument);
     }
-    std::string nul = "/textures/image";
+    std::string nul = "/materials/sample";
     nul.push_back('\0');
-    nul += ".vetexture";
-    EXPECT_THROW(Resources::loadTextureData(nul), std::invalid_argument);
+    nul += ".vematerial";
+    EXPECT_THROW(Resources::loadMaterial(nul), std::invalid_argument);
 }
 
 TEST_F(ResourceCache, FileFailuresAreNotCachedAndCanBeRetried) {
-    std::filesystem::remove(root_ / "textures/image.vetexture");
-    EXPECT_THROW(Resources::loadTextureData("/textures/image.vetexture"), std::runtime_error);
-    {
-        PhysFile file("textures/image.vetexture", PhysFile::OpenMode::WriteOnly);
-        file.writeAll(Volcano::ByteArray{0, 1, 2});
-    }
-    EXPECT_THROW(Resources::loadTextureData("/textures/image.vetexture"), std::runtime_error);
-    writeTexture();
-    EXPECT_NE(Resources::loadTextureData("/textures/image.vetexture"), nullptr);
+    std::filesystem::remove(root_ / "materials/sample.vematerial");
+    EXPECT_THROW(Resources::loadMaterial("/materials/sample.vematerial"), std::runtime_error);
+    writeMaterial();
+    EXPECT_NO_THROW(Resources::loadMaterial("/materials/sample.vematerial"));
 }
 
-TEST_F(ResourceCache, ConcurrentLoadsPublishTheSameLiveObject) {
-    constexpr std::size_t count = 4;
-    std::barrier rendezvous(static_cast<std::ptrdiff_t>(count));
-    std::array<std::shared_ptr<Texture>, count> results;
-    {
-        std::vector<std::jthread> threads;
-        for (std::size_t i = 0; i < count; ++i) {
-            threads.emplace_back([&, i] {
-                rendezvous.arrive_and_wait();
-                results[i] = Resources::loadTextureData("/textures/image.vetexture");
-            });
-        }
+TEST_F(ResourceCache, ConcurrentLoadsForSamePathCoordinateCleanly) {
+    constexpr int threadsCount = 4;
+    std::vector<std::thread> workers;
+    std::vector<std::shared_ptr<Material>> results(threadsCount);
+    std::barrier sync(threadsCount);
+
+    for (int i = 0; i < threadsCount; ++i) {
+        workers.emplace_back([&, i] {
+            sync.arrive_and_wait();
+            results[i] = Resources::loadMaterial("/materials/sample.vematerial");
+        });
     }
-    for (const auto& result : results) {
-        EXPECT_EQ(result, results[0]);
+
+    for (auto& worker : workers) {
+        worker.join();
     }
-    EXPECT_EQ(Resources::loadTextureData("/textures/image.vetexture"), results[0]);
+
+    for (int i = 1; i < threadsCount; ++i) {
+        EXPECT_EQ(results[0], results[i]);
+    }
 }
+
 } // namespace

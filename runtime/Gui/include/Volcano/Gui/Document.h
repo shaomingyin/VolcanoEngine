@@ -3,16 +3,19 @@
 
 #include <memory>
 
+#include <Volcano/Size.h>
+#include <Volcano/World/Canvas.h>
 #include <Volcano/Gui/Layout.h>
 #include <Volcano/Gui/Event.h>
 #include <Volcano/Gui/Platform.h>
 
 VOLCANO_GUI_BEGIN
 
-class Document final : private Widget::Observer {
+class Document final : public World::Canvas, private Widget::Observer {
 public:
     // The caller keeps platform alive longer than this document; documents may share it.
-    Document(Platform& platform, std::unique_ptr<Layout> root);
+    Document(Platform& platform, std::unique_ptr<Layout> root, Size size = Size{});
+    explicit Document(std::unique_ptr<Layout> root, Size size = Size{});
     ~Document() override;
     Document(const Document&) = delete;
     Document& operator=(const Document&) = delete;
@@ -30,8 +33,9 @@ public:
     std::uint64_t revision() const noexcept {
         return root_->revision();
     }
+    void setSize(Size size);
     void layout(Sizef size);
-    void draw() const;
+    void draw();
     bool event(const PointerEvent& event);
     bool event(const ScrollEvent& event);
     bool event(const KeyEvent& event);

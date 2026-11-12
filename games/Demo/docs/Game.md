@@ -9,7 +9,7 @@
 Demo 自己的 `games/Demo/include/Volcano/Game.h` 声明游戏入口，宿主通过 `<Volcano/Game.h>` 包含它：
 
 ```cpp
-std::unique_ptr<Volcano::World::Scene> volcanoCreateGame();
+std::unique_ptr<Volcano::World::Scene> volcanoCreateGame(Volcano::World::Context& context);
 ```
 
 每次调用必须返回新的非空 Scene。Demo 的实现是：
@@ -18,8 +18,8 @@ std::unique_ptr<Volcano::World::Scene> volcanoCreateGame();
 #include <Volcano/Game.h>
 #include <Volcano/Demo/Game.h>
 
-std::unique_ptr<Volcano::World::Scene> volcanoCreateGame() {
-    return std::make_unique<Volcano::Demo::Game>();
+std::unique_ptr<Volcano::World::Scene> volcanoCreateGame(Volcano::World::Context& context) {
+    return std::make_unique<Volcano::Demo::Game>(context);
 }
 ```
 

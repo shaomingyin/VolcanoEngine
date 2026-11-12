@@ -1,0 +1,53 @@
+syntax = "proto3";
+
+package Volcano.Asset;
+
+message TextureHeader {
+    uint32 width = 1;
+    uint32 height = 2;
+}
+
+message MeshHeader {
+    uint32 vertex_count = 1;
+    uint32 index_count = 2;
+}
+
+enum AlphaMode {
+    ALPHA_MODE_OPAQUE = 0;
+    ALPHA_MODE_BLEND = 1;
+}
+
+message Vector3 {
+    float x = 1;
+    float y = 2;
+    float z = 3;
+}
+
+message Vector4 {
+    float x = 1;
+    float y = 2;
+    float z = 3;
+    float w = 4;
+}
+
+message Material {
+    Vector4 albedo = 1;
+    optional float specular = 2;
+    optional float metallic = 3;
+    optional float roughness = 4;
+    Vector3 emissive = 5;
+    string albedo_texture = 6;
+    string normal_texture = 7;
+    string metallic_roughness_texture = 8;
+    optional bool lit = 9;
+    AlphaMode alpha_mode = 10;
+}
+
+message Model {
+    message Part {
+        string mesh = 1;
+        string material = 2;
+        repeated float transform = 3;
+    }
+    repeated Part parts = 1;
+}
