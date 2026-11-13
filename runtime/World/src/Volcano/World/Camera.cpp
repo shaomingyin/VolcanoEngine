@@ -18,4 +18,11 @@ void Camera::setZRange(float znear, float zfar) {
     zrange_ = {znear, zfar};
 }
 
+void Camera::setOutputSize(Size value) {
+    if (value.width < 0 || value.height < 0 || ((value.width == 0) != (value.height == 0))) {
+        throw std::invalid_argument("Camera output size must be empty or have positive dimensions");
+    }
+    output_size_ = value;
+}
+
 VOLCANO_WORLD_END

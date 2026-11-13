@@ -125,6 +125,7 @@ protected:
     void checkLoadCancelled() const;
     void setLoadingContent(std::string content);
     const Asset::Model& model(const std::filesystem::path& path) const;
+    World::Scene* currentScene() noexcept;
     virtual void onUnloadResources() noexcept;
     virtual void onCommitResources() noexcept;
     virtual void onDiscardResources() noexcept;

@@ -111,8 +111,9 @@ EnTT 按具体类型存储，view<Camera>() 不会查询到派生组件。Framew
 | --- | --- | --- |
 | Inherent | 名称、enabled/visible 标记 | 游戏逻辑、Framework |
 | Base::Transform | 平移、缩放、旋转，按需生成仿射矩阵 | 游戏逻辑、Physics 写回、Framework 提取 |
-| Model | 模型资源路径及其实例化材质定制（Material 映射） | Framework 加载 Asset 资源并准备 GPU 对象，关联材质与网格 |
-| PerspectiveCamera / OrthographicCamera | 相机参数及局部变换 | Framework 提取设置视图/投影矩阵 |
+| Model | 模型资源路径及其按 Part 下标覆盖的材质定制（Material 映射） | Framework 加载 Asset 资源并准备 GPU 对象，关联材质与网格 |
+| PerspectiveCamera / OrthographicCamera | 相机参数、局部变换及可选 RTT 输出尺寸 | Framework 提取设置视图/投影矩阵，或为正尺寸相机分配离屏目标 |
+| Overlay | 标记实体上的 Gui::Document / World::Canvas 作为屏幕叠加层绘制 | Framework 提取并在 3D 场景之后作为 View::overlays() 绘制 |
 | DirectionalLight / PointLight / SpotLight | 灯光参数及局部变换 | Framework 提取并加入 View |
 | RigidBody | 形状、形状局部 offset、运动类型、质量、表面属性、阻尼、重力倍率 | Physics 转换为后端对象并模拟 |
 | AudioSource | 声音路径、局部变换、增益、音高、循环、空间化、期望播放状态 | 声音子系统；目前尚无播放后端 |
@@ -162,7 +163,7 @@ World 的公共头文件应能够独立包含。窗口和真实渲染验证需�
 
 ## 视图提取与渲染解耦
 
-- **纯粹的状态数据库**：`World::Scene` 保持为纯净的 ECS 状态容器，不内建任何图形概念或 Draw List 生成逻辑，服务端与客户端 100% 共享相同的场景与组件。
-- **第三方视角提取**：`Framework`（如 `Local`）以特定相机（`entt::entity camera`）的视角从 `Scene` 提取可见实体、材质与光照，直接组装填充 `Graphics::View`。
+- **纯粹的声明数据层**：`World::Scene` 保持为纯净的 ECS 状态容器，不内建任何图形后端对象或 Draw List 生成逻辑，服务端与客户端共享相同的声明式场景与组件。
+- **运行时解析与视角提取**：`Framework`（如 `Local`）在提交资源时将声明式 `World::Model` 与动态输出解析为轻量的运行时组件（`Graphics::Model`、`Graphics::View::Output`）并刷新 `Gui::Document` 覆盖层；`Graphics::View::extract` 直接基于 EnTT 从 `Scene` 读取运行时渲染组件、变换、灯光与叠加层组装填充 `Graphics::View`。
 - **Graphics::View 即绘制列表**：消除中间的 `DrawList3D` 或 `World::View` 冗余抽象，`Graphics::View` 本身即为包含 3D 渲染项、光源、相机矩阵及 2D Canvas 的完整 Draw List，直接送入 `Renderer::render(view, target)` 执行渲染。
-- **材质与纹理归位**：`World::Model` 仅管理网格部件与材质（`Material`）的映射；`World::Material` 负责纹理槽位（`Material::Slot`，如 Albedo、Emissive）与画面源实体（`entt::entity`）的绑定，画面源可以是车载 GUI（挂载 `Gui::Document`）、监控相机或动态画板。通过 EnTT 的 Entity 版本代数保证生命周期安全，实体销毁时自动回退。
+- **材质与纹理归位**：`World::Model` 按 Part 下标管理运行时材质覆盖（`Material`）；`World::Material` 负责纹理槽位（`Material::Slot::Albedo`）与画面源实体（`entt::entity`）的绑定，画面源可以是离线 `Gui::Document`、RTT 相机或 `Framework::Drawing`。通过 `entt::entity` 标识与 `Overlay` 屏幕叠加标记分离离屏纹理与屏幕 HUD 路径。

@@ -16,6 +16,7 @@
 #include <Volcano/World/Material.h>
 #include <Volcano/World/Model.h>
 #include <Volcano/World/OrthographicCamera.h>
+#include <Volcano/World/Overlay.h>
 #include <Volcano/World/PerspectiveCamera.h>
 #include <Volcano/World/PointLight.h>
 #include <Volcano/World/RigidBody.h>
@@ -86,6 +87,14 @@ TEST(WorldComponents, CameraChangesAreValidatedAndPreservePreviousValuesOnFailur
     EXPECT_THROW(orthographic.setRect(1, 1, -1, 1), std::invalid_argument);
     EXPECT_EQ(orthographic.rect(), Eigen::Vector4f(-2, 2, -1, 1));
     EXPECT_TRUE(orthographic.toMatrix().allFinite());
+    EXPECT_EQ(camera.outputSize(), (Size{0, 0}));
+    camera.setOutputSize({128, 64});
+    EXPECT_EQ(camera.outputSize(), (Size{128, 64}));
+    EXPECT_THROW(camera.setOutputSize({-1, 64}), std::invalid_argument);
+    EXPECT_THROW(camera.setOutputSize({64, 0}), std::invalid_argument);
+    EXPECT_EQ(camera.outputSize(), (Size{128, 64}));
+    camera.setOutputSize({});
+    EXPECT_EQ(camera.outputSize(), (Size{0, 0}));
     std::unique_ptr<Camera> owned = std::make_unique<PerspectiveCamera>();
     EXPECT_TRUE(owned->toMatrix().allFinite());
 }
@@ -288,23 +297,28 @@ TEST(WorldComponents, MaterialBindsTexturesAndModelHoldsMaterials) {
     const auto source1 = static_cast<entt::entity>(1);
     const auto source2 = static_cast<entt::entity>(2);
     material.setTexture(Material::Slot::Albedo, source1);
-    material.setTexture(Material::Slot::Emissive, source2);
 
     EXPECT_EQ(material.texture(Material::Slot::Albedo), source1);
-    EXPECT_EQ(material.texture(Material::Slot::Emissive), source2);
-    EXPECT_EQ(material.texture(Material::Slot::Normal), static_cast<entt::entity>(entt::null));
+    EXPECT_TRUE(material.hasTexture(Material::Slot::Albedo));
 
     Model model("panel.vemodel");
-    model.setMaterial("panel.vematerial", material);
+    model.setMaterial(0, material);
+    model.material(1).setTexture(Material::Slot::Albedo, source2);
     auto copy = model;
 
-    ASSERT_NE(copy.findMaterial("panel.vematerial"), nullptr);
-    EXPECT_EQ(copy.findMaterial("panel.vematerial")->texture(Material::Slot::Albedo), source1);
-    EXPECT_EQ(copy.findMaterial("panel.vematerial")->texture(Material::Slot::Emissive), source2);
+    ASSERT_NE(copy.findMaterial(0), nullptr);
+    ASSERT_NE(copy.findMaterial(1), nullptr);
+    EXPECT_EQ(copy.findMaterial(0)->texture(Material::Slot::Albedo), source1);
+    EXPECT_EQ(copy.findMaterial(1)->texture(Material::Slot::Albedo), source2);
 
-    model.material("panel.vematerial").removeTexture(Material::Slot::Albedo);
-    EXPECT_FALSE(model.findMaterial("panel.vematerial")->hasTexture(Material::Slot::Albedo));
-    EXPECT_TRUE(model.findMaterial("panel.vematerial")->hasTexture(Material::Slot::Emissive));
+    model.material(0).removeTexture(Material::Slot::Albedo);
+    EXPECT_FALSE(model.findMaterial(0)->hasTexture(Material::Slot::Albedo));
+    EXPECT_EQ(model.findMaterial(0)->texture(Material::Slot::Albedo), static_cast<entt::entity>(entt::null));
+    EXPECT_EQ(copy.findMaterial(0)->texture(Material::Slot::Albedo), source1);
+
+    model.removeMaterial(1);
+    EXPECT_EQ(model.findMaterial(1), nullptr);
+    EXPECT_TRUE(model.materials().empty());
 }
 
 class TestScene final : public Scene {

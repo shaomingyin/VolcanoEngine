@@ -548,15 +548,12 @@ TEST(GuiStyle, RejectsInvalidMetricsWithoutChangingConfiguration) {
     EXPECT_NO_THROW(style.setBorderWidth(0));
 }
 
-TEST(GuiDocument, ImplementsTextureInterfaceAndValidatesSize) {
+TEST(GuiDocument, ImplementsCanvasAndValidatesSize) {
     Gui::Document doc(std::make_unique<Gui::Layout>(), Size{128, 64});
     EXPECT_EQ(doc.size(), (Size{128, 64}));
 
     doc.setSize({256, 128});
     EXPECT_EQ(doc.size(), (Size{256, 128}));
-
-    const World::Texture& asTexture = doc;
-    EXPECT_EQ(asTexture.size(), (Size{256, 128}));
 
     const World::Canvas& asCanvas = doc;
     EXPECT_EQ(asCanvas.size(), (Size{256, 128}));

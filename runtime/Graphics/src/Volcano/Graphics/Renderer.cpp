@@ -66,7 +66,8 @@ void Renderer::render(const View& view, Target& target) {
         VOLCANO_ASSERT(item.material.texture == nullptr || !target.contains(*item.material.texture));
     }
 #endif
-    if (target.width() <= 0 || target.height() <= 0) {
+    const Size targetSize = target.size();
+    if (targetSize.width <= 0 || targetSize.height <= 0) {
         return;
     }
 
@@ -77,8 +78,8 @@ void Renderer::render(const View& view, Target& target) {
     for (const auto& task : view.vgTasks()) {
         paint_pass_.render(task.commands.get(), task.target.get(), true);
     }
-    geometry_buffer_.resize(target.size());
-    bind(target);
+    geometry_buffer_.resize(targetSize);
+    bind(target, targetSize);
     clear(view.clearColor());
 
     geometry_buffer_.framebuffer().bind();
@@ -93,7 +94,7 @@ void Renderer::render(const View& view, Target& target) {
 
     geometry_pass_.render(view);
 
-    bind(target);
+    bind(target, targetSize);
     lighting_pass_.render(view, geometry_buffer_);
     transparent_pass_.render(view);
     for (const auto& overlay : view.overlays()) {
@@ -102,8 +103,12 @@ void Renderer::render(const View& view, Target& target) {
 }
 
 void Renderer::bind(Target& target) noexcept {
+    bind(target, target.size());
+}
+
+void Renderer::bind(Target& target, Size viewportSize) noexcept {
     target.bind();
-    glViewport(0, 0, target.width(), target.height());
+    glViewport(0, 0, viewportSize.width, viewportSize.height);
 
     glDisable(GL_SCISSOR_TEST);
     glDisable(GL_CULL_FACE);

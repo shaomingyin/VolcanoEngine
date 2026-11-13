@@ -2,11 +2,34 @@
 #include <cmath>
 #include <functional>
 #include <stdexcept>
+#include <type_traits>
+
+#include <Eigen/LU>
 
 #include <Volcano/Math.h>
+#include <Volcano/World/DirectionalLight.h>
+#include <Volcano/World/Inherent.h>
+#include <Volcano/World/Model.h>
+#include <Volcano/World/OrthographicCamera.h>
+#include <Volcano/World/Overlay.h>
+#include <Volcano/World/PerspectiveCamera.h>
+#include <Volcano/World/PointLight.h>
+#include <Volcano/World/Scene.h>
+#include <Volcano/World/SpotLight.h>
+#include <Volcano/Graphics/Model.h>
 #include <Volcano/Graphics/View.h>
 
 VOLCANO_GRAPHICS_BEGIN
+
+bool View::visible(const World::Scene& scene, entt::entity entity) {
+    const auto* inherent = scene.try_get<World::Inherent>(entity);
+    return inherent == nullptr || (inherent->isEnabled() && inherent->isVisible());
+}
+
+Eigen::Affine3f View::entityTransform(const World::Scene& scene, entt::entity entity) {
+    const auto* transform = scene.try_get<Transform>(entity);
+    return transform != nullptr ? transform->affine() : Eigen::Affine3f::Identity();
+}
 
 const std::vector<View::PreparedItem>& View::opaqueItems() const {
     VOLCANO_ASSERT(ready());
@@ -32,6 +55,114 @@ void View::begin() noexcept {
     opaque_.clear();
     transparent_.clear();
     prepared_lights_.clear();
+}
+
+void View::extract(const World::Scene& scene, entt::entity cameraEntity,
+    entt::entity outputEntity,
+    std::span<const std::reference_wrapper<const World::Canvas>> extraOverlays) {
+    VOLCANO_ASSERT(scene.valid(cameraEntity));
+    const auto* perspective = scene.try_get<World::PerspectiveCamera>(cameraEntity);
+    const auto* orthographic = scene.try_get<World::OrthographicCamera>(cameraEntity);
+    if ((perspective == nullptr) == (orthographic == nullptr)) {
+        throw std::invalid_argument("Camera entity requires exactly one supported camera component");
+    }
+    const World::Camera& camera = perspective != nullptr
+        ? static_cast<const World::Camera&>(*perspective)
+        : *orthographic;
+    const Eigen::Affine3f cameraTransform = entityTransform(scene, cameraEntity) * camera.offset().affine();
+    if (!cameraTransform.matrix().allFinite() || !cameraTransform.linear().fullPivLu().isInvertible()) {
+        throw std::invalid_argument("Camera transform must be finite and invertible");
+    }
+
+    begin();
+    setProjection(camera.toMatrix());
+    setViewMatrix(cameraTransform.inverse().matrix());
+
+#if defined(VOLCANO_DEBUG) && !defined(NDEBUG)
+    for (const auto entity : scene.view<World::Model>()) {
+        if (visible(scene, entity)) {
+            VOLCANO_ASSERT(scene.all_of<Model>(entity));
+        }
+    }
+#endif
+
+    for (const auto entity : scene.view<Model>()) {
+        if (!visible(scene, entity)) {
+            continue;
+        }
+        const auto& renderModel = scene.get<Model>(entity);
+        const auto* modelComponent = scene.try_get<World::Model>(entity);
+        VOLCANO_ASSERT(modelComponent == nullptr || renderModel.source() == modelComponent->source());
+        const auto transform = entityTransform(scene, entity);
+        const auto& parts = renderModel.parts();
+        for (std::size_t partIndex = 0; partIndex < parts.size(); ++partIndex) {
+            const auto& part = parts[partIndex];
+            VOLCANO_ASSERT(part.mesh != nullptr);
+            Material material = part.material;
+            if (modelComponent != nullptr) {
+                if (const auto* customMaterial = modelComponent->findMaterial(partIndex);
+                    customMaterial != nullptr) {
+                    const auto sourceEntity = customMaterial->texture(World::Material::Slot::Albedo);
+                    if (sourceEntity != entt::null && sourceEntity != outputEntity && scene.valid(sourceEntity)) {
+                        if (const auto* output = scene.try_get<Output>(sourceEntity);
+                            output != nullptr && output->texture != nullptr) {
+                            material.texture = output->texture;
+                        }
+                    }
+                }
+            }
+            add(*part.mesh, material, transform * part.transform, part.transparent);
+        }
+    }
+
+    auto addLights = [&]<typename Component>() {
+        for (const auto entity : scene.view<Component>()) {
+            if (!visible(scene, entity)) {
+                continue;
+            }
+            const auto& source = scene.get<Component>(entity);
+            const Eigen::Affine3f transform = entityTransform(scene, entity) * source.offset().affine();
+            Light light;
+            light.color = source.color();
+            light.strength = source.strength();
+            light.position = transform.translation();
+            if constexpr (std::is_same_v<Component, World::PointLight>) {
+                light.type = Light::Type::Point;
+                light.range = source.range();
+            } else {
+                light.direction = transform.linear() * source.direction();
+                if constexpr (std::is_same_v<Component, World::SpotLight>) {
+                    light.type = Light::Type::Spot;
+                    light.range = source.range();
+                    light.innerAngle = source.innerAngle();
+                    light.outerAngle = source.outerAngle();
+                }
+            }
+            add(light);
+        }
+    };
+    addLights.operator()<World::DirectionalLight>();
+    addLights.operator()<World::PointLight>();
+    addLights.operator()<World::SpotLight>();
+
+    if (outputEntity == entt::null) {
+        for (const auto entity : scene.view<World::Overlay, World::Canvas>()) {
+            if (!visible(scene, entity)) {
+                continue;
+            }
+            const auto& canvas = scene.get<World::Canvas>(entity);
+            if (canvas.ready()) {
+                add(canvas);
+            }
+        }
+        for (const auto& overlay : extraOverlays) {
+            if (overlay.get().ready()) {
+                add(overlay.get());
+            }
+        }
+    }
+
+    end();
 }
 
 void View::add(const Mesh& mesh, const Material& material, const Transform& transform, bool transparent) {

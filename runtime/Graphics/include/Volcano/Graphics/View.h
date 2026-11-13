@@ -3,8 +3,10 @@
 
 #include <cstddef>
 #include <functional>
+#include <span>
 #include <vector>
 
+#include <entt/entity/entity.hpp>
 #include <Eigen/Geometry>
 
 #include <Volcano/Transform.h>
@@ -14,6 +16,10 @@
 #include <Volcano/Graphics/Mesh.h>
 #include <Volcano/Graphics/Light.h>
 #include <Volcano/Graphics/Target.h>
+
+VOLCANO_WORLD_BEGIN
+class Scene;
+VOLCANO_WORLD_END
 
 VOLCANO_GRAPHICS_BEGIN
 
@@ -32,6 +38,11 @@ public:
         std::reference_wrapper<const World::Canvas> commands;
     };
 
+    struct Output final {
+    public:
+        const Texture* texture = nullptr;
+    };
+
     struct PreparedItem final {
         std::size_t index;
         Eigen::Affine3f model;
@@ -40,8 +51,13 @@ public:
     };
 
 public:
+    static bool visible(const World::Scene& scene, entt::entity entity);
+
     // Starts a new submission, retaining camera and environment settings.
     void begin() noexcept;
+    void extract(const World::Scene& scene, entt::entity camera,
+        entt::entity outputEntity = entt::null,
+        std::span<const std::reference_wrapper<const World::Canvas>> extraOverlays = {});
     void add(const Mesh& mesh, const Material& material = {},
         const Transform& transform = {}, bool transparent = false);
     void add(const Mesh& mesh, const Material& material,
@@ -117,6 +133,8 @@ private:
         Building,
         Ready
     };
+
+    static Eigen::Affine3f entityTransform(const World::Scene& scene, entt::entity entity);
 
     void invalidate() noexcept {
         if (state_ == State::Ready) {

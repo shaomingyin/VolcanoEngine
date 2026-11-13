@@ -1,9 +1,10 @@
 #ifndef VOLCANO_WORLD_MODEL_H
 #define VOLCANO_WORLD_MODEL_H
 
+#include <cstddef>
 #include <filesystem>
-#include <map>
 #include <utility>
+#include <vector>
 
 #include <Volcano/World/Common.h>
 #include <Volcano/World/Material.h>
@@ -26,25 +27,36 @@ public:
         source_ = std::move(value);
     }
 
-    const std::map<std::filesystem::path, Material>& materials() const noexcept {
+    const std::vector<Material>& materials() const noexcept {
         return materials_;
     }
 
-    Material& material(const std::filesystem::path& path) {
-        return materials_[path];
+    Material& material(std::size_t part) {
+        if (part >= materials_.size()) {
+            materials_.resize(part + 1);
+        }
+        return materials_[part];
     }
 
-    const Material* findMaterial(const std::filesystem::path& path) const noexcept {
-        const auto it = materials_.find(path);
-        return it != materials_.end() ? &it->second : nullptr;
+    const Material* findMaterial(std::size_t part) const noexcept {
+        return part < materials_.size() ? &materials_[part] : nullptr;
     }
 
-    void setMaterial(std::filesystem::path path, Material material) {
-        materials_.insert_or_assign(std::move(path), std::move(material));
+    void setMaterial(std::size_t part, Material material) {
+        if (part >= materials_.size()) {
+            materials_.resize(part + 1);
+        }
+        materials_[part] = std::move(material);
     }
 
-    void removeMaterial(const std::filesystem::path& path) {
-        materials_.erase(path);
+    void removeMaterial(std::size_t part) noexcept {
+        if (part >= materials_.size()) {
+            return;
+        }
+        materials_[part] = Material{};
+        while (!materials_.empty() && materials_.back().textures().empty()) {
+            materials_.pop_back();
+        }
     }
 
     void clearMaterials() noexcept {
@@ -53,7 +65,7 @@ public:
 
 private:
     std::filesystem::path source_;
-    std::map<std::filesystem::path, Material> materials_;
+    std::vector<Material> materials_;
 };
 
 VOLCANO_WORLD_END

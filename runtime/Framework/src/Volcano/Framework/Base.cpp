@@ -295,6 +295,10 @@ const Asset::Model& Base::model(const std::filesystem::path& path) const {
     return *found->second;
 }
 
+World::Scene* Base::currentScene() noexcept {
+    return pending_scene_ ? pending_scene_.get() : scene_.get();
+}
+
 void Base::onBeforeTasks() {}
 
 void Base::onUnloadResources() noexcept {}

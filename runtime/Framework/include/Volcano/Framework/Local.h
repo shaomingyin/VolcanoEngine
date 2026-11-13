@@ -11,35 +11,37 @@
 #include <vector>
 
 #include <entt/entity/entity.hpp>
-#include <Eigen/Geometry>
 
 #include <Volcano/Size.h>
 #include <Volcano/Asset/Common.h>
 #include <Volcano/Graphics/Font.h>
 #include <Volcano/Graphics/FrameBuffer.h>
 #include <Volcano/Graphics/Mesh.h>
+#include <Volcano/Graphics/Model.h>
 #include <Volcano/Graphics/Renderer.h>
 #include <Volcano/Graphics/Target.h>
 #include <Volcano/Graphics/Texture.h>
 #include <Volcano/Graphics/View.h>
 #include <Volcano/Gui/Event.h>
 #include <Volcano/World/Canvas.h>
-#include <Volcano/World/Inherent.h>
 #include <Volcano/Framework/Base.h>
 #include <Volcano/Framework/Window.h>
 
 VOLCANO_FRAMEWORK_BEGIN
 
 // Owns the window and local subsystems; use on the main thread.
-class Local: public Base {
+class Local : public Base {
 public:
     explicit Local(int width = 800, int height = 600, const char* title = "Volcano");
     ~Local() override;
 
+    const Graphics::Texture& texture(entt::entity entity) const;
     const Graphics::Texture& texture(std::string_view id) const;
     void setDrawingProvider(std::string id, std::function<void(World::Canvas&)> provider);
 
+    bool pointer(entt::entity entity, const Gui::PointerEvent& event);
     bool pointer(std::string_view texture, const Gui::PointerEvent& event);
+    bool key(entt::entity entity, const Gui::KeyEvent& event);
     bool key(std::string_view texture, const Gui::KeyEvent& event);
     void render(entt::entity camera);
     void render(Graphics::Target& target, entt::entity camera);
@@ -83,51 +85,11 @@ protected:
     virtual void onInputUpdate(Clock::duration elapsed);
     virtual void onAudioUpdate(Clock::duration elapsed);
 
-    static Eigen::Affine3f entityTransform(const World::Scene& scene, entt::entity entity);
-    static bool visible(const World::Scene& scene, entt::entity entity);
-    static bool hasOutput(const World::Scene& scene, std::string_view name);
-
-    template <typename Component>
-    static const Component* findNamed(const World::Scene& scene, std::string_view name) {
-        if constexpr (requires(const Component& c) { c.name(); }) {
-            for (const auto entity : scene.view<Component>()) {
-                const auto& component = scene.get<Component>(entity);
-                if (component.name() == name) {
-                    return &component;
-                }
-            }
-            return nullptr;
-        } else {
-            for (const auto entity : scene.view<World::Inherent, Component>()) {
-                const auto& inherent = scene.get<World::Inherent>(entity);
-                if (inherent.name() == name) {
-                    return &scene.get<Component>(entity);
-                }
-            }
-            return nullptr;
-        }
-    }
-
-    template <typename Component>
-    static Component* findNamed(World::Scene& scene, std::string_view name) {
-        if constexpr (requires(Component& c) { c.name(); }) {
-            for (const auto entity : scene.view<Component>()) {
-                auto& component = scene.get<Component>(entity);
-                if (component.name() == name) {
-                    return &component;
-                }
-            }
-            return nullptr;
-        } else {
-            for (const auto entity : scene.view<World::Inherent, Component>()) {
-                const auto& inherent = scene.get<World::Inherent>(entity);
-                if (inherent.name() == name) {
-                    return &scene.get<Component>(entity);
-                }
-            }
-            return nullptr;
-        }
-    }
+    static Size cameraOutputSize(const World::Scene& scene, entt::entity entity);
+    static Size outputSize(const World::Scene& scene, entt::entity entity);
+    static bool hasOutput(const World::Scene& scene, entt::entity entity);
+    static entt::entity findOutputEntity(const World::Scene& scene, std::string_view name);
+    static entt::entity findGuiEntity(const World::Scene& scene, std::string_view name);
 
 private:
     struct TextureOutput {
@@ -141,12 +103,13 @@ private:
         bool dirty = true;
     };
 
-    void loadOutput(std::string id, Size size);
+private:
+    void loadOutput(entt::entity entity, Size size);
     void validateSamples(const World::Canvas& canvas, const std::vector<std::string>& dependencies) const;
-    static std::vector<std::string> dependencies(const World::Scene& scene, const std::string& id);
-    static std::vector<std::string> textureOrder(const World::Scene& scene, const std::vector<std::string>& roots);
-    void buildView(Graphics::View& view, entt::entity camera);
-    void updateTextures(const std::vector<std::string>& roots);
+    static std::string outputLabel(const World::Scene& scene, entt::entity entity);
+    static std::vector<entt::entity> dependencies(const World::Scene& scene, entt::entity entity);
+    static std::vector<entt::entity> textureOrder(const World::Scene& scene, const std::vector<entt::entity>& roots);
+    void updateTextures(const std::vector<entt::entity>& roots);
 
 private:
     Window window_;
@@ -160,8 +123,9 @@ private:
     std::map<std::filesystem::path, std::shared_ptr<Graphics::Mesh>> pending_meshes_;
     std::map<std::filesystem::path, std::shared_ptr<Graphics::Texture>> textures_;
     std::map<std::filesystem::path, std::shared_ptr<Graphics::Texture>> pending_textures_;
-    std::map<std::string, std::unique_ptr<TextureOutput>> outputs_;
-    std::map<std::string, std::unique_ptr<TextureOutput>> pending_outputs_;
+    std::map<entt::entity, Graphics::Model> pending_render_models_;
+    std::map<entt::entity, std::unique_ptr<TextureOutput>> outputs_;
+    std::map<entt::entity, std::unique_ptr<TextureOutput>> pending_outputs_;
     std::map<std::string, std::function<void(World::Canvas&)>> drawing_providers_;
     const World::Scene* output_scene_ = nullptr;
     const World::Scene* pending_output_scene_ = nullptr;

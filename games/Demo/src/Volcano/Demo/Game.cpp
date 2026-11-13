@@ -32,7 +32,7 @@ Game::Game(World::Context& context) : World::Scene(context) {
     emplace<Gui::Document>(panel, std::move(root), Size{256, 160});
     const auto model = create();
     auto& source = emplace<World::Model>(model, "screen.vemodel");
-    source.material("screen.vematerial").setTexture(World::Material::Slot::Albedo, panel);
+    source.material(0).setTexture(World::Material::Slot::Albedo, panel);
     emplace<Transform>(model).setTranslation({0, 0, -3});
 }
 

@@ -42,7 +42,7 @@ Base
 | 对象 | 服务 | 成员数据 |
 | --- | --- | --- |
 | Base | 加载、播放、暂停、重置、卸载、资源同步、更新 Scene | 状态、Scene 工厂、独占 Scene、独占 Physics::System、FIFO scheduler、顶层加载 task、进度与取消标志 |
-| Local | 创建窗口与 GL 上下文、显示资源加载、从 Scene 提取数据构建 Graphics::View、执行渲染、输入/声音更新接口 | Window、Renderer、View、HUD Canvas 与输入状态 |
+| Local | 创建窗口与 GL 上下文、显示资源加载并挂载运行时渲染组件、驱动动态输出与渲染、输入/声音更新接口 | Window、Renderer、View、路径资源缓存及 `TextureOutput` |
 | Resources（命名空间） | 单项资源默认加载与 load/get/unload/clear | 实现内部按类型和 key 索引的 weak_ptr 缓存 |
 | Window | 管理 GLFW 生命周期、窗口及其 GL 上下文、激活上下文、提供 Graphics::Target | 存活窗口计数、GLFWwindow*、GL3WProcs，最后一个窗口销毁时关闭 GLFW |
 | Client | 输入之后调用网络更新接口 | 无额外状态 |
@@ -123,12 +123,12 @@ Framework 先调用 Scene 更新游戏逻辑，再驱动物理；零时间仍执
 相机视图矩阵为实体变换乘相机 offset 的逆；投影直接使用相机组件。
 相机矩阵须有限且可逆，PerspectiveCamera 的宽高比由宿主更新。
 
-Framework 彻底理顺场景与渲染视图构建的主谓关系。每次 render 首先执行动态依赖纹理（GUI / 矢量绘制）刷新，
-随后由 `Local::buildView` 以相机实体为视角，从 `scene()` 提取可见几何体、相机矩阵和光照，组装填充到 `Graphics::View`。
-没有 Inherent 组件的实体默认可见；有该组件的模型/灯光必须同时 enabled 和 visible。
+每次 render 首先按拓扑顺序更新动态依赖纹理（离屏 GUI / 矢量绘制 / RTT 相机），并对可见的 `World::Overlay + Gui::Document` 执行布局与绘制；
+随后调用 `Graphics::View::extract` 以相机实体为视角，基于 EnTT 从 `scene()` 提取预解析的 `Graphics::Model`、`Graphics::View::Output`、相机矩阵、光照和叠加层。
+没有 Inherent 组件的实体默认可见；有该组件的模型/灯光/叠加层必须同时 enabled 和 visible。
 缺少实体 Transform 时使用单位矩阵。模型最终矩阵为实体变换乘 Part 仿射矩阵，保留剪切。
 灯光 offset 同样叠加实体变换，方向转换到世界空间，距离和角度保留组件值。
-View 构建完成并调用 `View::end` 完成矩阵准备和排序，Renderer 消费 const View 执行最终绘制。
+`View::extract` 在提取末尾调用 `View::end` 完成矩阵准备和排序，Renderer 消费 const View 执行最终绘制。
 
 GPU Mesh/Texture 通过 shared_ptr 句柄持有，缓存增长不会改变对象地址。
 Local 卸载时先清空 View 的借用引用，再释放自身持有的资源句柄。Local 析构还会释放自身的绘图回调及剩余资源，随后销毁 Renderer、Window。模型句柄由相关场景共同持有，最后一个使用者释放后即可销毁；重置期间新场景先取得句柄，再释放旧场景，仍可复用缓存。Resources::clear 只清除索引，不代替宿主或句柄持有者完成生命周期清理。
@@ -180,9 +180,9 @@ FrameworkCheck 无需显示；FrameworkLocalCheck、FrameworkWindowCheck 需要 
 
 ## 动态纹理、GUI 与字体
 
-动态生成输出通过 ECS 组件表达：GUI 文档对应 `Gui::Document`，矢量绘制对应 `Framework::Drawing`。静态贴图直接按文件路径引用。Framework 解析引用、验证依赖并持有输出帧缓冲，Local 安排更新与渲染。`Drawing` 显式声明其依赖，通过 `Local::setDrawingProvider` 注册绘制函数。回调填写 Canvas，不自行 begin/end；不能采样未声明的动态输出或当前输出。
+动态生成输出通过 ECS 实体表达并由 `Local` 按 `entt::entity` 管理输出帧缓冲：离屏 GUI 文档对应 `Gui::Document`，矢量绘制对应 `Framework::Drawing`，RTT 相机对应设置了正 `outputSize` 的 `PerspectiveCamera` / `OrthographicCamera`；带有 `World::Overlay` 的 `Gui::Document` / `World::Canvas` 不分配离屏帧缓冲，而在主相机渲染末尾作为 `View::overlays()` 直接绘制到输出目标。静态贴图直接按文件路径引用。`Drawing` 显式声明其依赖，通过 `Local::setDrawingProvider` 注册绘制函数。回调填写 Canvas，不自行 begin/end；不能采样未声明的动态输出或当前输出。
 
-Local::texture 返回普通 Graphics::Texture，可供多处共享。GUI 内容及依赖不变时复用输出，自定义绘图每次相关渲染提交更新。修改场景资源后调用 synchronizeResources，保持既有显式资源同步约定。
+`Local::texture`（支持实体或命名查找）返回普通 `Graphics::Texture`，可供多处共享。GUI 内容及依赖不变时复用输出，自定义绘图与 RTT 相机按依赖拓扑序更新。修改场景资源后调用 `synchronizeResources`，保持既有显式资源同步约定。
 
 Gui 所需宿主服务定义在 Gui::Platform（样式、文本测量、输入法与光标等），Document 派生自 World::Canvas，通过 `draw()` 录制矢量绘制指令，Local 直接将 Document 作为 Canvas 渲染输出。应用可通过 pointer/key 传入 Gui::PointerEvent/Gui::KeyEvent，为模型表面或其它交互来源投递事件；Document 内部统一使用重载 event 接口。
 

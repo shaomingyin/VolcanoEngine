@@ -7,7 +7,6 @@
 
 #include <entt/entt.hpp>
 
-#include <Volcano/Color.h>
 #include <Volcano/World/Common.h>
 
 VOLCANO_WORLD_BEGIN
@@ -16,22 +15,10 @@ class Material final {
 public:
     enum class Slot : std::uint8_t {
         Albedo,
-        Emissive,
-        Normal,
-        MetallicRoughness,
-        Occlusion,
     };
 
 public:
     Material() = default;
-
-    const Colorf& color() const noexcept {
-        return color_;
-    }
-
-    void setColor(const Colorf& color) noexcept {
-        color_ = color;
-    }
 
     const std::map<Slot, entt::entity>& textures() const noexcept {
         return textures_;
@@ -59,7 +46,6 @@ public:
     }
 
 private:
-    Colorf color_ = Colorf::White;
     std::map<Slot, entt::entity> textures_;
 };
 

@@ -18,6 +18,7 @@ add_library(Graphics STATIC
     include/Volcano/Graphics/Material.h
     include/Volcano/Graphics/Light.h
     include/Volcano/Graphics/Mesh.h
+    include/Volcano/Graphics/Model.h
     include/Volcano/Graphics/View.h
     include/Volcano/Graphics/GeometryPass.h
     include/Volcano/Graphics/GBuffer.h

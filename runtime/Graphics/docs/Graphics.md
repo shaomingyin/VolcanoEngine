@@ -2,7 +2,7 @@
 
 ## 模块与对象
 
-Graphics 提供统一二维/三维渲染，公开依赖 Base 和 Eigen，使用内置 gl3w，不依赖 World、GLFW 或窗口系统。
+Graphics 提供统一二维/三维渲染，公开依赖 Base、World 和 Eigen，使用内置 gl3w，不依赖 Asset、Gui、GLFW 或窗口系统。
 Framework::Local 使用 GLFW 创建窗口及原生 OpenGL context；Framework::Window 实现 Graphics::Target。
 Launcher 处理事件及交换缓冲。
 
@@ -11,7 +11,8 @@ Launcher 处理事件及交换缓冲。
 | 对象 | 用途 |
 | --- | --- |
 | Renderer | 加载函数、管理 GBuffer 和具体 Pass、清屏及调度 |
-| View | 通过 begin/add/end 构建输入并计算矩阵、光源和透明排序，供 Renderer 直接使用 |
+| View | 通过 `begin/add/end` 直接提交或通过 `extract` 从 `World::Scene` 提取渲染输入并计算矩阵、光源和透明排序 |
+| Model | 保存按 Part 预解析的非拥有 `Mesh*`、默认 `Material` 与局部变换的运行时组件 |
 | Mesh | 定义交错 position/normal/texcoord 顶点格式，管理 VAO/VBO/索引缓冲 |
 | Material | 乘法色、可选借用 Texture 指针、lit 开关 |
 | Texture | 仅管理可采样 RGBA8 纹理、上传和尺寸 |

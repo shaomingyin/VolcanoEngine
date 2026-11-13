@@ -20,7 +20,7 @@
 
 VOLCANO_WORLD_BEGIN
 
-class Canvas : public Texture {
+class Canvas {
 public:
     enum class FillRule {
         NonZero,
@@ -104,9 +104,9 @@ public:
 
 public:
     explicit Canvas(Size size = Size{}) noexcept;
-    ~Canvas() override = default;
+    virtual ~Canvas() = default;
 
-    Size size() const noexcept override {
+    Size size() const noexcept {
         return size_;
     }
 

@@ -42,6 +42,7 @@ public:
 
 private:
     void bind(Target& target) noexcept;
+    void bind(Target& target, Size viewportSize) noexcept;
     void clear(const Colorf& color);
 
 private:

@@ -12,9 +12,19 @@
 #include <gtest/gtest.h>
 
 #include <Volcano/Math.h>
+#include <Volcano/Transform.h>
+#include <Volcano/World/Canvas.h>
+#include <Volcano/World/DirectionalLight.h>
+#include <Volcano/World/Inherent.h>
+#include <Volcano/World/Model.h>
+#include <Volcano/World/Overlay.h>
+#include <Volcano/World/PerspectiveCamera.h>
+#include <Volcano/World/PointLight.h>
+#include <Volcano/World/Scene.h>
 #include <Volcano/Graphics/FrameBuffer.h>
 #include <Volcano/Graphics/GBuffer.h>
 #include <Volcano/Graphics/Mesh.h>
+#include <Volcano/Graphics/Model.h>
 #include <Volcano/Graphics/View.h>
 
 namespace {
@@ -475,6 +485,79 @@ TEST_F(GraphicsResources, ViewRebuildsLightsAndRecoversAfterFailedEnd) {
     view.begin();
     view.end();
     EXPECT_TRUE(view.preparedLights().empty());
+}
+
+TEST_F(GraphicsResources, ViewExtractsSceneModelsLightsOutputsAndOverlays) {
+    class TestScene final : public Volcano::World::Scene {
+    public:
+        entt::entity player() const noexcept override {
+            return entt::null;
+        }
+
+    protected:
+        void onUpdate(Volcano::Clock::duration) noexcept override {
+        }
+    };
+
+    Mesh mesh({}, {});
+    Texture baseTexture(2, 2);
+    Texture outputTexture(4, 4);
+
+    TestScene scene;
+    const auto invalidCamera = scene.create();
+    const auto camera = scene.create();
+    scene.emplace<Volcano::World::PerspectiveCamera>(camera, 60.0f, 1.0f, 0.1f, 10.0f);
+    scene.emplace<Volcano::Transform>(camera).setTranslation({0, 0, 5});
+
+    const auto outputEntity = scene.create();
+    scene.emplace<View::Output>(outputEntity, &outputTexture);
+
+    Eigen::Affine3f partTransform = Eigen::Affine3f::Identity();
+    partTransform.translate(Eigen::Vector3f(1, 0, 0));
+    std::vector<Model::Part> parts;
+    parts.push_back({&mesh, {Volcano::Colorf::White, &baseTexture, true}, partTransform, false});
+
+    const auto modelEntity = scene.create();
+    scene.emplace<Volcano::Transform>(modelEntity).setTranslation({0, 2, 0});
+    auto& worldModel = scene.emplace<Volcano::World::Model>(modelEntity, "model.vemodel");
+    worldModel.material(0).setTexture(Volcano::World::Material::Slot::Albedo, outputEntity);
+    scene.emplace<Model>(modelEntity, "model.vemodel", parts);
+
+    const auto hiddenModel = scene.create();
+    scene.emplace<Volcano::World::Inherent>(hiddenModel, "hidden", true, false);
+    scene.emplace<Model>(hiddenModel, "hidden.vemodel", parts);
+
+    const auto lightEntity = scene.create();
+    scene.emplace<Volcano::World::PointLight>(lightEntity);
+    scene.emplace<Volcano::Transform>(lightEntity).setTranslation({3, 4, 5});
+
+    const auto overlayEntity = scene.create();
+    scene.emplace<Volcano::World::Overlay>(overlayEntity);
+    auto& canvas = scene.emplace<Volcano::World::Canvas>(overlayEntity);
+    canvas.begin();
+    canvas.end();
+
+    Volcano::World::Canvas extraOverlay;
+    extraOverlay.begin();
+    extraOverlay.end();
+    const std::array<std::reference_wrapper<const Volcano::World::Canvas>, 1> extraOverlays{extraOverlay};
+
+    View view;
+    EXPECT_THROW(view.extract(scene, invalidCamera), std::invalid_argument);
+
+    view.extract(scene, camera, entt::null, extraOverlays);
+    ASSERT_TRUE(view.ready());
+    ASSERT_EQ(view.items().size(), 1);
+    EXPECT_EQ(view.items()[0].material.texture, &outputTexture);
+    EXPECT_EQ(view.items()[0].transform.translation(), Eigen::Vector3f(1, 2, 0));
+    ASSERT_EQ(view.lights().size(), 1);
+    EXPECT_EQ(view.lights()[0].position, Eigen::Vector3f(3, 4, 5));
+    EXPECT_EQ(view.overlays().size(), 2);
+
+    view.extract(scene, camera, outputEntity, extraOverlays);
+    ASSERT_EQ(view.items().size(), 1);
+    EXPECT_EQ(view.items()[0].material.texture, &baseTexture);
+    EXPECT_TRUE(view.overlays().empty());
 }
 
 } // namespace

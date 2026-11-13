@@ -3,6 +3,7 @@
 
 #include <Eigen/Core>
 
+#include <Volcano/Size.h>
 #include <Volcano/Transform.h>
 #include <Volcano/World/Common.h>
 
@@ -27,6 +28,12 @@ public:
     }
 
     virtual void setZRange(float znear, float zfar);
+
+    constexpr Size outputSize() const noexcept {
+        return output_size_;
+    }
+
+    void setOutputSize(Size value);
     virtual Eigen::Matrix4f toMatrix() const = 0;
 
 protected:
@@ -38,6 +45,7 @@ protected:
 private:
     Transform offset_;
     Eigen::Vector2f zrange_{0.1f, 100.0f};
+    Size output_size_{};
 };
 
 VOLCANO_WORLD_END

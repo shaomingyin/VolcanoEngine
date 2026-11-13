@@ -87,6 +87,11 @@ public:
     }
 
     template<typename... Component>
+    bool all_of(entt::entity entity) const noexcept {
+        return registry_.all_of<Component...>(entity);
+    }
+
+    template<typename... Component>
     auto view() {
         return registry_.view<Component...>();
     }
