@@ -11,11 +11,13 @@
 
 #include <Volcano/Transform.h>
 #include <Volcano/World/Canvas.h>
+#include <Volcano/World/Texture.h>
 #include <Volcano/Graphics/Common.h>
 #include <Volcano/Graphics/Material.h>
 #include <Volcano/Graphics/Mesh.h>
 #include <Volcano/Graphics/Light.h>
 #include <Volcano/Graphics/Target.h>
+#include <Volcano/Graphics/Texture.h>
 
 VOLCANO_WORLD_BEGIN
 class Scene;
@@ -33,14 +35,11 @@ struct DrawItem final {
 // Owns drawing state and items; Mesh and Texture resources remain externally owned.
 class View final {
 public:
+    using TextureResolver = std::function<const Texture*(const World::Texture&)>;
+
     struct VGTask final {
         std::reference_wrapper<Target> target;
         std::reference_wrapper<const World::Canvas> commands;
-    };
-
-    struct Output final {
-    public:
-        const Texture* texture = nullptr;
     };
 
     struct PreparedItem final {
@@ -56,8 +55,7 @@ public:
     // Starts a new submission, retaining camera and environment settings.
     void begin() noexcept;
     void extract(const World::Scene& scene, entt::entity camera,
-        entt::entity outputEntity = entt::null,
-        std::span<const std::reference_wrapper<const World::Canvas>> extraOverlays = {});
+        const TextureResolver& resolveTexture = {});
     void add(const Mesh& mesh, const Material& material = {},
         const Transform& transform = {}, bool transparent = false);
     void add(const Mesh& mesh, const Material& material,
@@ -71,6 +69,15 @@ public:
     }
     const std::vector<std::reference_wrapper<const World::Canvas>>& overlays() const noexcept {
         return overlays_;
+    }
+
+    const Texture* hud() const noexcept {
+        return hud_;
+    }
+
+    void setHud(const Texture* value) noexcept {
+        invalidate();
+        hud_ = value;
     }
 
     bool ready() const noexcept {
@@ -145,6 +152,7 @@ private:
 private:
     std::vector<VGTask> vg_tasks_;
     std::vector<std::reference_wrapper<const World::Canvas>> overlays_;
+    const Texture* hud_ = nullptr;
     std::vector<DrawItem> items_;
     std::vector<Light> lights_;
     Eigen::Vector3f ambient_light_ = Eigen::Vector3f::Zero();

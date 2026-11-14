@@ -14,6 +14,11 @@ VOLCANO_WORLD_BEGIN
 class Model final {
 public:
     Model() = default;
+    ~Model() = default;
+    Model(const Model&) = delete;
+    Model& operator=(const Model&) = delete;
+    Model(Model&&) noexcept = default;
+    Model& operator=(Model&&) noexcept = default;
 
     explicit Model(std::filesystem::path source)
         : source_(std::move(source)) {

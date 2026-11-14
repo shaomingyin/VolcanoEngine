@@ -16,7 +16,8 @@ const gl::Texture2D& Texture::texture() const noexcept {
 }
 
 Texture::Texture(int width, int height, std::span<const std::uint8_t> rgba)
-    : texture_(allocate(width, height))
+    : World::Texture(World::Texture::Kind::Graphics)
+    , texture_(allocate(width, height))
     , width_(width)
     , height_(height) {
     if (!rgba.empty()) {

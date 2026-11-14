@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 #include <string_view>
+#include <variant>
 #include <vector>
 
 #include <entt/entity/entity.hpp>
@@ -22,8 +23,11 @@
 #include <Volcano/Graphics/Target.h>
 #include <Volcano/Graphics/Texture.h>
 #include <Volcano/Graphics/View.h>
+#include <Volcano/Gui/Document.h>
 #include <Volcano/Gui/Event.h>
+#include <Volcano/World/Camera.h>
 #include <Volcano/World/Canvas.h>
+#include <Volcano/World/Texture.h>
 #include <Volcano/Framework/Base.h>
 #include <Volcano/Framework/Window.h>
 
@@ -85,13 +89,14 @@ protected:
     virtual void onInputUpdate(Clock::duration elapsed);
     virtual void onAudioUpdate(Clock::duration elapsed);
 
-    static Size cameraOutputSize(const World::Scene& scene, entt::entity entity);
     static Size outputSize(const World::Scene& scene, entt::entity entity);
     static bool hasOutput(const World::Scene& scene, entt::entity entity);
     static entt::entity findOutputEntity(const World::Scene& scene, std::string_view name);
     static entt::entity findGuiEntity(const World::Scene& scene, std::string_view name);
 
 private:
+    using OutputKey = std::variant<entt::entity, const World::Texture*>;
+
     struct TextureOutput {
     public:
         explicit TextureOutput(Size size);
@@ -104,12 +109,19 @@ private:
     };
 
 private:
-    void loadOutput(entt::entity entity, Size size);
+    static const World::Camera* findCamera(const World::Scene& scene, entt::entity entity) noexcept;
+    static World::Camera* findCamera(World::Scene& scene, entt::entity entity) noexcept;
+    static Gui::Document* findDocument(World::Scene& scene, entt::entity entity) noexcept;
+    static bool hasOutput(const World::Scene& scene, const OutputKey& key);
+    static bool containsTexture(const World::Scene& scene, const World::Texture* texture);
+    void loadOutput(const OutputKey& key, Size size);
+    void loadTextureResource(const World::Texture& texture, std::vector<OutputKey>& keys);
+    const Graphics::Texture* resolveTexture(const World::Texture& source) const;
     void validateSamples(const World::Canvas& canvas, const std::vector<std::string>& dependencies) const;
-    static std::string outputLabel(const World::Scene& scene, entt::entity entity);
-    static std::vector<entt::entity> dependencies(const World::Scene& scene, entt::entity entity);
-    static std::vector<entt::entity> textureOrder(const World::Scene& scene, const std::vector<entt::entity>& roots);
-    void updateTextures(const std::vector<entt::entity>& roots);
+    static std::string outputLabel(const World::Scene& scene, const OutputKey& key);
+    static std::vector<OutputKey> dependencies(const World::Scene& scene, const OutputKey& key);
+    static std::vector<OutputKey> textureOrder(const World::Scene& scene, const std::vector<OutputKey>& roots);
+    void updateTextures(const std::vector<OutputKey>& roots, Size defaultSize);
 
 private:
     Window window_;
@@ -124,8 +136,8 @@ private:
     std::map<std::filesystem::path, std::shared_ptr<Graphics::Texture>> textures_;
     std::map<std::filesystem::path, std::shared_ptr<Graphics::Texture>> pending_textures_;
     std::map<entt::entity, Graphics::Model> pending_render_models_;
-    std::map<entt::entity, std::unique_ptr<TextureOutput>> outputs_;
-    std::map<entt::entity, std::unique_ptr<TextureOutput>> pending_outputs_;
+    std::map<OutputKey, std::unique_ptr<TextureOutput>> outputs_;
+    std::map<OutputKey, std::unique_ptr<TextureOutput>> pending_outputs_;
     std::map<std::string, std::function<void(World::Canvas&)>> drawing_providers_;
     const World::Scene* output_scene_ = nullptr;
     const World::Scene* pending_output_scene_ = nullptr;

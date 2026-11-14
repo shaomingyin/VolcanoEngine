@@ -322,11 +322,17 @@ TEST(GuiTree, CompositeWidgetsArrangeDrawHitAndCollectResources) {
     EXPECT_NE(document.root().hit(75, 25), child);
     std::vector<std::filesystem::path> fonts;
     std::vector<std::string> images;
-    document.root().collectResources(fonts, images);
+    World::Canvas& canvas = document;
+    canvas.collectResources(fonts, images);
     EXPECT_EQ(fonts.size(), 2);
     EXPECT_NE(std::find(fonts.begin(), fonts.end(), "parent.ttf"), fonts.end());
     EXPECT_NE(std::find(fonts.begin(), fonts.end(), "child.ttf"), fonts.end());
     EXPECT_EQ(images, (std::vector<std::string>{"picture"}));
+    const auto previousRevision = canvas.revision();
+    canvas.prepare({100, 100});
+    EXPECT_TRUE(canvas.ready());
+    EXPECT_FALSE(canvas.empty());
+    EXPECT_EQ(canvas.revision(), previousRevision);
 }
 
 #ifdef VOLCANO_DEBUG

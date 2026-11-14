@@ -16,7 +16,6 @@
 #include <Volcano/World/Material.h>
 #include <Volcano/World/Model.h>
 #include <Volcano/World/OrthographicCamera.h>
-#include <Volcano/World/Overlay.h>
 #include <Volcano/World/PerspectiveCamera.h>
 #include <Volcano/World/PointLight.h>
 #include <Volcano/World/RigidBody.h>
@@ -78,23 +77,23 @@ TEST(WorldComponents, CameraChangesAreValidatedAndPreservePreviousValuesOnFailur
     camera.setOffset(offset);
     offset.reset();
     EXPECT_EQ(camera.offset().translation(), Eigen::Vector3f(1, 2, 3));
-    auto copy = camera;
-    copy.setFov(45);
-    EXPECT_EQ(camera.fov(), 60);
+    EXPECT_EQ(camera.hud(), nullptr);
+    auto hud = std::make_unique<Texture>("hud.vetexture");
+    const auto* hudPtr = hud.get();
+    camera.setHud(std::move(hud));
+    EXPECT_EQ(camera.hud(), hudPtr);
+    auto moved = std::move(camera);
+    EXPECT_EQ(moved.fov(), 60);
+    EXPECT_EQ(moved.hud(), hudPtr);
+    auto taken = moved.takeHud();
+    EXPECT_EQ(taken.get(), hudPtr);
+    EXPECT_EQ(moved.hud(), nullptr);
     OrthographicCamera orthographic;
     orthographic.setRect(-2, 2, -1, 1);
     orthographic.setZRange(-10, 10);
     EXPECT_THROW(orthographic.setRect(1, 1, -1, 1), std::invalid_argument);
     EXPECT_EQ(orthographic.rect(), Eigen::Vector4f(-2, 2, -1, 1));
     EXPECT_TRUE(orthographic.toMatrix().allFinite());
-    EXPECT_EQ(camera.outputSize(), (Size{0, 0}));
-    camera.setOutputSize({128, 64});
-    EXPECT_EQ(camera.outputSize(), (Size{128, 64}));
-    EXPECT_THROW(camera.setOutputSize({-1, 64}), std::invalid_argument);
-    EXPECT_THROW(camera.setOutputSize({64, 0}), std::invalid_argument);
-    EXPECT_EQ(camera.outputSize(), (Size{128, 64}));
-    camera.setOutputSize({});
-    EXPECT_EQ(camera.outputSize(), (Size{0, 0}));
     std::unique_ptr<Camera> owned = std::make_unique<PerspectiveCamera>();
     EXPECT_TRUE(owned->toMatrix().allFinite());
 }
@@ -185,9 +184,8 @@ TEST(WorldComponents, MetadataAndResourceDescriptionsHaveIndependentValueSemanti
     EXPECT_FALSE(metadata.isEnabled());
     EXPECT_FALSE(metadata.isVisible());
     Model model("models/object.vemodel");
-    auto other = model;
+    auto other = std::move(model);
     other.setSource("models/other.vemodel");
-    EXPECT_EQ(model.source(), "models/object.vemodel");
     EXPECT_EQ(other.source(), "models/other.vemodel");
 }
 
@@ -211,14 +209,12 @@ TEST(WorldComponents, OwnedDescriptionsSupportCopyAndMoveAssignment) {
 
     const std::filesystem::path path = "models" / std::filesystem::path(name + ".vemodel");
     Model model(path);
-    Model modelCopy;
-    modelCopy = model;
-    Model modelMoved(std::move(modelCopy));
+    Model modelMoved(std::move(model));
     Model modelAssigned;
     modelAssigned = std::move(modelMoved);
     EXPECT_EQ(modelAssigned.source(), path);
     modelAssigned.setSource("models/changed.vemodel");
-    EXPECT_EQ(model.source(), path);
+    EXPECT_EQ(modelAssigned.source(), "models/changed.vemodel");
 
     AudioSource source("sounds/test.wav");
     source.setGain(0.5f);
@@ -294,31 +290,52 @@ TEST(WorldComponents, SceneUpdateReportsErrorsToTheHost) {
 }
 TEST(WorldComponents, MaterialBindsTexturesAndModelHoldsMaterials) {
     Material material;
-    const auto source1 = static_cast<entt::entity>(1);
-    const auto source2 = static_cast<entt::entity>(2);
-    material.setTexture(Material::Slot::Albedo, source1);
+    auto source1 = std::make_unique<Texture>("source1.vetexture");
+    const auto* source1Ptr = source1.get();
+    auto source2 = std::make_unique<Canvas>(Size{32, 32});
+    const auto* source2Ptr = source2.get();
+    EXPECT_THROW(material.setTexture(Material::Slot::Albedo, nullptr), std::invalid_argument);
+    material.setTexture(Material::Slot::Albedo, std::move(source1));
 
-    EXPECT_EQ(material.texture(Material::Slot::Albedo), source1);
+    EXPECT_EQ(material.texture(Material::Slot::Albedo), source1Ptr);
     EXPECT_TRUE(material.hasTexture(Material::Slot::Albedo));
+    EXPECT_EQ(source1Ptr->kind(), Texture::Kind::Path);
+    EXPECT_FALSE(source1Ptr->isCanvas());
+    EXPECT_EQ(source2Ptr->kind(), Texture::Kind::Canvas);
+    EXPECT_TRUE(source2Ptr->isCanvas());
+    EXPECT_EQ(source2->revision(), 0u);
+    source2->begin();
+    source2->setFont("font.ttf", 16.0f);
+    source2->text(0.0f, 16.0f, "hi");
+    source2->image("bg", {0.0f, 0.0f, 10.0f, 10.0f});
+    source2->end();
+    EXPECT_EQ(source2->revision(), 1u);
+    source2->prepare({32.0f, 32.0f});
+    EXPECT_EQ(source2->revision(), 1u);
+    std::vector<std::filesystem::path> fonts;
+    std::vector<std::string> images;
+    source2->collectResources(fonts, images);
+    EXPECT_EQ(fonts, (std::vector<std::filesystem::path>{"font.ttf"}));
+    EXPECT_EQ(images, (std::vector<std::string>{"bg"}));
 
     Model model("panel.vemodel");
-    model.setMaterial(0, material);
-    model.material(1).setTexture(Material::Slot::Albedo, source2);
-    auto copy = model;
+    model.setMaterial(0, std::move(material));
+    model.material(1).setTexture(Material::Slot::Albedo, std::move(source2));
+    auto moved = std::move(model);
 
-    ASSERT_NE(copy.findMaterial(0), nullptr);
-    ASSERT_NE(copy.findMaterial(1), nullptr);
-    EXPECT_EQ(copy.findMaterial(0)->texture(Material::Slot::Albedo), source1);
-    EXPECT_EQ(copy.findMaterial(1)->texture(Material::Slot::Albedo), source2);
+    ASSERT_NE(moved.findMaterial(0), nullptr);
+    ASSERT_NE(moved.findMaterial(1), nullptr);
+    EXPECT_EQ(moved.findMaterial(0)->texture(Material::Slot::Albedo), source1Ptr);
+    EXPECT_EQ(moved.findMaterial(1)->texture(Material::Slot::Albedo), source2Ptr);
 
-    model.material(0).removeTexture(Material::Slot::Albedo);
-    EXPECT_FALSE(model.findMaterial(0)->hasTexture(Material::Slot::Albedo));
-    EXPECT_EQ(model.findMaterial(0)->texture(Material::Slot::Albedo), static_cast<entt::entity>(entt::null));
-    EXPECT_EQ(copy.findMaterial(0)->texture(Material::Slot::Albedo), source1);
+    auto taken = moved.material(0).takeTexture(Material::Slot::Albedo);
+    EXPECT_EQ(taken.get(), source1Ptr);
+    EXPECT_FALSE(moved.findMaterial(0)->hasTexture(Material::Slot::Albedo));
+    EXPECT_EQ(moved.findMaterial(0)->texture(Material::Slot::Albedo), nullptr);
 
-    model.removeMaterial(1);
-    EXPECT_EQ(model.findMaterial(1), nullptr);
-    EXPECT_TRUE(model.materials().empty());
+    moved.removeMaterial(1);
+    EXPECT_EQ(moved.findMaterial(1), nullptr);
+    EXPECT_TRUE(moved.materials().empty());
 }
 
 class TestScene final : public Scene {

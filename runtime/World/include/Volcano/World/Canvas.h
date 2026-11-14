@@ -3,6 +3,8 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstdint>
+#include <filesystem>
 #include <memory>
 #include <optional>
 #include <string>
@@ -20,7 +22,7 @@
 
 VOLCANO_WORLD_BEGIN
 
-class Canvas {
+class Canvas : public Texture {
 public:
     enum class FillRule {
         NonZero,
@@ -104,15 +106,25 @@ public:
 
 public:
     explicit Canvas(Size size = Size{}) noexcept;
-    virtual ~Canvas() = default;
+    ~Canvas() override = default;
 
-    Size size() const noexcept {
+    Size size() const noexcept override {
         return size_;
     }
 
     void setSize(Size size) noexcept {
         size_ = size;
     }
+
+    virtual void prepare(Sizef) {
+    }
+
+    virtual std::uint64_t revision() const noexcept {
+        return revision_;
+    }
+
+    virtual void collectResources(std::vector<std::filesystem::path>& fonts,
+                                  std::vector<std::string>& images) const;
 
     void begin() noexcept;
     void end();
@@ -187,6 +199,9 @@ public:
 
     std::vector<std::shared_ptr<Texture>> sampledTextures() const;
 
+protected:
+    Canvas(Size size, Texture::Kind kind) noexcept;
+
 private:
     Size size_;
     State state_;
@@ -195,6 +210,7 @@ private:
     std::vector<Command> commands_;
     bool building_ = false;
     bool ready_ = false;
+    std::uint64_t revision_ = 0;
 };
 
 VOLCANO_WORLD_END

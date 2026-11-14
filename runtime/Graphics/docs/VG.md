@@ -1,8 +1,8 @@
 # VG 与世界动态纹理设计
 
-World 描述资源来源与矢量绘制指令集 `World::Canvas`（不继承 `World::Texture`），`Framework` 管理加载、生命周期、Scene 到 View 转换和依赖顺序，`Graphics` 执行渲染；`Gui` 定义控件树、事件与绘图接口，`Gui::Document` 直接派生自 `World::Canvas`，不依赖 `Graphics`。
+World 通过 `World::Texture`（及继承自它的矢量绘制指令集 `World::Canvas`）统一描述纹理与绘制来源，`World::Canvas` 提供 `prepare(Sizef)`、`revision()` 与 `collectResources(...)` 虚接口供 `Framework` 多态驱动动态绘制与依赖收集，`Framework` 管理加载、生命周期、Scene 到 View 转换和依赖顺序，`Graphics` 执行渲染（`PaintPass::render` 同时支持绘制 `Canvas` 与全视口合成 `Texture` HUD）；`Gui` 定义控件树、事件与绘图接口，`Gui::Document` 直接派生自 `World::Canvas`（覆盖上述虚接口并标记 `Texture::Kind::Document` 供事件投递识别），不依赖 `Graphics`。
 
-纹理来源包括文件、GUI、自定义绘图提供者和相机 RTT 输出。Scene 持有共享描述，Model 按 Part 下标绑定动态实体覆盖，带有 `World::Overlay` 的实体作为屏幕叠加层绘制。Framework 将逻辑引用解析为运行时资源。拒绝循环依赖和输出反馈。
+纹理来源包括文件路径、`World::Canvas`、`Gui::Document`、自定义绘图提供者（`Framework::Drawing`）以及运行时 `Graphics::Texture`。`World::Material` 按纹理槽位独占持有 `std::unique_ptr<World::Texture>`，`World::Camera` 通过 `hud_` 独占持有可选的 `std::unique_ptr<World::Texture>` 并在渲染末尾通过 `PaintPass` 合成；Framework 将逻辑纹理对象解析为运行时 GPU 纹理，外部离屏目标渲染由调用方向 `render(target, camera)` 传入目标帧缓冲控制。拒绝循环依赖和输出反馈。
 
 World 的 Canvas 拥有路径、文本和绘图状态，引用字体及图片；Graphics::View 记录输出任务和覆盖绘制。Renderer 先执行纹理生成，再执行现有 3D Pass，最后绘制覆盖内容。输出仍为普通 FrameBuffer/Texture。Canvas 是命令记录对象，不增加 Screen 或画布派生类，也不引入 NanoVG。
 

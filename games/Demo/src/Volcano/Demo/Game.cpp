@@ -6,7 +6,6 @@
 #include <Volcano/Gui/Button.h>
 #include <Volcano/Gui/Document.h>
 #include <Volcano/Gui/Layout.h>
-#include <Volcano/World/Inherent.h>
 #include <Volcano/World/Model.h>
 #include <Volcano/World/PerspectiveCamera.h>
 #include <Volcano/Game.h>
@@ -27,12 +26,11 @@ Game::Game(World::Context& context) : World::Scene(context) {
         control->setBackground(active ? Colorf{0.9f, 0.3f, 0.1f} : Colorf{0.1f, 0.6f, 0.3f});
     });
 
-    const auto panel = create();
-    emplace<World::Inherent>(panel, "panel");
-    emplace<Gui::Document>(panel, std::move(root), Size{256, 160});
     const auto model = create();
     auto& source = emplace<World::Model>(model, "screen.vemodel");
-    source.material(0).setTexture(World::Material::Slot::Albedo, panel);
+    source.material(0).setTexture(
+        World::Material::Slot::Albedo,
+        std::make_unique<Gui::Document>(std::move(root), Size{256, 160}));
     emplace<Transform>(model).setTranslation({0, 0, -3});
 }
 

@@ -37,7 +37,7 @@ Platform& defaultPlatform() {
 }
 
 Document::Document(Platform& platform, std::unique_ptr<Layout> root, Size size)
-    : Canvas(size), platform_(platform), root_(std::move(root)) {
+    : Canvas(size, Texture::Kind::Document), platform_(platform), root_(std::move(root)) {
     if (!root_) {
         throw std::invalid_argument("GUI document requires a root container");
     }
@@ -126,6 +126,16 @@ void Document::draw() {
     begin();
     root_->draw(*this, platform_);
     end();
+}
+
+void Document::prepare(Sizef size) {
+    layout(size);
+    draw();
+}
+
+void Document::collectResources(std::vector<std::filesystem::path>& fonts,
+                                std::vector<std::string>& images) const {
+    root_->collectResources(fonts, images);
 }
 
 void Document::setFocus(Widget* widget) {

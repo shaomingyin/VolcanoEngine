@@ -17,7 +17,6 @@
 #include <Volcano/World/DirectionalLight.h>
 #include <Volcano/World/Inherent.h>
 #include <Volcano/World/Model.h>
-#include <Volcano/World/Overlay.h>
 #include <Volcano/World/PerspectiveCamera.h>
 #include <Volcano/World/PointLight.h>
 #include <Volcano/World/Scene.h>
@@ -487,7 +486,7 @@ TEST_F(GraphicsResources, ViewRebuildsLightsAndRecoversAfterFailedEnd) {
     EXPECT_TRUE(view.preparedLights().empty());
 }
 
-TEST_F(GraphicsResources, ViewExtractsSceneModelsLightsOutputsAndOverlays) {
+TEST_F(GraphicsResources, ViewExtractsSceneModelsLightsAndCameraHuds) {
     class TestScene final : public Volcano::World::Scene {
     public:
         entt::entity player() const noexcept override {
@@ -501,16 +500,16 @@ TEST_F(GraphicsResources, ViewExtractsSceneModelsLightsOutputsAndOverlays) {
 
     Mesh mesh({}, {});
     Texture baseTexture(2, 2);
-    Texture outputTexture(4, 4);
 
     TestScene scene;
     const auto invalidCamera = scene.create();
     const auto camera = scene.create();
-    scene.emplace<Volcano::World::PerspectiveCamera>(camera, 60.0f, 1.0f, 0.1f, 10.0f);
+    auto& perspective = scene.emplace<Volcano::World::PerspectiveCamera>(camera, 60.0f, 1.0f, 0.1f, 10.0f);
     scene.emplace<Volcano::Transform>(camera).setTranslation({0, 0, 5});
 
-    const auto outputEntity = scene.create();
-    scene.emplace<View::Output>(outputEntity, &outputTexture);
+    auto hudTexture = std::make_unique<Texture>(8, 8);
+    const auto* hudPtr = hudTexture.get();
+    perspective.setHud(std::move(hudTexture));
 
     Eigen::Affine3f partTransform = Eigen::Affine3f::Identity();
     partTransform.translate(Eigen::Vector3f(1, 0, 0));
@@ -520,7 +519,9 @@ TEST_F(GraphicsResources, ViewExtractsSceneModelsLightsOutputsAndOverlays) {
     const auto modelEntity = scene.create();
     scene.emplace<Volcano::Transform>(modelEntity).setTranslation({0, 2, 0});
     auto& worldModel = scene.emplace<Volcano::World::Model>(modelEntity, "model.vemodel");
-    worldModel.material(0).setTexture(Volcano::World::Material::Slot::Albedo, outputEntity);
+    auto overrideTexture = std::make_unique<Texture>(4, 4);
+    const auto* overridePtr = overrideTexture.get();
+    worldModel.material(0).setTexture(Volcano::World::Material::Slot::Albedo, std::move(overrideTexture));
     scene.emplace<Model>(modelEntity, "model.vemodel", parts);
 
     const auto hiddenModel = scene.create();
@@ -531,32 +532,32 @@ TEST_F(GraphicsResources, ViewExtractsSceneModelsLightsOutputsAndOverlays) {
     scene.emplace<Volcano::World::PointLight>(lightEntity);
     scene.emplace<Volcano::Transform>(lightEntity).setTranslation({3, 4, 5});
 
-    const auto overlayEntity = scene.create();
-    scene.emplace<Volcano::World::Overlay>(overlayEntity);
-    auto& canvas = scene.emplace<Volcano::World::Canvas>(overlayEntity);
-    canvas.begin();
-    canvas.end();
-
-    Volcano::World::Canvas extraOverlay;
-    extraOverlay.begin();
-    extraOverlay.end();
-    const std::array<std::reference_wrapper<const Volcano::World::Canvas>, 1> extraOverlays{extraOverlay};
-
     View view;
     EXPECT_THROW(view.extract(scene, invalidCamera), std::invalid_argument);
 
-    view.extract(scene, camera, entt::null, extraOverlays);
+    view.extract(scene, camera);
     ASSERT_TRUE(view.ready());
     ASSERT_EQ(view.items().size(), 1);
-    EXPECT_EQ(view.items()[0].material.texture, &outputTexture);
+    EXPECT_EQ(view.items()[0].material.texture, overridePtr);
     EXPECT_EQ(view.items()[0].transform.translation(), Eigen::Vector3f(1, 2, 0));
     ASSERT_EQ(view.lights().size(), 1);
     EXPECT_EQ(view.lights()[0].position, Eigen::Vector3f(3, 4, 5));
-    EXPECT_EQ(view.overlays().size(), 2);
+    EXPECT_EQ(view.hud(), hudPtr);
+    EXPECT_TRUE(view.overlays().empty());
 
-    view.extract(scene, camera, outputEntity, extraOverlays);
-    ASSERT_EQ(view.items().size(), 1);
-    EXPECT_EQ(view.items()[0].material.texture, &baseTexture);
+    auto canvasHud = std::make_unique<Volcano::World::Canvas>();
+    canvasHud->begin();
+    canvasHud->end();
+    perspective.setHud(std::move(canvasHud));
+    view.extract(scene, camera);
+    EXPECT_EQ(view.hud(), nullptr);
+    EXPECT_EQ(view.overlays().size(), 1);
+
+    Texture resolvedCanvas(4, 4);
+    view.extract(scene, camera, [&](const Volcano::World::Texture&) {
+        return &resolvedCanvas;
+    });
+    EXPECT_EQ(view.hud(), &resolvedCanvas);
     EXPECT_TRUE(view.overlays().empty());
 }
 

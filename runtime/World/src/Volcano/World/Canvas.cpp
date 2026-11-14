@@ -9,7 +9,11 @@
 
 VOLCANO_WORLD_BEGIN
 
-Canvas::Canvas(Size size) noexcept : size_(size) {}
+Canvas::Canvas(Size size) noexcept
+    : Canvas(size, Texture::Kind::Canvas) {}
+
+Canvas::Canvas(Size size, Texture::Kind kind) noexcept
+    : Texture(kind), size_(size) {}
 
 void Canvas::begin() noexcept {
     state_ = {};
@@ -25,6 +29,7 @@ void Canvas::end() {
     VOLCANO_ASSERT(stack_.empty());
     building_ = false;
     ready_ = true;
+    ++revision_;
 }
 
 void Canvas::save() {
@@ -366,6 +371,17 @@ std::vector<std::shared_ptr<Texture>> Canvas::sampledTextures() const {
         }
     }
     return result;
+}
+
+void Canvas::collectResources(std::vector<std::filesystem::path>& fonts,
+                              std::vector<std::string>& images) const {
+    for (const auto& cmd : commands_) {
+        if (cmd.type == Command::Type::Text && !cmd.font.empty()) {
+            fonts.emplace_back(cmd.font);
+        } else if (cmd.type == Command::Type::Image && !cmd.texture.empty()) {
+            images.push_back(cmd.texture);
+        }
+    }
 }
 
 VOLCANO_WORLD_END

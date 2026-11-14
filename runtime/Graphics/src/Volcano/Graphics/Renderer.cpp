@@ -100,6 +100,9 @@ void Renderer::render(const View& view, Target& target) {
     for (const auto& overlay : view.overlays()) {
         paint_pass_.render(overlay.get(), target, false);
     }
+    if (view.hud() != nullptr) {
+        paint_pass_.render(*view.hud(), target);
+    }
 }
 
 void Renderer::bind(Target& target) noexcept {

@@ -32,6 +32,7 @@ public:
 
     PaintPass();
     void render(const World::Canvas& commands, Target& target, bool clear);
+    void render(const Texture& texture, Target& target);
     void setAtlasBudget(std::size_t bytes);
     std::size_t atlasBytes() const noexcept;
     FontCacheStats fontCacheStats() const noexcept;
@@ -70,6 +71,8 @@ private:
         Entry entry;
     };
 
+    bool beginTarget(Target& target, bool clear);
+    void endTarget() noexcept;
     std::vector<Contour> flatten(const World::Canvas::Command& command) const;
     void curve(std::vector<Eigen::Vector2f>& points, const Eigen::Vector2f& a,
         const Eigen::Vector2f& b, const Eigen::Vector2f& c, const Eigen::Vector2f& d, int depth) const;

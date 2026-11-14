@@ -491,22 +491,11 @@ const Texture* PaintPass::resolveTexture(const World::Canvas::Command& command) 
     return nullptr;
 }
 
-void PaintPass::render(const World::Canvas& commands, Target& target, bool clear) {
-    VOLCANO_ASSERT(commands.ready());
-    for (const auto& command : commands.commands()) {
-        if (command.type == World::Canvas::Command::Type::Image) {
-            const auto* texture = resolveTexture(command);
-            if (texture != nullptr && target.contains(*texture)) {
-                throw std::invalid_argument("VG cannot sample its output texture");
-            }
-        }
-    }
-    glyph_vertices_.clear();
-    glyph_texture_ = 0;
+bool PaintPass::beginTarget(Target& target, bool clear) {
     width_ = target.width();
     height_ = target.height();
     if (width_ <= 0 || height_ <= 0) {
-        return;
+        return false;
     }
     target.bind();
     glViewport(0, 0, width_, height_);
@@ -529,6 +518,48 @@ void PaintPass::render(const World::Canvas& commands, Target& target, bool clear
     program_.use();
     program_.uniform2f(viewport_, static_cast<float>(width_), static_cast<float>(height_));
     program_.uniform("uImage", 0);
+    return true;
+}
+
+void PaintPass::endTarget() noexcept {
+    glDisable(GL_SCISSOR_TEST);
+    glDisable(GL_STENCIL_TEST);
+    glDepthMask(GL_TRUE);
+    gl::VertexArray::unbind();
+    gl::Program::unuse();
+}
+
+void PaintPass::render(const Texture& texture, Target& target) {
+    if (target.contains(texture)) {
+        throw std::invalid_argument("HUD cannot sample its output texture");
+    }
+    if (!beginTarget(target, false)) {
+        return;
+    }
+    glyph_texture_ = 0;
+    const World::Canvas::State state;
+    paint(state, 1);
+    texture.texture().bind(0);
+    quad({0.0f, 0.0f, static_cast<float>(width_), static_cast<float>(height_)},
+        {0.0f, 1.0f, 1.0f, -1.0f}, Eigen::Affine2f::Identity());
+    endTarget();
+}
+
+void PaintPass::render(const World::Canvas& commands, Target& target, bool clear) {
+    VOLCANO_ASSERT(commands.ready());
+    for (const auto& command : commands.commands()) {
+        if (command.type == World::Canvas::Command::Type::Image) {
+            const auto* texture = resolveTexture(command);
+            if (texture != nullptr && target.contains(*texture)) {
+                throw std::invalid_argument("VG cannot sample its output texture");
+            }
+        }
+    }
+    glyph_vertices_.clear();
+    glyph_texture_ = 0;
+    if (!beginTarget(target, clear)) {
+        return;
+    }
     for (const auto& command : commands.commands()) {
         paint(command.state, 0);
         switch (command.type) {
@@ -589,11 +620,7 @@ void PaintPass::render(const World::Canvas& commands, Target& target, bool clear
         }
         }
     }
-    glDisable(GL_SCISSOR_TEST);
-    glDisable(GL_STENCIL_TEST);
-    glDepthMask(GL_TRUE);
-    gl::VertexArray::unbind();
-    gl::Program::unuse();
+    endTarget();
 }
 
 VOLCANO_GRAPHICS_END

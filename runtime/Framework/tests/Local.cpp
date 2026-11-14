@@ -27,7 +27,6 @@
 #include <Volcano/World/Inherent.h>
 #include <Volcano/World/Model.h>
 #include <Volcano/World/OrthographicCamera.h>
-#include <Volcano/World/Overlay.h>
 #include <Volcano/World/PointLight.h>
 #include <Volcano/Framework/Client.h>
 #include <Volcano/Framework/Resources.h>
@@ -505,11 +504,9 @@ TEST_F(FrameworkLocal, SynchronizationReleasesUnusedGpuHandlesAfterClearingView)
     EXPECT_EQ(glGetError(), GL_NO_ERROR);
 }
 
-TEST_F(FrameworkLocal, SupportsEntityBoundGuiOutputsRttCamerasAndOverlays) {
+TEST_F(FrameworkLocal, SupportsMaterialOwnedGuiTexturesCameraHudsAndTargetRendering) {
     Client client;
-    entt::entity guiEntity = entt::null;
     entt::entity rttCamera = entt::null;
-    entt::entity overlayEntity = entt::null;
     int clicked = 0;
 
     client.load([&] {
@@ -517,25 +514,21 @@ TEST_F(FrameworkLocal, SupportsEntityBoundGuiOutputsRttCamerasAndOverlays) {
 
         auto panelRoot = std::make_unique<Gui::Layout>();
         panelRoot->setBackground({0.0f, 0.0f, 1.0f, 1.0f});
-        guiEntity = scene->create();
-        scene->emplace<Gui::Document>(guiEntity, std::move(panelRoot), Size{16, 16});
-
         scene->get<World::Model>(scene->model)
             .material(0)
-            .setTexture(World::Material::Slot::Albedo, guiEntity);
+            .setTexture(World::Material::Slot::Albedo,
+                std::make_unique<Gui::Document>(std::move(panelRoot), Size{16, 16}));
 
         rttCamera = scene->create();
-        auto& rtt = scene->emplace<World::OrthographicCamera>(rttCamera, -1, 1, -1, 1, 0.1f, 10);
-        rtt.setOutputSize({16, 16});
+        scene->emplace<World::OrthographicCamera>(rttCamera, -1, 1, -1, 1, 0.1f, 10);
 
-        auto overlayRoot = std::make_unique<Gui::Layout>();
-        auto* button = new Gui::Button(overlayRoot.get());
+        auto hudRoot = std::make_unique<Gui::Layout>();
+        auto* button = new Gui::Button(hudRoot.get());
         button->setFrame({0, 0, 32, 32});
         button->setBackground({0.0f, 1.0f, 0.0f, 1.0f});
         button->setOnClick([&] { ++clicked; });
-        overlayEntity = scene->create();
-        scene->emplace<World::Overlay>(overlayEntity);
-        scene->emplace<Gui::Document>(overlayEntity, std::move(overlayRoot));
+        scene->get<World::OrthographicCamera>(scene->player())
+            .setHud(std::make_unique<Gui::Document>(std::move(hudRoot)));
 
         return scene;
     });
@@ -543,25 +536,29 @@ TEST_F(FrameworkLocal, SupportsEntityBoundGuiOutputsRttCamerasAndOverlays) {
     Graphics::FrameBuffer target(32, 32);
     client.render(target, client.scene().player());
 
-    EXPECT_EQ(client.texture(guiEntity).size(), (Size{16, 16}));
-    EXPECT_EQ(client.texture(rttCamera).size(), (Size{16, 16}));
-    EXPECT_THROW(client.texture(overlayEntity), std::out_of_range);
-    EXPECT_EQ(client.view().overlays().size(), 1);
+    ASSERT_NE(client.view().hud(), nullptr);
+    EXPECT_EQ(client.view().hud()->size(), (Size{32, 32}));
+    EXPECT_TRUE(client.view().overlays().empty());
 
-    EXPECT_TRUE(client.pointer(overlayEntity, Gui::PointerEvent{Gui::PointerEvent::Action::Down, 8, 8}));
-    EXPECT_TRUE(client.pointer(overlayEntity, Gui::PointerEvent{Gui::PointerEvent::Action::Up, 8, 8}));
+    target.bind();
+    std::array<std::uint8_t, 4> pixel{};
+    glReadPixels(16, 16, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, pixel.data());
+    EXPECT_EQ(pixel, (std::array<std::uint8_t, 4>{0, 255, 0, 255}));
+
+    EXPECT_TRUE(client.pointer(client.scene().player(),
+        Gui::PointerEvent{Gui::PointerEvent::Action::Down, 8, 8}));
+    EXPECT_TRUE(client.pointer(client.scene().player(),
+        Gui::PointerEvent{Gui::PointerEvent::Action::Up, 8, 8}));
     EXPECT_EQ(clicked, 1);
 
-    // Binding an RTT camera onto a visible model does not self-deadlock or fail feedback checks.
-    client.scene().get<World::Model>(static_cast<Scene&>(client.scene()).model)
-        .material(0)
-        .setTexture(World::Material::Slot::Albedo, rttCamera);
-    client.render(target, client.scene().player());
+    Graphics::FrameBuffer rttTarget(16, 16);
+    client.render(rttTarget, rttCamera);
+    EXPECT_EQ(client.view().hud(), nullptr);
     EXPECT_EQ(glGetError(), GL_NO_ERROR);
 
     client.scene().get<World::Model>(static_cast<Scene&>(client.scene()).model)
         .material(5)
-        .setTexture(World::Material::Slot::Albedo, guiEntity);
+        .setTexture(World::Material::Slot::Albedo, std::make_unique<World::Texture>("assets/texture.vetexture"));
     EXPECT_THROW(client.synchronizeResources(), std::invalid_argument);
 }
 } // namespace

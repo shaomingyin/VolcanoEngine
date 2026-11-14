@@ -12,7 +12,6 @@ add_library(World STATIC
     include/Volcano/World/Light.h
     include/Volcano/World/Material.h
     include/Volcano/World/Model.h
-    include/Volcano/World/Overlay.h
     include/Volcano/World/RigidBody.h
     include/Volcano/World/AudioSource.h
     include/Volcano/World/AudioListener.h

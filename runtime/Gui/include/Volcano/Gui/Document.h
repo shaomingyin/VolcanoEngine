@@ -1,7 +1,11 @@
 #ifndef VOLCANO_GUI_DOCUMENT_H
 #define VOLCANO_GUI_DOCUMENT_H
 
+#include <cstdint>
+#include <filesystem>
 #include <memory>
+#include <string>
+#include <vector>
 
 #include <Volcano/Size.h>
 #include <Volcano/World/Canvas.h>
@@ -30,9 +34,12 @@ public:
     const Layout& root() const noexcept {
         return *root_;
     }
-    std::uint64_t revision() const noexcept {
+    std::uint64_t revision() const noexcept override {
         return root_->revision();
     }
+    void prepare(Sizef size) override;
+    void collectResources(std::vector<std::filesystem::path>& fonts,
+                          std::vector<std::string>& images) const override;
     void setSize(Size size);
     void layout(Sizef size);
     void draw();

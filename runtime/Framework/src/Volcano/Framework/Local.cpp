@@ -12,7 +12,6 @@
 #include <Volcano/World/Inherent.h>
 #include <Volcano/World/Model.h>
 #include <Volcano/World/OrthographicCamera.h>
-#include <Volcano/World/Overlay.h>
 #include <Volcano/World/PerspectiveCamera.h>
 #include <Volcano/Framework/Drawing.h>
 #include <Volcano/Framework/Local.h>
@@ -20,44 +19,99 @@
 
 VOLCANO_FRAMEWORK_BEGIN
 
-Size Local::cameraOutputSize(const World::Scene& scene, entt::entity entity) {
+const World::Camera* Local::findCamera(const World::Scene& scene, entt::entity entity) noexcept {
     if (!scene.valid(entity)) {
-        return {};
+        return nullptr;
     }
     if (const auto* perspective = scene.try_get<World::PerspectiveCamera>(entity)) {
-        return perspective->outputSize();
+        return perspective;
     }
     if (const auto* orthographic = scene.try_get<World::OrthographicCamera>(entity)) {
-        return orthographic->outputSize();
+        return orthographic;
     }
-    return {};
+    return nullptr;
+}
+
+World::Camera* Local::findCamera(World::Scene& scene, entt::entity entity) noexcept {
+    if (!scene.valid(entity)) {
+        return nullptr;
+    }
+    if (auto* perspective = scene.try_get<World::PerspectiveCamera>(entity)) {
+        return perspective;
+    }
+    if (auto* orthographic = scene.try_get<World::OrthographicCamera>(entity)) {
+        return orthographic;
+    }
+    return nullptr;
+}
+
+Gui::Document* Local::findDocument(World::Scene& scene, entt::entity entity) noexcept {
+    if (!scene.valid(entity)) {
+        return nullptr;
+    }
+    if (auto* doc = scene.try_get<Gui::Document>(entity)) {
+        return doc;
+    }
+    if (auto* camera = findCamera(scene, entity); camera != nullptr && camera->hud() != nullptr &&
+        camera->hud()->kind() == World::Texture::Kind::Document) {
+        return static_cast<Gui::Document*>(static_cast<World::Canvas*>(camera->hud()));
+    }
+    return nullptr;
+}
+
+bool Local::containsTexture(const World::Scene& scene, const World::Texture* texture) {
+    if (texture == nullptr) {
+        return false;
+    }
+    for (const auto entity : scene.view<World::PerspectiveCamera>()) {
+        if (scene.get<World::PerspectiveCamera>(entity).hud() == texture) {
+            return true;
+        }
+    }
+    for (const auto entity : scene.view<World::OrthographicCamera>()) {
+        if (scene.get<World::OrthographicCamera>(entity).hud() == texture) {
+            return true;
+        }
+    }
+    for (const auto entity : scene.view<World::Model>()) {
+        for (const auto& material : scene.get<World::Model>(entity).materials()) {
+            for (const auto& [slot, source] : material.textures()) {
+                if (source.get() == texture) {
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
 }
 
 Size Local::outputSize(const World::Scene& scene, entt::entity entity) {
     if (!scene.valid(entity)) {
         return {};
     }
-    if (const auto* doc = scene.try_get<Gui::Document>(entity);
-        doc != nullptr && !scene.all_of<World::Overlay>(entity)) {
+    if (const auto* doc = scene.try_get<Gui::Document>(entity)) {
         return doc->size();
     }
     if (const auto* drawing = scene.try_get<Framework::Drawing>(entity)) {
         return drawing->size();
     }
-    return cameraOutputSize(scene, entity);
+    return {};
 }
 
 bool Local::hasOutput(const World::Scene& scene, entt::entity entity) {
     if (!scene.valid(entity)) {
         return false;
     }
-    if (scene.try_get<Gui::Document>(entity) != nullptr && !scene.all_of<World::Overlay>(entity)) {
-        return true;
+    return scene.try_get<Gui::Document>(entity) != nullptr ||
+        scene.try_get<Framework::Drawing>(entity) != nullptr;
+}
+
+bool Local::hasOutput(const World::Scene& scene, const OutputKey& key) {
+    if (std::holds_alternative<entt::entity>(key)) {
+        return hasOutput(scene, std::get<entt::entity>(key));
     }
-    if (scene.try_get<Framework::Drawing>(entity) != nullptr) {
-        return true;
-    }
-    return !cameraOutputSize(scene, entity).empty();
+    const auto* texture = std::get<const World::Texture*>(key);
+    return texture != nullptr && texture->isCanvas() && containsTexture(scene, texture);
 }
 
 entt::entity Local::findOutputEntity(const World::Scene& scene, std::string_view name) {
@@ -75,25 +129,36 @@ entt::entity Local::findOutputEntity(const World::Scene& scene, std::string_view
 }
 
 entt::entity Local::findGuiEntity(const World::Scene& scene, std::string_view name) {
-    for (const auto entity : scene.view<World::Inherent, Gui::Document>()) {
-        if (scene.get<World::Inherent>(entity).name() == name) {
+    for (const auto entity : scene.view<World::Inherent>()) {
+        if (scene.get<World::Inherent>(entity).name() != name) {
+            continue;
+        }
+        if (scene.try_get<Gui::Document>(entity) != nullptr) {
+            return entity;
+        }
+        if (const auto* camera = findCamera(scene, entity); camera != nullptr && camera->hud() != nullptr &&
+            camera->hud()->kind() == World::Texture::Kind::Document) {
             return entity;
         }
     }
     return entt::null;
 }
 
-std::string Local::outputLabel(const World::Scene& scene, entt::entity entity) {
-    if (scene.valid(entity)) {
-        if (const auto* drawing = scene.try_get<Framework::Drawing>(entity)) {
-            return drawing->name();
+std::string Local::outputLabel(const World::Scene& scene, const OutputKey& key) {
+    if (std::holds_alternative<entt::entity>(key)) {
+        const auto entity = std::get<entt::entity>(key);
+        if (scene.valid(entity)) {
+            if (const auto* drawing = scene.try_get<Framework::Drawing>(entity)) {
+                return drawing->name();
+            }
+            if (const auto* inherent = scene.try_get<World::Inherent>(entity);
+                inherent != nullptr && !inherent->name().empty()) {
+                return inherent->name();
+            }
         }
-        if (const auto* inherent = scene.try_get<World::Inherent>(entity);
-            inherent != nullptr && !inherent->name().empty()) {
-            return inherent->name();
-        }
+        return "entity:" + std::to_string(static_cast<std::uint32_t>(entt::to_integral(entity)));
     }
-    return "entity:" + std::to_string(static_cast<std::uint32_t>(entt::to_integral(entity)));
+    return "texture";
 }
 
 Local::Local(int width, int height, const char* title)
@@ -174,24 +239,68 @@ void Local::onBeforeTasks() {
     window_.makeCurrent();
 }
 
+void Local::loadTextureResource(const World::Texture& texture, std::vector<OutputKey>& keys) {
+    checkLoadCancelled();
+    if (texture.kind() == World::Texture::Kind::Path) {
+        setLoadingContent(texture.source().generic_string());
+        pending_textures_.insert_or_assign(
+            texture.source().lexically_normal(),
+            Resources::loadTexture(texture.source().generic_string()));
+        return;
+    }
+    if (texture.isCanvas()) {
+        const auto& canvas = static_cast<const World::Canvas&>(texture);
+        if (!canvas.size().empty()) {
+            loadOutput(&texture, canvas.size());
+        }
+        keys.push_back(&texture);
+
+        std::vector<std::filesystem::path> fonts;
+        std::vector<std::string> images;
+        canvas.collectResources(fonts, images);
+        for (const auto& path : fonts) {
+            checkLoadCancelled();
+            setLoadingContent(path.generic_string());
+            pending_fonts_.insert_or_assign(path.lexically_normal(),
+                Resources::loadFont(path.generic_string()));
+        }
+    }
+}
+
+const Graphics::Texture* Local::resolveTexture(const World::Texture& source) const {
+    if (source.kind() == World::Texture::Kind::Graphics) {
+        return static_cast<const Graphics::Texture*>(&source);
+    }
+    if (source.kind() == World::Texture::Kind::Path) {
+        const auto normal = source.source().lexically_normal();
+        const auto found = textures_.find(normal);
+        return found != textures_.end() ? found->second.get() : nullptr;
+    }
+    if (source.isCanvas()) {
+        const auto found = outputs_.find(OutputKey(&source));
+        return found != outputs_.end() ? &found->second->target.texture() : nullptr;
+    }
+    return nullptr;
+}
+
 exec::task<void> Local::onLoadScene(const World::Scene& candidate) {
     checkLoadCancelled();
     pending_output_scene_ = &candidate;
     co_await Base::onLoadScene(candidate);
-    std::vector<entt::entity> ids;
+    std::vector<OutputKey> keys;
 
     for (const auto entity : candidate.view<Gui::Document>()) {
         checkLoadCancelled();
         const auto& doc = candidate.get<Gui::Document>(entity);
-        if (!candidate.all_of<World::Overlay>(entity)) {
-            setLoadingContent(outputLabel(candidate, entity));
-            ids.push_back(entity);
+        setLoadingContent(outputLabel(candidate, entity));
+        keys.push_back(entity);
+        if (!doc.size().empty()) {
             loadOutput(entity, doc.size());
         }
 
         std::vector<std::filesystem::path> fonts;
         std::vector<std::string> images;
-        doc.root().collectResources(fonts, images);
+        doc.collectResources(fonts, images);
         for (const auto& path : fonts) {
             checkLoadCancelled();
             setLoadingContent(path.generic_string());
@@ -204,7 +313,7 @@ exec::task<void> Local::onLoadScene(const World::Scene& candidate) {
         checkLoadCancelled();
         const auto& drawing = candidate.get<Framework::Drawing>(entity);
         setLoadingContent(drawing.name());
-        ids.push_back(entity);
+        keys.push_back(entity);
         loadOutput(entity, drawing.size());
 
         for (const auto& path : drawing.fonts()) {
@@ -221,27 +330,29 @@ exec::task<void> Local::onLoadScene(const World::Scene& candidate) {
     }
 
     for (const auto entity : candidate.view<World::PerspectiveCamera>()) {
-        checkLoadCancelled();
-        const auto size = candidate.get<World::PerspectiveCamera>(entity).outputSize();
-        if (!size.empty()) {
-            setLoadingContent(outputLabel(candidate, entity));
-            ids.push_back(entity);
-            loadOutput(entity, size);
+        if (const auto* hud = candidate.get<World::PerspectiveCamera>(entity).hud(); hud != nullptr) {
+            loadTextureResource(*hud, keys);
         }
     }
 
     for (const auto entity : candidate.view<World::OrthographicCamera>()) {
-        checkLoadCancelled();
-        const auto size = candidate.get<World::OrthographicCamera>(entity).outputSize();
-        if (!size.empty()) {
-            setLoadingContent(outputLabel(candidate, entity));
-            ids.push_back(entity);
-            loadOutput(entity, size);
+        if (const auto* hud = candidate.get<World::OrthographicCamera>(entity).hud(); hud != nullptr) {
+            loadTextureResource(*hud, keys);
+        }
+    }
+
+    for (const auto entity : candidate.view<World::Model>()) {
+        for (const auto& material : candidate.get<World::Model>(entity).materials()) {
+            for (const auto& [slot, source] : material.textures()) {
+                if (source && source->kind() != World::Texture::Kind::Path) {
+                    loadTextureResource(*source, keys);
+                }
+            }
         }
     }
 
     checkLoadCancelled();
-    textureOrder(candidate, ids);
+    textureOrder(candidate, keys);
 }
 
 exec::task<void> Local::onLoadEntity(const World::Scene& candidate, entt::entity entity) {
@@ -256,10 +367,13 @@ exec::task<void> Local::onLoadEntity(const World::Scene& candidate, entt::entity
         throw std::invalid_argument("Model material override part index is out of range");
     }
     for (const auto& material : model->materials()) {
-        for (const auto& [slot, sourceEntity] : material.textures()) {
-            if (!hasOutput(candidate, sourceEntity)) {
-                throw std::invalid_argument(
-                    "Model material texture override must reference a valid dynamic output entity");
+        for (const auto& [slot, source] : material.textures()) {
+            if (source && source->kind() == World::Texture::Kind::Path) {
+                checkLoadCancelled();
+                setLoadingContent(source->source().generic_string());
+                pending_textures_.insert_or_assign(
+                    source->source().lexically_normal(),
+                    Resources::loadTexture(source->source().generic_string()));
             }
         }
     }
@@ -361,13 +475,6 @@ void Local::onCommitResources() noexcept {
         }
     }
     pending_render_models_.clear();
-
-    target->clear<Graphics::View::Output>();
-    for (const auto& [entity, output] : outputs_) {
-        if (target->valid(entity)) {
-            target->emplace<Graphics::View::Output>(entity, &output->target.texture());
-        }
-    }
 }
 
 void Local::onDiscardResources() noexcept {
@@ -385,7 +492,6 @@ void Local::onUnloadResources() noexcept {
     view_.begin();
     if (auto* target = currentScene(); target != nullptr) {
         target->clear<Graphics::Model>();
-        target->clear<Graphics::View::Output>();
     }
     pending_render_models_.clear();
     outputs_.clear();
@@ -418,40 +524,91 @@ void Local::onInputUpdate(Clock::duration) {
 void Local::onAudioUpdate(Clock::duration) {
 }
 
-void Local::updateTextures(const std::vector<entt::entity>& roots) {
-    std::set<entt::entity> updated;
-    for (const auto entity : textureOrder(scene(), roots)) {
-        if (!outputs_.contains(entity)) {
-            continue;
+void Local::updateTextures(const std::vector<OutputKey>& roots, Size defaultSize) {
+    auto findMutableTexture = [&](const World::Texture* target) -> World::Texture* {
+        for (const auto entity : scene().view<World::PerspectiveCamera>()) {
+            auto* hud = scene().get<World::PerspectiveCamera>(entity).hud();
+            if (hud == target) {
+                return hud;
+            }
         }
-        auto& output = *outputs_.at(entity);
+        for (const auto entity : scene().view<World::OrthographicCamera>()) {
+            auto* hud = scene().get<World::OrthographicCamera>(entity).hud();
+            if (hud == target) {
+                return hud;
+            }
+        }
+        for (const auto entity : scene().view<World::Model>()) {
+            for (auto& material : scene().get<World::Model>(entity).materials()) {
+                for (const auto& [slot, source] : material.textures()) {
+                    if (source.get() == target) {
+                        return source.get();
+                    }
+                }
+            }
+        }
+        return nullptr;
+    };
+
+    std::set<OutputKey> updated;
+    for (const auto& key : textureOrder(scene(), roots)) {
         bool dependencyChanged = false;
-        for (const auto dependency : dependencies(scene(), entity)) {
+        for (const auto& dependency : dependencies(scene(), key)) {
             dependencyChanged = dependencyChanged || updated.contains(dependency);
         }
-        if (auto* doc = scene().try_get<Gui::Document>(entity);
-            doc != nullptr && !scene().all_of<World::Overlay>(entity)) {
-            const auto size = doc->size();
+
+        World::Canvas* canvas = nullptr;
+        const Framework::Drawing* drawing = nullptr;
+        if (std::holds_alternative<entt::entity>(key)) {
+            const auto entity = std::get<entt::entity>(key);
+            canvas = scene().try_get<Gui::Document>(entity);
+            drawing = scene().try_get<Framework::Drawing>(entity);
+        } else {
+            const auto* source = std::get<const World::Texture*>(key);
+            if (source->isCanvas()) {
+                canvas = static_cast<World::Canvas*>(findMutableTexture(source));
+            }
+        }
+
+        if (canvas != nullptr) {
+            const Size size = canvas->size().empty() ? defaultSize : canvas->size();
+            if (size.width <= 0 || size.height <= 0) {
+                continue;
+            }
+            if (!outputs_.contains(key)) {
+                outputs_.emplace(key, std::make_unique<TextureOutput>(size));
+            }
+            auto& output = *outputs_.at(key);
             if (output.target.size() != size) {
                 output.target.resize(size.width, size.height);
                 output.dirty = true;
             }
-            auto revision = doc->revision();
+            auto revision = canvas->revision();
             std::vector<std::filesystem::path> fontPaths;
             std::vector<std::string> imagePaths;
-            doc->root().collectResources(fontPaths, imagePaths);
+            canvas->collectResources(fontPaths, imagePaths);
             for (const auto& path : fontPaths) {
-                revision += fonts_.at(path.lexically_normal())->revision();
+                if (const auto found = fonts_.find(path.lexically_normal()); found != fonts_.end()) {
+                    revision += found->second->revision();
+                }
             }
             if (!output.dirty && !dependencyChanged && output.revision == revision) {
                 continue;
             }
             output.dirty = true;
-            doc->layout({static_cast<float>(size.width), static_cast<float>(size.height)});
-            doc->draw();
+            canvas->prepare({static_cast<float>(size.width), static_cast<float>(size.height)});
+            if (!canvas->ready()) {
+                continue;
+            }
             output.revision = revision;
-            renderer_.renderVG(*doc, output.target);
-        } else if (const auto* drawing = scene().try_get<Framework::Drawing>(entity)) {
+            renderer_.renderVG(*canvas, output.target);
+            output.dirty = false;
+            updated.insert(key);
+            continue;
+        }
+
+        if (drawing != nullptr && outputs_.contains(key)) {
+            auto& output = *outputs_.at(key);
             const auto size = drawing->size();
             if (output.target.size() != size) {
                 output.target.resize(size.width, size.height);
@@ -462,62 +619,44 @@ void Local::updateTextures(const std::vector<entt::entity>& roots) {
             output.canvas.end();
             validateSamples(output.canvas, drawing->dependencies());
             renderer_.renderVG(output.canvas, output.target);
-        } else if (const auto cameraSize = cameraOutputSize(scene(), entity); !cameraSize.empty()) {
-            if (output.target.size() != cameraSize) {
-                output.target.resize(cameraSize.width, cameraSize.height);
-                output.dirty = true;
-            }
-            Graphics::View rttView;
-            rttView.extract(scene(), entity, entity);
-            renderer_.render(rttView, output.target);
+            output.dirty = false;
+            updated.insert(key);
         }
-        output.dirty = false;
-        updated.insert(entity);
     }
 }
 
 void Local::render(Graphics::Target& target, entt::entity camera) {
     window_.makeCurrent();
-    std::vector<entt::entity> roots;
+    std::vector<OutputKey> roots;
     for (const auto entity : scene().view<World::Model>()) {
         if (Graphics::View::visible(scene(), entity)) {
             for (const auto& material : scene().get<World::Model>(entity).materials()) {
-                for (const auto& [slot, sourceEntity] : material.textures()) {
-                    if (scene().valid(sourceEntity)) {
-                        roots.push_back(sourceEntity);
+                for (const auto& [slot, source] : material.textures()) {
+                    if (source && source->isCanvas()) {
+                        roots.push_back(OutputKey(source.get()));
                     }
                 }
             }
         }
     }
-    for (const auto entity : scene().view<World::Overlay>()) {
-        if (Graphics::View::visible(scene(), entity)) {
-            for (const auto dependency : dependencies(scene(), entity)) {
-                roots.push_back(dependency);
+    if (const auto* activeCamera = findCamera(scene(), camera);
+        activeCamera != nullptr && activeCamera->hud() != nullptr &&
+        activeCamera->hud()->isCanvas()) {
+        roots.push_back(OutputKey(activeCamera->hud()));
+    }
+    for (const auto& [key, output] : outputs_) {
+        if (std::holds_alternative<entt::entity>(key)) {
+            const auto entity = std::get<entt::entity>(key);
+            if (scene().valid(entity) && Graphics::View::visible(scene(), entity)) {
+                roots.push_back(key);
             }
         }
     }
-    for (const auto& [entity, output] : outputs_) {
-        if (scene().valid(entity) && Graphics::View::visible(scene(), entity)) {
-            roots.push_back(entity);
-        }
-    }
-    updateTextures(roots);
+    updateTextures(roots, target.size());
 
-    std::vector<std::reference_wrapper<const World::Canvas>> guiOverlays;
-    for (const auto entity : scene().view<World::Overlay, Gui::Document>()) {
-        if (!Graphics::View::visible(scene(), entity)) {
-            continue;
-        }
-        auto& doc = scene().get<Gui::Document>(entity);
-        const Size docSize = doc.size().empty() ? target.size() : doc.size();
-        if (docSize.width > 0 && docSize.height > 0) {
-            doc.layout({static_cast<float>(docSize.width), static_cast<float>(docSize.height)});
-            doc.draw();
-            guiOverlays.push_back(doc);
-        }
-    }
-    view_.extract(scene(), camera, entt::null, guiOverlays);
+    view_.extract(scene(), camera, [this](const World::Texture& source) {
+        return resolveTexture(source);
+    });
     renderer_.render(view_, target);
 }
 
@@ -525,7 +664,7 @@ bool Local::pointer(entt::entity entity, const Gui::PointerEvent& event) {
     if (!scene().valid(entity)) {
         throw std::invalid_argument("Invalid GUI entity");
     }
-    auto* doc = scene().try_get<Gui::Document>(entity);
+    auto* doc = findDocument(scene(), entity);
     if (doc == nullptr) {
         throw std::invalid_argument("Entity is not a GUI document: " + outputLabel(scene(), entity));
     }
@@ -546,7 +685,7 @@ bool Local::key(entt::entity entity, const Gui::KeyEvent& event) {
     if (!scene().valid(entity)) {
         throw std::invalid_argument("Invalid GUI entity");
     }
-    auto* doc = scene().try_get<Gui::Document>(entity);
+    auto* doc = findDocument(scene(), entity);
     if (doc == nullptr) {
         throw std::invalid_argument("Entity is not a GUI document: " + outputLabel(scene(), entity));
     }
@@ -563,11 +702,11 @@ bool Local::key(std::string_view id, const Gui::KeyEvent& event) {
 
 Local::TextureOutput::TextureOutput(Size size) : target(size.width, size.height) {}
 
-void Local::loadOutput(entt::entity entity, Size size) {
+void Local::loadOutput(const OutputKey& key, Size size) {
     VOLCANO_ASSERT(pending_output_scene_ != nullptr);
-    if ((output_scene_ != pending_output_scene_ || !outputs_.contains(entity)) &&
-        !pending_outputs_.contains(entity)) {
-        pending_outputs_.emplace(entity, std::make_unique<TextureOutput>(size));
+    if ((output_scene_ != pending_output_scene_ || !outputs_.contains(key)) &&
+        !pending_outputs_.contains(key)) {
+        pending_outputs_.emplace(key, std::make_unique<TextureOutput>(size));
     }
 }
 
@@ -575,7 +714,7 @@ void Local::validateSamples(const World::Canvas& canvas, const std::vector<std::
     for (const auto& cmd : canvas.commands()) {
         if (cmd.type == World::Canvas::Command::Type::Image && !cmd.texture.empty()) {
             const auto sampled = findOutputEntity(scene(), cmd.texture);
-            if (sampled != entt::null && outputs_.contains(sampled) &&
+            if (sampled != entt::null && outputs_.contains(OutputKey(sampled)) &&
                 std::find(dependencies.begin(), dependencies.end(), cmd.texture) == dependencies.end()) {
                 throw std::invalid_argument("Drawing texture sampled an undeclared dependency: " + cmd.texture);
             }
@@ -583,67 +722,62 @@ void Local::validateSamples(const World::Canvas& canvas, const std::vector<std::
     }
 }
 
-std::vector<entt::entity> Local::dependencies(const World::Scene& current, entt::entity entity) {
-    std::vector<entt::entity> result;
-    if (const auto* drawing = current.try_get<Framework::Drawing>(entity)) {
-        for (const auto& name : drawing->dependencies()) {
-            const auto dependency = findOutputEntity(current, name);
-            if (dependency != entt::null) {
-                result.push_back(dependency);
+std::vector<Local::OutputKey> Local::dependencies(const World::Scene& current, const OutputKey& key) {
+    std::vector<OutputKey> result;
+    const World::Canvas* canvas = nullptr;
+    if (std::holds_alternative<entt::entity>(key)) {
+        const auto entity = std::get<entt::entity>(key);
+        if (const auto* drawing = current.try_get<Framework::Drawing>(entity)) {
+            for (const auto& name : drawing->dependencies()) {
+                const auto dependency = findOutputEntity(current, name);
+                if (dependency != entt::null) {
+                    result.push_back(dependency);
+                }
             }
+            return result;
         }
-        return result;
+        canvas = current.try_get<Gui::Document>(entity);
+    } else {
+        const auto* texture = std::get<const World::Texture*>(key);
+        if (texture != nullptr && texture->isCanvas()) {
+            canvas = static_cast<const World::Canvas*>(texture);
+        }
     }
-    if (const auto* doc = current.try_get<Gui::Document>(entity)) {
+    if (canvas != nullptr) {
         std::vector<std::filesystem::path> fonts;
         std::vector<std::string> images;
-        doc->root().collectResources(fonts, images);
+        canvas->collectResources(fonts, images);
         for (const auto& name : images) {
             const auto dependency = findOutputEntity(current, name);
             if (dependency != entt::null) {
                 result.push_back(dependency);
             }
         }
-        return result;
-    }
-    if (!cameraOutputSize(current, entity).empty()) {
-        for (const auto modelEntity : current.view<World::Model>()) {
-            if (!Graphics::View::visible(current, modelEntity)) {
-                continue;
-            }
-            for (const auto& material : current.get<World::Model>(modelEntity).materials()) {
-                for (const auto& [slot, sourceEntity] : material.textures()) {
-                    if (sourceEntity != entt::null && sourceEntity != entity && hasOutput(current, sourceEntity)) {
-                        result.push_back(sourceEntity);
-                    }
-                }
-            }
-        }
     }
     return result;
 }
 
-std::vector<entt::entity> Local::textureOrder(const World::Scene& current, const std::vector<entt::entity>& roots) {
-    std::map<entt::entity, int> states;
-    std::vector<entt::entity> order;
-    std::function<void(entt::entity)> visit = [&](entt::entity entity) {
-        if (states[entity] == 1) {
-            throw std::invalid_argument("Texture dependency cycle at: " + outputLabel(current, entity));
+std::vector<Local::OutputKey> Local::textureOrder(const World::Scene& current, const std::vector<OutputKey>& roots) {
+    std::map<OutputKey, int> states;
+    std::vector<OutputKey> order;
+    std::function<void(const OutputKey&)> visit = [&](const OutputKey& key) {
+        if (states[key] == 1) {
+            throw std::invalid_argument("Texture dependency cycle at: " + outputLabel(current, key));
         }
-        if (states[entity] == 2) {
+        if (states[key] == 2) {
             return;
         }
-        if (!hasOutput(current, entity)) {
+        if (!hasOutput(current, key)) {
             return;
         }
-        states[entity] = 1;
-        for (const auto dependency : dependencies(current, entity)) {
+        states[key] = 1;
+        for (const auto& dependency : dependencies(current, key)) {
             visit(dependency);
         }
-        states[entity] = 2;
-        order.push_back(entity);
+        states[key] = 2;
+        order.push_back(key);
     };
-    for (const auto root : roots) {
+    for (const auto& root : roots) {
         visit(root);
     }
     return order;

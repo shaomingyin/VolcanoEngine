@@ -11,7 +11,6 @@
 #include <Volcano/World/Inherent.h>
 #include <Volcano/World/Model.h>
 #include <Volcano/World/OrthographicCamera.h>
-#include <Volcano/World/Overlay.h>
 #include <Volcano/World/PerspectiveCamera.h>
 #include <Volcano/World/PointLight.h>
 #include <Volcano/World/Scene.h>
@@ -49,6 +48,7 @@ const std::vector<Light::Prepared>& View::preparedLights() const {
 void View::begin() noexcept {
     vg_tasks_.clear();
     overlays_.clear();
+    hud_ = nullptr;
     state_ = State::Building;
     items_.clear();
     lights_.clear();
@@ -58,8 +58,7 @@ void View::begin() noexcept {
 }
 
 void View::extract(const World::Scene& scene, entt::entity cameraEntity,
-    entt::entity outputEntity,
-    std::span<const std::reference_wrapper<const World::Canvas>> extraOverlays) {
+    const TextureResolver& resolveTexture) {
     VOLCANO_ASSERT(scene.valid(cameraEntity));
     const auto* perspective = scene.try_get<World::PerspectiveCamera>(cameraEntity);
     const auto* orthographic = scene.try_get<World::OrthographicCamera>(cameraEntity);
@@ -77,6 +76,19 @@ void View::extract(const World::Scene& scene, entt::entity cameraEntity,
     begin();
     setProjection(camera.toMatrix());
     setViewMatrix(cameraTransform.inverse().matrix());
+
+    auto resolve = [&](const World::Texture* source) -> const Texture* {
+        if (source == nullptr) {
+            return nullptr;
+        }
+        if (source->kind() == World::Texture::Kind::Graphics) {
+            return static_cast<const Texture*>(source);
+        }
+        if (resolveTexture) {
+            return resolveTexture(*source);
+        }
+        return nullptr;
+    };
 
 #if defined(VOLCANO_DEBUG) && !defined(NDEBUG)
     for (const auto entity : scene.view<World::Model>()) {
@@ -102,12 +114,9 @@ void View::extract(const World::Scene& scene, entt::entity cameraEntity,
             if (modelComponent != nullptr) {
                 if (const auto* customMaterial = modelComponent->findMaterial(partIndex);
                     customMaterial != nullptr) {
-                    const auto sourceEntity = customMaterial->texture(World::Material::Slot::Albedo);
-                    if (sourceEntity != entt::null && sourceEntity != outputEntity && scene.valid(sourceEntity)) {
-                        if (const auto* output = scene.try_get<Output>(sourceEntity);
-                            output != nullptr && output->texture != nullptr) {
-                            material.texture = output->texture;
-                        }
+                    if (const auto* texture = resolve(customMaterial->texture(World::Material::Slot::Albedo));
+                        texture != nullptr) {
+                        material.texture = texture;
                     }
                 }
             }
@@ -145,19 +154,13 @@ void View::extract(const World::Scene& scene, entt::entity cameraEntity,
     addLights.operator()<World::PointLight>();
     addLights.operator()<World::SpotLight>();
 
-    if (outputEntity == entt::null) {
-        for (const auto entity : scene.view<World::Overlay, World::Canvas>()) {
-            if (!visible(scene, entity)) {
-                continue;
-            }
-            const auto& canvas = scene.get<World::Canvas>(entity);
+    if (const auto* hud = camera.hud(); hud != nullptr) {
+        if (const auto* resolved = resolve(hud); resolved != nullptr) {
+            setHud(resolved);
+        } else if (hud->isCanvas()) {
+            const auto& canvas = *static_cast<const World::Canvas*>(hud);
             if (canvas.ready()) {
                 add(canvas);
-            }
-        }
-        for (const auto& overlay : extraOverlays) {
-            if (overlay.get().ready()) {
-                add(overlay.get());
             }
         }
     }

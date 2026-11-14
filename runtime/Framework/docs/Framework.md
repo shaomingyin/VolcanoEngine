@@ -123,8 +123,8 @@ Framework 先调用 Scene 更新游戏逻辑，再驱动物理；零时间仍执
 相机视图矩阵为实体变换乘相机 offset 的逆；投影直接使用相机组件。
 相机矩阵须有限且可逆，PerspectiveCamera 的宽高比由宿主更新。
 
-每次 render 首先按拓扑顺序更新动态依赖纹理（离屏 GUI / 矢量绘制 / RTT 相机），并对可见的 `World::Overlay + Gui::Document` 执行布局与绘制；
-随后调用 `Graphics::View::extract` 以相机实体为视角，基于 EnTT 从 `scene()` 提取预解析的 `Graphics::Model`、`Graphics::View::Output`、相机矩阵、光照和叠加层。
+每次 render 首先按拓扑顺序通过 `World::Canvas` 的 `revision()` / `collectResources()` / `prepare()` 多态接口与 `Framework::Drawing` 更新当前视角依赖的动态纹理，
+随后调用 `Graphics::View::extract` 配合 `Local` 的纹理查找回调，基于 EnTT 从 `scene()` 提取预解析的 `Graphics::Model`、相机矩阵、光照和相机 `hud()`，最后送入 `Renderer::render(view, target)` 绘制并按需合成相机 HUD。
 没有 Inherent 组件的实体默认可见；有该组件的模型/灯光/叠加层必须同时 enabled 和 visible。
 缺少实体 Transform 时使用单位矩阵。模型最终矩阵为实体变换乘 Part 仿射矩阵，保留剪切。
 灯光 offset 同样叠加实体变换，方向转换到世界空间，距离和角度保留组件值。
@@ -180,9 +180,9 @@ FrameworkCheck 无需显示；FrameworkLocalCheck、FrameworkWindowCheck 需要 
 
 ## 动态纹理、GUI 与字体
 
-动态生成输出通过 ECS 实体表达并由 `Local` 按 `entt::entity` 管理输出帧缓冲：离屏 GUI 文档对应 `Gui::Document`，矢量绘制对应 `Framework::Drawing`，RTT 相机对应设置了正 `outputSize` 的 `PerspectiveCamera` / `OrthographicCamera`；带有 `World::Overlay` 的 `Gui::Document` / `World::Canvas` 不分配离屏帧缓冲，而在主相机渲染末尾作为 `View::overlays()` 直接绘制到输出目标。静态贴图直接按文件路径引用。`Drawing` 显式声明其依赖，通过 `Local::setDrawingProvider` 注册绘制函数。回调填写 Canvas，不自行 begin/end；不能采样未声明的动态输出或当前输出。
+动态或逻辑纹理既可以直接由 `World::Material` 与 `World::Camera::hud()` 独占持有（静态路径贴图、`World::Canvas`、`Gui::Document`），也可以继续通过 ECS 实体上的 `Gui::Document` / `Framework::Drawing` 表达；`Local` 在 `outputs_` 中统一按 `OutputKey`（`entt::entity` 或 `const World::Texture*`）管理离屏纹理缓存与帧缓冲，相机本身不维护输出尺寸，向外部目标或窗口的渲染统一由传入 `render(target, camera)` / 主循环的 `Graphics::Target` 控制。相机持有的 `hud()` 若为 `Gui::Document` 且尺寸为 0，在渲染时自动匹配当前 `target.size()` 并在最后通过 `PaintPass` 全视口预乘 Alpha 合成。`Drawing` 显式声明其依赖，通过 `Local::setDrawingProvider` 注册绘制函数；回调填写 Canvas，不自行 begin/end，不能采样未声明的动态输出或产生循环依赖/输出反馈。
 
-`Local::texture`（支持实体或命名查找）返回普通 `Graphics::Texture`，可供多处共享。GUI 内容及依赖不变时复用输出，自定义绘图与 RTT 相机按依赖拓扑序更新。修改场景资源后调用 `synchronizeResources`，保持既有显式资源同步约定。
+`Local::texture`（支持实体、`const World::Texture*` 或命名查找）返回解析后的 `Graphics::Texture`。GUI 内容及依赖不变时复用输出，动态纹理与引用依赖按拓扑序更新。修改场景资源或更换材质/`Camera::hud()` 纹理后调用 `synchronizeResources`，保持既有显式资源同步约定。
 
 Gui 所需宿主服务定义在 Gui::Platform（样式、文本测量、输入法与光标等），Document 派生自 World::Canvas，通过 `draw()` 录制矢量绘制指令，Local 直接将 Document 作为 Canvas 渲染输出。应用可通过 pointer/key 传入 Gui::PointerEvent/Gui::KeyEvent，为模型表面或其它交互来源投递事件；Document 内部统一使用重载 event 接口。
 

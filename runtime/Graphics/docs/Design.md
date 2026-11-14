@@ -6,7 +6,7 @@
 
 Graphics 依赖 Base、World、Eigen、Freetype、HarfBuzz 和内置 gl3w；不依赖 Asset、Gui、GLFW 或窗口系统。不透明物体采用延迟光照，透明物体采用前向光照。内置路径要求 OpenGL 3.3，使用 GLSL 330 core。
 
-Framework::Local 管理窗口、原生 OpenGL context 以及资源加载缓存；Launcher 管理事件和交换缓冲。Graphics 不激活 context，也不解析 Asset 文件；`Graphics::Model` 和 `View::Output` 运行时组件由调用方准备并挂载到 `World::Scene`，随后可由 `View::extract` 基于 EnTT 从 `World::Scene` 提取完整绘制视图（同时也保留 `View::begin/add/end` 供直接提交使用）。
+Framework::Local 管理窗口、原生 OpenGL context 以及资源加载缓存；Launcher 管理事件和交换缓冲。Graphics 不激活 context，也不解析 Asset 文件；`Graphics::Model` 运行时组件由调用方准备并挂载到 `World::Scene`，随后可由 `View::extract` 配合可选的 `TextureResolver` 回调基于 EnTT 从 `World::Scene` 提取完整绘制视图与相机 HUD（同时也保留 `View::begin/add/end` 供直接提交使用）。
 
 本次调整落实如下：
 
@@ -55,9 +55,8 @@ Window 位于 Framework。Target 有实际多态调用；Pass 仅复用程序构
 | 对象 | 提供的服务 | 内部成员及所有权 |
 | --- | --- | --- |
 | Renderer | render、renderVG、光源容量、字形图集预算及预热 | 直接持有 GBuffer、3D Pass 和 PaintPass（按声明顺序构造）；不保存当前 View/Target |
-| View | begin/add/end 直接提交或通过 extract 从 `World::Scene` 提取渲染数据并计算矩阵、光源和透明排序，向 Renderer/Pass 提供只读结果 | vector<DrawItem>、vector<Light>、环境光/清屏色、两个 Matrix4f；两个 vector<PreparedItem>、vector<Light::Prepared>、State 枚举（Idle/Building/Ready） |
+| View | begin/add/end 直接提交或通过 extract 从 `World::Scene` 提取渲染数据、相机 HUD 并计算矩阵、光源和透明排序，向 Renderer/Pass 提供只读结果 | vector<DrawItem>、vector<Light>、环境光/清屏色、两个 Matrix4f、overlay canvases、`const Texture* hud`；两个 vector<PreparedItem>、vector<Light::Prepared>、State 枚举（Idle/Building/Ready） |
 | Model | 保存预解析后的多 Part 非拥有 GPU 网格、默认材质与局部变换，作为客户端运行时渲染组件挂载到 `World::Scene` | `source` 路径、vector<Part>（借用 `const Mesh*`、`Material`、`Affine3f`、`transparent`） |
-| View::Output | 为动态输出实体提供非拥有 `const Texture*` 绑定，供材质纹理槽位覆写提取时读取 | 借用 `const Texture*` |
 | DrawItem | 描述一次网格绘制 | reference_wrapper<const Mesh>、Material、Eigen::Affine3f、transparent 标记 |
 | View::PreparedItem | 关联原始绘制项并保存计算结果 | size_t index、Affine3f model、Matrix3f normal、float depth；不复制材质或 Mesh 引用 |
 | Target | bind、width、height、size、contains | 输出绑定由 Window 或 FrameBuffer 实现，无额外回调状态 |
