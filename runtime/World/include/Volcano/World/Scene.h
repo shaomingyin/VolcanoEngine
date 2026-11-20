@@ -5,7 +5,6 @@
 
 #include <memory>
 #include <string>
-#include <utility>
 
 #include <entt/entt.hpp>
 
@@ -15,7 +14,7 @@
 
 VOLCANO_WORLD_BEGIN
 
-class Scene {
+class Scene : public entt::registry {
 public:
     explicit Scene(Context& context);
     Scene();
@@ -27,95 +26,6 @@ public:
     Scene& operator=(Scene&&) = default;
 
 public:
-    entt::registry& registry() noexcept {
-        return registry_;
-    }
-
-    const entt::registry& registry() const noexcept {
-        return registry_;
-    }
-
-    entt::entity create() {
-        return registry_.create();
-    }
-
-    void destroy(entt::entity entity) {
-        registry_.destroy(entity);
-    }
-
-    bool valid(entt::entity entity) const noexcept {
-        return registry_.valid(entity);
-    }
-
-    void clear() {
-        registry_.clear();
-    }
-
-    template<typename Component>
-    void clear() {
-        registry_.clear<Component>();
-    }
-
-    template<typename Component, typename... Args>
-    decltype(auto) emplace(entt::entity entity, Args&&... args) {
-        return registry_.emplace<Component>(entity, std::forward<Args>(args)...);
-    }
-
-    template<typename Component, typename... Args>
-    decltype(auto) emplace_or_replace(entt::entity entity, Args&&... args) {
-        return registry_.emplace_or_replace<Component>(entity, std::forward<Args>(args)...);
-    }
-
-    template<typename Component>
-    decltype(auto) get(entt::entity entity) {
-        return registry_.get<Component>(entity);
-    }
-
-    template<typename Component>
-    decltype(auto) get(entt::entity entity) const {
-        return registry_.get<Component>(entity);
-    }
-
-    template<typename Component>
-    auto* try_get(entt::entity entity) noexcept {
-        return registry_.try_get<Component>(entity);
-    }
-
-    template<typename Component>
-    const auto* try_get(entt::entity entity) const noexcept {
-        return registry_.try_get<Component>(entity);
-    }
-
-    template<typename... Component>
-    bool all_of(entt::entity entity) const noexcept {
-        return registry_.all_of<Component...>(entity);
-    }
-
-    template<typename... Component>
-    auto view() {
-        return registry_.view<Component...>();
-    }
-
-    template<typename... Component>
-    auto view() const {
-        return registry_.view<Component...>();
-    }
-
-    template<typename Type>
-    auto storage() {
-        return registry_.storage<Type>();
-    }
-
-    template<typename Type>
-    auto storage() const {
-        return registry_.storage<Type>();
-    }
-
-    template<typename Component, typename Func>
-    decltype(auto) patch(entt::entity entity, Func&& func) {
-        return registry_.patch<Component>(entity, std::forward<Func>(func));
-    }
-
     Context& context() noexcept {
         return context_;
     }
@@ -167,7 +77,6 @@ private:
     std::string description_;
     VersionNumber version_;
     Context& context_;
-    entt::registry registry_;
 };
 
 VOLCANO_WORLD_END

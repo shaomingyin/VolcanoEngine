@@ -15,6 +15,8 @@ namespace Resources {
 
 // Paths are rooted in PhysFS. Reuse live cached objects or load synchronously; failures throw.
 // Callers own the returned handles.
+std::shared_ptr<Asset::Scene> loadScene(std::string_view path);
+
 std::shared_ptr<Asset::Model> loadModel(std::string_view path);
 
 std::shared_ptr<Asset::Material> loadMaterial(std::string_view path);

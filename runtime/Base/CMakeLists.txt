@@ -12,7 +12,6 @@ add_library(Base STATIC
     include/Volcano/ByteArray.h
     include/Volcano/PhysFile.h
     include/Volcano/ScopeGuard.h
-    include/Volcano/FifoScheduler.h
     include/Volcano/Version.h
     src/Volcano/Common.cpp
     src/Volcano/Error.cpp
@@ -33,7 +32,6 @@ target_include_directories(Base PUBLIC
 
 target_compile_definitions(Base PUBLIC
     NOMINMAX
-    STDEXEC_PARALLEL_SCHEDULER_HEADER_ONLY
 )
 
 if(MSVC)
@@ -48,6 +46,9 @@ set_target_properties(Base PROPERTIES OUTPUT_NAME VolcanoBase)
 find_package(Threads REQUIRED)
 target_link_libraries(Base PUBLIC Threads::Threads)
 
+find_package(Async++ CONFIG REQUIRED)
+target_link_libraries(Base PUBLIC Async++)
+
 find_package(PhysFS CONFIG REQUIRED)
 target_link_libraries(Base PUBLIC physfs-static)
 
@@ -61,7 +62,7 @@ find_package(spdlog REQUIRED)
 target_link_libraries(Base PUBLIC spdlog::spdlog)
 
 if(BUILD_TESTING)
-    foreach(test IN ITEMS Cache PhysFile Version Utility Color Math Transform FifoScheduler)
+    foreach(test IN ITEMS Cache PhysFile Version Utility Color Math Transform)
         add_executable(Base${test}Check tests/${test}.cpp)
         target_link_libraries(Base${test}Check PRIVATE Base GTest::gtest_main)
         gtest_discover_tests(Base${test}Check)

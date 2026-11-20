@@ -215,18 +215,6 @@ int64_t PhysOutputStream::ByteCount() const {
     return total_bytes_written_;
 }
 
-bool PhysOutputStream::writeBuffer() {
-    if (file_ == nullptr || buffer_offset_ == 0) {
-        return true;
-    }
-    const auto written = PHYSFS_writeBytes(file_, buffer_.data(), buffer_offset_);
-    if (written != buffer_offset_) {
-        return false;
-    }
-    buffer_offset_ = 0;
-    return true;
-}
-
 bool PhysOutputStream::Flush() {
     if (!writeBuffer()) {
         return false;
@@ -252,6 +240,18 @@ bool PhysOutputStream::writeAll(std::span<const uint8_t> data) {
         }
     }
     return Flush();
+}
+
+bool PhysOutputStream::writeBuffer() {
+    if (file_ == nullptr || buffer_offset_ == 0) {
+        return true;
+    }
+    const auto written = PHYSFS_writeBytes(file_, buffer_.data(), buffer_offset_);
+    if (written != buffer_offset_) {
+        return false;
+    }
+    buffer_offset_ = 0;
+    return true;
 }
 
 VOLCANO_END

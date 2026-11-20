@@ -17,33 +17,6 @@ Texture::Texture(google::protobuf::io::ZeroCopyInputStream& source)
     initializeHeader();
 }
 
-void Texture::initializeHeader() {
-    uint32_t magic = 0;
-    if (!Format::readExactBytes(*source_, &magic, sizeof(magic)) || magic != 0x58544556) {
-        throw std::invalid_argument("Invalid texture resource magic");
-    }
-
-    uint32_t headerSize = 0;
-    if (!Format::readExactBytes(*source_, &headerSize, sizeof(headerSize)) || headerSize == 0) {
-        throw std::invalid_argument("Invalid texture header size");
-    }
-
-    std::string headerBytes(headerSize, '\0');
-    if (!Format::readExactBytes(*source_, headerBytes.data(), static_cast<int>(headerSize))) {
-        throw std::invalid_argument("Truncated texture header data");
-    }
-
-    if (!header_.ParseFromString(headerBytes)) {
-        throw std::invalid_argument("Failed to parse texture header protobuf");
-    }
-
-    if (header_.width() == 0 || header_.height() == 0) {
-        throw std::invalid_argument("Texture dimensions must be positive");
-    }
-
-    payload_size_ = Format::checkedProduct(Format::checkedProduct(header_.width(), header_.height()), 4);
-}
-
 bool Texture::Next(const void** data, int* size) {
     if (source_ == nullptr || bytes_read_ >= payload_size_) {
         return false;
@@ -109,6 +82,33 @@ bool Texture::Skip(int count) {
 
 int64_t Texture::ByteCount() const {
     return static_cast<int64_t>(bytes_read_);
+}
+
+void Texture::initializeHeader() {
+    uint32_t magic = 0;
+    if (!Format::readExactBytes(*source_, &magic, sizeof(magic)) || magic != 0x58544556) {
+        throw std::invalid_argument("Invalid texture resource magic");
+    }
+
+    uint32_t headerSize = 0;
+    if (!Format::readExactBytes(*source_, &headerSize, sizeof(headerSize)) || headerSize == 0) {
+        throw std::invalid_argument("Invalid texture header size");
+    }
+
+    std::string headerBytes(headerSize, '\0');
+    if (!Format::readExactBytes(*source_, headerBytes.data(), static_cast<int>(headerSize))) {
+        throw std::invalid_argument("Truncated texture header data");
+    }
+
+    if (!header_.ParseFromString(headerBytes)) {
+        throw std::invalid_argument("Failed to parse texture header protobuf");
+    }
+
+    if (header_.width() == 0 || header_.height() == 0) {
+        throw std::invalid_argument("Texture dimensions must be positive");
+    }
+
+    payload_size_ = Format::checkedProduct(Format::checkedProduct(header_.width(), header_.height()), 4);
 }
 
 VOLCANO_ASSET_END

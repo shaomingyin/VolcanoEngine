@@ -5,13 +5,6 @@
 
 VOLCANO_GRAPHICS_BEGIN
 
-void Material::Uniforms::resolve(const gl::Program& program) {
-    color = program.uniformLocation("uColor", GL_FLOAT_VEC4);
-    textured = program.uniformLocation("uTextured", GL_BOOL);
-    lit = program.uniformLocation("uLit", GL_BOOL);
-    texture = program.uniformLocation("uTexture", GL_SAMPLER_2D);
-}
-
 void Material::apply(const gl::Program& program, const Uniforms& uniforms) const {
     constexpr GLuint TextureUnit = 0;
     program.uniform(uniforms.lit, lit ? 1 : 0);
@@ -22,6 +15,13 @@ void Material::apply(const gl::Program& program, const Uniforms& uniforms) const
     glActiveTexture(GL_TEXTURE0 + TextureUnit);
     glBindSampler(TextureUnit, 0);
     glBindTexture(GL_TEXTURE_2D, texture != nullptr ? texture->texture().id() : 0);
+}
+
+void Material::Uniforms::resolve(const gl::Program& program) {
+    color = program.uniformLocation("uColor", GL_FLOAT_VEC4);
+    textured = program.uniformLocation("uTextured", GL_BOOL);
+    lit = program.uniformLocation("uLit", GL_BOOL);
+    texture = program.uniformLocation("uTexture", GL_SAMPLER_2D);
 }
 
 VOLCANO_GRAPHICS_END

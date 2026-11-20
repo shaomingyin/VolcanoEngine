@@ -19,9 +19,9 @@
 int main(int argc, char* argv[]) {
     using namespace Volcano;
     try {
-        argh::parser cmdline({"-r", "--root"});
+        argh::parser cmdline({"-r", "--root", "-s", "--scene"});
         cmdline.parse(argc, argv);
-        if (cmdline[{"-r", "--root"}]) {
+        if (cmdline[{"-r", "--root", "-s", "--scene"}]) {
             throw std::invalid_argument("Missing command-line parameter value");
         }
         spdlog::set_pattern("%Y-%m-%d %H:%M:%S.%e %t [%L] %v");
@@ -50,7 +50,8 @@ int main(int argc, char* argv[]) {
             framework = std::make_unique<Framework::Local>(800, 600, "VolcanoLauncher");
         }
         auto& window = framework->window();
-        framework->loadAsync(volcanoCreateGame);
+        const auto scene = cmdline({"-s", "--scene"}, "scene.vescene").str();
+        framework->load(scene, volcanoCreateGame);
         glfwSwapInterval(1);
 
         auto last = Clock::now();

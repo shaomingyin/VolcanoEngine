@@ -131,44 +131,6 @@ System::~System() {
     clearBodies();
 }
 
-void System::disconnect() noexcept {
-    registry_.on_construct<Transform>().disconnect<&System::onBodyAdded>(this);
-    registry_.on_construct<World::RigidBody>().disconnect<&System::onBodyAdded>(this);
-    registry_.on_update<Transform>().disconnect<&System::onTransformChanged>(this);
-    registry_.on_update<World::RigidBody>().disconnect<&System::onBodyAdded>(this);
-    registry_.on_destroy<Transform>().disconnect<&System::onBodyRemoved>(this);
-    registry_.on_destroy<World::RigidBody>().disconnect<&System::onBodyRemoved>(this);
-}
-
-void System::clearBodies() noexcept {
-    for (const auto& [entity, id] : bodies_) {
-        body_interface_->RemoveBody(id);
-        body_interface_->DestroyBody(id);
-    }
-    bodies_.clear();
-}
-
-void System::init() {
-    const std::lock_guard lock(runtime_mutex);
-    if (runtime_users == 0) {
-        JPH::RegisterDefaultAllocator();
-        auto factory = std::make_unique<JPH::Factory>();
-        JPH::Factory::sInstance = factory.get();
-        JPH::RegisterTypes();
-        factory.release();
-    }
-    ++runtime_users;
-}
-
-void System::shutdown() {
-    const std::lock_guard lock(runtime_mutex);
-    if (runtime_users != 0 && --runtime_users == 0) {
-        JPH::UnregisterTypes();
-        delete JPH::Factory::sInstance;
-        JPH::Factory::sInstance = nullptr;
-    }
-}
-
 void System::setGravity(const Eigen::Vector3f& value) noexcept {
     gravity_ = value;
     physics_system_.SetGravity(toJPH(value));
@@ -209,6 +171,44 @@ void System::update(Clock::duration elapsed) {
         const auto rotation = body_interface_->GetRotation(id);
         transform.setTranslation(Eigen::Vector3f(position.GetX(), position.GetY(), position.GetZ()));
         transform.setRotation(Eigen::Quaternionf(rotation.GetW(), rotation.GetX(), rotation.GetY(), rotation.GetZ()));
+    }
+}
+
+void System::disconnect() noexcept {
+    registry_.on_construct<Transform>().disconnect<&System::onBodyAdded>(this);
+    registry_.on_construct<World::RigidBody>().disconnect<&System::onBodyAdded>(this);
+    registry_.on_update<Transform>().disconnect<&System::onTransformChanged>(this);
+    registry_.on_update<World::RigidBody>().disconnect<&System::onBodyAdded>(this);
+    registry_.on_destroy<Transform>().disconnect<&System::onBodyRemoved>(this);
+    registry_.on_destroy<World::RigidBody>().disconnect<&System::onBodyRemoved>(this);
+}
+
+void System::clearBodies() noexcept {
+    for (const auto& [entity, id] : bodies_) {
+        body_interface_->RemoveBody(id);
+        body_interface_->DestroyBody(id);
+    }
+    bodies_.clear();
+}
+
+void System::init() {
+    const std::lock_guard lock(runtime_mutex);
+    if (runtime_users == 0) {
+        JPH::RegisterDefaultAllocator();
+        auto factory = std::make_unique<JPH::Factory>();
+        JPH::Factory::sInstance = factory.get();
+        JPH::RegisterTypes();
+        factory.release();
+    }
+    ++runtime_users;
+}
+
+void System::shutdown() {
+    const std::lock_guard lock(runtime_mutex);
+    if (runtime_users != 0 && --runtime_users == 0) {
+        JPH::UnregisterTypes();
+        delete JPH::Factory::sInstance;
+        JPH::Factory::sInstance = nullptr;
     }
 }
 

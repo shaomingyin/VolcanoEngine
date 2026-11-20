@@ -89,6 +89,118 @@ std::size_t PaintPass::atlasBytes() const noexcept {
     return pages_.size() * PageSize * PageSize;
 }
 
+PaintPass::FontCacheStats PaintPass::fontCacheStats() const noexcept {
+    auto result = stats_;
+    result.atlasBytes = atlasBytes();
+    result.glyphs = 0;
+    for (const auto& page : pages_) {
+        result.glyphs += page.entries.size();
+    }
+    return result;
+}
+
+void PaintPass::prewarm(const Font& font, std::string_view text, unsigned int pixels) {
+    for (const auto& shaped : font.shape(text, static_cast<float>(pixels))) {
+        if (shaped.font != nullptr) {
+            glyph(*shaped.font, shaped.index, pixels);
+        }
+    }
+}
+
+void PaintPass::render(const Texture& texture, Target& target) {
+    if (target.contains(texture)) {
+        throw std::invalid_argument("HUD cannot sample its output texture");
+    }
+    if (!beginTarget(target, false)) {
+        return;
+    }
+    glyph_texture_ = 0;
+    const World::Canvas::State state;
+    paint(state, 1);
+    texture.texture().bind(0);
+    quad({0.0f, 0.0f, static_cast<float>(width_), static_cast<float>(height_)},
+        {0.0f, 1.0f, 1.0f, -1.0f}, Eigen::Affine2f::Identity());
+    endTarget();
+}
+
+void PaintPass::render(const World::Canvas& commands, Target& target, bool clear) {
+    VOLCANO_ASSERT(commands.ready());
+    for (const auto& command : commands.commands()) {
+        if (command.type == World::Canvas::Command::Type::Image) {
+            const auto* texture = resolveTexture(command);
+            if (texture != nullptr && target.contains(*texture)) {
+                throw std::invalid_argument("VG cannot sample its output texture");
+            }
+        }
+    }
+    glyph_vertices_.clear();
+    glyph_texture_ = 0;
+    if (!beginTarget(target, clear)) {
+        return;
+    }
+    for (const auto& command : commands.commands()) {
+        paint(command.state, 0);
+        switch (command.type) {
+        case World::Canvas::Command::Type::Fill:
+            shape(command, false);
+            break;
+        case World::Canvas::Command::Type::Stroke:
+            shape(command, true);
+            break;
+        case World::Canvas::Command::Type::Image: {
+            const auto* texture = resolveTexture(command);
+            if (texture != nullptr) {
+                program_.uniform(mode_, 1);
+                texture->texture().bind(0);
+                quad(command.destination, {0, 1, 1, -1}, command.state.transform);
+            }
+            break;
+        }
+        case World::Canvas::Command::Type::Text: {
+            const auto* font = resolveFont(command);
+            if (font == nullptr) {
+                break;
+            }
+            program_.uniform(mode_, 2);
+            const auto& text = command.text;
+            float offset = 0;
+            if (command.state.align != World::Canvas::TextAlign::Left) {
+                offset = font->measure(text, command.pixels).width;
+                if (command.state.align == World::Canvas::TextAlign::Center) {
+                    offset *= 0.5f;
+                }
+            }
+            const float displayScale = std::max(command.state.transform.linear().col(0).norm(),
+                command.state.transform.linear().col(1).norm());
+            const float rasterSize = std::ceil(command.pixels * displayScale);
+            if (!(rasterSize >= 1 && rasterSize <= 4096)) {
+                throw std::invalid_argument("Transformed font size exceeds rasterizer limits");
+            }
+            const auto pixels = static_cast<unsigned int>(rasterSize);
+            const float ratio = command.pixels / pixels;
+            for (const auto& shaped : font->shape(text, command.pixels)) {
+                if (shaped.font == nullptr) {
+                    continue;
+                }
+                const auto image = glyph(*shaped.font, shaped.index, pixels);
+                if (glyph_texture_ != image.texture->id()) {
+                    flushGlyphs();
+                    glyph_texture_ = image.texture->id();
+                }
+                const auto& entry = image.entry;
+                quad({command.destination.left + shaped.x + entry.left * ratio - offset,
+                    command.destination.top + shaped.y - entry.top * ratio, entry.width * ratio, entry.height * ratio},
+                    entry.uv, command.state.transform);
+            }
+            flushGlyphs();
+            glyph_texture_ = 0;
+            break;
+        }
+        }
+    }
+    endTarget();
+}
+
 PaintPass::GlyphImage PaintPass::glyph(const Font& font, std::uint32_t index, unsigned int pixels) {
     const auto key = std::tuple(font.id(), index, pixels);
     ++serial_;
@@ -162,24 +274,6 @@ PaintPass::GlyphImage PaintPass::glyph(const Font& font, std::uint32_t index, un
     destination->used = serial_;
     destination->entries.emplace(key, entry);
     return {&destination->texture, entry};
-}
-
-PaintPass::FontCacheStats PaintPass::fontCacheStats() const noexcept {
-    auto result = stats_;
-    result.atlasBytes = atlasBytes();
-    result.glyphs = 0;
-    for (const auto& page : pages_) {
-        result.glyphs += page.entries.size();
-    }
-    return result;
-}
-
-void PaintPass::prewarm(const Font& font, std::string_view text, unsigned int pixels) {
-    for (const auto& shaped : font.shape(text, static_cast<float>(pixels))) {
-        if (shaped.font != nullptr) {
-            glyph(*shaped.font, shaped.index, pixels);
-        }
-    }
 }
 
 void PaintPass::curve(std::vector<Eigen::Vector2f>& points, const Eigen::Vector2f& a,
@@ -527,100 +621,6 @@ void PaintPass::endTarget() noexcept {
     glDepthMask(GL_TRUE);
     gl::VertexArray::unbind();
     gl::Program::unuse();
-}
-
-void PaintPass::render(const Texture& texture, Target& target) {
-    if (target.contains(texture)) {
-        throw std::invalid_argument("HUD cannot sample its output texture");
-    }
-    if (!beginTarget(target, false)) {
-        return;
-    }
-    glyph_texture_ = 0;
-    const World::Canvas::State state;
-    paint(state, 1);
-    texture.texture().bind(0);
-    quad({0.0f, 0.0f, static_cast<float>(width_), static_cast<float>(height_)},
-        {0.0f, 1.0f, 1.0f, -1.0f}, Eigen::Affine2f::Identity());
-    endTarget();
-}
-
-void PaintPass::render(const World::Canvas& commands, Target& target, bool clear) {
-    VOLCANO_ASSERT(commands.ready());
-    for (const auto& command : commands.commands()) {
-        if (command.type == World::Canvas::Command::Type::Image) {
-            const auto* texture = resolveTexture(command);
-            if (texture != nullptr && target.contains(*texture)) {
-                throw std::invalid_argument("VG cannot sample its output texture");
-            }
-        }
-    }
-    glyph_vertices_.clear();
-    glyph_texture_ = 0;
-    if (!beginTarget(target, clear)) {
-        return;
-    }
-    for (const auto& command : commands.commands()) {
-        paint(command.state, 0);
-        switch (command.type) {
-        case World::Canvas::Command::Type::Fill:
-            shape(command, false);
-            break;
-        case World::Canvas::Command::Type::Stroke:
-            shape(command, true);
-            break;
-        case World::Canvas::Command::Type::Image: {
-            const auto* texture = resolveTexture(command);
-            if (texture != nullptr) {
-                program_.uniform(mode_, 1);
-                texture->texture().bind(0);
-                quad(command.destination, {0, 1, 1, -1}, command.state.transform);
-            }
-            break;
-        }
-        case World::Canvas::Command::Type::Text: {
-            const auto* font = resolveFont(command);
-            if (font == nullptr) {
-                break;
-            }
-            program_.uniform(mode_, 2);
-            const auto& text = command.text;
-            float offset = 0;
-            if (command.state.align != World::Canvas::TextAlign::Left) {
-                offset = font->measure(text, command.pixels).width;
-                if (command.state.align == World::Canvas::TextAlign::Center) {
-                    offset *= 0.5f;
-                }
-            }
-            const float displayScale = std::max(command.state.transform.linear().col(0).norm(),
-                command.state.transform.linear().col(1).norm());
-            const float rasterSize = std::ceil(command.pixels * displayScale);
-            if (!(rasterSize >= 1 && rasterSize <= 4096)) {
-                throw std::invalid_argument("Transformed font size exceeds rasterizer limits");
-            }
-            const auto pixels = static_cast<unsigned int>(rasterSize);
-            const float ratio = command.pixels / pixels;
-            for (const auto& shaped : font->shape(text, command.pixels)) {
-                if (shaped.font == nullptr) {
-                    continue;
-                }
-                const auto image = glyph(*shaped.font, shaped.index, pixels);
-                if (glyph_texture_ != image.texture->id()) {
-                    flushGlyphs();
-                    glyph_texture_ = image.texture->id();
-                }
-                const auto& entry = image.entry;
-                quad({command.destination.left + shaped.x + entry.left * ratio - offset,
-                    command.destination.top + shaped.y - entry.top * ratio, entry.width * ratio, entry.height * ratio},
-                    entry.uv, command.state.transform);
-            }
-            flushGlyphs();
-            glyph_texture_ = 0;
-            break;
-        }
-        }
-    }
-    endTarget();
 }
 
 VOLCANO_GRAPHICS_END

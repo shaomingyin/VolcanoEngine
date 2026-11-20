@@ -12,7 +12,6 @@
 #include <Volcano/Demo/Game.h>
 
 VOLCANO_DEMO_BEGIN
-
 Game::Game(World::Context& context) : World::Scene(context) {
     emplace<World::PerspectiveCamera>(create(), 60.0f, 4.0f / 3.0f, 0.1f, 1000.0f);
     auto root = std::make_unique<Gui::Layout>();
@@ -35,15 +34,14 @@ Game::Game(World::Context& context) : World::Scene(context) {
 }
 
 Game::Game() : Game(context()) {}
-
 Game::~Game() {
-}
-
-void Game::onUpdate(Clock::duration elapsed) noexcept {
 }
 
 entt::entity Game::player() const noexcept {
     return entt::null;
+}
+
+void Game::onUpdate(Clock::duration elapsed) noexcept {
 }
 
 VOLCANO_DEMO_END

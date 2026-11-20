@@ -25,11 +25,6 @@ bool View::visible(const World::Scene& scene, entt::entity entity) {
     return inherent == nullptr || (inherent->isEnabled() && inherent->isVisible());
 }
 
-Eigen::Affine3f View::entityTransform(const World::Scene& scene, entt::entity entity) {
-    const auto* transform = scene.try_get<Transform>(entity);
-    return transform != nullptr ? transform->affine() : Eigen::Affine3f::Identity();
-}
-
 const std::vector<View::PreparedItem>& View::opaqueItems() const {
     VOLCANO_ASSERT(ready());
     return opaque_;
@@ -256,6 +251,11 @@ void View::add(Target& target, const World::Canvas& commands) {
 void View::add(const World::Canvas& commands) {
     VOLCANO_ASSERT(state_ == State::Building && commands.ready());
     overlays_.push_back(commands);
+}
+
+Eigen::Affine3f View::entityTransform(const World::Scene& scene, entt::entity entity) {
+    const auto* transform = scene.try_get<Transform>(entity);
+    return transform != nullptr ? transform->affine() : Eigen::Affine3f::Identity();
 }
 
 VOLCANO_GRAPHICS_END

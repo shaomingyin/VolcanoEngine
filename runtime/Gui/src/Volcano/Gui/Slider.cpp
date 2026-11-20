@@ -6,7 +6,6 @@
 #include <Volcano/Gui/Slider.h>
 
 VOLCANO_GUI_BEGIN
-
 void Slider::setRange(float minimum, float maximum) {
     if (!std::isfinite(minimum) || !std::isfinite(maximum) || minimum >= maximum) {
         throw std::invalid_argument("Invalid GUI slider range");
@@ -45,16 +44,6 @@ void Slider::setStep(float value) {
 
 void Slider::setOnValueChanged(std::function<void(float)> callback) {
     on_value_changed_ = std::move(callback);
-}
-
-void Slider::setPosition(float x) {
-    const float side = std::min(bounds().width, bounds().height);
-    const float travel = bounds().width - side;
-    if (travel == 0) {
-        return;
-    }
-    const auto fraction = std::clamp((double(x) - bounds().left - side * 0.5) / travel, 0.0, 1.0);
-    setValue(std::lerp(minimum_, maximum_, static_cast<float>(fraction)));
 }
 
 bool Slider::event(const PointerEvent& input, Platform&) {
@@ -153,6 +142,16 @@ void Slider::paint(World::Canvas& canvas, Platform& platform) const {
     canvas.beginPath();
     canvas.rect({x, bounds().top + (bounds().height - side) * 0.5f, side, side});
     canvas.fill();
+}
+
+void Slider::setPosition(float x) {
+    const float side = std::min(bounds().width, bounds().height);
+    const float travel = bounds().width - side;
+    if (travel == 0) {
+        return;
+    }
+    const auto fraction = std::clamp((double(x) - bounds().left - side * 0.5) / travel, 0.0, 1.0);
+    setValue(std::lerp(minimum_, maximum_, static_cast<float>(fraction)));
 }
 
 VOLCANO_GUI_END

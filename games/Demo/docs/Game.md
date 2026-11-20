@@ -38,11 +38,11 @@ World 不声明游戏入口，Framework 也不包含具体游戏的头文件。
 通过 CMake 的 `VOLCANO_GAME` 选择游戏；宿主链接 Gameplay，并将 volcanoCreateGame 交给 Framework::load。
 
 ```cpp
-framework.load(volcanoCreateGame);
+framework.load("scene.vescene", volcanoCreateGame);
+framework.waitForLoad();
 framework.play();
 ```
 
-Base 保存工厂以支持 stop 时重建 Scene，暂停则保留当前实例。
 工厂承担创建职责，Scene 派生类承担游戏逻辑；生命周期约定见 [Framework](../../../runtime/Framework/docs/Framework.md)。
 
 ## GUI 动态纹理演示

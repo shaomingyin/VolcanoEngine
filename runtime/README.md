@@ -4,7 +4,7 @@ VolcanoEngine 的运行时核心模块集合，包含引擎运转所需的所有
 
 ## 模块列表
 
-- [Base](Base/README.md)：基础设施、数学运算、流/文件 I/O、内存缓存与 stdexec 异步库。
+- [Base](Base/README.md)：基础设施、数学运算、流/文件 I/O、内存缓存与 Async++ 异步支持。
 - [Schema](Schema/README.md)：原生资源格式定义（`.vemodel`, `.vemesh`, `.vemat`, `.vetex`）与流序列化。
 - [World](World/README.md)：基于 EnTT 的 ECS 场景与组件系统（实体、相机、灯光、刚体等）。
 - [Physics](Physics/README.md)：基于 Jolt Physics 的 3D 刚体动力学与碰撞检测模拟。

@@ -7,17 +7,14 @@
 #include <functional>
 #include <map>
 #include <memory>
-#include <optional>
 #include <stdexcept>
 #include <string>
 #include <thread>
 #include <vector>
 
+#include <async++.h>
 #include <entt/entity/entity.hpp>
-#include <stdexec/execution.hpp>
-#include <exec/task.hpp>
 
-#include <Volcano/FifoScheduler.h>
 #include <Volcano/Asset/Common.h>
 #include <Volcano/Physics/System.h>
 #include <Volcano/World/Context.h>
@@ -29,10 +26,6 @@ VOLCANO_FRAMEWORK_BEGIN
 // Owns the game Scene; game rules remain in the Scene subclass.
 class Base : public World::Context {
 public:
-    struct LoadCanceled : std::runtime_error {
-        LoadCanceled() : std::runtime_error("Load canceled") {}
-    };
-
     enum class State { Idle, Loading, Ready, Playing, Paused };
 
     struct LoadProgress {
@@ -51,42 +44,25 @@ public:
     Base(Base&&) = delete;
     Base& operator=(Base&&) = delete;
 
-    void loadAsync(SceneFactory factory);
+public:
+    void load(std::filesystem::path scenePath, SceneFactory factory);
 
     template <typename F>
         requires (!std::is_same_v<std::decay_t<F>, SceneFactory> && std::invocable<F>)
-    void loadAsync(F&& factory) {
+    void load(std::filesystem::path scenePath, F&& factory) {
         if constexpr (std::invocable<F, World::Context&>) {
-            loadAsync(SceneFactory{std::forward<F>(factory)});
+            load(std::move(scenePath), SceneFactory{std::forward<F>(factory)});
         } else {
-            loadAsync(SceneFactory{[f = std::forward<F>(factory)](World::Context&) {
+            load(std::move(scenePath), SceneFactory{[f = std::forward<F>(factory)](World::Context&) {
                 return f();
             }});
         }
     }
 
-    void stopAsync();
-    void synchronizeResourcesAsync();
-    // Synchronous conveniences pump the same queue and propagate the final task's exception.
-    void load(SceneFactory factory);
-
-    template <typename F>
-        requires (!std::is_same_v<std::decay_t<F>, SceneFactory> && std::invocable<F>)
-    void load(F&& factory) {
-        if constexpr (std::invocable<F, World::Context&>) {
-            load(SceneFactory{std::forward<F>(factory)});
-        } else {
-            load(SceneFactory{[f = std::forward<F>(factory)](World::Context&) {
-                return f();
-            }});
-        }
-    }
-
-    void synchronizeResources();
     void play();
     void pause();
-    void stop();
     void unload();
+    void synchronizeResources();
     void update(Clock::duration elapsed);
 
     void requestExit() override;
@@ -98,15 +74,17 @@ public:
     void cancelLoad() noexcept;
 
     bool loadCancelled() const noexcept {
-        return cancellation_ && cancellation_->stop_requested();
+        return loading_.cancelled();
     }
 
-    FifoScheduler::Scheduler scheduler() noexcept {
-        return scheduler_.get_scheduler();
+    void schedule(async::task_run_handle task);
+
+    Base& scheduler() noexcept {
+        return *this;
     }
 
     const LoadProgress& loadingProgress() const noexcept {
-        return progress_;
+        return loading_.progress;
     }
 
     State state() const noexcept {
@@ -119,11 +97,37 @@ public:
     const Physics::System& physics() const;
 
 protected:
-    virtual exec::task<void> onLoadScene(const World::Scene& scene);
-    virtual exec::task<void> onLoadEntity(const World::Scene& scene, entt::entity entity);
+    struct LoadingState {
+    public:
+        void cancel() noexcept;
+        bool cancelled() const noexcept;
+        void checkCancelled() const;
+        void rethrowIfError();
+        void setContent(std::string content);
+        void collectEntities(const World::Scene& candidate);
+        void completeEntity(entt::entity entity);
+        void beginCommit();
+        void completeCommit() noexcept;
+        void discard() noexcept;
+        void reset() noexcept;
+
+        static void populateScene(World::Scene& target, const Asset::Scene& source);
+
+    public:
+        async::cancellation_token cancellation;
+        std::exception_ptr error;
+        LoadProgress progress;
+        std::map<entt::entity, std::string> entities;
+        std::map<std::filesystem::path, std::shared_ptr<Asset::Model>> models;
+        std::unique_ptr<World::Scene> scene;
+        std::unique_ptr<Physics::System> physics;
+        SceneFactory factory;
+    };
+
+protected:
+    virtual async::task<void> onLoadScene(const World::Scene& scene);
+    virtual async::task<void> onLoadEntity(const World::Scene& scene, entt::entity entity);
     virtual void onBeforeTasks();
-    void checkLoadCancelled() const;
-    void setLoadingContent(std::string content);
     const Asset::Model& model(const std::filesystem::path& path) const;
     World::Scene* currentScene() noexcept;
     virtual void onUnloadResources() noexcept;
@@ -133,24 +137,16 @@ protected:
     virtual void onBeforeUpdate(Clock::duration elapsed);
     virtual void onAfterUpdate(Clock::duration elapsed);
 
-private:
-    void beginLoad(SceneFactory factory);
-    void drainLoad();
-    exec::task<void> loadCoroutine(bool replace, State previous);
+protected:
+    LoadingState loading_;
 
 private:
-    FifoScheduler scheduler_;
+    void beginLoad(std::filesystem::path scenePath, SceneFactory factory);
+
+private:
+    async::fifo_scheduler scheduler_;
     const std::thread::id owner_thread_ = std::this_thread::get_id();
-    std::optional<stdexec::inplace_stop_source> cancellation_;
-    std::exception_ptr last_error_{};
-    LoadProgress progress_;
-    std::map<entt::entity, std::string> loading_entities_;
     std::map<std::filesystem::path, std::shared_ptr<Asset::Model>> models_;
-    std::map<std::filesystem::path, std::shared_ptr<Asset::Model>> pending_models_;
-    std::unique_ptr<World::Scene> pending_scene_;
-    std::unique_ptr<Physics::System> pending_physics_;
-    SceneFactory scene_factory_;
-    SceneFactory pending_factory_;
     bool should_close_ = false;
     State state_ = State::Idle;
     std::unique_ptr<World::Scene> scene_;

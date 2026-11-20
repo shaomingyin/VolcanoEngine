@@ -15,28 +15,6 @@
 
 VOLCANO_GRAPHICS_BEGIN
 
-void Font::release() noexcept {
-    if (font_ != nullptr) {
-        hb_font_destroy(font_);
-    }
-    if (face_ != nullptr) {
-        FT_Done_Face(face_);
-    }
-    if (library_ != nullptr) {
-        FT_Done_FreeType(library_);
-    }
-}
-
-void Font::setSize(float pixels) const {
-    if (!std::isfinite(pixels) || pixels < 1 || pixels > 4096) {
-        throw std::invalid_argument("Font pixel size must be in [1, 4096]");
-    }
-    if (FT_Set_Char_Size(face_, 0, static_cast<FT_F26Dot6>(pixels * 64), 72, 72) != 0) {
-        throw std::runtime_error("Cannot set font size");
-    }
-    hb_ft_font_changed(font_);
-}
-
 Font::Font(std::span<const std::uint8_t> bytes) {
     if (bytes.empty() || bytes.size() > static_cast<std::size_t>(std::numeric_limits<FT_Long>::max())) {
         throw std::invalid_argument("Invalid font byte count");
@@ -179,6 +157,28 @@ Font::Bitmap Font::rasterize(std::uint32_t glyph, unsigned int pixels) const {
         }
     }
     return result;
+}
+
+void Font::release() noexcept {
+    if (font_ != nullptr) {
+        hb_font_destroy(font_);
+    }
+    if (face_ != nullptr) {
+        FT_Done_Face(face_);
+    }
+    if (library_ != nullptr) {
+        FT_Done_FreeType(library_);
+    }
+}
+
+void Font::setSize(float pixels) const {
+    if (!std::isfinite(pixels) || pixels < 1 || pixels > 4096) {
+        throw std::invalid_argument("Font pixel size must be in [1, 4096]");
+    }
+    if (FT_Set_Char_Size(face_, 0, static_cast<FT_F26Dot6>(pixels * 64), 72, 72) != 0) {
+        throw std::runtime_error("Cannot set font size");
+    }
+    hb_ft_font_changed(font_);
 }
 
 VOLCANO_GRAPHICS_END

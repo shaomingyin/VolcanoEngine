@@ -1,8 +1,8 @@
 # Asset
 
-Asset 实现 Texture、Mesh、Material、Model 的资源只读反序列化与数据流式传输。
+Asset 实现 Texture、Mesh、Material、Model、Scene 的资源只读反序列化与数据流式传输。
 公共接口依赖 Base 与 Protobuf。
-纯元信息资产（Material、Model）直接采用 `Schema.proto` 生成的 Protobuf 消息类；
+纯元信息资产（Material、Model、Scene）直接采用 `Schema.proto` 生成的 Protobuf 消息类；
 带大块二进制载荷的资产（Texture、Mesh）派生自 `google::protobuf::io::ZeroCopyInputStream`，在构造时提取 Protobuf 头部元信息，并根据内部元信息对外提供底层二进制载荷的零拷贝流式访问。运行时纯粹用于消费资产，不包含写资产接口。
 
 ## 流与错误处理
@@ -20,6 +20,7 @@ Asset 实现 Texture、Mesh、Material、Model 的资源只读反序列化与数
 - `MeshHeader`：顶点数 `vertex_count`、索引数 `index_count`。
 - `Material`：反照率 `albedo`、高光 `specular`、金属度 `metallic`、粗糙度 `roughness`、自发光 `emissive`、贴图路径及混合模式 `alpha_mode`。
 - `Model`：包含若干 `Part`（`mesh` 路径、`material` 路径与 16 元素仿射变换矩阵 `transform`）。
+- `Scene`：场景主清单（`.vescene`），描述 `name`、`description`、`gravity` 及实体列表 `entities`（`name`、`enabled`、`visible`、`Transform`、`ModelRef`、相机、灯光与 `RigidBody` 描述），所有间接资源均使用路径引用。
 
 ## 二进制布局（Texture & Mesh）
 

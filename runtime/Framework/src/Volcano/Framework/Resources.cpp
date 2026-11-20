@@ -57,6 +57,13 @@ struct ResourceHelper final {
         return result;
     }
 
+    static std::string resolveRelative(const std::filesystem::path& baseDir, std::string_view relative) {
+        if (relative.empty()) {
+            return {};
+        }
+        return normalizePath(baseDir / relative).relative_path().generic_string();
+    }
+
     static void readExactBytes(google::protobuf::io::ZeroCopyInputStream& stream, void* dest, int count) {
         auto* out = static_cast<uint8_t*>(dest);
         while (count > 0) {
@@ -93,6 +100,7 @@ struct ResourceHelper final {
     }
 
 public:
+    static inline ResourceCache<Asset::Scene> sceneCache{weakPolicy<Asset::Scene>()};
     static inline ResourceCache<Asset::Model> modelCache{weakPolicy<Asset::Model>()};
     static inline ResourceCache<Asset::Material> materialCache{weakPolicy<Asset::Material>()};
     static inline ResourceCache<Graphics::Font> fontCache{weakPolicy<Graphics::Font>()};
@@ -103,6 +111,41 @@ public:
 };
 
 } // namespace
+
+std::shared_ptr<Asset::Scene> loadScene(std::string_view filename) {
+    const auto path = ResourceHelper::normalizePath(std::filesystem::path(filename));
+    return ResourceHelper::sceneCache.load(path, [&path] {
+        PhysInputStream stream(path.relative_path());
+        auto scene = std::make_shared<Asset::Scene>();
+        if (!scene->ParseFromZeroCopyStream(&stream)) {
+            throw std::runtime_error("Cannot load scene '" + path.generic_string() + "'");
+        }
+        const auto baseDir = path.parent_path();
+        for (auto& entity : *scene->mutable_entities()) {
+            if (entity.has_model()) {
+                auto* model = entity.mutable_model();
+                if (!model->source().empty()) {
+                    model->set_source(ResourceHelper::resolveRelative(baseDir, model->source()));
+                }
+                for (auto& material : *model->mutable_materials()) {
+                    if (!material.albedo_texture().empty()) {
+                        material.set_albedo_texture(
+                            ResourceHelper::resolveRelative(baseDir, material.albedo_texture()));
+                    }
+                }
+            }
+            if (entity.has_perspective_camera() && !entity.perspective_camera().hud_texture().empty()) {
+                entity.mutable_perspective_camera()->set_hud_texture(
+                    ResourceHelper::resolveRelative(baseDir, entity.perspective_camera().hud_texture()));
+            }
+            if (entity.has_orthographic_camera() && !entity.orthographic_camera().hud_texture().empty()) {
+                entity.mutable_orthographic_camera()->set_hud_texture(
+                    ResourceHelper::resolveRelative(baseDir, entity.orthographic_camera().hud_texture()));
+            }
+        }
+        return scene;
+    });
+}
 
 std::shared_ptr<Asset::Model> loadModel(std::string_view filename) {
     const auto path = ResourceHelper::normalizePath(std::filesystem::path(filename));
@@ -195,6 +238,7 @@ std::shared_ptr<Graphics::Font> loadFont(std::string_view filename) {
 }
 
 void clear() {
+    ResourceHelper::sceneCache.clear();
     ResourceHelper::modelCache.clear();
     ResourceHelper::materialCache.clear();
     ResourceHelper::fontCache.clear();

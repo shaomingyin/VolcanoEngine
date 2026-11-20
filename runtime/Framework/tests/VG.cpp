@@ -14,9 +14,11 @@
 #include <GL/gl.hpp>
 #include <GLFW/glfw3.h>
 #include <gtest/gtest.h>
+#include <physfs.h>
 
 #include <Volcano/ScopeGuard.h>
 #include <Volcano/PhysFile.h>
+#include <Volcano/Asset/Common.h>
 #include <Volcano/Graphics/FrameBuffer.h>
 #include <Volcano/Gui/Button.h>
 #include <Volcano/Gui/Document.h>
@@ -27,6 +29,7 @@
 #include <Volcano/World/OrthographicCamera.h>
 #include <Volcano/Framework/Drawing.h>
 #include <Volcano/Framework/Local.h>
+#include <Volcano/Framework/Resources.h>
 
 namespace {
 using namespace Volcano;
@@ -49,6 +52,17 @@ private:
 class VGRender : public ::testing::Test {
 protected:
     void SetUp() override {
+        ASSERT_NE(PHYSFS_init(nullptr), 0);
+        root_ = std::filesystem::temp_directory_path() /
+            ("volcano-vg-" + std::to_string(Clock::now().time_since_epoch().count()));
+        std::filesystem::create_directories(root_);
+        ASSERT_NE(PHYSFS_mount(root_.c_str(), nullptr, 1), 0);
+        ASSERT_NE(PHYSFS_setWriteDir(root_.c_str()), 0);
+        {
+            Asset::Scene empty;
+            PhysOutputStream file("empty.vescene");
+            ASSERT_TRUE(empty.SerializeToZeroCopyStream(&file));
+        }
         ASSERT_TRUE(glfwInit());
         glfwWindowHint(GLFW_VISIBLE,GLFW_FALSE);
         local_ = std::make_unique<Framework::Local>(64,64,"VG check");
@@ -57,6 +71,10 @@ protected:
     void TearDown() override {
         target_.reset();
         local_.reset();
+        Framework::Resources::clear();
+        PHYSFS_deinit();
+        std::error_code ec;
+        std::filesystem::remove_all(root_, ec);
         glfwTerminate();
     }
     std::array<std::uint8_t,4> pixel(const Graphics::Target& target,int x,int top) {
@@ -73,6 +91,7 @@ protected:
     }
 
 protected:
+    std::filesystem::path root_;
     std::unique_ptr<Framework::Local> local_;
     std::unique_ptr<Graphics::FrameBuffer> target_;
 };
@@ -169,7 +188,7 @@ TEST_F(VGRender, ResolvesSharedSourcesTracksGUIChangesAndRejectsCycles) {
         ++generated;
         rectangle(canvas,Colorf::Red);
     });
-    local_->load([] {
+    local_->load("empty.vescene", [] {
         auto scene=std::make_unique<EmptyScene>();
         scene->emplace<Framework::Drawing>(scene->create(), "drawing", Size{64,64}, "paint");
         auto root=std::make_unique<Gui::Layout>();
@@ -182,6 +201,7 @@ TEST_F(VGRender, ResolvesSharedSourcesTracksGUIChangesAndRejectsCycles) {
         scene->emplace<Gui::Document>(gui, std::move(root), Size{64, 64});
         return scene;
     });
+    local_->waitForLoad();
     local_->render(*target_,local_->scene().player());
     EXPECT_EQ(generated,1);
     World::Canvas canvas;
@@ -261,15 +281,13 @@ TEST_F(VGRender, LoadsGUIFontsRollsBackFailedSyncAndCachesUnchangedOutput) {
         GTEST_SKIP() << "Set VE_TEST_CJK_FONT for GUI font loading";
     }
     const std::filesystem::path fontPath(path);
-    ASSERT_NE(PHYSFS_init("VGCheck"),0);
+    ASSERT_NE(PHYSFS_mount(fontPath.parent_path().c_str(),nullptr,1),0);
     auto cleanup=scopeGuard([this] {
         local_->unload();
-        PHYSFS_deinit();
     });
-    ASSERT_NE(PHYSFS_mount(fontPath.parent_path().c_str(),nullptr,1),0);
     Gui::Button* button=nullptr;
     int clicked=0;
-    local_->load([&] {
+    local_->load("empty.vescene", [&] {
         auto scene=std::make_unique<EmptyScene>();
         auto root=std::make_unique<Gui::Layout>();
         auto* label = new Gui::Button(root.get());
@@ -285,9 +303,11 @@ TEST_F(VGRender, LoadsGUIFontsRollsBackFailedSyncAndCachesUnchangedOutput) {
         scene->emplace<Gui::Document>(gui, std::move(root), Size{64, 64});
         return scene;
     });
+    local_->waitForLoad();
     local_->render(*target_,local_->scene().player());
     const auto* texture=&local_->texture("gui");
     local_->synchronizeResources();
+    local_->waitForLoad();
     EXPECT_EQ(&local_->texture("gui"),texture);
     local_->render(*target_,local_->scene().player());
     const auto stats=local_->renderer().fontCacheStats();
@@ -306,19 +326,21 @@ TEST_F(VGRender, LoadsGUIFontsRollsBackFailedSyncAndCachesUnchangedOutput) {
 }
 
 TEST_F(VGRender, RejectsMissingProvidersOnLoadAndRetainsTextures) {
-    EXPECT_THROW(local_->load([] {
+    local_->load("empty.vescene", [] {
         auto scene=std::make_unique<EmptyScene>();
         scene->emplace<Framework::Drawing>(scene->create(), "missing", Size{64,64}, "unregistered");
         return scene;
-    }),std::invalid_argument);
+    });
+    EXPECT_THROW(local_->waitForLoad(), std::invalid_argument);
     EXPECT_EQ(local_->state(),Framework::Base::State::Idle);
 
     local_->setDrawingProvider("paint", [](World::Canvas&) {});
-    local_->load([] {
+    local_->load("empty.vescene", [] {
         auto scene=std::make_unique<EmptyScene>();
         scene->emplace<Framework::Drawing>(scene->create(), "drawing", Size{32,32}, "paint");
         return scene;
     });
+    local_->waitForLoad();
     local_->render(*target_,local_->scene().player());
     EXPECT_EQ(local_->texture("drawing").size(),(Size{32,32}));
     const auto* committed = &local_->texture("drawing");

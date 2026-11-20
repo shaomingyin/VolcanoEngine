@@ -5,17 +5,6 @@
 
 VOLCANO_WORLD_BEGIN
 
-Light::Light() noexcept = default;
-
-Light::Light(const Eigen::Vector3f& color, float strength) {
-    setStrength(strength);
-    setColor(color);
-}
-
-Light::Light(float r, float g, float b, float strength)
-    : Light(Eigen::Vector3f(r, g, b), strength) {
-}
-
 void Light::setColor(const Eigen::Vector3f& value) {
     if (!value.allFinite() || (value.array() < 0.0f).any() || !(value * strength_).allFinite()) {
         throw std::invalid_argument("Light color and resulting radiance must be finite and nonnegative");
@@ -32,6 +21,17 @@ void Light::setStrength(float value) {
     }
 
     strength_ = value;
+}
+
+Light::Light() noexcept = default;
+
+Light::Light(const Eigen::Vector3f& color, float strength) {
+    setStrength(strength);
+    setColor(color);
+}
+
+Light::Light(float r, float g, float b, float strength)
+    : Light(Eigen::Vector3f(r, g, b), strength) {
 }
 
 VOLCANO_WORLD_END

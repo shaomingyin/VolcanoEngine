@@ -7,7 +7,6 @@
 #include <Volcano/Gui/Widget.h>
 
 VOLCANO_GUI_BEGIN
-
 Widget& Widget::root() noexcept {
     auto* widget = this;
     while (widget->parent_) {
@@ -41,11 +40,6 @@ void Widget::observe(Observer& observer) {
 void Widget::unobserve(Observer& observer) noexcept {
     VOLCANO_ASSERT(observer_ == &observer && !changing_tree_ && !observer.busy());
     observer_ = nullptr;
-}
-
-void Widget::checkTreeChange() const {
-    const auto& tree = root();
-    VOLCANO_ASSERT(!tree.changing_tree_ && (!tree.observer_ || !tree.observer_->busy()));
 }
 
 Widget::Widget(Widget* parent) {
@@ -109,12 +103,6 @@ void Widget::setParent(Widget* parent) {
         parent_->children_.push_back(this);
     }
     changed();
-}
-
-void Widget::changed() noexcept {
-    for (auto* widget = this; widget; widget = widget->parent_) {
-        ++widget->revision_;
-    }
 }
 
 void Widget::setFrame(const Rectf& value) {
@@ -212,15 +200,6 @@ Sizef Widget::measure(Platform&, Sizef available) const {
             height_sizing_ == Sizing::Fixed ? frame_.height : 0};
 }
 
-void Widget::setBounds(const Rectf& bounds) {
-    if (!std::isfinite(bounds.left) || !std::isfinite(bounds.top) || !std::isfinite(bounds.width) ||
-        !std::isfinite(bounds.height) || !std::isfinite(bounds.left + bounds.width) ||
-        !std::isfinite(bounds.top + bounds.height) || bounds.width < 0 || bounds.height < 0) {
-        throw std::invalid_argument("Invalid GUI layout bounds");
-    }
-    bounds_ = bounds;
-}
-
 void Widget::layout(const Rectf& bounds, Platform& platform) {
     setBounds(bounds);
     for (const auto& child : children_) {
@@ -238,16 +217,6 @@ void Widget::layout(const Rectf& bounds, Platform& platform) {
         const float width = child->widthSizing() == Sizing::Fill ? available.width : preferred.width;
         const float height = child->heightSizing() == Sizing::Fill ? available.height : preferred.height;
         child->layout({bounds.left + left, bounds.top + top, width, height}, platform);
-    }
-}
-
-void Widget::paint(World::Canvas& canvas, Platform& platform) const {
-    const auto& color = background(platform);
-    if (color.alpha() != 0) {
-        canvas.setColor(color);
-        canvas.beginPath();
-        canvas.rect(bounds_);
-        canvas.fill();
     }
 }
 
@@ -331,6 +300,36 @@ void Widget::collectResources(std::vector<std::filesystem::path>& fonts,
     for (const auto& child : children_) {
         child->collectResources(fonts, images);
     }
+}
+
+void Widget::changed() noexcept {
+    for (auto* widget = this; widget; widget = widget->parent_) {
+        ++widget->revision_;
+    }
+}
+
+void Widget::setBounds(const Rectf& bounds) {
+    if (!std::isfinite(bounds.left) || !std::isfinite(bounds.top) || !std::isfinite(bounds.width) ||
+        !std::isfinite(bounds.height) || !std::isfinite(bounds.left + bounds.width) ||
+        !std::isfinite(bounds.top + bounds.height) || bounds.width < 0 || bounds.height < 0) {
+        throw std::invalid_argument("Invalid GUI layout bounds");
+    }
+    bounds_ = bounds;
+}
+
+void Widget::paint(World::Canvas& canvas, Platform& platform) const {
+    const auto& color = background(platform);
+    if (color.alpha() != 0) {
+        canvas.setColor(color);
+        canvas.beginPath();
+        canvas.rect(bounds_);
+        canvas.fill();
+    }
+}
+
+void Widget::checkTreeChange() const {
+    const auto& tree = root();
+    VOLCANO_ASSERT(!tree.changing_tree_ && (!tree.observer_ || !tree.observer_->busy()));
 }
 
 VOLCANO_GUI_END

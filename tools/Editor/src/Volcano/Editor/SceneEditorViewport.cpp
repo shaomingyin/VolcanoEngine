@@ -44,6 +44,11 @@ void SceneEditorViewport::initializeGL() {
     }
 }
 
+void SceneEditorViewport::paintGL() {
+    gl3wProcs = &graphics_procs_;
+    // shortcut: scene submission remains unimplemented; connect World data when adding editing support.
+}
+
 void SceneEditorViewport::releaseGraphics() {
     if (graphics_renderer_) {
         makeCurrent();
@@ -54,11 +59,6 @@ void SceneEditorViewport::releaseGraphics() {
     if (gl3wProcs == &graphics_procs_) {
         gl3wProcs = nullptr;
     }
-}
-
-void SceneEditorViewport::paintGL() {
-    gl3wProcs = &graphics_procs_;
-    // shortcut: scene submission remains unimplemented; connect World data when adding editing support.
 }
 
 VOLCANO_EDITOR_END

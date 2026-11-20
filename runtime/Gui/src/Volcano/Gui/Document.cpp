@@ -66,45 +66,6 @@ void Document::setSize(Size size) {
     }
 }
 
-void Document::remove(Widget& subtree) {
-    auto* captured = captured_ && subtree.contains(*captured_) ? captured_ : nullptr;
-    auto* hovered = hovered_ && subtree.contains(*hovered_) ? hovered_ : nullptr;
-    auto* focused = focus_ && subtree.contains(*focus_) ? focus_ : nullptr;
-    destroy(subtree);
-
-    dispatching_ = true;
-    auto restore = scopeGuard([this] {
-        dispatching_ = false;
-    });
-    if (captured) {
-        auto input = captured_event_;
-        input.action = PointerEvent::Action::Cancel;
-        input.inside = false;
-        captured->event(input, platform_);
-    }
-    if (hovered) {
-        auto input = hovered_event_;
-        input.action = PointerEvent::Action::Leave;
-        input.inside = false;
-        hovered->event(input, platform_);
-    }
-    if (focused) {
-        focused->event(FocusEvent{false}, platform_);
-    }
-}
-
-void Document::destroy(Widget& subtree) noexcept {
-    if (captured_ && subtree.contains(*captured_)) {
-        captured_ = nullptr;
-    }
-    if (hovered_ && subtree.contains(*hovered_)) {
-        hovered_ = nullptr;
-    }
-    if (focus_ && subtree.contains(*focus_)) {
-        focus_ = nullptr;
-    }
-}
-
 void Document::layout(Sizef size) {
     VOLCANO_ASSERT(!dispatching_);
     dispatching_ = true;
@@ -136,63 +97,6 @@ void Document::prepare(Sizef size) {
 void Document::collectResources(std::vector<std::filesystem::path>& fonts,
                                 std::vector<std::string>& images) const {
     root_->collectResources(fonts, images);
-}
-
-void Document::setFocus(Widget* widget) {
-    if (focus_ == widget) {
-        return;
-    }
-    auto* previous = focus_;
-    focus_ = widget;
-    if (previous) {
-        previous->event(FocusEvent{false}, platform_);
-    }
-    if (focus_) {
-        focus_->event(FocusEvent{true}, platform_);
-    }
-}
-
-bool Document::setHover(Widget* widget, const PointerEvent& input) {
-    hovered_event_ = input;
-    if (hovered_ == widget) {
-        return false;
-    }
-    auto* previous = hovered_;
-    hovered_ = widget;
-    auto routed = input;
-    bool handled = false;
-    if (previous) {
-        routed.action = PointerEvent::Action::Leave;
-        routed.inside = false;
-        handled = previous->event(routed, platform_);
-    }
-    if (hovered_) {
-        routed.action = PointerEvent::Action::Enter;
-        routed.inside = true;
-        handled = hovered_->event(routed, platform_) || handled;
-    }
-    return handled;
-}
-
-bool Document::cancelCapture() {
-    auto* captured = captured_;
-    captured_ = nullptr;
-    if (!captured) {
-        return false;
-    }
-    auto cancelled = captured_event_;
-    cancelled.action = PointerEvent::Action::Cancel;
-    cancelled.inside = false;
-    captured->event(cancelled, platform_);
-    return true;
-}
-
-Widget* Document::focusedWidget() {
-    if (focus_ && !root_->acceptsInput(*focus_)) {
-        cancelCapture();
-        setFocus(nullptr);
-    }
-    return active_ ? focus_ : nullptr;
 }
 
 bool Document::event(const PointerEvent& input) {
@@ -323,6 +227,102 @@ bool Document::event(const FocusEvent& input) {
         return hadFocus || captured;
     }
     return false;
+}
+
+void Document::remove(Widget& subtree) {
+    auto* captured = captured_ && subtree.contains(*captured_) ? captured_ : nullptr;
+    auto* hovered = hovered_ && subtree.contains(*hovered_) ? hovered_ : nullptr;
+    auto* focused = focus_ && subtree.contains(*focus_) ? focus_ : nullptr;
+    destroy(subtree);
+
+    dispatching_ = true;
+    auto restore = scopeGuard([this] {
+        dispatching_ = false;
+    });
+    if (captured) {
+        auto input = captured_event_;
+        input.action = PointerEvent::Action::Cancel;
+        input.inside = false;
+        captured->event(input, platform_);
+    }
+    if (hovered) {
+        auto input = hovered_event_;
+        input.action = PointerEvent::Action::Leave;
+        input.inside = false;
+        hovered->event(input, platform_);
+    }
+    if (focused) {
+        focused->event(FocusEvent{false}, platform_);
+    }
+}
+
+void Document::destroy(Widget& subtree) noexcept {
+    if (captured_ && subtree.contains(*captured_)) {
+        captured_ = nullptr;
+    }
+    if (hovered_ && subtree.contains(*hovered_)) {
+        hovered_ = nullptr;
+    }
+    if (focus_ && subtree.contains(*focus_)) {
+        focus_ = nullptr;
+    }
+}
+
+void Document::setFocus(Widget* widget) {
+    if (focus_ == widget) {
+        return;
+    }
+    auto* previous = focus_;
+    focus_ = widget;
+    if (previous) {
+        previous->event(FocusEvent{false}, platform_);
+    }
+    if (focus_) {
+        focus_->event(FocusEvent{true}, platform_);
+    }
+}
+
+bool Document::setHover(Widget* widget, const PointerEvent& input) {
+    hovered_event_ = input;
+    if (hovered_ == widget) {
+        return false;
+    }
+    auto* previous = hovered_;
+    hovered_ = widget;
+    auto routed = input;
+    bool handled = false;
+    if (previous) {
+        routed.action = PointerEvent::Action::Leave;
+        routed.inside = false;
+        handled = previous->event(routed, platform_);
+    }
+    if (hovered_) {
+        routed.action = PointerEvent::Action::Enter;
+        routed.inside = true;
+        handled = hovered_->event(routed, platform_) || handled;
+    }
+    return handled;
+}
+
+bool Document::cancelCapture() {
+    auto* captured = captured_;
+    captured_ = nullptr;
+    if (!captured) {
+        return false;
+    }
+    auto cancelled = captured_event_;
+    cancelled.action = PointerEvent::Action::Cancel;
+    cancelled.inside = false;
+    captured->event(cancelled, platform_);
+    return true;
+}
+
+Widget* Document::focusedWidget() {
+    if (focus_ && !root_->acceptsInput(*focus_)) {
+        cancelCapture();
+        setFocus(nullptr);
+    }
+    return active_ ? focus_ : nullptr;
 }
 
 VOLCANO_GUI_END

@@ -12,9 +12,8 @@
 
 #include <GL/gl.hpp>
 #include <GLFW/glfw3.h>
+#include <async++.h>
 #include <gtest/gtest.h>
-#include <stdexec/execution.hpp>
-#include <exec/task.hpp>
 
 #include <Volcano/PhysFile.h>
 #include <Volcano/Asset/Common.h>
@@ -74,11 +73,12 @@ public:
     std::vector<int> order;
 
 protected:
-    exec::task<void> onLoadScene(const World::Scene& scene) override {
-        co_await Local::onLoadScene(scene);
-        if (failLoad) {
-            throw std::runtime_error("GPU load failure");
-        }
+    async::task<void> onLoadScene(const World::Scene& scene) override {
+        return Local::onLoadScene(scene).then(scheduler(), [this]() {
+            if (failLoad) {
+                throw std::runtime_error("GPU load failure");
+            }
+        });
     }
 
     void onInputUpdate(Clock::duration) override {
@@ -152,6 +152,10 @@ protected:
             }
         }
         writeModel("assets/model.vemodel", model);
+
+        Asset::Scene emptyScene;
+        PhysOutputStream sceneFile("empty.vescene");
+        ASSERT_TRUE(emptyScene.SerializeToZeroCopyStream(&sceneFile));
     }
 
     void TearDown() override {
@@ -235,11 +239,12 @@ protected:
 
 TEST_F(FrameworkLocal, LoadsRendersExtractsSceneAndReusesGpuResources) {
     Client client;
-    client.load([&] {
+    client.load("empty.vescene", [&] {
         auto scene = std::make_unique<Scene>();
         scene->order = &client.order;
         return scene;
     });
+    client.waitForLoad();
     Graphics::FrameBuffer target(16, 16);
     client.render(target, client.scene().player());
     ASSERT_EQ(client.view().items().size(), 1);
@@ -263,8 +268,8 @@ TEST_F(FrameworkLocal, LoadsRendersExtractsSceneAndReusesGpuResources) {
     client.update({});
     EXPECT_EQ(client.order, (std::vector<int>{1, 2, 4}));
     std::filesystem::remove_all(root_ / "assets");
-    EXPECT_NO_THROW(client.synchronizeResources());
-    EXPECT_NO_THROW(client.stop());
+    client.synchronizeResources();
+    EXPECT_NO_THROW(client.waitForLoad());
     client.render(target, client.scene().player());
     EXPECT_EQ(&client.view().items()[0].mesh.get(), mesh);
     EXPECT_EQ(client.view().items()[0].material.texture, texture);
@@ -285,13 +290,15 @@ TEST_F(FrameworkLocal, LoadsRendersExtractsSceneAndReusesGpuResources) {
 
 TEST_F(FrameworkLocal, GlobalResourcesKeepGpuCachesSeparateBetweenWindowContexts) {
     Client first;
-    first.load([] { return std::make_unique<Scene>(); });
+    first.load("empty.vescene", [] { return std::make_unique<Scene>(); });
+    first.waitForLoad();
     const auto* shared_model = Framework::Resources::loadModel("assets/model.vemodel").get();
     first.render(first.scene().player());
     const auto* first_mesh = &first.view().items()[0].mesh.get();
     {
         Client second;
-        second.load([] { return std::make_unique<Scene>(); });
+        second.load("empty.vescene", [] { return std::make_unique<Scene>(); });
+        second.waitForLoad();
         EXPECT_EQ(Framework::Resources::loadModel("assets/model.vemodel").get(), shared_model);
         second.render(second.scene().player());
         EXPECT_NE(&second.view().items()[0].mesh.get(), first_mesh);
@@ -310,12 +317,14 @@ TEST_F(FrameworkLocal, GlobalResourcesKeepGpuCachesSeparateBetweenWindowContexts
 TEST_F(FrameworkLocal, RollsBackGpuLoadAndRequiresExplicitSynchronization) {
     Client client;
     client.failLoad = true;
-    EXPECT_THROW(client.load([] { return std::make_unique<Scene>(); }), std::runtime_error);
+    client.load("empty.vescene", [] { return std::make_unique<Scene>(); });
+    EXPECT_THROW(client.waitForLoad(), std::runtime_error);
     EXPECT_EQ(client.state(), Framework::Base::State::Idle);
 
     client.failLoad = false;
     std::filesystem::remove(root_ / "assets/texture.vetexture");
-    EXPECT_THROW(client.load([] { return std::make_unique<Scene>(); }), std::runtime_error);
+    client.load("empty.vescene", [] { return std::make_unique<Scene>(); });
+    EXPECT_THROW(client.waitForLoad(), std::runtime_error);
 
     const std::array<uint8_t, 4> pixels = {128, 0, 0, 128};
     writeTexture("assets/texture.vetexture", 1, 1, pixels);
@@ -330,7 +339,8 @@ TEST_F(FrameworkLocal, RollsBackGpuLoadAndRequiresExplicitSynchronization) {
     replacement.set_albedo_texture("texture.vetexture");
     writeMaterial("assets/material.vematerial", replacement);
 
-    EXPECT_NO_THROW(client.load([] { return std::make_unique<Scene>(); }));
+    client.load("empty.vescene", [] { return std::make_unique<Scene>(); });
+    EXPECT_NO_THROW(client.waitForLoad());
     Graphics::FrameBuffer target(16, 16);
     client.render(target, client.scene().player());
     ASSERT_EQ(client.view().items().size(), 1);
@@ -351,7 +361,8 @@ TEST_F(FrameworkLocal, RollsBackGpuLoadAndRequiresExplicitSynchronization) {
     }
     writeModel("assets/other.vemodel", otherModel);
 
-    EXPECT_NO_THROW(client.synchronizeResources());
+    client.synchronizeResources();
+    EXPECT_NO_THROW(client.waitForLoad());
     EXPECT_NO_THROW(client.render(target, client.scene().player()));
     EXPECT_EQ(glGetError(), GL_NO_ERROR);
 }
@@ -361,8 +372,8 @@ namespace {
 TEST_F(FrameworkLocal, ConcurrentAsyncLoadsUseTheirOwningWindowQueues) {
     Framework::Local first(32, 32, "First async window");
     Framework::Local second(32, 32, "Second async window");
-    first.loadAsync([] { return std::make_unique<Scene>(); });
-    second.loadAsync([] { return std::make_unique<Scene>(); });
+    first.load("empty.vescene", [] { return std::make_unique<Scene>(); });
+    second.load("empty.vescene", [] { return std::make_unique<Scene>(); });
     const auto deadline = Clock::now() + std::chrono::seconds(5);
     while ((first.state() == Framework::Base::State::Loading ||
             second.state() == Framework::Base::State::Loading) &&
@@ -391,34 +402,35 @@ public:
 
     ~DeferredLocal() override {
         cancelLoad();
-        gate.store(true);
+        gate.set();
         try {
             waitForLoad();
-        } catch (const Framework::Base::LoadCanceled&) {
+        } catch (const async::task_canceled&) {
         }
     }
 
 public:
-    std::atomic<bool> gate{false};
+    async::event_task<void> gate;
     bool waiting = false;
     bool defer = true;
 
 protected:
-    exec::task<void> onLoadScene(const World::Scene& scene) override {
-        co_await Local::onLoadScene(scene);
-        if (defer) {
-            waiting = true;
-            while (!gate.load()) {
-                checkLoadCancelled();
-                co_await stdexec::schedule(scheduler());
+    async::task<void> onLoadScene(const World::Scene& scene) override {
+        return Local::onLoadScene(scene).then(scheduler(), [this]() -> async::task<void> {
+            if (!defer) {
+                return async::make_task();
             }
-        }
+            waiting = true;
+            return gate.get_task().then(scheduler(), [this]() {
+                loading_.checkCancelled();
+            });
+        });
     }
 };
 
 TEST_F(FrameworkLocal, CancelsPreparedGpuResourcesBeforePublishingAndAllowsRetry) {
     DeferredLocal local;
-    local.loadAsync([] { return std::make_unique<Scene>(); });
+    local.load("empty.vescene", [] { return std::make_unique<Scene>(); });
     const auto deadline = Clock::now() + std::chrono::seconds(5);
     while (!local.waiting && Clock::now() < deadline) {
         local.update({});
@@ -427,24 +439,26 @@ TEST_F(FrameworkLocal, CancelsPreparedGpuResourcesBeforePublishingAndAllowsRetry
     ASSERT_TRUE(local.waiting);
     local.cancelLoad();
     EXPECT_EQ(local.state(), Framework::Base::State::Loading);
-    local.gate.store(true);
-    EXPECT_THROW(local.waitForLoad(), Framework::Base::LoadCanceled);
+    local.gate.set();
+    EXPECT_THROW(local.waitForLoad(), async::task_canceled);
     EXPECT_EQ(local.state(), Framework::Base::State::Idle);
     std::filesystem::remove(root_ / "assets/texture.vetexture");
     // A committed GPU cache would hide this missing file on retry.
     local.defer = false;
-    EXPECT_THROW(local.load([] { return std::make_unique<Scene>(); }), std::runtime_error);
+    local.load("empty.vescene", [] { return std::make_unique<Scene>(); });
+    EXPECT_THROW(local.waitForLoad(), std::runtime_error);
 
     const std::array<uint8_t, 4> pixels = {128, 0, 0, 128};
     writeTexture("assets/texture.vetexture", 1, 1, pixels);
-    EXPECT_NO_THROW(local.load([] { return std::make_unique<Scene>(); }));
+    local.load("empty.vescene", [] { return std::make_unique<Scene>(); });
+    EXPECT_NO_THROW(local.waitForLoad());
     EXPECT_FALSE(local.loadCancelled());
 }
 
 TEST_F(FrameworkLocal, CancelsOutstandingTasksBeforeDestroyingGlContext) {
     {
         auto local = std::make_unique<DeferredLocal>();
-        local->loadAsync([] { return std::make_unique<Scene>(); });
+        local->load("empty.vescene", [] { return std::make_unique<Scene>(); });
         const auto deadline = Clock::now() + std::chrono::seconds(5);
         while (!local->waiting && Clock::now() < deadline) {
             local->update({});
@@ -488,7 +502,8 @@ TEST_F(FrameworkLocal, LoadsGraphicsResourcesDirectlyWithoutSceneOrFactory) {
 namespace {
 TEST_F(FrameworkLocal, SynchronizationReleasesUnusedGpuHandlesAfterClearingView) {
     Client client;
-    client.load([] { return std::make_unique<Scene>(); });
+    client.load("empty.vescene", [] { return std::make_unique<Scene>(); });
+    client.waitForLoad();
     client.render(client.scene().player());
     std::weak_ptr<Graphics::Mesh> mesh = Framework::Resources::loadMesh("assets/mesh.vemesh");
     std::weak_ptr<Graphics::Texture> texture = Framework::Resources::loadTexture("assets/texture.vetexture");
@@ -497,6 +512,7 @@ TEST_F(FrameworkLocal, SynchronizationReleasesUnusedGpuHandlesAfterClearingView)
 
     client.scene().clear<World::Model>();
     client.synchronizeResources();
+    client.waitForLoad();
 
     EXPECT_TRUE(client.view().items().empty());
     EXPECT_TRUE(mesh.expired());
@@ -509,7 +525,7 @@ TEST_F(FrameworkLocal, SupportsMaterialOwnedGuiTexturesCameraHudsAndTargetRender
     entt::entity rttCamera = entt::null;
     int clicked = 0;
 
-    client.load([&] {
+    client.load("empty.vescene", [&] {
         auto scene = std::make_unique<Scene>();
 
         auto panelRoot = std::make_unique<Gui::Layout>();
@@ -532,6 +548,7 @@ TEST_F(FrameworkLocal, SupportsMaterialOwnedGuiTexturesCameraHudsAndTargetRender
 
         return scene;
     });
+    client.waitForLoad();
 
     Graphics::FrameBuffer target(32, 32);
     client.render(target, client.scene().player());
@@ -559,6 +576,7 @@ TEST_F(FrameworkLocal, SupportsMaterialOwnedGuiTexturesCameraHudsAndTargetRender
     client.scene().get<World::Model>(static_cast<Scene&>(client.scene()).model)
         .material(5)
         .setTexture(World::Material::Slot::Albedo, std::make_unique<World::Texture>("assets/texture.vetexture"));
-    EXPECT_THROW(client.synchronizeResources(), std::invalid_argument);
+    client.synchronizeResources();
+    EXPECT_THROW(client.waitForLoad(), std::invalid_argument);
 }
 } // namespace

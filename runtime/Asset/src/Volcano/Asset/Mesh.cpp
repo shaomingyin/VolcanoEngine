@@ -18,34 +18,6 @@ Mesh::Mesh(google::protobuf::io::ZeroCopyInputStream& source)
     initializeHeader();
 }
 
-void Mesh::initializeHeader() {
-    uint32_t magic = 0;
-    if (!Format::readExactBytes(*source_, &magic, sizeof(magic)) || magic != 0x484D4556) {
-        throw std::invalid_argument("Invalid mesh resource magic");
-    }
-
-    uint32_t headerSize = 0;
-    if (!Format::readExactBytes(*source_, &headerSize, sizeof(headerSize)) || headerSize == 0) {
-        throw std::invalid_argument("Invalid mesh header size");
-    }
-
-    std::string headerBytes(headerSize, '\0');
-    if (!Format::readExactBytes(*source_, headerBytes.data(), static_cast<int>(headerSize))) {
-        throw std::invalid_argument("Truncated mesh header data");
-    }
-
-    if (!header_.ParseFromString(headerBytes)) {
-        throw std::invalid_argument("Failed to parse mesh header protobuf");
-    }
-
-    if (header_.index_count() % 3 != 0) {
-        throw std::invalid_argument("Mesh index count must be a multiple of 3");
-    }
-
-    payload_size_ = Format::checkedSum(Format::checkedProduct(header_.vertex_count(), sizeof(Vertex)),
-                                        Format::checkedProduct(header_.index_count(), sizeof(uint32_t)));
-}
-
 bool Mesh::Next(const void** data, int* size) {
     if (source_ == nullptr || bytes_read_ >= payload_size_) {
         return false;
@@ -111,6 +83,34 @@ bool Mesh::Skip(int count) {
 
 int64_t Mesh::ByteCount() const {
     return static_cast<int64_t>(bytes_read_);
+}
+
+void Mesh::initializeHeader() {
+    uint32_t magic = 0;
+    if (!Format::readExactBytes(*source_, &magic, sizeof(magic)) || magic != 0x484D4556) {
+        throw std::invalid_argument("Invalid mesh resource magic");
+    }
+
+    uint32_t headerSize = 0;
+    if (!Format::readExactBytes(*source_, &headerSize, sizeof(headerSize)) || headerSize == 0) {
+        throw std::invalid_argument("Invalid mesh header size");
+    }
+
+    std::string headerBytes(headerSize, '\0');
+    if (!Format::readExactBytes(*source_, headerBytes.data(), static_cast<int>(headerSize))) {
+        throw std::invalid_argument("Truncated mesh header data");
+    }
+
+    if (!header_.ParseFromString(headerBytes)) {
+        throw std::invalid_argument("Failed to parse mesh header protobuf");
+    }
+
+    if (header_.index_count() % 3 != 0) {
+        throw std::invalid_argument("Mesh index count must be a multiple of 3");
+    }
+
+    payload_size_ = Format::checkedSum(Format::checkedProduct(header_.vertex_count(), sizeof(Vertex)),
+                                        Format::checkedProduct(header_.index_count(), sizeof(uint32_t)));
 }
 
 VOLCANO_ASSET_END

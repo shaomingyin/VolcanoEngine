@@ -343,7 +343,7 @@ void Canvas::text(std::string font, float pixels, float x, float baseline, std::
         throw std::invalid_argument("Canvas text metric parameters must be finite with positive font size");
     }
     State textState = state_;
-    textState.font = std::move(font);
+    textState.font = font;
     textState.pixels = pixels;
     textState.align = align;
 
@@ -351,7 +351,7 @@ void Canvas::text(std::string font, float pixels, float x, float baseline, std::
         .type = Command::Type::Text,
         .state = std::move(textState),
         .destination = Rectf{x, baseline, 0.0f, 0.0f},
-        .font = textState.font,
+        .font = std::move(font),
         .pixels = pixels,
         .x = x,
         .baseline = baseline,

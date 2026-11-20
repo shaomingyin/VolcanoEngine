@@ -11,6 +11,7 @@
 #include <variant>
 #include <vector>
 
+#include <async++.h>
 #include <entt/entity/entity.hpp>
 
 #include <Volcano/Size.h>
@@ -77,8 +78,8 @@ public:
     }
 
 protected:
-    exec::task<void> onLoadScene(const World::Scene& scene) override;
-    exec::task<void> onLoadEntity(const World::Scene& scene, entt::entity entity) override;
+    async::task<void> onLoadScene(const World::Scene& scene) override;
+    async::task<void> onLoadEntity(const World::Scene& scene, entt::entity entity) override;
     void onBeforeTasks() override;
     void onUnloadResources() noexcept override;
     void onCommitResources() noexcept override;

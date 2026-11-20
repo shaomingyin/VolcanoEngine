@@ -24,9 +24,9 @@ void requestStop(int) {
 int main(int argc, char* argv[]) {
     using namespace Volcano;
     try {
-        argh::parser cmdline({"-r", "--root", "--ticks"});
+        argh::parser cmdline({"-r", "--root", "-s", "--scene", "--ticks"});
         cmdline.parse(argc, argv);
-        if (cmdline[{"-r", "--root", "--ticks"}]) {
+        if (cmdline[{"-r", "--root", "-s", "--scene", "--ticks"}]) {
             throw std::invalid_argument("Missing command-line parameter value");
         }
         const auto root = cmdline({"-r", "--root"}, std::filesystem::current_path().string()).str();
@@ -52,7 +52,9 @@ int main(int argc, char* argv[]) {
         std::signal(SIGINT, requestStop);
         std::signal(SIGTERM, requestStop);
         Framework::Server framework;
-        framework.load(volcanoCreateGame);
+        const auto scene = cmdline({"-s", "--scene"}, "scene.vescene").str();
+        framework.load(scene, volcanoCreateGame);
+        framework.waitForLoad();
         framework.play();
         auto last = Clock::now();
         for (long long tick = 0; !framework.shouldClose() && running && (ticks == 0 || tick < ticks); ++tick) {

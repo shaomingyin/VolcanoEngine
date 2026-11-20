@@ -9,7 +9,6 @@
 #include <Volcano/Framework/Window.h>
 
 VOLCANO_FRAMEWORK_BEGIN
-
 Window::Window(int width, int height, const char* title) {
     if (width <= 0 || height <= 0 || title == nullptr) {
         throw std::invalid_argument("Window requires positive dimensions and a title");
@@ -65,13 +64,6 @@ Window::~Window() {
     releaseGlfw();
 }
 
-void Window::releaseGlfw() noexcept {
-    VOLCANO_ASSERT(instances_ > 0);
-    if (--instances_ == 0) {
-        glfwTerminate();
-    }
-}
-
 void Window::bind() const noexcept {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
@@ -94,6 +86,13 @@ int Window::height() const noexcept {
     int width, height;
     glfwGetFramebufferSize(handle_, &width, &height);
     return height;
+}
+
+void Window::releaseGlfw() noexcept {
+    VOLCANO_ASSERT(instances_ > 0);
+    if (--instances_ == 0) {
+        glfwTerminate();
+    }
 }
 
 VOLCANO_FRAMEWORK_END

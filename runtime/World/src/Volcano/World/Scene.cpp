@@ -6,11 +6,6 @@
 
 VOLCANO_WORLD_BEGIN
 
-Context& Scene::defaultContext() noexcept {
-    static NullContext nullContext;
-    return nullContext;
-}
-
 Scene::Scene() : Scene(defaultContext()) {}
 
 Scene::Scene(Context& context) : context_(context) {}
@@ -21,6 +16,11 @@ Scene::~Scene() {
 
 void Scene::update(Clock::duration elapsed) {
     onUpdate(elapsed);
+}
+
+Context& Scene::defaultContext() noexcept {
+    static NullContext nullContext;
+    return nullContext;
 }
 
 VOLCANO_WORLD_END

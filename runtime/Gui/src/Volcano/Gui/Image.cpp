@@ -3,7 +3,6 @@
 #include <Volcano/Gui/Image.h>
 
 VOLCANO_GUI_BEGIN
-
 void Image::setSource(std::string value) {
     source_ = std::move(value);
     changed();
@@ -12,6 +11,14 @@ void Image::setSource(std::string value) {
 void Image::setTexture(std::shared_ptr<World::Texture> texture) {
     texture_ = std::move(texture);
     changed();
+}
+
+void Image::collectResources(std::vector<std::filesystem::path>& fonts,
+                             std::vector<std::string>& images) const {
+    Widget::collectResources(fonts, images);
+    if (!source_.empty()) {
+        images.push_back(source_);
+    }
 }
 
 void Image::paint(World::Canvas& canvas, Platform& platform) const {
@@ -24,14 +31,6 @@ void Image::paint(World::Canvas& canvas, Platform& platform) const {
             canvas.setColor(platform.style().imageColor());
             canvas.image(source_, bounds());
         }
-    }
-}
-
-void Image::collectResources(std::vector<std::filesystem::path>& fonts,
-                             std::vector<std::string>& images) const {
-    Widget::collectResources(fonts, images);
-    if (!source_.empty()) {
-        images.push_back(source_);
     }
 }
 

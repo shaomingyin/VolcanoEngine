@@ -12,8 +12,7 @@ World 不创建 GPU、Jolt、音频后端对象，不调用文件加载、渲染
 
 ## 类与值语义
 
-`World::Scene` 按值持有 `entt::registry` 作为成员，不再直接继承 `entt::registry`。
-`Scene` 对外封装常规的实体与组件生命周期操作（`create`、`destroy`、`valid`、`clear`、`emplace`、`get`、`try_get`、`view`、`patch` 等），并提供 `registry()` 与 `const registry()` 访问器，以支持底层扩展和外部系统（如物理系统、视图构建器）按需直接访问注册表。
+`World::Scene` 直接公有继承 `entt::registry`，在保留 ECS 注册表全部能力的同时补充场景元信息、`Context` 引用与 `update()`/`player()` 生命周期接口。由于 `entt::registry` 不带虚析构函数，`Scene` 的所有权和销毁须始终通过 `World::Scene`（而非 `entt::registry*`）管理。
 
 World 的工程自有组件使用 class，成员数据私有，提供构造、const 查询和显式修改方法。
 不返回可修改的成员引用、指针或容器迭代器；修改嵌套数据时先复制、修改，再通过方法写回。

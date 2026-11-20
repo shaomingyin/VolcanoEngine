@@ -33,7 +33,7 @@ void Pass::LightingUniforms::resolve(const gl::Program& program, std::size_t max
 }
 
 void Pass::attachShader(GLenum stage, std::string_view version, std::string_view source,
-    std::string_view definitions) {
+                        std::string_view definitions) {
     std::string result = "#version " + std::string(version) + "\n";
     result += definitions;
     result += '\n';

@@ -64,34 +64,33 @@ Jolt 运行时由 System 自己管理，Scene 的创建、销毁不要求初始�
 
 | 方法 | 条件和结果 |
 | --- | --- |
-| load(factory) | Idle → Loading → Ready；工厂创建 Scene，同步加载资源 |
+| load(scenePath, factory) | Idle → Loading → Ready；工厂仅负责创建 Scene 派生类实例，Framework 异步读取 `.vescene` 填充实体与组件并加载资源 |
 | play() | Ready / Paused → Playing |
 | pause() | Playing → Paused，保留运行进度 |
-| stop() | Ready / Playing / Paused → Loading → Ready；重新调用工厂，复用资源缓存 |
 | unload() | 销毁场景及资源 → Idle；Idle 中重复调用无操作 |
 | synchronizeResources() | 已加载状态 → Loading → 原状态；加载新增资源 |
 | update(elapsed) | 始终执行任务队列；Idle / Loading 跳过游戏更新，仅 Playing 更新 Scene 和物理 |
 | scene() / physics() | 返回当前 Scene / 物理系统；要求处于已加载状态 |
 
-非法状态、负时间和空工厂属于调用方错误，通过 `VOLCANO_ASSERT` 检查；Release 不执行这些检查。
+`load`、`play`、`pause`、`unload`、`synchronizeResources`、`scene`、`physics` 的状态前置条件在运行时检查并抛出 `std::logic_error`；负时间和空工厂属于调用方编程错误，通过 `VOLCANO_ASSERT` 检查。
 Framework 渲染要求资源已成功加载或同步、相机实体属于当前 Scene，通过断言检查；Resources::loadXxx 先查缓存，未命中时读取并创建资源，失败通过异常报告。
 资源路径、场景描述、加载失败及工厂返回空对象仍通过异常报告。
 Loading 禁止生命周期操作重入。工厂只负责创建或重建游戏 Scene，不承担游戏更新逻辑。
 工厂必须可重复调用且返回非空对象，捕获的数据须保持有效。Base 接收工厂返回的 unique_ptr，保存实例并负责销毁。
-首次加载失败回到 Idle；重置失败保留旧 Scene、物理系统和状态；同步失败保留已有缓存。
+首次加载失败回到 Idle；同步失败保留旧 Scene、物理系统、状态及已有缓存。
 准备阶段产生的 CPU/GPU 资源单独保存，全部成功后通过映射节点合并提交，不复制已有资源内容。
 错误包含读取失败的资源路径，不使用占位资源掩盖错误。
 
 模型资源使用规范化的 PhysFS 路径作为通用缓存 key，实际句柄由加载它的场景持有。
-stop 会重建 Scene 和内部物理状态；文件内容变化不会自动刷新已加载路径。
-Scene 和 Physics::System 引用在 stop/unload 后失效，调用方须重新取得 Scene 及实体句柄。
+文件内容变化不会自动刷新已加载路径。
+Scene 和 Physics::System 引用在 unload 后失效，调用方须重新取得 Scene 及实体句柄。
 
 ## 资源路径和加载
 
 PhysFS 初始化及挂载由宿主完成，所有 Framework 和 PhysFile 对象销毁后才能关闭 PhysFS。
 多个实例共享挂载表。Framework 使用 PhysFile 的 RAII 文件生命周期，通过 Asset 读取数据。
 
-Model 的 source 相对 PhysFS 根目录；Part 的 mesh/material 路径相对 Model 文件所在目录；
+Model 的 source 相对 PhysFS 根目录；若来自 `.vescene` 清单，清单内的 `Model` 路径、材质覆盖贴图路径与相机 HUD 贴图路径相对 `.vescene` 文件所在目录；Part 的 mesh/material 路径相对 Model 文件所在目录；
 Material 的纹理路径相对 Material 文件所在目录。缓存内保存解析后的根目录相对路径。
 资源路径从 PhysFS 虚拟根定位，规范化为虚拟绝对路径；禁止 `..`、NUL、反斜杠和冒号，不能使用宿主文件系统路径。组件路径允许 `.` 并进行规范化，
 文件内部路径遵守 [Asset](../../Asset/docs/Asset.md) 的严格格式。
@@ -150,7 +149,8 @@ Demo 的入口头文件位于 `games/Demo/include/Volcano/Game.h`，场景构建
 #include <Volcano/Framework/Local.h>
 
 Framework::Local local(800, 600, "VolcanoDemo");
-local.load(volcanoCreateGame);
+local.load("scene.vescene", volcanoCreateGame);
+local.waitForLoad();
 local.play();
 // 宿主每帧：处理事件、更新相机宽高比，然后：
 local.update(elapsed);
@@ -197,25 +197,25 @@ Window 在创建并激活原生 OpenGL context 后初始化 GL3W，并持有函�
 
 ## 异步加载与派生扩展
 
-Base 按值持有 `FifoScheduler`。该队列表示实例所属线程（满足 `stdexec::scheduler`）；Local 在执行队列前绑定窗口 context 和 GL3W，因此它也是 GL 工作队列。`update()` 始终执行队列，在 Loading 时跳过游戏更新；宿主也可以显式调用 `processTasks()`。当前每次执行会排空队列，没有帧时间预算。
+Base 直接实现 `Async++` 的 `schedule(async::task_run_handle)` 接口，自身即作为实例所属线程的任务调度器（内部委托给 `async::fifo_scheduler`，`scheduler()` 返回 `Base&`）；Local 在执行队列前绑定窗口 context 和 GL3W，因此它也是 GL 工作队列。`processTasks()` 调用 `scheduler_.run_all_tasks()` 排空当前已入队的全部任务；`update()` 总是先执行 `processTasks()` 并在 Loading 时跳过游戏更新，宿主也可以显式调用 `processTasks()`。当前每次执行会排空队列，没有帧时间预算。
 
-`loadAsync(factory)`、`stopAsync()`、`synchronizeResourcesAsync()` 触发异步加载流程，状态迁移完全由 Framework 内部管理；该流程覆盖准备、所有实体与场景任务、提交或回滚。原有同步入口通过同一异步流程并执行队列等待结果。`waitForLoad()` 会执行队列并传播最终异常。
+`load(scenePath, factory)`、`synchronizeResources()` 触发异步加载流程，状态迁移完全由 Framework 内部管理；该流程覆盖读取 `.vescene`、准备、所有实体与场景任务、提交或回滚。`waitForLoad()` 会执行队列并传播最终异常。
 
 加载扩展点分为两级：
 
-- `onLoadScene(const World::Scene&)` 组织场景资源与实体任务，返回 `exec::task<void>`。Base 驱动每个实体的虚函数 onLoadEntity；Local 在父类结果后加载 Scene 的纹理、字体和动态输出，校验引用与依赖。
-- `onLoadEntity(const World::Scene&, entt::entity)` 加载该实体需要的资源，返回 `exec::task<void>`。Base 复制 Model 路径后在 `stdexec::get_parallel_scheduler()` 线程池加载模型描述；Local 在所属线程接上后续处理，加载 Mesh、Material 和纹理。Server/Client 可以在继承层次上继续组合任务，无须空实现。
+- `onLoadScene(const World::Scene&)` 组织场景资源与实体任务，返回 `async::task<void>`。Base 通过 `async::when_all` 并行驱动每个实体的 `onLoadEntity`；Local 在父类结果后加载 Scene 的纹理、字体和动态输出，校验引用与依赖。
+- `onLoadEntity(const World::Scene&, entt::entity)` 加载该实体需要的资源，返回 `async::task<void>`。Base 复制 Model 路径后在 `async::default_scheduler()` 线程池加载模型描述，随后 `.then(*this, ...)` 切回所属线程；Local 在所属线程接上后续处理，加载 Mesh、Material 和纹理。Server/Client 可以在继承层次上继续通过 `.then()` 组合任务，无须空实现。
 
-派生类使用 C++20 协程调用父类钩子（`co_await Base::onLoadScene(...)`）；互不依赖的工作可以并行，再汇合。所有启动的任务必须纳入协程流程，不得留下未跟踪的后台工作。Base 跟踪实体 task，保证派生场景钩子在调用父类后抛出异常时，也先等待实体任务收尾再回滚。工作线程不遍历或修改 Scene。
+派生类通过 `.then(scheduler(), ...)` 或 `async::when_all` 串联父类钩子（`Base::onLoadScene(...).then(...)`）；互不依赖的工作可以并行，再汇合。所有启动的任务必须纳入 task 组合流程，不得留下未跟踪的后台工作。Base 通过 `when_all` 等待所有已启动的实体 task 完成后再传播场景异常，保证派生场景钩子在调用父类后抛出异常时，也先等待实体任务收尾再回滚。工作线程不遍历或修改 Scene。
 
-`loadingProgress()` 返回所属线程上的进度快照，包含 percent、content、completed 和 total。第一版以每个实体加一份场景级工作作为统计单位，加载期间保留提交份额，成功发布后才到 100%；这不是字节比例或耗时预测。content 显示一个未完成实体的模型路径、名称或标识，Local 加载具体资源时更新为资源路径。派生类可以通过 `setLoadingContent()` 更新信息。
+`loadingProgress()` 返回所属线程上的进度快照，包含 percent、content、completed 和 total。第一版以每个实体加一份场景级工作作为统计单位，加载期间保留提交份额，成功发布后才到 100%；这不是字节比例或耗时预测。content 显示一个未完成实体的模型路径、名称或标识，Local 加载具体资源时更新为资源路径。派生类可以通过 `loading_.setContent(...)` 更新信息。
 
-`cancelLoad()` 可从其它线程请求协作式取消；`loadCancelled()` 查询取消标志。派生任务在耗时操作前后调用 `checkLoadCancelled()`。取消不会强制终止已经进入的文件读取或 GL 调用；Base 等待所有已启动任务结束后丢弃暂存资源、恢复原状态，最终 task 抛出 `Base::LoadCanceled`。初次加载取消回到 Idle，重置或同步取消保留原 Scene 和状态，进度不会被置为 100%。取消请求若晚于提交检查，加载可能已经成功。
+`cancelLoad()` 可从其它线程请求协作式取消（底层使用 `async::cancellation_token`）；`loadCancelled()` 查询取消标志。派生任务在耗时操作前后调用 `loading_.checkCancelled()`（内部调用 `async::interruption_point`）。取消不会强制终止已经进入的文件读取或 GL 调用；Base 等待所有已启动任务结束后丢弃暂存资源、恢复原状态，最终 task 抛出 `async::task_canceled`。初次加载取消回到 Idle，重置或同步取消保留原 Scene 和状态，进度不会被置为 100%。取消请求若晚于提交检查，加载可能已经成功。
 
 Base/Local 析构时请求取消并收尾。自定义派生类必须在其任务所访问的成员销毁前完成相同处理；waitForLoad 的取消异常也须在析构边界处理。Local 保证 GPU 暂存资源在窗口销毁前释放。Resources 仅提供各类型的 loadXxx 及 clear，不接收 Scene、图形上下文、scheduler、进度或取消参数；内置类型的读取、解析和对象创建由 Resources 默认加载实现提供，执行策略由 Framework 写定。当前 Mesh、Material、Texture 和 Font 的读取也在 Local 队列内完成，单个大资源可能占用一帧；后续有实际性能需求时再优化读取路径。
 
 ```cpp
-framework.loadAsync(createGame);
+framework.load("scene.vescene", createGame);
 // 每次事件循环：
 framework.update(elapsed);
 if (framework.state() == Framework::Base::State::Loading) {
@@ -227,6 +227,6 @@ if (framework.state() == Framework::Base::State::Loading) {
 通用缓存只表示对象仍然存活，不表示所属 Scene 已加载完成；宿主以 Base 状态判断场景可用性。取消时 Framework 丢弃暂存句柄；没有其它持有者的资源立即释放。直接取得资源句柄的调用方也承担其生命周期责任，特别是最后一个 GPU 资源句柄必须在有效的所属上下文中释放。
 
 
-内置单项资源使用 `Resources::loadMesh(path)`、`loadMaterial(path)`、`loadTexture(path)` 等明确接口，只接收 PhysFS 路径。公开接口不使用模板或 RTTI。Resources.cpp 只实现单项文件读取、对象创建与弱引用缓存；场景资源句柄、暂存、提交和回滚由 Base 及派生类管理。模型文件在线程池读取，结果回到 Base 的 FIFO scheduler 后进入暂存句柄表；工作线程不访问 Scene 或修改 Framework 的句柄表。
+内置单项资源使用 `Resources::loadScene(path)`、`loadModel(path)`、`loadMesh(path)`、`loadMaterial(path)`、`loadTexture(path)` 等明确接口，只接收 PhysFS 路径。公开接口不使用模板或 RTTI。Resources.cpp 只实现单项文件读取、对象创建与弱引用缓存；场景资源句柄、暂存、提交和回滚由 Base 及派生类管理。模型与场景文件在线程池读取，结果通过 `.then(*this, ...)` 回到 Base 的主线程任务队列后进入暂存句柄表；工作线程不访问 Scene 或修改 Framework 的句柄表。
 
 动态纹理的离屏目标、Canvas、内容版本、重绘标记、绘图回调及依赖排序由 Local 持有和管理；Resources 不提供 Output 或动态纹理生成接口。Local 在提交、取消及卸载时分别提交、丢弃和释放这些状态，保证 GL 对象在所属窗口销毁前释放。

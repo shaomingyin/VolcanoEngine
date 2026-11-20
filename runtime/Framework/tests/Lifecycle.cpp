@@ -8,15 +8,17 @@
 #include <vector>
 
 #include <GL/gl3w.h>
+#include <async++.h>
 #include <gtest/gtest.h>
-#include <stdexec/execution.hpp>
-#include <exec/task.hpp>
 
 #include <Volcano/PhysFile.h>
 #include <Volcano/Asset/Common.h>
 #include <Volcano/Asset/Mesh.h>
 #include <Volcano/Asset/Texture.h>
+#include <Volcano/World/Inherent.h>
 #include <Volcano/World/Model.h>
+#include <Volcano/World/PerspectiveCamera.h>
+#include <Volcano/World/PointLight.h>
 #include <Volcano/World/RigidBody.h>
 #include <Volcano/Framework/Drawing.h>
 #include <Volcano/Framework/Resources.h>
@@ -78,14 +80,42 @@ private:
     entt::entity player_;
 };
 
-TEST(FrameworkLifecycle, OwnsGameSceneAndDrivesItsLogicThroughWorldInterface) {
+class FrameworkLifecycle : public ::testing::Test {
+protected:
+    void SetUp() override {
+        ASSERT_NE(PHYSFS_init(nullptr), 0);
+        root_ = std::filesystem::temp_directory_path() /
+            ("volcano-lifecycle-" + std::to_string(Clock::now().time_since_epoch().count()));
+        std::filesystem::create_directories(root_);
+        ASSERT_NE(PHYSFS_mount(root_.string().c_str(), nullptr, 1), 0);
+        ASSERT_NE(PHYSFS_setWriteDir(root_.string().c_str()), 0);
+        Asset::Scene empty;
+        PhysOutputStream file("empty.vescene");
+        ASSERT_TRUE(empty.SerializeToZeroCopyStream(&file));
+    }
+
+    void TearDown() override {
+        Framework::Resources::clear();
+        EXPECT_NE(PHYSFS_deinit(), 0);
+        std::error_code error;
+        std::filesystem::remove_all(root_, error);
+    }
+
+protected:
+    std::filesystem::path root_;
+};
+
+using FrameworkAsyncLoad = FrameworkLifecycle;
+
+TEST_F(FrameworkLifecycle, OwnsGameSceneAndDrivesItsLogicThroughWorldInterface) {
     int destructions = 0;
     const auto factory = [&destructions]() -> std::unique_ptr<World::Scene> {
         return std::make_unique<GameScene>(destructions);
     };
     {
         Base framework;
-        framework.load(factory);
+        framework.load("empty.vescene", factory);
+        framework.waitForLoad();
         auto& scene = framework.scene();
         framework.update({});
         EXPECT_EQ(scene.get<GameProgress>(scene.player()).ticks, 0);
@@ -95,20 +125,17 @@ TEST(FrameworkLifecycle, OwnsGameSceneAndDrivesItsLogicThroughWorldInterface) {
         framework.pause();
         framework.update({});
         EXPECT_EQ(scene.get<GameProgress>(scene.player()).ticks, 1);
-        framework.stop();
-        EXPECT_EQ(destructions, 1);
-        auto& reset = framework.scene();
-        EXPECT_EQ(reset.get<GameProgress>(reset.player()).ticks, 0);
     }
-    EXPECT_EQ(destructions, 2);
+    EXPECT_EQ(destructions, 1);
 
     Framework::Server server;
-    server.load(factory);
+    server.load("empty.vescene", factory);
+    server.waitForLoad();
     server.play();
     server.update({});
     EXPECT_EQ(server.scene().get<GameProgress>(server.scene().player()).ticks, 1);
     server.unload();
-    EXPECT_EQ(destructions, 3);
+    EXPECT_EQ(destructions, 2);
 }
 
 class Server final : public Framework::Server {
@@ -117,11 +144,12 @@ public:
     std::vector<int> order;
 
 protected:
-    exec::task<void> onLoadScene(const World::Scene& scene) override {
-        co_await Base::onLoadScene(scene);
-        if (failLoad) {
-            throw std::runtime_error("Load failure");
-        }
+    async::task<void> onLoadScene(const World::Scene& scene) override {
+        return Base::onLoadScene(scene).then(scheduler(), [this]() {
+            if (failLoad) {
+                throw std::runtime_error("Load failure");
+            }
+        });
     }
 
     void onNetworkUpdate(Clock::duration) override {
@@ -133,32 +161,28 @@ protected:
     }
 };
 
-TEST(FrameworkLifecycle, StateGuardsAndUpdateOrder) {
+TEST_F(FrameworkLifecycle, StateGuardsAndUpdateOrder) {
     Server server;
     EXPECT_EQ(server.state(), State::Idle);
     EXPECT_NO_THROW(server.update({}));
 #if defined(VOLCANO_DEBUG) && !defined(NDEBUG)
     EXPECT_DEATH(server.update(-std::chrono::milliseconds(1)), "[Aa]ssert");
-    EXPECT_DEATH(server.scene(), "[Aa]ssert");
-    EXPECT_DEATH(server.play(), "[Aa]ssert");
-    EXPECT_DEATH(server.pause(), "[Aa]ssert");
-    EXPECT_DEATH(server.stop(), "[Aa]ssert");
-    EXPECT_DEATH(server.synchronizeResources(), "[Aa]ssert");
-    EXPECT_DEATH(server.load({}), "[Aa]ssert");
+    EXPECT_DEATH(server.load("empty.vescene", {}), "[Aa]ssert");
 #endif
-    server.load([&] {
+    EXPECT_THROW(server.scene(), std::logic_error);
+    EXPECT_THROW(server.play(), std::logic_error);
+    EXPECT_THROW(server.pause(), std::logic_error);
+    EXPECT_THROW(server.synchronizeResources(), std::logic_error);
+    server.load("empty.vescene", [&] {
         EXPECT_EQ(server.state(), State::Loading);
-#if defined(VOLCANO_DEBUG) && !defined(NDEBUG)
-        EXPECT_DEATH(server.unload(), "[Aa]ssert");
-#endif
+        EXPECT_THROW(server.unload(), std::logic_error);
         auto scene = std::make_unique<Scene>();
         scene->order = &server.order;
         return scene;
     });
+    server.waitForLoad();
     EXPECT_EQ(server.state(), State::Ready);
-#if defined(VOLCANO_DEBUG) && !defined(NDEBUG)
-    EXPECT_DEATH(server.load([] { return std::make_unique<Scene>(); }), "[Aa]ssert");
-#endif
+    EXPECT_THROW(server.load("empty.vescene", [] { return std::make_unique<Scene>(); }), std::logic_error);
     server.update({});
     EXPECT_EQ(server.order, (std::vector<int>{1, 3}));
     server.order.clear();
@@ -170,26 +194,21 @@ TEST(FrameworkLifecycle, StateGuardsAndUpdateOrder) {
     server.update({});
     EXPECT_EQ(server.order, (std::vector<int>{1, 3}));
     EXPECT_EQ(static_cast<Scene&>(server.scene()).updates, 1);
-#if defined(VOLCANO_DEBUG) && !defined(NDEBUG)
-    EXPECT_DEATH(server.pause(), "[Aa]ssert");
-#endif
-    server.play();
-    server.stop();
-    EXPECT_EQ(server.state(), State::Ready);
-    EXPECT_EQ(static_cast<Scene&>(server.scene()).updates, 0);
+    EXPECT_THROW(server.pause(), std::logic_error);
     server.unload();
     EXPECT_EQ(server.state(), State::Idle);
     EXPECT_NO_THROW(server.unload());
 }
 
-TEST(FrameworkLifecycle, ContextInjectedToSceneAndSignalsExit) {
+TEST_F(FrameworkLifecycle, ContextInjectedToSceneAndSignalsExit) {
     Base framework;
     EXPECT_FALSE(framework.shouldClose());
     World::Context* capturedContext = nullptr;
-    framework.load([&](World::Context& ctx) {
+    framework.load("empty.vescene", [&](World::Context& ctx) {
         capturedContext = &ctx;
         return std::make_unique<Scene>(ctx);
     });
+    framework.waitForLoad();
     EXPECT_EQ(capturedContext, static_cast<World::Context*>(&framework));
     EXPECT_FALSE(framework.shouldClose());
 
@@ -197,45 +216,43 @@ TEST(FrameworkLifecycle, ContextInjectedToSceneAndSignalsExit) {
     EXPECT_TRUE(framework.shouldClose());
 }
 
-TEST(FrameworkLifecycle, FactoryAndResourceFailuresPreservePreviousScene) {
+TEST_F(FrameworkLifecycle, FactoryAndResourceFailuresPreservePreviousScene) {
     Server server;
-    EXPECT_THROW(server.load([] { return std::unique_ptr<World::Scene>{}; }), std::runtime_error);
+    server.load("empty.vescene", [] { return std::unique_ptr<World::Scene>{}; });
+    EXPECT_THROW(server.waitForLoad(), std::runtime_error);
     EXPECT_EQ(server.state(), State::Idle);
     bool failFactory = false;
-    server.load([&]() -> std::unique_ptr<World::Scene> {
+    server.load("empty.vescene", [&]() -> std::unique_ptr<World::Scene> {
         if (failFactory) {
             throw std::runtime_error("Factory failure");
         }
         return std::make_unique<Scene>();
     });
+    server.waitForLoad();
     auto* original = &server.scene();
     auto* originalPhysics = &server.physics();
     server.play();
-    failFactory = true;
-    EXPECT_THROW(server.stop(), std::runtime_error);
-    EXPECT_EQ(&server.scene(), original);
-    EXPECT_EQ(&server.physics(), originalPhysics);
-    EXPECT_EQ(server.state(), State::Playing);
-    failFactory = false;
     server.failLoad = true;
-    EXPECT_THROW(server.stop(), std::runtime_error);
+    server.synchronizeResources();
+    EXPECT_THROW(server.waitForLoad(), std::runtime_error);
     EXPECT_EQ(&server.scene(), original);
     EXPECT_EQ(&server.physics(), originalPhysics);
-    EXPECT_THROW(server.synchronizeResources(), std::runtime_error);
     EXPECT_EQ(server.state(), State::Playing);
     server.failLoad = false;
-    EXPECT_NO_THROW(server.stop());
+    server.synchronizeResources();
+    EXPECT_NO_THROW(server.waitForLoad());
 }
 
-TEST(FrameworkLifecycle, MultipleFrameworksKeepTheirPhysicsAlive) {
+TEST_F(FrameworkLifecycle, MultipleFrameworksKeepTheirPhysicsAlive) {
     Server first;
     Server second;
-    first.load([] { return std::make_unique<Scene>(); });
-    second.load([] { return std::make_unique<Scene>(); });
+    first.load("empty.vescene", [] { return std::make_unique<Scene>(); });
+    first.waitForLoad();
+    second.load("empty.vescene", [] { return std::make_unique<Scene>(); });
+    second.waitForLoad();
     first.unload();
     second.play();
     EXPECT_NO_THROW(second.update(std::chrono::milliseconds(1)));
-    EXPECT_NO_THROW(second.stop());
 }
 
 class FrameworkResources : public ::testing::Test {
@@ -247,6 +264,9 @@ protected:
         ASSERT_NE(PHYSFS_init("FrameworkCheck"), 0);
         ASSERT_NE(PHYSFS_mount(root_.string().c_str(), nullptr, 1), 0);
         ASSERT_NE(PHYSFS_setWriteDir(root_.string().c_str()), 0);
+        Asset::Scene empty;
+        PhysOutputStream file("empty.vescene");
+        ASSERT_TRUE(empty.SerializeToZeroCopyStream(&file));
     }
 
     void TearDown() override {
@@ -286,7 +306,8 @@ protected:
 TEST_F(FrameworkResources, ServerReadsDescriptorsResolvesPathsAndReusesCacheOnReset) {
     writeModel("models/test.vemodel");
     Server server;
-    server.load(factory("./models/test.vemodel"));
+    server.load("empty.vescene", factory("./models/test.vemodel"));
+    server.waitForLoad();
     const auto& model = *Framework::Resources::loadModel("models/test.vemodel");
     ASSERT_EQ(model.parts_size(), 1);
     EXPECT_EQ(model.parts(0).mesh(), "models/mesh.vemesh");
@@ -294,9 +315,9 @@ TEST_F(FrameworkResources, ServerReadsDescriptorsResolvesPathsAndReusesCacheOnRe
     EXPECT_FALSE(std::filesystem::exists(root_ / "models/mesh.vemesh"));
     std::filesystem::remove(root_ / "models/test.vemodel");
     server.play();
-    EXPECT_NO_THROW(server.synchronizeResources());
+    server.synchronizeResources();
+    EXPECT_NO_THROW(server.waitForLoad());
     EXPECT_EQ(server.state(), State::Playing);
-    EXPECT_NO_THROW(server.stop());
     EXPECT_EQ(Framework::Resources::loadModel("models/test.vemodel").get(), &model);
 }
 
@@ -304,64 +325,72 @@ TEST_F(FrameworkResources, SharesCommittedModelsBetweenFrameworksWithoutGraphics
     EXPECT_EQ(gl3wProcs, nullptr);
     writeModel("models/shared.vemodel");
     Server first;
-    first.load(factory("models/shared.vemodel"));
+    first.load("empty.vescene", factory("models/shared.vemodel"));
+    first.waitForLoad();
     const auto* shared = Framework::Resources::loadModel("models/shared.vemodel").get();
     std::filesystem::remove(root_ / "models/shared.vemodel");
 
     Server second;
-    EXPECT_NO_THROW(second.load(factory("./models/shared.vemodel")));
+    second.load("empty.vescene", factory("./models/shared.vemodel"));
+    EXPECT_NO_THROW(second.waitForLoad());
     EXPECT_EQ(Framework::Resources::loadModel("models/shared.vemodel").get(), shared);
     first.unload();
-    EXPECT_NO_THROW(second.synchronizeResources());
+    second.synchronizeResources();
+    EXPECT_NO_THROW(second.waitForLoad());
     EXPECT_EQ(Framework::Resources::loadModel("models/shared.vemodel").get(), shared);
     EXPECT_EQ(gl3wProcs, nullptr);
 }
 
 TEST_F(FrameworkResources, FailedSynchronizationDiscardsNewResourcesAndCanRetry) {
     Server server;
-    server.load([] { return std::make_unique<Scene>(); });
+    server.load("empty.vescene", [] { return std::make_unique<Scene>(); });
+    server.waitForLoad();
     writeModel("models/new.vemodel");
     server.scene().emplace<World::Model>(server.scene().create(), "models/new.vemodel");
     server.failLoad = true;
-    EXPECT_THROW(server.synchronizeResources(), std::runtime_error);
+    server.synchronizeResources();
+    EXPECT_THROW(server.waitForLoad(), std::runtime_error);
 
     server.failLoad = false;
     std::filesystem::remove(root_ / "models/new.vemodel");
     try {
         server.synchronizeResources();
+        server.waitForLoad();
         FAIL() << "Expected missing resource";
     } catch (const std::runtime_error& error) {
         EXPECT_NE(std::string(error.what()).find("models/new.vemodel"), std::string::npos);
     }
     writeModel("models/new.vemodel");
-    EXPECT_NO_THROW(server.synchronizeResources());
+    server.synchronizeResources();
+    EXPECT_NO_THROW(server.waitForLoad());
     EXPECT_NE(Framework::Resources::loadModel("models/new.vemodel"), nullptr);
 }
 
 TEST_F(FrameworkResources, RejectsUnsafeAndMissingPathsAndLeavesIdle) {
     Server server;
     for (const auto* path : {"", "../model", "/../model", "/", "C:model", "a\\b", "."}) {
-        EXPECT_THROW(server.load(factory(path)), std::invalid_argument);
+        server.load("empty.vescene", factory(path));
+        EXPECT_THROW(server.waitForLoad(), std::invalid_argument);
         EXPECT_EQ(server.state(), State::Idle);
     }
-    EXPECT_THROW(server.load(factory("missing.vemodel")), std::runtime_error);
+    server.load("empty.vescene", factory("missing.vemodel"));
+    EXPECT_THROW(server.waitForLoad(), std::runtime_error);
     EXPECT_EQ(server.state(), State::Idle);
 }
 }
 
 namespace {
-TEST(FrameworkLifecycle, PhysicsAccessFollowsSceneLifetime) {
+TEST_F(FrameworkLifecycle, PhysicsAccessFollowsSceneLifetime) {
     Base framework;
-#if defined(VOLCANO_DEBUG) && !defined(NDEBUG)
-    EXPECT_DEATH(framework.physics(), "[Aa]ssert");
-#endif
-    framework.load([] {
+    EXPECT_THROW(framework.physics(), std::logic_error);
+    framework.load("empty.vescene", [] {
         auto scene = std::make_unique<Scene>();
         const auto entity = scene->create();
         scene->emplace<Transform>(entity);
         scene->emplace<World::RigidBody>(entity).setShape(World::RigidBody::Sphere{0.5f});
         return scene;
     });
+    framework.waitForLoad();
     const auto entity = *framework.scene().view<Transform>().begin();
     ASSERT_TRUE(framework.physics().contains(entity));
     framework.update(std::chrono::milliseconds(16));
@@ -376,17 +405,13 @@ TEST(FrameworkLifecycle, PhysicsAccessFollowsSceneLifetime) {
     framework.physics().setGravity(Eigen::Vector3f::Zero());
     const Base& readonly = framework;
     EXPECT_EQ(readonly.physics().gravity(), Eigen::Vector3f::Zero());
-    framework.stop();
-    EXPECT_EQ(framework.physics().gravity(), Eigen::Vector3f(0, -9.81f, 0));
     framework.unload();
-#if defined(VOLCANO_DEBUG) && !defined(NDEBUG)
-    EXPECT_DEATH(framework.physics(), "[Aa]ssert");
-#endif
+    EXPECT_THROW(framework.physics(), std::logic_error);
 }
 }
 
 namespace {
-TEST(FrameworkLifecycle, InvalidPhysicsDescriptionRollsBackLoadAndReset) {
+TEST_F(FrameworkLifecycle, InvalidPhysicsDescriptionRollsBackLoad) {
     Base framework;
     bool invalid = true;
     const auto factory = [&] {
@@ -399,19 +424,13 @@ TEST(FrameworkLifecycle, InvalidPhysicsDescriptionRollsBackLoadAndReset) {
         }
         return scene;
     };
-    EXPECT_THROW(framework.load(factory), std::invalid_argument);
+    framework.load("empty.vescene", factory);
+    EXPECT_THROW(framework.waitForLoad(), std::invalid_argument);
     EXPECT_EQ(framework.state(), State::Idle);
     invalid = false;
-    framework.load(factory);
-    auto* original = &framework.scene();
-    framework.play();
-    invalid = true;
-    EXPECT_THROW(framework.stop(), std::invalid_argument);
-    EXPECT_EQ(&framework.scene(), original);
-    EXPECT_EQ(framework.state(), State::Playing);
-    EXPECT_NO_THROW(framework.update(std::chrono::milliseconds(16)));
-    invalid = false;
-    EXPECT_NO_THROW(framework.stop());
+    framework.load("empty.vescene", factory);
+    framework.waitForLoad();
+    EXPECT_EQ(framework.state(), State::Ready);
 }
 }
 
@@ -420,15 +439,15 @@ class DeferredLoad final : public Base {
 public:
     ~DeferredLoad() override {
         cancelLoad();
-        gate.store(true);
+        gate.set();
         try {
             waitForLoad();
-        } catch (const Base::LoadCanceled&) {
+        } catch (const async::task_canceled&) {
         }
     }
 
 public:
-    std::atomic<bool> gate{false};
+    async::event_task<void> gate;
     int entities = 0;
     int commits = 0;
     int discards = 0;
@@ -437,22 +456,22 @@ public:
     std::thread::id entityThread;
 
 protected:
-    exec::task<void> onLoadScene(const World::Scene& scene) override {
-        co_await Base::onLoadScene(scene);
-        waiting = true;
-        while (!gate.load()) {
-            checkLoadCancelled();
-            co_await stdexec::schedule(scheduler());
-        }
-        checkLoadCancelled();
-        sceneFinished = true;
+    async::task<void> onLoadScene(const World::Scene& scene) override {
+        return Base::onLoadScene(scene).then(scheduler(), [this]() {
+            waiting = true;
+            return gate.get_task();
+        }).then(scheduler(), [this]() {
+            loading_.checkCancelled();
+            sceneFinished = true;
+        });
     }
 
-    exec::task<void> onLoadEntity(const World::Scene& scene, entt::entity entity) override {
-        co_await Base::onLoadEntity(scene, entity);
-        checkLoadCancelled();
-        entityThread = std::this_thread::get_id();
-        ++entities;
+    async::task<void> onLoadEntity(const World::Scene& scene, entt::entity entity) override {
+        return Base::onLoadEntity(scene, entity).then(scheduler(), [this]() {
+            loading_.checkCancelled();
+            entityThread = std::this_thread::get_id();
+            ++entities;
+        });
     }
 
     void onCommitResources() noexcept override {
@@ -473,10 +492,10 @@ void pumpUntilWaiting(DeferredLoad& framework) {
     ASSERT_TRUE(framework.waiting);
 }
 
-TEST(FrameworkAsyncLoad, ComposesSceneAndEntityTasksAndReportsProgressOnOwnerThread) {
+TEST_F(FrameworkAsyncLoad, ComposesSceneAndEntityTasksAndReportsProgressOnOwnerThread) {
     DeferredLoad framework;
     bool created = false;
-    framework.loadAsync([&] {
+    framework.load("empty.vescene", [&] {
         created = true;
         auto scene = std::make_unique<Scene>();
         (void)scene->create();
@@ -495,7 +514,7 @@ TEST(FrameworkAsyncLoad, ComposesSceneAndEntityTasksAndReportsProgressOnOwnerThr
     EXPECT_FALSE(framework.loadingProgress().content.empty());
     EXPECT_FALSE(framework.sceneFinished);
     EXPECT_EQ(framework.state(), State::Loading);
-    framework.gate.store(true);
+    framework.gate.set();
     framework.waitForLoad();
     EXPECT_TRUE(framework.sceneFinished);
     EXPECT_EQ(framework.commits, 1);
@@ -504,9 +523,9 @@ TEST(FrameworkAsyncLoad, ComposesSceneAndEntityTasksAndReportsProgressOnOwnerThr
     EXPECT_EQ(framework.loadingProgress().percent, 100);
 }
 
-TEST(FrameworkAsyncLoad, CancellationWaitsForChildrenThenRollsBack) {
+TEST_F(FrameworkAsyncLoad, CancellationWaitsForChildrenThenRollsBack) {
     DeferredLoad framework;
-    framework.loadAsync([] {
+    framework.load("empty.vescene", [] {
         auto scene = std::make_unique<Scene>();
         (void)scene->create();
         return scene;
@@ -517,49 +536,51 @@ TEST(FrameworkAsyncLoad, CancellationWaitsForChildrenThenRollsBack) {
     EXPECT_TRUE(framework.loadCancelled());
     framework.update({});
     EXPECT_EQ(framework.state(), State::Loading);
-    framework.gate.store(true);
-    EXPECT_THROW(framework.waitForLoad(), Base::LoadCanceled);
+    framework.gate.set();
+    EXPECT_THROW(framework.waitForLoad(), async::task_canceled);
     EXPECT_EQ(framework.state(), State::Idle);
     EXPECT_EQ(framework.commits, 0);
     EXPECT_EQ(framework.discards, 1);
     EXPECT_LT(framework.loadingProgress().percent, 100);
 }
 
-TEST(FrameworkAsyncLoad, CancelBeforeStartSkipsFactoryAndAllowsRetry) {
+TEST_F(FrameworkAsyncLoad, CancelBeforeStartSkipsFactoryAndAllowsRetry) {
     Base framework;
     bool created = false;
-    framework.loadAsync([&] {
+    framework.load("empty.vescene", [&] {
         created = true;
         return std::make_unique<Scene>();
     });
     framework.cancelLoad();
-    EXPECT_THROW(framework.waitForLoad(), Base::LoadCanceled);
+    EXPECT_THROW(framework.waitForLoad(), async::task_canceled);
     EXPECT_FALSE(created);
     EXPECT_EQ(framework.state(), State::Idle);
-    EXPECT_NO_THROW(framework.load([] { return std::make_unique<Scene>(); }));
+    framework.load("empty.vescene", [] { return std::make_unique<Scene>(); });
+    EXPECT_NO_THROW(framework.waitForLoad());
     EXPECT_FALSE(framework.loadCancelled());
 }
 
-TEST(FrameworkAsyncLoad, CancelledResetKeepsPlayingSceneAndPhysics) {
+TEST_F(FrameworkAsyncLoad, CancelledSynchronizeKeepsPlayingSceneAndPhysics) {
     Base framework;
-    framework.load([] { return std::make_unique<Scene>(); });
+    framework.load("empty.vescene", [] { return std::make_unique<Scene>(); });
+    framework.waitForLoad();
     framework.play();
     const auto* scene = &framework.scene();
     const auto* physics = &framework.physics();
-    framework.stopAsync();
+    framework.synchronizeResources();
     framework.cancelLoad();
-    EXPECT_THROW(framework.waitForLoad(), Base::LoadCanceled);
+    EXPECT_THROW(framework.waitForLoad(), async::task_canceled);
     EXPECT_EQ(framework.state(), State::Playing);
     EXPECT_EQ(&framework.scene(), scene);
     EXPECT_EQ(&framework.physics(), physics);
     EXPECT_NO_THROW(framework.update({}));
 }
 
-TEST(FrameworkAsyncLoad, DestructionSettlesOutstandingTopLevelTask) {
+TEST_F(FrameworkAsyncLoad, DestructionSettlesOutstandingTopLevelTask) {
     bool created = false;
     {
         Base framework;
-        framework.loadAsync([&] {
+        framework.load("empty.vescene", [&] {
             created = true;
             return std::make_unique<Scene>();
         });
@@ -570,16 +591,18 @@ TEST(FrameworkAsyncLoad, DestructionSettlesOutstandingTopLevelTask) {
 TEST_F(FrameworkResources, CancelsAfterPreparationWithoutPublishingModels) {
     writeModel("models/cancelled.vemodel");
     DeferredLoad framework;
-    framework.loadAsync(factory("models/cancelled.vemodel"));
+    framework.load("empty.vescene", factory("models/cancelled.vemodel"));
     pumpUntilWaiting(framework);
     framework.cancelLoad();
-    framework.gate.store(true);
-    EXPECT_THROW(framework.waitForLoad(), Base::LoadCanceled);
+    framework.gate.set();
+    EXPECT_THROW(framework.waitForLoad(), async::task_canceled);
     std::filesystem::remove(root_ / "models/cancelled.vemodel");
     Base retry;
-    EXPECT_THROW(retry.load(factory("models/cancelled.vemodel")), std::runtime_error);
+    retry.load("empty.vescene", factory("models/cancelled.vemodel"));
+    EXPECT_THROW(retry.waitForLoad(), std::runtime_error);
     writeModel("models/cancelled.vemodel");
-    EXPECT_NO_THROW(retry.load(factory("models/cancelled.vemodel")));
+    retry.load("empty.vescene", factory("models/cancelled.vemodel"));
+    EXPECT_NO_THROW(retry.waitForLoad());
 }
 }
 
@@ -588,31 +611,33 @@ class ThrowingSceneLoad final : public Base {
 public:
     ~ThrowingSceneLoad() override {
         cancelLoad();
-        gate.store(true);
+        gate.set();
         try {
             waitForLoad();
+        } catch (const async::task_canceled&) {
         } catch (const std::runtime_error&) {
         }
     }
 
 public:
-    std::atomic<bool> gate{false};
+    async::event_task<void> gate;
     bool entityStarted = false;
     bool entityFinished = false;
     bool discarded = false;
 
 protected:
-    exec::task<void> onLoadScene(const World::Scene& scene) override {
-        co_await Base::onLoadScene(scene);
-        throw std::runtime_error("Scene hook failed after starting parent tasks");
+    async::task<void> onLoadScene(const World::Scene& scene) override {
+        return Base::onLoadScene(scene).then(scheduler(), [](async::task<void> parent) {
+            parent.get();
+            throw std::runtime_error("Scene hook failed after starting parent tasks");
+        });
     }
 
-    exec::task<void> onLoadEntity(const World::Scene&, entt::entity) override {
+    async::task<void> onLoadEntity(const World::Scene&, entt::entity) override {
         entityStarted = true;
-        while (!gate.load()) {
-            co_await stdexec::schedule(scheduler());
-        }
-        entityFinished = true;
+        return gate.get_task().then(scheduler(), [this]() {
+            entityFinished = true;
+        });
     }
 
     void onDiscardResources() noexcept override {
@@ -621,18 +646,22 @@ protected:
     }
 };
 
-TEST(FrameworkAsyncLoad, ThrowingSceneHookStillWaitsForStartedEntityTasks) {
+TEST_F(FrameworkAsyncLoad, ThrowingSceneHookStillWaitsForStartedEntityTasks) {
     ThrowingSceneLoad framework;
-    framework.loadAsync([] {
+    framework.load("empty.vescene", [] {
         auto scene = std::make_unique<Scene>();
         (void)scene->create();
         return scene;
     });
-    framework.processTasks();
+    const auto deadline = Clock::now() + std::chrono::seconds(5);
+    while (!framework.entityStarted && Clock::now() < deadline) {
+        framework.processTasks();
+        std::this_thread::yield();
+    }
     EXPECT_TRUE(framework.entityStarted);
     EXPECT_FALSE(framework.discarded);
     EXPECT_EQ(framework.state(), State::Loading);
-    framework.gate.store(true);
+    framework.gate.set();
     EXPECT_THROW(framework.waitForLoad(), std::runtime_error);
     EXPECT_TRUE(framework.entityFinished);
     EXPECT_TRUE(framework.discarded);
@@ -647,8 +676,10 @@ TEST_F(FrameworkResources, ReleasesModelsAfterTheLastSceneOwnerUnloads) {
     {
         Base first;
         Base second;
-        first.load(factory("models/owned.vemodel"));
-        second.load(factory("models/owned.vemodel"));
+        first.load("empty.vescene", factory("models/owned.vemodel"));
+        first.waitForLoad();
+        second.load("empty.vescene", factory("models/owned.vemodel"));
+        second.waitForLoad();
         weak = Framework::Resources::loadModel("models/owned.vemodel");
         first.unload();
         EXPECT_FALSE(weak.expired());
@@ -699,18 +730,103 @@ TEST_F(FrameworkResources, DefaultLoaderValidatesPathsAndReportsFileFailures) {
     writeModel("models/broken.vemodel");
     EXPECT_NO_THROW(Framework::Resources::loadModel("models/broken.vemodel"));
 }
+
+TEST_F(FrameworkResources, LoadsSceneManifestWithFactoryAndResolvesRelativeResources) {
+    std::filesystem::create_directories(root_ / "scenes/models");
+    writeModel("scenes/models/hero.vemodel");
+    {
+        Asset::Scene sceneAsset;
+        sceneAsset.set_name("LevelOne");
+        sceneAsset.set_description("Opening level");
+        sceneAsset.mutable_gravity()->set_y(-4.5f);
+
+        auto* modelEntity = sceneAsset.add_entities();
+        modelEntity->set_name("hero");
+        modelEntity->mutable_transform()->mutable_translation()->set_x(2.0f);
+        modelEntity->mutable_transform()->mutable_translation()->set_y(3.0f);
+        modelEntity->mutable_transform()->mutable_translation()->set_z(4.0f);
+        modelEntity->mutable_model()->set_source("models/hero.vemodel");
+        auto* matOverride = modelEntity->mutable_model()->add_materials();
+        matOverride->set_part(0);
+        matOverride->set_albedo_texture("textures/hero.vetexture");
+        modelEntity->mutable_rigid_body()->set_motion(Asset::MOTION_DYNAMIC);
+        modelEntity->mutable_rigid_body()->mutable_sphere()->set_radius(0.75f);
+        modelEntity->mutable_rigid_body()->set_mass(2.0f);
+
+        auto* cameraEntity = sceneAsset.add_entities();
+        cameraEntity->mutable_perspective_camera()->set_fov(75.0f);
+        cameraEntity->mutable_perspective_camera()->set_aspect(16.0f / 9.0f);
+        cameraEntity->mutable_perspective_camera()->set_znear(0.2f);
+        cameraEntity->mutable_perspective_camera()->set_zfar(500.0f);
+
+        auto* lightEntity = sceneAsset.add_entities();
+        lightEntity->mutable_point_light()->mutable_color()->set_x(1.0f);
+        lightEntity->mutable_point_light()->set_strength(2.5f);
+        lightEntity->mutable_point_light()->set_range(25.0f);
+
+        std::filesystem::create_directories(root_ / "scenes");
+        PhysOutputStream file("scenes/level.vescene");
+        ASSERT_TRUE(sceneAsset.SerializeToZeroCopyStream(&file));
+    }
+
+    Server server;
+    server.load("scenes/level.vescene", [] { return std::make_unique<Scene>(); });
+    server.waitForLoad();
+
+    EXPECT_EQ(server.state(), State::Ready);
+    EXPECT_EQ(server.scene().name(), "LevelOne");
+    EXPECT_EQ(server.scene().description(), "Opening level");
+
+    auto modelView = server.scene().view<World::Inherent, Transform, World::Model>();
+    ASSERT_NE(modelView.begin(), modelView.end());
+    const auto hero = *modelView.begin();
+    EXPECT_EQ(modelView.get<World::Inherent>(hero).name(), "hero");
+    EXPECT_EQ(modelView.get<Transform>(hero).translation(), Eigen::Vector3f(2.0f, 3.0f, 4.0f));
+    EXPECT_EQ(modelView.get<World::Model>(hero).source(), std::filesystem::path("scenes/models/hero.vemodel"));
+    const auto* overrideMat = modelView.get<World::Model>(hero).findMaterial(0);
+    ASSERT_NE(overrideMat, nullptr);
+    EXPECT_EQ(overrideMat->textures().at(World::Material::Slot::Albedo)->source(),
+              std::filesystem::path("scenes/textures/hero.vetexture"));
+
+    auto camView = server.scene().view<World::PerspectiveCamera>();
+    ASSERT_NE(camView.begin(), camView.end());
+    EXPECT_FLOAT_EQ(camView.get<World::PerspectiveCamera>(*camView.begin()).fov(), 75.0f);
+
+    auto lightView = server.scene().view<World::PointLight>();
+    ASSERT_NE(lightView.begin(), lightView.end());
+    EXPECT_FLOAT_EQ(lightView.get<World::PointLight>(*lightView.begin()).range(), 25.0f);
+
+    EXPECT_EQ(server.physics().gravity(), Eigen::Vector3f(0.0f, -4.5f, 0.0f));
+    EXPECT_TRUE(server.physics().contains(hero));
+    const auto& body = server.scene().get<World::RigidBody>(hero);
+    EXPECT_EQ(body.motion(), World::RigidBody::Motion::Dynamic);
+    EXPECT_FLOAT_EQ(body.mass(), 2.0f);
+    ASSERT_TRUE(std::holds_alternative<World::RigidBody::Sphere>(body.shape()));
+    EXPECT_FLOAT_EQ(std::get<World::RigidBody::Sphere>(body.shape()).radius(), 0.75f);
+}
+
+TEST_F(FrameworkResources, RejectsInvalidAndMissingSceneManifestPaths) {
+    Server server;
+    for (const auto* path : {"", "../scene.vescene", "scenes/missing.vescene"}) {
+        server.load(path, [] { return std::make_unique<Scene>(); });
+        EXPECT_THROW(server.waitForLoad(), std::exception);
+        EXPECT_EQ(server.state(), State::Idle);
+    }
+}
 }
 
 namespace {
 TEST_F(FrameworkResources, SynchronizationReleasesModelHandlesNoLongerUsedByScene) {
     writeModel("models/removed.vemodel");
     Server server;
-    server.load(factory("models/removed.vemodel"));
+    server.load("empty.vescene", factory("models/removed.vemodel"));
+    server.waitForLoad();
     std::weak_ptr<Asset::Model> model = Framework::Resources::loadModel("models/removed.vemodel");
     ASSERT_FALSE(model.expired());
 
     server.scene().clear<World::Model>();
     server.synchronizeResources();
+    server.waitForLoad();
 
     EXPECT_TRUE(model.expired());
 }

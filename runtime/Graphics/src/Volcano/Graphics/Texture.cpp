@@ -9,6 +9,7 @@
 VOLCANO_GRAPHICS_BEGIN
 
 Texture::Texture(Texture&&) noexcept = default;
+
 Texture& Texture::operator=(Texture&&) noexcept = default;
 
 const gl::Texture2D& Texture::texture() const noexcept {
@@ -23,23 +24,6 @@ Texture::Texture(int width, int height, std::span<const std::uint8_t> rgba)
     if (!rgba.empty()) {
         upload(rgba);
     }
-}
-
-gl::Texture2D Texture::allocate(int width, int height) {
-    GLint maximum = 0;
-    glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maximum);
-    if (width <= 0 || height <= 0 || width > maximum || height > maximum) {
-        throw std::invalid_argument("Texture dimensions exceed OpenGL limits");
-    }
-
-    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
-    gl::Texture2D texture;
-    texture.parameter(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    texture.parameter(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    texture.parameter(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    texture.parameter(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    texture.image2D(0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
-    return texture;
 }
 
 void Texture::resize(int width, int height) {
@@ -77,6 +61,23 @@ void Texture::uploadPremultiplied(std::span<const std::uint8_t> rgba) {
     glPixelStorei(GL_UNPACK_SKIP_ROWS, 0);
     glPixelStorei(GL_UNPACK_SKIP_PIXELS, 0);
     texture_.subImage2D(0, 0, 0, width_, height_, GL_RGBA, GL_UNSIGNED_BYTE, rgba.data());
+}
+
+gl::Texture2D Texture::allocate(int width, int height) {
+    GLint maximum = 0;
+    glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maximum);
+    if (width <= 0 || height <= 0 || width > maximum || height > maximum) {
+        throw std::invalid_argument("Texture dimensions exceed OpenGL limits");
+    }
+
+    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+    gl::Texture2D texture;
+    texture.parameter(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    texture.parameter(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    texture.parameter(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    texture.parameter(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    texture.image2D(0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+    return texture;
 }
 
 VOLCANO_GRAPHICS_END

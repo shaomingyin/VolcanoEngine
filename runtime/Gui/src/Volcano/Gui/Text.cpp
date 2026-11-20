@@ -8,7 +8,6 @@
 #include <Volcano/Gui/Text.h>
 
 VOLCANO_GUI_BEGIN
-
 void Text::setText(std::string value) {
     text_ = std::move(value);
     changed();
@@ -35,32 +34,6 @@ void Text::setColor(const Colorf& value) {
 void Text::setWrap(bool value) {
     wrap_ = value;
     changed();
-}
-
-std::vector<std::string> Text::lines(Platform& platform, float width) const {
-    const float pixels = fontSize(platform);
-    std::vector<std::string> result;
-    std::string line;
-    for (std::size_t i = 0; i < text_.size();) {
-        if (text_[i] == '\n') {
-            result.push_back(std::move(line));
-            line.clear();
-            ++i;
-            continue;
-        }
-        const auto start = i++;
-        while (i < text_.size() && (static_cast<unsigned char>(text_[i]) & 0xc0) == 0x80) {
-            ++i;
-        }
-        const auto character = text_.substr(start, i - start);
-        if (wrap_ && !line.empty() && platform.measure(font_, pixels, line + character).width > width) {
-            result.push_back(std::move(line));
-            line.clear();
-        }
-        line += character;
-    }
-    result.push_back(std::move(line));
-    return result;
 }
 
 Sizef Text::measure(Platform& platform, Sizef available) const {
@@ -96,6 +69,14 @@ Sizef Text::measure(Platform& platform, Sizef available) const {
     return result;
 }
 
+void Text::collectResources(std::vector<std::filesystem::path>& fonts,
+                            std::vector<std::string>& images) const {
+    Widget::collectResources(fonts, images);
+    if (!font_.empty()) {
+        fonts.push_back(font_);
+    }
+}
+
 void Text::paint(World::Canvas& canvas, Platform& platform) const {
     Widget::paint(canvas, platform);
     if (text_.empty()) {
@@ -120,12 +101,30 @@ void Text::paint(World::Canvas& canvas, Platform& platform) const {
     }
 }
 
-void Text::collectResources(std::vector<std::filesystem::path>& fonts,
-                            std::vector<std::string>& images) const {
-    Widget::collectResources(fonts, images);
-    if (!font_.empty()) {
-        fonts.push_back(font_);
+std::vector<std::string> Text::lines(Platform& platform, float width) const {
+    const float pixels = fontSize(platform);
+    std::vector<std::string> result;
+    std::string line;
+    for (std::size_t i = 0; i < text_.size();) {
+        if (text_[i] == '\n') {
+            result.push_back(std::move(line));
+            line.clear();
+            ++i;
+            continue;
+        }
+        const auto start = i++;
+        while (i < text_.size() && (static_cast<unsigned char>(text_[i]) & 0xc0) == 0x80) {
+            ++i;
+        }
+        const auto character = text_.substr(start, i - start);
+        if (wrap_ && !line.empty() && platform.measure(font_, pixels, line + character).width > width) {
+            result.push_back(std::move(line));
+            line.clear();
+        }
+        line += character;
     }
+    result.push_back(std::move(line));
+    return result;
 }
 
 VOLCANO_GUI_END

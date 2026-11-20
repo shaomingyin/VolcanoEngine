@@ -12,10 +12,7 @@ Camera::Camera(float znear, float zfar) {
 }
 
 Camera::~Camera() = default;
-
 Camera::Camera(Camera&&) noexcept = default;
-
-Camera& Camera::operator=(Camera&&) noexcept = default;
 
 void Camera::setZRange(float znear, float zfar) {
     if (!std::isfinite(znear) || !std::isfinite(zfar) || znear == zfar) {
@@ -23,5 +20,7 @@ void Camera::setZRange(float znear, float zfar) {
     }
     zrange_ = {znear, zfar};
 }
+
+Camera& Camera::operator=(Camera&&) noexcept = default;
 
 VOLCANO_WORLD_END
