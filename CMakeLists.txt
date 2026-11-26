@@ -34,6 +34,7 @@ qt_standard_project_setup()
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 include(Volcano/Utils)
+include(CTest)
 
 add_subdirectory(runtime)
 

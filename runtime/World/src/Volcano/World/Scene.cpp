@@ -62,14 +62,6 @@ QQmlListProperty<Entity> Scene::qmlEntities() {
     };
 }
 
-Physics* Scene::physics() noexcept {
-    return &physics_;
-}
-
-void Scene::update(Clock::duration deltaTime, int collisionSteps) {
-    physics_.update(deltaTime, collisionSteps);
-}
-
 void Scene::handleEntityAdded(Entity* entity) {
     auto& components = entity->components();
     for (auto& component: components) {

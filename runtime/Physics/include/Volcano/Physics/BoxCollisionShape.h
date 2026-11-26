@@ -1,15 +1,18 @@
 //
 //
-#ifndef VOLCANO_WORLD_BOXCOLLISIONSHAPE_H
-#define VOLCANO_WORLD_BOXCOLLISIONSHAPE_H
+#ifndef VOLCANO_PHYSICS_BOXCOLLISIONSHAPE_H
+#define VOLCANO_PHYSICS_BOXCOLLISIONSHAPE_H
 
 #include <QVector3D>
 
-#include <Volcano/World/CollisionShape.h>
+#include <Jolt/Jolt.h>
+#include <Jolt/Physics/Collision/Shape/BoxShape.h>
 
-VOLCANO_WORLD_BEGIN
+#include <Volcano/Physics/CollisionShape.h>
 
-class BoxCollisionShape final: public CollisionShape {
+VOLCANO_PHYSICS_BEGIN
+
+class BoxCollisionShape: public CollisionShape {
     Q_OBJECT
     Q_PROPERTY(QVector3D size READ size WRITE setSize NOTIFY sizeChanged)
     Q_PROPERTY(float convexRadius READ convexRadius WRITE setConvexRadius NOTIFY convexRadiusChanged)
@@ -19,12 +22,11 @@ public:
     explicit BoxCollisionShape(QObject* parent = nullptr);
 
 public:
-    const QVector3D& size() const noexcept;
+    QVector3D size() const noexcept;
     void setSize(const QVector3D& size);
     float convexRadius() const noexcept;
     void setConvexRadius(float radius);
-    bool isValid() const noexcept;
-    JPH::ShapeRefC shape() const override;
+    bool isValid() const noexcept override;
 
 signals:
     void sizeChanged(const QVector3D& size);
@@ -32,10 +34,12 @@ signals:
     void validChanged(bool valid);
 
 private:
-    QVector3D size_ { 1.0f, 1.0f, 1.0f };
-    float convexRadius_ = 0.05f;
+    const JPH::BoxShapeSettings& settings() const noexcept override;
+
+private:
+    JPH::BoxShapeSettings settings_ { JPH::Vec3::sReplicate(0.5f), 0.05f };
 };
 
-VOLCANO_WORLD_END
+VOLCANO_PHYSICS_END
 
-#endif // VOLCANO_WORLD_BOXCOLLISIONSHAPE_H
+#endif // VOLCANO_PHYSICS_BOXCOLLISIONSHAPE_H

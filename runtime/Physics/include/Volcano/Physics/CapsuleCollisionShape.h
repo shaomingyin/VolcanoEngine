@@ -1,13 +1,16 @@
 //
 //
-#ifndef VOLCANO_WORLD_CAPSULECOLLISIONSHAPE_H
-#define VOLCANO_WORLD_CAPSULECOLLISIONSHAPE_H
+#ifndef VOLCANO_PHYSICS_CAPSULECOLLISIONSHAPE_H
+#define VOLCANO_PHYSICS_CAPSULECOLLISIONSHAPE_H
 
-#include <Volcano/World/CollisionShape.h>
+#include <Jolt/Jolt.h>
+#include <Jolt/Physics/Collision/Shape/CapsuleShape.h>
 
-VOLCANO_WORLD_BEGIN
+#include <Volcano/Physics/CollisionShape.h>
 
-class CapsuleCollisionShape final: public CollisionShape {
+VOLCANO_PHYSICS_BEGIN
+
+class CapsuleCollisionShape: public CollisionShape {
     Q_OBJECT
     Q_PROPERTY(float radius READ radius WRITE setRadius NOTIFY radiusChanged)
     Q_PROPERTY(float cylinderHeight READ cylinderHeight WRITE setCylinderHeight NOTIFY cylinderHeightChanged)
@@ -21,8 +24,7 @@ public:
     void setRadius(float radius);
     float cylinderHeight() const noexcept;
     void setCylinderHeight(float height);
-    bool isValid() const noexcept;
-    JPH::ShapeRefC shape() const override;
+    bool isValid() const noexcept override;
 
 signals:
     void radiusChanged(float radius);
@@ -30,10 +32,12 @@ signals:
     void validChanged(bool valid);
 
 private:
-    float radius_ = 0.5f;
-    float cylinderHeight_ = 1.0f;
+    const JPH::CapsuleShapeSettings& settings() const noexcept override;
+
+private:
+    JPH::CapsuleShapeSettings settings_ { 0.5f, 0.5f };
 };
 
-VOLCANO_WORLD_END
+VOLCANO_PHYSICS_END
 
-#endif // VOLCANO_WORLD_CAPSULECOLLISIONSHAPE_H
+#endif // VOLCANO_PHYSICS_CAPSULECOLLISIONSHAPE_H
