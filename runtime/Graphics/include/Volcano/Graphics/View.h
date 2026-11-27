@@ -16,6 +16,7 @@ class View {
 public:
 	View() = default;
 	View(int w, int h);
+    View(const QRectF& viewport, const QMatrix4x4& viewMatrix, const QMatrix4x4& projectionMatrix);
 	virtual ~View();
 
 public:

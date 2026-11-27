@@ -2,16 +2,16 @@
 //
 #include <cmath>
 
-#include <Volcano/Physics/SphereCollisionShape.h>
+#include <Volcano/World/SphereCollisionShape.h>
 
-VOLCANO_PHYSICS_BEGIN
+VOLCANO_WORLD_BEGIN
 
 SphereCollisionShape::SphereCollisionShape(QObject* parent)
     : CollisionShape(parent) {
 }
 
 float SphereCollisionShape::radius() const noexcept {
-    return settings_.mRadius;
+    return radius_;
 }
 
 void SphereCollisionShape::setRadius(float radius) {
@@ -21,8 +21,7 @@ void SphereCollisionShape::setRadius(float radius) {
     }
 
     const bool wasValid = isValid();
-    settings_.mRadius = radius;
-    settings_.ClearCachedResult();
+    radius_ = radius;
     emit radiusChanged(radius);
     emit shapeChanged();
     if (wasValid != isValid()) {
@@ -34,8 +33,4 @@ bool SphereCollisionShape::isValid() const noexcept {
     return std::isfinite(radius()) && radius() > 0.0f;
 }
 
-const JPH::SphereShapeSettings& SphereCollisionShape::settings() const noexcept {
-    return settings_;
-}
-
-VOLCANO_PHYSICS_END
+VOLCANO_WORLD_END

@@ -1,13 +1,14 @@
 //
 //
+#include <algorithm>
+
 #include <Volcano/World/Camera.h>
 
 VOLCANO_WORLD_BEGIN
 
 Camera::Camera(QObject* parent)
     : Transformable(parent) {
-    view_matrix_.setToIdentity();
-    projection_matrix_.setToIdentity();
+    updateProjection();
 }
 
 void Camera::reset() noexcept {
@@ -28,7 +29,7 @@ const QRectF& Camera::rect() const noexcept {
 }
 
 void Camera::setRect(const QRectF& v) noexcept {
-    if (!qFuzzyCompare(rect_, v)) {
+    if (rect_ != v) {
         rect_ = v.normalized();
         emit rectChanged(rect_);
     }
@@ -91,6 +92,28 @@ bool Camera::isPerspective() const noexcept {
     return (fov_ > 0.0f);
 }
 
+QQmlComponent* Camera::overlay() const noexcept {
+    return overlay_;
+}
+
+void Camera::setOverlay(QQmlComponent* component) {
+    if (overlay_ == component) {
+        return;
+    }
+    if (overlay_) {
+        disconnect(overlay_, &QObject::destroyed, this, nullptr);
+    }
+    overlay_ = component;
+    if (overlay_) {
+        connect(overlay_, &QObject::destroyed, this, [this] {
+            if (!overlay_) {
+                emit overlayChanged(nullptr);
+            }
+        });
+    }
+    emit overlayChanged(overlay_);
+}
+
 void Camera::lookTo(const QVector3D& pos, const QVector3D& direction, const QVector3D& up) noexcept {
     view_matrix_.lookAt(pos, pos + direction, up);
 }
@@ -118,6 +141,7 @@ void Camera::perspective(float fov, float aspect_ratio, float near_plane, float 
 }
 
 void Camera::updateProjection() noexcept {
+    projection_matrix_.setToIdentity();
     if (isPerspective()) {
         projection_matrix_.perspective(fov_, aspect_ratio_, near_plane_, far_plane_);
     } else {

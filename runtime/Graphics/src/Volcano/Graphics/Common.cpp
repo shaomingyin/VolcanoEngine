@@ -16,7 +16,7 @@ OpenGLFunctions::OpenGLFunctions()
 void OpenGLFunctions::init(QOpenGLContext* context) {
     Q_ASSERT(context_ == nullptr);
     auto ctx = context ? context : QOpenGLContext::currentContext();
-    Q_ASSERT(ctx->thread()->isCurrentThread());
+    Q_ASSERT(ctx->thread() == QThread::currentThread());
     Q_ASSERT(functions_ == nullptr);
     functions_ = QOpenGLVersionFunctionsFactory::get<Functions>(ctx);
     if (functions_ != nullptr) {

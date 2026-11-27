@@ -1,14 +1,11 @@
 //
 //
-#ifndef VOLCANO_PHYSICS_SPHERECOLLISIONSHAPE_H
-#define VOLCANO_PHYSICS_SPHERECOLLISIONSHAPE_H
+#ifndef VOLCANO_WORLD_SPHERECOLLISIONSHAPE_H
+#define VOLCANO_WORLD_SPHERECOLLISIONSHAPE_H
 
-#include <Jolt/Jolt.h>
-#include <Jolt/Physics/Collision/Shape/SphereShape.h>
+#include <Volcano/World/CollisionShape.h>
 
-#include <Volcano/Physics/CollisionShape.h>
-
-VOLCANO_PHYSICS_BEGIN
+VOLCANO_WORLD_BEGIN
 
 class SphereCollisionShape: public CollisionShape {
     Q_OBJECT
@@ -28,12 +25,9 @@ signals:
     void validChanged(bool valid);
 
 private:
-    const JPH::SphereShapeSettings& settings() const noexcept override;
-
-private:
-    JPH::SphereShapeSettings settings_ { 0.5f };
+    float radius_ = 0.5f;
 };
 
-VOLCANO_PHYSICS_END
+VOLCANO_WORLD_END
 
-#endif // VOLCANO_PHYSICS_SPHERECOLLISIONSHAPE_H
+#endif // VOLCANO_WORLD_SPHERECOLLISIONSHAPE_H

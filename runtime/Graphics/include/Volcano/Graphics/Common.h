@@ -27,7 +27,7 @@ public:
         if (Q_LIKELY(functions_ != nullptr)) {
             Q_ASSERT(context_ != nullptr);
             Q_ASSERT(context_ == QOpenGLContext::currentContext());
-            Q_ASSERT(context_->thread()->isCurrentThread());
+            Q_ASSERT(context_->thread() == QThread::currentThread());
             return functions_;
         }
         init(context);

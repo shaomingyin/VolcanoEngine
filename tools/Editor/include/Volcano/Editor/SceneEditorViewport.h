@@ -5,8 +5,8 @@
 
 #include <memory>
 
-#include <QPointer>
 #include <QOpenGLWidget>
+#include <QPointer>
 
 #include <Volcano/World/Scene.h>
 #include <Volcano/Graphics/Renderer.h>
@@ -19,15 +19,21 @@ class SceneEditorViewport: public QOpenGLWidget {
 
 public:
     SceneEditorViewport(QWidget* parent = nullptr);
+    ~SceneEditorViewport() override;
+
+    void setScene(World::Scene* scene);
+    void setCamera(World::Camera* camera);
 
 protected:
     void initializeGL() override;
-    void resizeGL(int w, int h) override;
     void paintGL() override;
 
 private:
+    void releaseRenderer();
+
     std::unique_ptr<Graphics::Renderer> renderer_;
-    QPointer<World::Scene> scene_;
+    World::Scene* scene_ = nullptr;
+    QPointer<World::Camera> camera_;
 };
 
 VOLCANO_EDITOR_END

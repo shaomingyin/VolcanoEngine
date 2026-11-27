@@ -1,16 +1,13 @@
 //
 //
-#ifndef VOLCANO_PHYSICS_BOXCOLLISIONSHAPE_H
-#define VOLCANO_PHYSICS_BOXCOLLISIONSHAPE_H
+#ifndef VOLCANO_WORLD_BOXCOLLISIONSHAPE_H
+#define VOLCANO_WORLD_BOXCOLLISIONSHAPE_H
 
 #include <QVector3D>
 
-#include <Jolt/Jolt.h>
-#include <Jolt/Physics/Collision/Shape/BoxShape.h>
+#include <Volcano/World/CollisionShape.h>
 
-#include <Volcano/Physics/CollisionShape.h>
-
-VOLCANO_PHYSICS_BEGIN
+VOLCANO_WORLD_BEGIN
 
 class BoxCollisionShape: public CollisionShape {
     Q_OBJECT
@@ -34,12 +31,10 @@ signals:
     void validChanged(bool valid);
 
 private:
-    const JPH::BoxShapeSettings& settings() const noexcept override;
-
-private:
-    JPH::BoxShapeSettings settings_ { JPH::Vec3::sReplicate(0.5f), 0.05f };
+    QVector3D size_ { 1.0f, 1.0f, 1.0f };
+    float convexRadius_ = 0.05f;
 };
 
-VOLCANO_PHYSICS_END
+VOLCANO_WORLD_END
 
-#endif // VOLCANO_PHYSICS_BOXCOLLISIONSHAPE_H
+#endif // VOLCANO_WORLD_BOXCOLLISIONSHAPE_H

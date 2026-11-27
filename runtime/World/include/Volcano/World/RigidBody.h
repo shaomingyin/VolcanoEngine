@@ -1,17 +1,14 @@
 //
 //
-#ifndef VOLCANO_PHYSICS_RIGIDBODY_H
-#define VOLCANO_PHYSICS_RIGIDBODY_H
+#ifndef VOLCANO_WORLD_RIGIDBODY_H
+#define VOLCANO_WORLD_RIGIDBODY_H
 
 #include <QPointer>
 
-#include <Jolt/Jolt.h>
-#include <Jolt/Physics/Body/BodyCreationSettings.h>
+#include <Volcano/World/Common.h>
+#include <Volcano/World/CollisionShape.h>
 
-#include <Volcano/Physics/Common.h>
-#include <Volcano/Physics/CollisionShape.h>
-
-VOLCANO_PHYSICS_BEGIN
+VOLCANO_WORLD_BEGIN
 
 class RigidBody: public QObject {
     Q_OBJECT
@@ -42,8 +39,6 @@ public:
     explicit RigidBody(QObject* parent = nullptr);
 
 public:
-    static void registerQmlTypes();
-
     CollisionShape* shape() const noexcept;
     void setShape(CollisionShape* shape);
     MotionType motionType() const noexcept;
@@ -73,12 +68,16 @@ signals:
     void settingsChanged();
 
 private:
-    friend class System;
-
     QPointer<CollisionShape> shape_;
-    JPH::BodyCreationSettings settings_;
+    MotionType motionType_ = MotionType::Dynamic;
+    MotionQuality motionQuality_ = MotionQuality::Discrete;
+    uint objectLayer_ = 1;
+    bool sensor_ = false;
+    float friction_ = 0.2f;
+    float restitution_ = 0.0f;
+    float gravityFactor_ = 1.0f;
 };
 
-VOLCANO_PHYSICS_END
+VOLCANO_WORLD_END
 
-#endif // VOLCANO_PHYSICS_RIGIDBODY_H
+#endif // VOLCANO_WORLD_RIGIDBODY_H

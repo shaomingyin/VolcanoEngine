@@ -1,5 +1,7 @@
 //
 //
+#include <utility>
+
 #include <Volcano/World/Entity.h>
 
 VOLCANO_WORLD_BEGIN
@@ -33,7 +35,16 @@ const QObjectList& Entity::components() const noexcept {
 
 void Entity::appendComponent(QObject* p) {
     components_.append(p);
+    if (p) {
+        connect(p, &QObject::destroyed, this, &Entity::handleComponentDestroyed, Qt::UniqueConnection);
+    }
     emit componentAdded(p);
+}
+
+void Entity::handleComponentDestroyed(QObject* component) {
+    if (components_.removeAll(component) > 0) {
+        emit componentRemoved(component);
+    }
 }
 
 QObject* Entity::componentAt(qsizetype i) {
@@ -41,10 +52,13 @@ QObject* Entity::componentAt(qsizetype i) {
 }
 
 void Entity::clearComponents() {
-    for (QObject* p: components_) {
+    const auto components = std::exchange(components_, {});
+    for (QObject* p: components) {
+        if (p) {
+            disconnect(p, &QObject::destroyed, this, &Entity::handleComponentDestroyed);
+        }
         emit componentRemoved(p);
     }
-    components_.clear();
 }
 
 qsizetype Entity::componentCount() {
@@ -55,6 +69,9 @@ void Entity::removeLastComponent() {
     if (!components_.isEmpty()) {
         auto last = components_.last();
         components_.removeLast();
+        if (last && !components_.contains(last)) {
+            disconnect(last, &QObject::destroyed, this, &Entity::handleComponentDestroyed);
+        }
         emit componentRemoved(last);
     }
 }
@@ -62,8 +79,14 @@ void Entity::removeLastComponent() {
 void Entity::replaceComponent(qsizetype i, QObject* p) {
     if (0 <= i && i < components_.count()) {
         auto old = components_.at(i);
-        emit componentRemoved(old);
         components_.replace(i, p);
+        if (old && !components_.contains(old)) {
+            disconnect(old, &QObject::destroyed, this, &Entity::handleComponentDestroyed);
+        }
+        if (p) {
+            connect(p, &QObject::destroyed, this, &Entity::handleComponentDestroyed, Qt::UniqueConnection);
+        }
+        emit componentRemoved(old);
         emit componentAdded(p);
     }
 }

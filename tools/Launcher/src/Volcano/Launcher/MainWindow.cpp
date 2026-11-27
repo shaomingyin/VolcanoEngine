@@ -6,7 +6,7 @@ VOLCANO_LAUNCHER_BEGIN
 
 MainWindow::MainWindow()
     : state_(State::Idle)
-    , frame_last_(Clock::now())
+    , frame_last_(World::Clock::now())
     , frame_count_(0)
     , frame_count_per_second_(0)
     , frame_timer_(startTimer(15, Qt::PreciseTimer))
@@ -50,7 +50,7 @@ void MainWindow::mouseReleaseEvent(QMouseEvent *p) {
 
 void MainWindow::timerEvent(QTimerEvent* p) {
     if (p->timerId() == frame_timer_) {
-        auto curr = Clock::now();
+        auto curr = World::Clock::now();
         frame(curr - frame_last_);
         frame_last_ = curr;
         frame_count_ += 1;
@@ -65,7 +65,7 @@ void MainWindow::timerEvent(QTimerEvent* p) {
     QOpenGLWindow::timerEvent(p);
 }
 
-void MainWindow::frame(Clock::duration elapsed) {
+void MainWindow::frame(World::Clock::duration elapsed) {
     switch (state_) {
     case State::Playing:
         playingFrame(elapsed);
@@ -91,30 +91,30 @@ void MainWindow::frame(Clock::duration elapsed) {
     }
 }
 
-void MainWindow::idleFrame(Clock::duration elapsed) {
+void MainWindow::idleFrame(World::Clock::duration elapsed) {
 }
 
-void MainWindow::loadingFrame(Clock::duration elapsed) {
-
-}
-
-void MainWindow::readyFrame(Clock::duration elapsed) {
+void MainWindow::loadingFrame(World::Clock::duration elapsed) {
 
 }
 
-void MainWindow::playingFrame(Clock::duration elapsed) {
+void MainWindow::readyFrame(World::Clock::duration elapsed) {
 
 }
 
-void MainWindow::pausedFrame(Clock::duration elapsed) {
+void MainWindow::playingFrame(World::Clock::duration elapsed) {
 
 }
 
-void MainWindow::stoppingFrame(Clock::duration elapsed) {
+void MainWindow::pausedFrame(World::Clock::duration elapsed) {
 
 }
 
-void MainWindow::errorFrame(Clock::duration elapsed) {
+void MainWindow::stoppingFrame(World::Clock::duration elapsed) {
+
+}
+
+void MainWindow::errorFrame(World::Clock::duration elapsed) {
 
 }
 

@@ -1,6 +1,19 @@
 //
 //
+#include <QtQml/qqml.h>
+
+#include <Volcano/World/BoxCollisionShape.h>
+#include <Volcano/World/Camera.h>
+#include <Volcano/World/CapsuleCollisionShape.h>
+#include <Volcano/World/ColorEnvironment.h>
+#include <Volcano/World/DirectionalLight.h>
+#include <Volcano/World/Model.h>
+#include <Volcano/World/PointLight.h>
+#include <Volcano/World/RigidBody.h>
 #include <Volcano/World/Scene.h>
+#include <Volcano/World/SkyboxEnvironment.h>
+#include <Volcano/World/SphereCollisionShape.h>
+#include <Volcano/World/SpotLight.h>
 
 VOLCANO_WORLD_BEGIN
 
@@ -9,7 +22,59 @@ Scene::Scene(QObject* parent)
 }
 
 Scene::~Scene() {
+    emit aboutToBeDestroyed();
     clearEntities();
+}
+
+void Scene::registerQmlTypes() {
+    qmlRegisterType<Scene>("Volcano.World", 1, 0, "Scene");
+    qmlRegisterType<Entity>("Volcano.World", 1, 0, "Entity");
+    qmlRegisterType<Model>("Volcano.World", 1, 0, "Model");
+    qmlRegisterType<Camera>("Volcano.World", 1, 0, "Camera");
+    qmlRegisterUncreatableType<Environment>("Volcano.World", 1, 0, "Environment",
+                                            QStringLiteral("Use a concrete environment type."));
+    qmlRegisterType<ColorEnvironment>("Volcano.World", 1, 0, "ColorEnvironment");
+    qmlRegisterType<SkyboxEnvironment>("Volcano.World", 1, 0, "SkyboxEnvironment");
+    qmlRegisterUncreatableType<Light>("Volcano.World", 1, 0, "Light",
+                                     QStringLiteral("Use a concrete light type."));
+    qmlRegisterType<DirectionalLight>("Volcano.World", 1, 0, "DirectionalLight");
+    qmlRegisterType<PointLight>("Volcano.World", 1, 0, "PointLight");
+    qmlRegisterType<SpotLight>("Volcano.World", 1, 0, "SpotLight");
+    qmlRegisterType<RigidBody>("Volcano.World", 1, 0, "RigidBody");
+    qmlRegisterUncreatableType<CollisionShape>("Volcano.World", 1, 0, "CollisionShape",
+                                               QStringLiteral("Use a concrete collision shape."));
+    qmlRegisterType<BoxCollisionShape>("Volcano.World", 1, 0, "BoxCollisionShape");
+    qmlRegisterType<CapsuleCollisionShape>("Volcano.World", 1, 0, "CapsuleCollisionShape");
+    qmlRegisterType<SphereCollisionShape>("Volcano.World", 1, 0, "SphereCollisionShape");
+}
+
+const QVector3D& Scene::gravity() const noexcept {
+    return gravity_;
+}
+
+void Scene::setGravity(const QVector3D& gravity) {
+    if (gravity_ != gravity) {
+        gravity_ = gravity;
+        emit gravityChanged(gravity_);
+    }
+}
+
+Environment* Scene::environment() const noexcept {
+    return environment_;
+}
+
+void Scene::setEnvironment(Environment* environment) {
+    if (environment_ == environment) {
+        return;
+    }
+    if (environment_) {
+        disconnect(environment_, &QObject::destroyed, this, nullptr);
+    }
+    environment_ = environment;
+    if (environment_) {
+        connect(environment_, &QObject::destroyed, this, [this] { emit environmentChanged(nullptr); });
+    }
+    emit environmentChanged(environment_);
 }
 
 const EntityList& Scene::entities() const noexcept {
@@ -73,6 +138,9 @@ void Scene::handleEntityAdded(Entity* entity) {
     connect(entity, &Entity::componentRemoved, this, [this, entity](QObject* component) {
         handleComponentRemoved(entity, component);
     });
+    connect(entity, &QObject::destroyed, this, [this, entity] {
+        entities_.removeAll(entity);
+    });
     emit entityAdded(entity);
 }
 
@@ -81,6 +149,9 @@ void Scene::handleComponentAdded(Entity* entity, QObject* component) {
 }
 
 void Scene::handleEntityRemoved(Entity* entity) {
+    disconnect(entity, &Entity::componentAdded, this, nullptr);
+    disconnect(entity, &Entity::componentRemoved, this, nullptr);
+    disconnect(entity, &QObject::destroyed, this, nullptr);
     auto& components = entity->components();
     for (auto& component: components) {
         emit componentRemoved(entity, component);

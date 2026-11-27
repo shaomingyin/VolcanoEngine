@@ -1,11 +1,13 @@
 //
 //
 #include <Volcano/Editor/Context.h>
+#include <Volcano/World/Scene.h>
 
 VOLCANO_EDITOR_BEGIN
 
 Context::Context(QObject* parent)
     : QObject(parent) {
+    World::Scene::registerQmlTypes();
     // auto game_world_component = Game::Object::toQmlComponent(qml_engine_, Game::World::staticMetaObject);
     // auto game_world_object = game_world_component->create();
     // game_world_ = qobject_cast<Game::World*>(game_world_object);

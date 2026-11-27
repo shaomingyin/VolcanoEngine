@@ -45,7 +45,9 @@ signals:
     void componentRemoved(QObject* p);
 
 private:
-    bool enabled_;
+    void handleComponentDestroyed(QObject* component);
+
+    bool enabled_ = true;
     Transform transform_;
     QObjectList components_;
 };

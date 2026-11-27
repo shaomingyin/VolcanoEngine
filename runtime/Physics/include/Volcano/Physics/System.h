@@ -3,85 +3,89 @@
 #ifndef VOLCANO_PHYSICS_SYSTEM_H
 #define VOLCANO_PHYSICS_SYSTEM_H
 
-#include <chrono>
 #include <cstdint>
-#include <memory>
+#include <optional>
 
 #include <QObject>
 #include <QQuaternion>
 #include <QVector3D>
 
-#include <Volcano/Physics/Common.h>
+#include <Jolt/Jolt.h>
+#include <Jolt/Core/JobSystemThreadPool.h>
+#include <Jolt/Core/TempAllocator.h>
+#include <Jolt/Physics/PhysicsSystem.h>
 
-namespace JPH {
-class BodyID;
+#include <Volcano/Physics/Common.h>
+#include <Volcano/World/Common.h>
+
+VOLCANO_BEGIN
+namespace World {
+class Entity;
+class RigidBody;
+class Scene;
 }
+VOLCANO_END
 
 VOLCANO_PHYSICS_BEGIN
 
-class SystemPrivate;
-class RigidBody;
-
 class System: public QObject {
     Q_OBJECT
-    Q_PROPERTY(bool enabled READ isEnabled WRITE setEnabled NOTIFY enabledChanged)
-    Q_PROPERTY(QVector3D gravity READ gravity WRITE setGravity NOTIFY gravityChanged)
 
 public:
-    class BodyId {
-    public:
-        BodyId() = default;
-        bool operator==(const BodyId&) const noexcept = default;
-
-    private:
-        friend class System;
-
-        BodyId(const System* system, std::uint64_t generation, std::uint32_t value)
-            : system_(system)
-            , generation_(generation)
-            , value_(value) {
-        }
-
-        const System* system_ = nullptr;
-        std::uint64_t generation_ = 0;
-        std::uint32_t value_ = 0;
-    };
-
-    struct BodyPose {
-        QVector3D position;
-        QQuaternion rotation;
-    };
-
-public:
-    explicit System(QObject* parent = nullptr);
+    explicit System(World::Scene& scene, QObject* parent = nullptr);
     ~System() override;
 
 public:
-    Q_INVOKABLE void enable();
-    Q_INVOKABLE void disable();
+    void enable();
+    void disable();
     bool isEnabled() const noexcept;
     void setEnabled(bool enabled);
-    const QVector3D& gravity() const noexcept;
-    void setGravity(const QVector3D& gravity);
-    BodyId createBody(const RigidBody& body, const QVector3D& position = {}, const QQuaternion& rotation = {});
-    void addBody(BodyId body, bool activate = true);
-    void removeBody(BodyId body);
-    void destroyBody(BodyId body);
-    bool isBodyAdded(BodyId body) const;
-    BodyPose bodyPose(BodyId body) const;
-    void update(std::chrono::steady_clock::duration deltaTime, int collisionSteps = 1);
+    void update(World::Clock::duration deltaTime, int collisionSteps = 1);
 
 signals:
     void enabledChanged(bool enabled);
-    void gravityChanged(const QVector3D& gravity);
 
 private:
-    SystemPrivate& backend() const;
-    JPH::BodyID checkedBodyId(BodyId body) const;
+    class BroadPhaseLayerInterface final: public JPH::BroadPhaseLayerInterface {
+    public:
+        JPH::uint GetNumBroadPhaseLayers() const override;
+        JPH::BroadPhaseLayer GetBroadPhaseLayer(JPH::ObjectLayer layer) const override;
+#if defined(JPH_EXTERNAL_PROFILE) || defined(JPH_PROFILE_ENABLED)
+        const char* GetBroadPhaseLayerName(JPH::BroadPhaseLayer layer) const override;
+#endif
+    };
+
+    class ObjectLayerPairFilter final: public JPH::ObjectLayerPairFilter {
+    public:
+        bool ShouldCollide(JPH::ObjectLayer first, JPH::ObjectLayer second) const override;
+    };
+
+    class ObjectVsBroadPhaseLayerFilter final: public JPH::ObjectVsBroadPhaseLayerFilter {
+    public:
+        bool ShouldCollide(JPH::ObjectLayer objectLayer, JPH::BroadPhaseLayer broadPhaseLayer) const override;
+    };
+
+    struct Backend {
+        Backend();
+
+        JPH::TempAllocatorImpl tempAllocator;
+        JPH::JobSystemThreadPool jobSystem;
+        BroadPhaseLayerInterface broadPhaseLayerInterface;
+        ObjectLayerPairFilter objectLayerPairFilter;
+        ObjectVsBroadPhaseLayerFilter objectVsBroadPhaseLayerFilter;
+        JPH::PhysicsSystem physicsSystem;
+    };
+
+    void createSceneBody(World::RigidBody& body, const QVector3D& position, const QQuaternion& rotation);
+    void destroyNativeBody(JPH::BodyID id);
+    void attachSceneBody(World::Entity* entity, QObject* component);
+    void detachSceneBody(World::Entity* entity, QObject* component);
+    void visitSceneComponents(void (System::*handler)(World::Entity*, QObject*));
+    void syncSceneTransforms();
 
 private:
-    QVector3D gravity_ { 0.0f, -9.81f, 0.0f };
-    std::unique_ptr<SystemPrivate> d_;
+    World::Scene& scene_;
+    std::optional<Backend> backend_;
     std::uint64_t generation_ = 0;
 };
 

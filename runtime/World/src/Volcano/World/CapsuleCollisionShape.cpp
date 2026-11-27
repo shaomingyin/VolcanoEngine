@@ -2,16 +2,16 @@
 //
 #include <cmath>
 
-#include <Volcano/Physics/CapsuleCollisionShape.h>
+#include <Volcano/World/CapsuleCollisionShape.h>
 
-VOLCANO_PHYSICS_BEGIN
+VOLCANO_WORLD_BEGIN
 
 CapsuleCollisionShape::CapsuleCollisionShape(QObject* parent)
     : CollisionShape(parent) {
 }
 
 float CapsuleCollisionShape::radius() const noexcept {
-    return settings_.mRadius;
+    return radius_;
 }
 
 void CapsuleCollisionShape::setRadius(float radius) {
@@ -21,8 +21,7 @@ void CapsuleCollisionShape::setRadius(float radius) {
     }
 
     const bool wasValid = isValid();
-    settings_.mRadius = radius;
-    settings_.ClearCachedResult();
+    radius_ = radius;
     emit radiusChanged(radius);
     emit shapeChanged();
     if (wasValid != isValid()) {
@@ -31,18 +30,17 @@ void CapsuleCollisionShape::setRadius(float radius) {
 }
 
 float CapsuleCollisionShape::cylinderHeight() const noexcept {
-    return settings_.mHalfHeightOfCylinder * 2.0f;
+    return cylinderHeight_;
 }
 
 void CapsuleCollisionShape::setCylinderHeight(float height) {
-    const float halfHeight = qMax(0.0f, height) * 0.5f;
-    if (qFuzzyCompare(settings_.mHalfHeightOfCylinder, halfHeight)) {
+    height = qMax(0.0f, height);
+    if (qFuzzyCompare(cylinderHeight_, height)) {
         return;
     }
 
     const bool wasValid = isValid();
-    settings_.mHalfHeightOfCylinder = halfHeight;
-    settings_.ClearCachedResult();
+    cylinderHeight_ = height;
     emit cylinderHeightChanged(cylinderHeight());
     emit shapeChanged();
     if (wasValid != isValid()) {
@@ -51,11 +49,8 @@ void CapsuleCollisionShape::setCylinderHeight(float height) {
 }
 
 bool CapsuleCollisionShape::isValid() const noexcept {
-    return settings_.IsValid() && std::isfinite(radius()) && std::isfinite(settings_.mHalfHeightOfCylinder);
+    return std::isfinite(radius_) && radius_ > 0.0f
+        && std::isfinite(cylinderHeight_) && cylinderHeight_ >= 0.0f;
 }
 
-const JPH::CapsuleShapeSettings& CapsuleCollisionShape::settings() const noexcept {
-    return settings_;
-}
-
-VOLCANO_PHYSICS_END
+VOLCANO_WORLD_END

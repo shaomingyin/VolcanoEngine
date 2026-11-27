@@ -11,7 +11,9 @@
 #include <QFuture>
 #include <QObject>
 #include <QIODevice>
+#include <QMatrix4x4>
 #include <QOpenGLVertexArrayObject>
+#include <QUrl>
 
 #include <Volcano/Graphics/Common.h>
 #include <Volcano/Graphics/Buffer.h>
@@ -29,6 +31,9 @@ public:
     void enable() override;
     void disable() override;
     void setDetailLevel(float level) override;
+    void setSceneState(const QUrl& source, const QMatrix4x4& worldMatrix);
+    const QUrl& source() const noexcept;
+    const QMatrix4x4& worldMatrix() const noexcept;
 
 protected:
     void tick() override;
@@ -50,6 +55,8 @@ private:
     //using VertexDetails = std::array<std::unique_ptr<VertexData>, static_cast<int>(Resource::DetailLevel::Max)>;
 
     QFuture<void> loading_task_;
+    QUrl source_;
+    QMatrix4x4 world_matrix_;
     //VertexDetails vertex_details_;
     VertexData* vertex_current_;
 };

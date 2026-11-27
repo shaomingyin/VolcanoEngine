@@ -1,14 +1,11 @@
 //
 //
-#ifndef VOLCANO_PHYSICS_CAPSULECOLLISIONSHAPE_H
-#define VOLCANO_PHYSICS_CAPSULECOLLISIONSHAPE_H
+#ifndef VOLCANO_WORLD_CAPSULECOLLISIONSHAPE_H
+#define VOLCANO_WORLD_CAPSULECOLLISIONSHAPE_H
 
-#include <Jolt/Jolt.h>
-#include <Jolt/Physics/Collision/Shape/CapsuleShape.h>
+#include <Volcano/World/CollisionShape.h>
 
-#include <Volcano/Physics/CollisionShape.h>
-
-VOLCANO_PHYSICS_BEGIN
+VOLCANO_WORLD_BEGIN
 
 class CapsuleCollisionShape: public CollisionShape {
     Q_OBJECT
@@ -32,12 +29,10 @@ signals:
     void validChanged(bool valid);
 
 private:
-    const JPH::CapsuleShapeSettings& settings() const noexcept override;
-
-private:
-    JPH::CapsuleShapeSettings settings_ { 0.5f, 0.5f };
+    float radius_ = 0.5f;
+    float cylinderHeight_ = 1.0f;
 };
 
-VOLCANO_PHYSICS_END
+VOLCANO_WORLD_END
 
-#endif // VOLCANO_PHYSICS_CAPSULECOLLISIONSHAPE_H
+#endif // VOLCANO_WORLD_CAPSULECOLLISIONSHAPE_H

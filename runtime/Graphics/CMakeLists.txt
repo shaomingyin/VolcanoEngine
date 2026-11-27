@@ -37,7 +37,16 @@ target_include_directories(Graphics PUBLIC
     ${CMAKE_CURRENT_BINARY_DIR}/include
 )
 
-target_link_libraries(Graphics PUBLIC Base)
+target_link_libraries(Graphics PUBLIC Base PRIVATE World)
 
 volcano_link_qt(Graphics OpenGL)
 volcano_setup_target(Graphics)
+
+if(BUILD_TESTING)
+    find_package(Qt6 REQUIRED COMPONENTS Quick)
+    find_package(GTest CONFIG REQUIRED)
+    add_executable(GraphicsTests tests/RendererTest.cpp)
+    target_link_libraries(GraphicsTests PRIVATE Graphics World Qt6::Quick GTest::gtest_main)
+    include(GoogleTest)
+    gtest_discover_tests(GraphicsTests)
+endif()

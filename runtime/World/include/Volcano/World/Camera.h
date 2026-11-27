@@ -5,6 +5,8 @@
 
 #include <QRect>
 #include <QMatrix4x4>
+#include <QPointer>
+#include <QQmlComponent>
 
 #include <Volcano/World/Common.h>
 #include <Volcano/World/Transformable.h>
@@ -19,6 +21,7 @@ class Camera: public Transformable {
     Q_PROPERTY(float nearPlane READ nearPlane WRITE setNearPlane NOTIFY nearPlaneChanged FINAL)
     Q_PROPERTY(float farPlane READ farPlane WRITE setFarPlane NOTIFY farPlaneChanged FINAL)
     Q_PROPERTY(bool perspective READ isPerspective NOTIFY perspectiveChanged FINAL)
+    Q_PROPERTY(QQmlComponent* overlay READ overlay WRITE setOverlay NOTIFY overlayChanged FINAL)
 
 public:
     Camera(QObject* parent = nullptr);
@@ -38,6 +41,8 @@ public:
     float farPlane() const noexcept;
     void setFarPlane(float v) noexcept;
     bool isPerspective() const noexcept;
+    QQmlComponent* overlay() const noexcept;
+    void setOverlay(QQmlComponent* component);
     Q_INVOKABLE void lookTo(const QVector3D& pos, const QVector3D& direction, const QVector3D& up) noexcept;
     Q_INVOKABLE void lookAt(const QVector3D& pos, const QVector3D& center, const QVector3D& up) noexcept;
     Q_INVOKABLE void ortho(const QRectF& rect, float near_plane, float far_plane) noexcept;
@@ -51,6 +56,7 @@ signals:
     void nearPlaneChanged(float v);
     void farPlaneChanged(float v);
     void perspectiveChanged(bool v);
+    void overlayChanged(QQmlComponent* component);
 
 private:
     void updateProjection() noexcept;
@@ -59,10 +65,11 @@ private:
     QMatrix4x4 view_matrix_;
     QMatrix4x4 projection_matrix_;
     QRectF rect_;
-    float fov_;
-    float aspect_ratio_;
-    float near_plane_;
-    float far_plane_;
+    float fov_ = 45.0f;
+    float aspect_ratio_ = 1.0f;
+    float near_plane_ = 0.1f;
+    float far_plane_ = 1000.0f;
+    QPointer<QQmlComponent> overlay_;
 };
 
 VOLCANO_WORLD_END

@@ -2,28 +2,25 @@
 //
 #include <cmath>
 
-#include <Volcano/Physics/BoxCollisionShape.h>
+#include <Volcano/World/BoxCollisionShape.h>
 
-VOLCANO_PHYSICS_BEGIN
+VOLCANO_WORLD_BEGIN
 
 BoxCollisionShape::BoxCollisionShape(QObject* parent)
     : CollisionShape(parent) {
 }
 
 QVector3D BoxCollisionShape::size() const noexcept {
-    const auto& halfExtent = settings_.mHalfExtent;
-    return QVector3D(halfExtent.GetX(), halfExtent.GetY(), halfExtent.GetZ()) * 2.0f;
+    return size_;
 }
 
 void BoxCollisionShape::setSize(const QVector3D& size) {
-    const JPH::Vec3 halfExtent(size.x() * 0.5f, size.y() * 0.5f, size.z() * 0.5f);
-    if (settings_.mHalfExtent == halfExtent) {
+    if (size_ == size) {
         return;
     }
 
     const bool wasValid = isValid();
-    settings_.mHalfExtent = halfExtent;
-    settings_.ClearCachedResult();
+    size_ = size;
     emit sizeChanged(this->size());
     emit shapeChanged();
     if (wasValid != isValid()) {
@@ -32,7 +29,7 @@ void BoxCollisionShape::setSize(const QVector3D& size) {
 }
 
 float BoxCollisionShape::convexRadius() const noexcept {
-    return settings_.mConvexRadius;
+    return convexRadius_;
 }
 
 void BoxCollisionShape::setConvexRadius(float radius) {
@@ -42,8 +39,7 @@ void BoxCollisionShape::setConvexRadius(float radius) {
     }
 
     const bool wasValid = isValid();
-    settings_.mConvexRadius = radius;
-    settings_.ClearCachedResult();
+    convexRadius_ = radius;
     emit convexRadiusChanged(radius);
     emit shapeChanged();
     if (wasValid != isValid()) {
@@ -52,15 +48,11 @@ void BoxCollisionShape::setConvexRadius(float radius) {
 }
 
 bool BoxCollisionShape::isValid() const noexcept {
-    const auto& halfExtent = settings_.mHalfExtent;
+    const auto halfExtent = size_ * 0.5f;
     const float radius = convexRadius();
-    return std::isfinite(halfExtent.GetX()) && halfExtent.GetX() > radius
-        && std::isfinite(halfExtent.GetY()) && halfExtent.GetY() > radius
-        && std::isfinite(halfExtent.GetZ()) && halfExtent.GetZ() > radius;
+    return std::isfinite(halfExtent.x()) && halfExtent.x() > radius
+        && std::isfinite(halfExtent.y()) && halfExtent.y() > radius
+        && std::isfinite(halfExtent.z()) && halfExtent.z() > radius;
 }
 
-const JPH::BoxShapeSettings& BoxCollisionShape::settings() const noexcept {
-    return settings_;
-}
-
-VOLCANO_PHYSICS_END
+VOLCANO_WORLD_END

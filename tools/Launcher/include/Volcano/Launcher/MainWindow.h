@@ -9,6 +9,7 @@
 #include <QTimerEvent>
 #include <QOpenGLWindow>
 
+#include <Volcano/World/Common.h>
 #include <Volcano/World/Scene.h>
 #include <Volcano/Graphics/Renderer.h>
 #include <Volcano/Launcher/Common.h>
@@ -35,15 +36,14 @@ protected:
     void timerEvent(QTimerEvent* p) override;
 
 private:
-    using Clock = World::Clock;
-    void frame(Clock::duration elapsed);
-    void idleFrame(Clock::duration elapsed);
-    void loadingFrame(Clock::duration elapsed);
-    void readyFrame(Clock::duration elapsed);
-    void playingFrame(Clock::duration elapsed);
-    void pausedFrame(Clock::duration elapsed);
-    void stoppingFrame(Clock::duration elapsed);
-    void errorFrame(Clock::duration elapsed);
+    void frame(World::Clock::duration elapsed);
+    void idleFrame(World::Clock::duration elapsed);
+    void loadingFrame(World::Clock::duration elapsed);
+    void readyFrame(World::Clock::duration elapsed);
+    void playingFrame(World::Clock::duration elapsed);
+    void pausedFrame(World::Clock::duration elapsed);
+    void stoppingFrame(World::Clock::duration elapsed);
+    void errorFrame(World::Clock::duration elapsed);
 
 private:
     enum class State {
@@ -59,7 +59,7 @@ private:
 private:
     State state_;
 
-    Clock::time_point frame_last_;
+    World::Clock::time_point frame_last_;
     int frame_count_;
     int frame_count_per_second_;
     int frame_timer_;

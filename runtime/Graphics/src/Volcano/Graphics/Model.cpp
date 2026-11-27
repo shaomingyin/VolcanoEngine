@@ -29,6 +29,19 @@ void Model::setDetailLevel(float level) {
 
 }
 
+void Model::setSceneState(const QUrl& source, const QMatrix4x4& worldMatrix) {
+    source_ = source;
+    world_matrix_ = worldMatrix;
+}
+
+const QUrl& Model::source() const noexcept {
+    return source_;
+}
+
+const QMatrix4x4& Model::worldMatrix() const noexcept {
+    return world_matrix_;
+}
+
 void Model::tick() {
     //Drawable::tick(elapsed);
 }
